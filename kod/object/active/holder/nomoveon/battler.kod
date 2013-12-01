@@ -359,10 +359,10 @@ messages:
          % We hit!
          iDamage = Send(what,@AssessDamage,#what=self,
                         #damage=Send(self,@GetDamage,#what=what,
-                                     #stroke_obj=stroke_obj),
+                                     #stroke_obj=stroke_obj) * iMultiplier,
                         #atype=Send(self,@GetDamageType),
                         #aspell=Send(self,@GetSpellType));
-         iDamage = iDamage * iMultiplier;
+
          Send(self,@AssessHit,#what=what,#stroke_obj=stroke_obj,
               #damage=iDamage);
          if iDamage = $
@@ -382,10 +382,10 @@ messages:
             % We hit!
             iDamage = Send(what,@AssessDamage,#what=self,
                            #damage=Send(self,@GetDamage,#what=what,
-                                        #stroke_obj=stroke_obj),
+                                        #stroke_obj=stroke_obj) * iMultiplier,
                            #atype=Send(self,@GetDamageType),
                            #aspell=Send(self,@GetSpellType));
-            iDamage = iDamage * iMultiplier;
+
             Send(self,@AssessHit,#what=what,#stroke_obj=stroke_obj,
                  #damage=iDamage);
             if iDamage = $
