@@ -713,6 +713,8 @@ resources:
    
    death_rift_stayed_too_long = "Having lingered too long while still alive, you find yourself ejected back into reality!"
 
+   player_truced = "Shal'ille's magic compels you to respect the truce."
+
 classvars:
 
    viHand_space = 2
@@ -3690,11 +3692,11 @@ messages:
       return TRUE;
    }
 
-   AllowPlayerAttack(victim=$, stroke_obj=$, use_weapon=$, report=TRUE)
+   AllowPlayerAttack(victim=$, stroke_obj=$, use_weapon=$, report=TRUE, spell_obj=$)
    "Will not let a person attack someone who isnt pkill_enabled."
    "Wll not let a person who isnt pkill_enabled attack another person."
    {
-      local oRoom;
+      local oRoom, i;
       
       % Default location to check is where we are.
       oRoom = poOwner;
@@ -3837,6 +3839,31 @@ messages:
       if NOT Send(self,@CheckStatusAndSafety,#victim=victim,#report=report)
       {
          return FALSE;
+      }
+
+      % Here we would allow the attack, time to check for Truce
+      % Let Truce itself return true to avoid issues
+      if spell_obj <> $
+         AND IsClass(spell_obj,&Truce)
+      {
+         return TRUE;
+      }
+      else
+      {
+         if (Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Truce))
+         {
+            if IsClass(victim,&Monster)
+               OR (IsClass(victim,&User)
+                   AND Send(victim,@IsAffectedByRadiusEnchantment,#byClass=&Truce))
+            {
+               if spell_obj = $
+                  AND report
+               {
+                  Send(self,@MsgSendUser,#message_rsc=player_truced);
+               }
+               return FALSE;
+            }
+         }
       }
 
       % Stop any rescue attempts if the user makes an attack.
@@ -4500,7 +4527,7 @@ messages:
    GetDamage(what = $, stroke_obj=$)
    {
       local i, iDamage, oStroke, oWeapon, iStrokeNum, iModBonus, iDamageBonus,
-            oSpell, oMonster;
+            oSpell, oMonster, lRadiusState;
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -4550,7 +4577,13 @@ messages:
 
          Send(i,@WeaponHitTarget);
       }
-               
+
+      lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&KillingFields);
+      if lRadiusState <> $
+      {
+         iDamageBonus = Send(Nth(lRadiusState,1),@ModifyDamage,#who=self,#what=what,#damage=iDamageBonus);
+      }
+      
       iDamageBonus = iDamageBonus + Send(Send(SYS,@GetParliament),
                                          @GetFactionDamageBonus,#who=self);
 
