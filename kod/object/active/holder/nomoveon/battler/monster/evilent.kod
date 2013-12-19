@@ -24,7 +24,9 @@ resources:
    EvilEnt_icon_rsc = res0003a.bgf
    EvilEnt_desc_rsc = \
       "Feeding upon the dredges of the tainted soil in the land, this "
-      "living tree exudes evil, its sap blackened with hate."
+      "living tree exudes melancholy, its sap blackened with grief."
+      "You wonder if the story that it can summon lightning bolts to protect "
+      "the forest is really true."
       
    EvilEnt_leaves_sparse_rsc = res0003c.bgf
 
@@ -51,9 +53,9 @@ classvars:
    viSpeed = SPEED_NONE
    viAttributes = MOB_NOMOVE 
    viDefault_behavior = AI_NOMOVE | AI_FIGHT_KARMA_AGGRESSIVE
-   viLevel = 50
-   viDifficulty = 4
-   viKarma = -40
+   viLevel = 90
+   viDifficulty = 5
+   viKarma = 70
 
    vrSound_hit = EvilEnt_sound_hit
    vrSound_miss = EvilEnt_sound_miss
