@@ -13,7 +13,7 @@ Spider is Monster
 constants:
 
    include blakston.khd
-   POISON_CHANCE = 30
+   POISON_CHANCE = 10
    POISON_DURATION = 180000   %%% in milliseconds
    POISON_LOSSRATE = 2500    %%% in health points * 10^-4 / second
 
@@ -47,7 +47,7 @@ classvars:
    viAttributes = MOB_SPASM
    viLevel = 50
    viDifficulty = 4
-   viKarma = -30
+   viKarma = 40
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_AGGRESSIVE
    viWimpy = 30
    
