@@ -1,0 +1,229 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CombatModifier is PassiveItem
+
+constants:
+
+   include blakston.khd
+   
+   ARMOR_DAMAGE_CHANCE = 25
+
+resources:
+
+   defmod_broken = "Your %s falls to pieces."   
+   defmod_broken_plural = "Your %s fall to pieces."   
+   defmod_broken_plural_clothes = "Your %s collapse into unwearable tatters."
+
+classvars:
+
+   viItem_type = ITEMTYPE_ARMOR
+   vrItem_broken = defmod_broken
+
+   viDefense_base = 0              %% This is the default value for piDefense_bonus
+   viDodge_base = 0                %% This is the default value for piDodge_bonus
+   viDamage_percent_base = 0       %% This is the default value for piDamage_percent_reduce
+   viDamage_flat_base = 0          %% This is the default value for piDamage_flat_reduce
+   viAttack_base = 0               %% This is the default value for piAttack_bonus
+   viDamage_base = 0               %% This is the default value for piDamage_bonus
+
+properties:
+
+   piDefense_bonus = 0              %% This gives a player a percentage boost to his avoidance
+   piDodge_bonus = 0                %% This modifies the ability to dodge, similar to how weapons modify parry and shields modify block
+   piDamage_percent_reduce = 0      %% This reduces damage taken by a percentage
+   piDamage_flat_reduce = 0         %% This reduces damage taken by a flat amount
+   piAttack_bonus = 0               %% This increases offense by a percentage
+   piDamage_bonus = 0               %% This increases damage done by a percentage
+
+messages:
+
+   DefaultValues()
+   {
+      piDefense_bonus = viDefense_base;
+      piDodge_bonus = viDodge_base;
+      piDamage_percent_reduce = viDamage_percent_base;
+	   piDamage_flat_reduce = viDamage_flat_base;
+	   piAttack_bonus = viAttack_base;
+      piDamage_bonus = viDamage_base;
+      propagate;
+   }
+
+   NewUsed(what = $)
+   {
+      if viDefense_base <> 0 OR viDamage_percent_base <> 0 OR viDamage_flat_base <> 0 OR viDodge_base <> 0
+	  {
+         send(what,@AddDefenseModifier,#what=self);
+	  }
+	  if viAttack_base <> 0 OR viDamage_base <> 0
+	  {
+         send(what,@AddAttackModifier,#what=self);
+	  }
+      send(self,@AddResistances);
+
+      propagate;
+   }
+
+   NewUnused(what = $)
+   {
+      if viDefense_base <> 0 OR viDamage_percent_base <> 0 OR viDamage_flat_base <> 0 OR viDodge_base <> 0
+	  {
+         send(what,@RemoveDefenseModifier,#what=self);
+	  }
+	  if viAttack_base <> 0 OR viDamage_base <> 0
+	  {
+         send(what,@RemoveAttackModifier,#what=self);
+	  }
+      send(self,@RemoveResistances);
+
+      propagate;
+   }
+   
+   DamageGear(who = $,what = $)
+   {
+      % 25% chance to get damaged.
+      if (random(1,100) < ARMOR_DAMAGE_CHANCE)
+      {
+         propagate;
+      }
+      
+      return;
+   }
+
+   AddResistances()
+   {
+      local i;
+      
+      for i in send(self,@GetResistanceModifiers)
+      {
+         Send(poOwner,@AddResistance,#what=nth(i,1),#value=nth(i,2));
+      }
+      
+      return;
+   }
+
+   RemoveResistances()
+   {
+      local i;
+      
+      for i in send(self,@GetResistanceModifiers)
+      {
+         Send(poOwner,@RemoveResistance,#what=nth(i,1),#value=nth(i,2));
+      }
+      
+      return;
+   }
+
+   GetResistanceModifiers()
+   {
+      % format is [ [TYPE,resistance], [ATCK_WEAP_STRIKE,-20], ...]
+      return [];
+   }
+   
+   ModifyHitRoll(who = $,what = $,hit_roll = $)
+   {
+      return piAttack_bonus;
+   }
+   
+   ModifyDamage(who = $,what = $,damage = $)
+   {
+      return piDamage_bonus;
+   }
+
+   ModifyDefensePower(who = $,what = $,defense_power = 0)
+   {
+      return piDefense_bonus;
+   }
+   
+   ModifyDodgeAbility(who = $)
+   {
+      return piDodge_bonus;
+   }
+
+   ModifyDefenseDamageFlat(who = $,what = $,damage = $,atype = 0,aspell = 0)
+   "Increase or decrease damage done to defender by a flat amount."
+   {
+      local iDamageReduce;
+
+      iDamageReduce = piDamage_flat_reduce;
+
+      if aspell <> 0
+      {
+         % Reduce damage if part of the damage is spell
+         if atype <> 0
+         {
+            % Half of the damage reduction if we're doing both weapon
+            % and spell damage types.
+            iDamageReduce = iDamageReduce / 2;
+         }
+         else
+         {
+            % If we're doing pure spell damage, we get no reduction.
+            iDamageReduce = 0;
+         }
+      }
+      
+      return iDamageReduce;
+   }
+   
+   ModifyDefenseDamagePercent(who = $,what = $,damage = $,atype = 0,aspell = 0)
+   "Increase or decrease damage done to defender by a percentage."
+   {
+      local iDamageReduce;
+
+      iDamageReduce = piDamage_percent_reduce;
+
+      if aspell <> 0
+      {
+         % Reduce damage if part of the damage is spell
+         if atype <> 0
+         {
+            % Half of the damage reduction if we're doing both weapon
+            % and spell damage types.
+            iDamageReduce = iDamageReduce / 2;
+         }
+         else
+         {
+            % If we're doing pure spell damage, we get no reduction.
+            iDamageReduce = 0;
+         }
+      }
+      
+      return iDamageReduce;
+   }
+
+   CanMend()
+   "For most defmods (armor and shields), mend is true."
+   {   
+      local i, oItemAtt;
+      
+      for i in plItem_Attributes
+      {
+         oItemAtt = send(SYS,@FindItemAttByNum,#num=send(self,@GetNumFromCompound,#compound=first(i)));
+         
+         if oItemAtt = $
+         {
+            DEBUG("Illegal ItemAtt in list!");
+            
+            continue;
+         }
+         
+         if NOT send(oItemAtt,@ItemCanMend,#oItem=self)
+         {
+            return FALSE;
+         }
+      }
+      
+      return TRUE; 
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

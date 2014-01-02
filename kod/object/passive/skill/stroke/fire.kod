@@ -163,29 +163,27 @@ messages:
    }
 
    DamageFactors(damage=0, who=$, weapon_used = $)
-   "Different skills/strokes are affected by strength differently."
+   "Different skills/strokes are affected by different stats differently."
    {
-      local iDamage, iAim;
-
-      iDamage = damage;
-      % Get weapon proficiency bonuses.
-      if weapon_used <> $
-      {
-         iDamage = iDamage + (Send(weapon_used,@GetProf,#who=who)+1)*viMaxProficiencyDamage/100;
-      }
+      local stat;
+	  
+	  % Get proficiency bonus.
+	  damage = damage + (Send(weapon_used,@GetProf,#who=who)+1)*damage/100;
       
-      % Get Aim damage bonus.
-      iAim = send(who,@GetAim);
-      iDamage = ((100+bound(iAim-25,0,40))*iDamage)/100;
+      % Get stat damage bonus.
+      stat = send(who,@GetAim);
+      damage = (50+stat)*damage/100;
 
-      return iDamage;
+	  % Adjust bow damage to a factor of melee damage
+	  damage = damage*viDamage_factor/100;
+
+      return damage;
    }
 
    IsRangedAttack()
    {
       return TRUE;
    }
-
-
+  
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,152 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BerserkerAxe is StrikingWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   berserkeraxe_name_rsc = "berserker axe"
+   berserkeraxe_icon_rsc = axe.bgf
+   berserkeraxe_desc_rsc = \
+      "This axe is clearly possessed by an evil spirit, granting the wielder great power, but at what price?"
+
+   berserkeraxe_expires = "Your berserker axe disappears in a puff of smoke!"
+
+   berserkeraxe_window_overlay_rsc = povaxe.bgf
+   berserkeraxe_player_overlay = axeov.bgf
+
+classvars:
+   vrName = berserkeraxe_name_rsc
+   vrIcon = berserkeraxe_icon_rsc
+   vrDesc = berserkeraxe_desc_rsc
+
+   % Berserker Axes are high quality striking weapons
+   viWeaponQuality = WEAPON_QUALITY_HIGH
+
+   viProficiency_Needed = SKID_PROFICIENCY_AXE
+
+   viValue_average = 0
+   % Light because it's magical.
+   viWeight = 15
+   viBulk = 60
+
+   vrWeapon_window_overlay = berserkeraxe_window_overlay_rsc
+   vrWeapon_overlay = berserkeraxe_player_overlay
+
+   viGround_group = 1
+   viInventory_group = 3
+   viBroken_group = 2
+
+properties:
+
+   piAttack_type = ATCK_WEAP_MAGIC+ATCK_WEAP_STRIKE
+   ptLongevity
+   piItem_flags = 10
+
+   piHitBonus = 0
+
+messages:
+
+   Constructor(ilongevity=$, iToHitBonus=$)
+   {
+      local oWeapAtt;
+
+      if ilongevity = $
+      {
+         % Default is 1 hour.
+         ilongevity = 3600000;
+      }
+
+      if iToHitBonus <> $
+      {
+         piHitBonus = iToHitBonus;
+      }
+
+      ptLongevity = CreateTimer(self,@WeaponExpires,ilongevity);
+ 
+      send(self,@SetSpellFlag,#flag=ATCK_SPELL_UNHOLY,#value=TRUE);
+
+      propagate;
+   }
+
+   WeaponExpires()
+   {
+      ptLongevity = $;
+      
+      if isclass(poOwner,&Player)
+      {
+         send(poOwner,@MsgSendUser,#message_rsc=berserkeraxe_expires);
+      }
+      
+      send(self,@Delete);
+      
+      return;
+   }
+
+   Delete()
+   {
+      if ptLongevity <> $
+      {
+         DeleteTimer(ptLongevity);
+         ptLongevity = $;
+      }
+      
+      propagate;
+   }
+
+   DamageGear()
+   {
+      % Return here so that berserker axes don't get damaged.
+      return;
+   }
+
+   CanEnchant()
+   {
+      return FALSE;
+   }
+   
+   CanBeGivenToNPC()
+   {
+      return FALSE;
+   }
+
+   CanShatter()
+   {
+      return FALSE;
+   }
+
+   CanSwap()
+   {
+      return FALSE;
+   }
+
+   CanWeaken()
+   {
+      return FALSE;
+   }
+
+   % Gives a bonus to Qor spells since it's holy! Apart from that, same malus as other HQWs.
+   GetBaseSpellModifier(oSpell=$)
+   {
+      if oSpell <> $ AND send(oSpell,@GetSchool) = SS_QOR
+      {
+         return 10;
+      }
+
+      return -20;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

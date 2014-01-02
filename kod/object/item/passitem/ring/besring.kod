@@ -41,6 +41,7 @@ classvars:
    vrRealName = berserkerring_name_rsc
    vrIcon = berserkerring_icon_rsc
    vrRealDesc = berserkerring_desc_rsc
+   vrItem_broken = berserkerring_break_rsc
 
    viHits_init_min = 80
    viHits_init_max = 120
@@ -90,17 +91,7 @@ messages:
 
    ModifyHitRoll(who = $, what = $, hit_roll = $)
    {
-      piHits = piHits - 1;
-      if piHits <= 0
-      {
-         Send(poOwner,@MsgSendUser,#message_rsc=berserkerring_break_rsc); 
-         Send(poOwner,@TryUnuseItem,#what=self);
-         Send(self,@Delete);
-
-         return hit_roll;
-      }
-      
-      return hit_roll - (Random(15,25) * 10);
+      return -20;
    }
 
    ModifyDamage(who = $, what = $, damage = $)
@@ -111,17 +102,11 @@ messages:
 
       if oWeapon = $ OR NOT IsClass(oWeapon,&RangedWeapon)
       {
-         return damage + random(1,4);
+         return 20;
       }
 
-      return damage;
+      return 0;
    }
-
-   WeaponHitTarget()
-   {
-      return;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

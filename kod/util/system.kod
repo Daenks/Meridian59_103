@@ -2905,6 +2905,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_REFLECTION,#class=&SummonReflection);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_SPIRITUAL_HAMMER,#class=&CreateSpiritualHammer);
+      Send(self,@CreateOneSpellIfNew,#num=SID_BERSERKER_AXE,#class=&CreateBerserkerAxe);
       Send(self,@CreateOneSpellIfNew,#num=SID_SUMMON_APPARITION,#class=&SummonApparition);
       Send(self,@CreateOneSpellIfNew,#num=SID_FORGET,#class=&ForgetSpell);
       Send(self,@CreateOneSpellIfNew,#num=SID_SEDUCE,#class=&Seduce);
@@ -3008,6 +3009,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_SET,#class=&Set);
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
+      Send(self,@CreateOneSpellIfNew,#num=SID_CONSIDER,#class=&Consider);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);
@@ -3201,6 +3203,7 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_SLASH,#class=&Slash);
        Send(self,@CreateOneSKillIfNew,#num=SKID_PUNCH,#class=&Punch);
        Send(self,@CreateOneSKillIfNew,#num=SKID_THRUST,#class=&Thrust);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_STRIKE,#class=&Strike);
        Send(self,@CreateOneSKillIfNew,#num=SKID_KICK,#class=&Kick);
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_SWORD,#class=&SwordProficiency);
@@ -3209,6 +3212,7 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_HAMMER,#class=&HammerProficiency);
        Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_AXE,#class=&AxeProficiency);
        Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_SHORT_SWORD,#class=&ShortSwordProficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_FALCHION,#class=&FalchionProficiency);
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_BRAWLING,#class=&Brawling);
        Send(self,@CreateOneSKillIfNew,#num=SKID_ASSESS,#class=&Assess);
@@ -3216,6 +3220,7 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_BOW,#class=&Archery);
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_BLOCK,#class=&Block);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BASH,#class=&Bash);
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_SECOND_WIND,#class=&SecondWind);
        Send(self,@CreateOneSKillIfNew,#num=SKID_DISARM,#class=&Disarm);
@@ -4812,7 +4817,9 @@ messages:
       plItemTemplates = cons(create(&Apple),plItemTemplates);
       plItemTemplates = cons(create(&Bread),plItemTemplates);
       plItemTemplates = cons(create(&InkyCap),plItemTemplates);
+      plItemTemplates = cons(create(&AgedCheese),plItemTemplates);
       plItemTemplates = cons(create(&Meatpie),plItemTemplates);
+      plItemTemplates = cons(create(&TurkeyLeg),plItemTemplates);
       plItemTemplates = cons(create(&Mug),plItemTemplates);
       plItemTemplates = cons(create(&KocatanMug),plItemTemplates);
       plItemTemplates = cons(create(&Goblet),plItemTemplates);
@@ -4850,6 +4857,7 @@ messages:
       plItemTemplates = cons(create(&RiijaSword),plItemTemplates);
       plItemTemplates = cons(create(&NeruditeSword),plItemTemplates);
       plItemTemplates = cons(create(&Mace),plItemTemplates);
+      plItemTemplates = cons(create(&Falchion),plItemTemplates);
       plItemTemplates = cons(create(&Scimitar),plItemTemplates);
       plItemTemplates = cons(create(&Hammer),plItemTemplates);
       plItemTemplates = cons(create(&Axe),plItemTemplates);
@@ -4974,7 +4982,7 @@ messages:
       plItemTemplates = cons(create(&ShrunkenHeadMask),plItemTemplates);
 
       plItemTemplates = cons(create(&ManaCrystal),plItemTemplates);
-
+      
       return;
    }
 

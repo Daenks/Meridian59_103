@@ -1,0 +1,101 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CreateBerserkerAxe is Spell
+
+constants:
+   include blakston.khd
+
+resources:
+
+   createberserkeraxe_cast_rsc = "A berserker axe appears."
+   createberserkeraxe_inv_full_rsc = "A berserker axe appears in the air before you, "
+      "but before you can drop something and grab it, it vanishes."
+
+   createberserkeraxe_name_rsc = "berserker axe"
+   createberserkeraxe_icon_rsc = axeico.bgf
+   createberserkeraxe_desc_rsc = \
+      "Materializes a berserker axe.  "
+      "Requires entroot berries and orc teeth to cast."
+
+   createberserkeraxe_sound = qcurweap.wav
+
+classvars:
+
+   vrName = createberserkeraxe_name_rsc
+   vrIcon = createberserkeraxe_icon_rsc
+   vrDesc = createberserkeraxe_desc_rsc
+   
+   viSpell_num = SID_BERSERKER_AXE
+   viSchool = SS_QOR
+   viSpell_level = 3
+   viMana = 15
+   viSpellExertion = 5
+   viCast_time = 5000
+
+   vrSucceed_wav = createberserkeraxe_sound
+
+properties:
+
+
+messages:
+
+   ResetReagents()
+   {
+      % separate message so can change, then set from admin mode
+
+      plReagents = $;
+      plReagents = Cons([&EntrootBerry,2],plReagents);
+      plReagents = Cons([&OrcTooth,1],plReagents);
+
+      return;
+   }
+
+   GetNumSpellTargets()
+   {
+      return 0;
+   }
+
+   GetLongevity(iSpellPower = 0)
+   {
+      local iLongevity;
+
+      iLongevity = 10 + ((50 * iSpellpower) / 100);  % lasts 10 - 60 minutes
+      iLongevity = iLongevity * 60 * 1000;  % Convert to ms
+
+      return iLongevity;   
+   }
+
+
+   CastSpell(who = $, lTargets = $,iSpellPower = $)
+   {
+      local oBerserkerAxe, iLongevity, iToHitBonus;
+
+      iLongevity = send(self,@GetLongevity,#iSpellPower=iSpellPower);
+      iToHitBonus = iSpellPower/5;
+      oBerserkerAxe = Create(&BerserkerAxe,#iLongevity=iLongevity,#iToHitBonus=iToHitBonus);
+
+      if Send(who,@ReqNewHold,#what=oBerserkerAxe)
+      {
+         Send(who,@NewHold,#what=oBerserkerAxe);
+         Send(who,@MsgSendUser,#message_rsc=createberserkeraxe_cast_rsc);
+      }
+      else
+      {
+         Send(oBerserkerAxe,@Delete);
+         Send(who,@MsgSendUser,#message_rsc=createberserkeraxe_inv_full_rsc);
+      }
+
+      propagate;
+   }
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

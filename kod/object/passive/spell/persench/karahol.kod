@@ -19,19 +19,18 @@ resources:
    KaraholsCurse_name_rsc = "Kara'hol's curse"
    KaraholsCurse_icon_rsc = ikarahol.bgf
    KaraholsCurse_desc_rsc = \
-      "Your body is possessed by the spirit of the warrior "
-      "Kara'hol for a brief period, enhancing the ferocity of "
-      "your attacks.  When the spirit departs, your body "
-      "is temporarily paralyzed from shock.  "
+      "Your body is possessed by the raging spirit of "
+      "Kara'hol for a brief period, greatly enhancing the ferocity of "
+      "your attacks while drastically lowering your defenses.  "
       "Requires the sacrifice of a few entroot berries to cast."
    
    KaraholsCurse_on = \
       "The spirit of Kara'hol descends upon you making your "
       "blood boil and your muscles twitch with newfound vigor."
-   KaraholsCurse_off = "Your body freezes as total exhaustion grips your limbs."
+   KaraholsCurse_off = "Your blind rage fades."
    KaraholsCurse_already_enchanted_rsc = "Your blood already boils with Kara'hol's spirit!"
 
-   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat abilities, but with a price to pay later."
+   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat abilities, but at a price."
 
    KaraholsCurse_sound = qkcurse.wav
 
@@ -64,6 +63,12 @@ classvars:
    vbCanCastOnOthers = FALSE  
 
 properties:
+
+   piDamage_percent_reduce = -30
+   piDamage_flat_reduce = 0
+   piDefense_bonus = -30
+   piAttack_bonus = 30
+   piDamage_bonus = 30
    
 messages:
 
@@ -78,6 +83,7 @@ messages:
    CastSpell(who = $,iSpellPower= 0, ltargets = $)
    {
       Send(who,@AddAttackModifier,#what=self);
+      Send(who,@AddDefenseModifier,#what=self);
      
       propagate;
    }
@@ -98,33 +104,11 @@ messages:
 
    EndEnchantment(who=$, report=TRUE, state=0)
    {
-      local oHoldSpell, iDuration;
 
       Send(who,@RemoveAttackModifier,#what=self);
-
-      % Now, for the side effect.  Hold 'em!
-      oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
-      if Send(who,@IsEnchanted,#what=oHoldSpell)
-      {
-         Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
-      }
-      
-      % Hold duration is measured in seconds, not milliseconds.  Lasts 1/6 the time of the bonus.
-      iDuration = (Send(self,@GetDuration,#iSpellPower=state))/6;
-      Send(oHoldSpell,@DoHold,#what=self,#otarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
-      
-      propagate;
-   }
-
-   % stuff we handle to be an attack modifier
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {      
-      return hit_roll + 100 + (send(who,@GetEnchantedState,#what=self)*2);
-   }
+      Send(who,@RemoveDefenseModifier,#what=self);
    
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      return (damage + 1 + Random(0,send(who,@GetEnchantedState,#what=self)/20));
+      propagate;
    }
 
    GetPotionClass()

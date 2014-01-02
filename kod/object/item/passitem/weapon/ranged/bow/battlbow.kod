@@ -19,23 +19,23 @@ resources:
    BattleBow_name_rsc = "battle bow"
    BattleBow_desc_rsc = \
       "Expertly carved for power, this bow gives you the envious advantage of "
-      "a stronger attack at a sacrifice of accuracy at long ranges.  You should "
-      "only use this bow at closer ranges."
+      "a stronger attack at a sacrifice of accuracy at long ranges.  While its "
+		"precision may be lacking, it has enough power to strike through most shields.  "
+		"Wielding this weapon will hinder your spell casting."
 
 classvars:
 
    vrName = BattleBow_name_rsc
    vrDesc = BattleBow_desc_rsc
 
-   viWeaponDamage = 2
+   viWeaponDamage = 4
    viRange = 17
    viHit_roll_modifier = 0
    
-   viValue_average = 3000
-   viBulk = 80
-   viWeight = 70
+   viValue_average = 2500
 
-   viSpell_modifier = -30
+   viSpell_modifier = -20
+   viStrikethrough = 50
 
    % What's the basic color of the wood?
    viBaseXLAT = XLAT_TO_SKIN4
@@ -43,7 +43,6 @@ classvars:
 properties:
 
 messages:
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

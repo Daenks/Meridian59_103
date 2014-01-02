@@ -18,8 +18,9 @@ resources:
 
    Longbow_name_rsc = "longbow"
    Longbow_desc_rsc = \
-      "Expertly carved for flexibility and range, this bow gives you the "
-      "envious advantage of a long ranged attack." 
+      "Expertly carved for flexibility and accuracy, this bow allows you to hit "
+		"targets at great range, but often lacks the power to strike through heavy shields.  "
+		"Wielding this weapon will hinder your spell casting."
 
 classvars:
 
@@ -28,12 +29,10 @@ classvars:
 
    viWeaponDamage = 0
    viRange = 100
-   viHit_roll_modifier = 100
+   viHit_roll_modifier = 10
 
    viValue_average = 2500
-   viBulk = 80
-   viWeight = 70
-
+  
    viSpell_modifier = -20
 
    % What's the basic color of the wood?
@@ -42,7 +41,6 @@ classvars:
 properties:
 
 messages:
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

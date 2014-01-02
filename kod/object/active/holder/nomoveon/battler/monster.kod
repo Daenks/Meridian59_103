@@ -264,6 +264,8 @@ classvars:
    viDead_drawfx = 0
 
    viFaction = FACTION_NEUTRAL
+	
+   vrPlayer_was_killed = $
 
 properties:
 
@@ -1435,7 +1437,7 @@ messages:
 
       if piOffense = $
       {
-         iAttack = (3*viLevel) + (60*viDifficulty);
+         iAttack = (9*viLevel) + (180*viDifficulty);
       }
       else
       {
@@ -1447,7 +1449,7 @@ messages:
          iAttack = iAttack * 3 / 4;
       }
       
-      return Bound(iAttack,1,1500);
+      return Bound(iAttack,1,4500);
    }
 
    GetDefense(what = $, stroke_obj=$)
@@ -1458,14 +1460,14 @@ messages:
 
       if piDefense = $
       {
-         iDefense = (3*viLevel) + (60*viDifficulty);
+         iDefense = (9*viLevel) + (180*viDifficulty);
       }
       else
       {
          iDefense = piDefense;
       }
      
-      return Bound(iDefense,1,1500);
+      return Bound(iDefense,1,4500);
    }
 
    % The next message deals with the three defense skills.  These messages
@@ -1509,7 +1511,9 @@ messages:
          iDamage = iDamage * 3 / 4 ;
       }
       
-      return Bound(iDamage,1,$);
+	  iDamage = iDamage * 100;
+	  
+      return iDamage;
    }
 
    % This is the type of damage done.
@@ -1545,12 +1549,20 @@ messages:
          iResist = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
          iDamage = Send(self,@GetDamageFromResistance,#what=damage,
                         #value=iResist);
+			
+			% All player damage is multiplied by 100 when base damage is determined
+			% in order to avoid cumulative losses to truncation. Before final damage 
+			% is applied, we divide by 100 again.
+			if IsClass(what,&Player)
+			{
+					iDamage = random(iDamage/2,iDamage)/100;
+			}
       }
       else
       {
          iDamage = damage;
       }
-      
+
       iDamage = iDamage + bonus;
 
       % Set a predamage mark... we'll compare to it to see if threshold crossed.
@@ -1619,7 +1631,7 @@ messages:
          if (IsClass(what,&Player))
          {
             Send(poOwner,@SomethingWaveRoom,#what=what,
-                 #wave_rsc=Send(what,@GetOuchSound),#flags=SOUND_RANDOM_PITCH);
+                 #wave_rsc=Send(what,@GetOuchSound,#damage=damage),#flags=SOUND_RANDOM_PITCH);
          }
       }
 
@@ -5795,7 +5807,21 @@ messages:
    {
       return;
    }
-
+	
+   PlayerWasKilledMsg(who=$,attacker=$,damage=$)
+   "The stroke may choose it's own damage give or recieve message.  Otherwise"
+   "player.kod will just choose a default - as it does for most strokes."
+   {
+       if vrPlayer_was_killed = $
+       {
+         return FALSE ;
+       }
+       
+       Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
+            #parm1=Send(attacker,@GetDef),#parm2=Send(attacker,@GetName));
+            
+       return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
