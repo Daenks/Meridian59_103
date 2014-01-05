@@ -848,6 +848,9 @@
    RID_OLD_BAR_NORTH = 9002
    RID_OLD_BAR_SOUTH = 9003
 
+   % Instanced Rooms RIDs 9600-9999
+   RID_INSTANCE_START = 9600
+
    % Rentable Rooms 10000+
    RID_RENTABLE_START = 10000
 

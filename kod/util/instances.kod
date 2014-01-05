@@ -1,0 +1,180 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+InstanceRoomMaintenance is UtilityFunctions
+
+constants:
+   
+   include blakston.khd
+
+resources:
+
+properties:
+
+   plInstanceRooms = $
+   
+   % List of valid MonsRoom RIDs
+   plRIDs = $
+   
+   % List of valid monsters
+   plMonsterClasses = $
+
+messages: 
+
+   Constructor()
+   {
+      Send(self,@RecreateRIDs);
+      Send(self,@RecreateMonsterClasses);
+
+      return;
+   }
+
+   Recreate()
+   {
+      Send(self,@RecreateRIDs);
+      Send(self,@RecreateMonsterClasses);
+      return;
+   }
+   
+   RecreateRIDs()
+   {
+      local i;
+
+      for i in plRIDs
+      {
+         plRIDs = DelListElem(plRIDs,i);
+      }
+      plRIDs = $;
+      
+      plRIDs = Cons(RID_UKGOTH,plRIDs);
+      plRIDs = Cons(RID_BRAX,plRIDs);
+      plRIDs = Cons(RID_BRAX_CAVES,plRIDs);
+      plRIDs = Cons(RID_BRAX_GRAVE,plRIDs);
+      plRIDs = Cons(RID_BRAX_GRAVEYARD,plRIDs);
+      plRIDs = Cons(RID_BRAX_BUILDING1,plRIDs);
+      plRIDs = Cons(RID_BRAX_BUILDING2,plRIDs);
+      plRIDs = Cons(RID_BRAX_CASTLE1,plRIDs);
+      plRIDs = Cons(RID_BRAX_CASTLE2,plRIDs);
+      plRIDs = Cons(RID_BRAX_MAZE,plRIDs);
+      plRIDs = Cons(RID_ICE_CAVE1,plRIDs);
+      plRIDs = Cons(RID_SEAFARER,plRIDs);
+      plRIDs = Cons(RID_VALE,plRIDs);
+      plRIDs = Cons(RID_FARONATH,plRIDs);
+      plRIDs = Cons(RID_ILERIA,plRIDs);
+      plRIDs = Cons(RID_CRAGGED,plRIDs);
+      plRIDs = Cons(RID_LAKE,plRIDs);
+
+      return;
+   }
+   
+   RecreateMonsterClasses()
+   {
+      local i;
+
+      for i in plMonsterClasses
+      {
+         plMonsterClasses = DelListElem(plMonsterClasses,i);
+      }
+      plMonsterClasses = $;
+
+      plMonsterClasses = Cons(&Avar,plMonsterClasses);
+      plMonsterClasses = Cons(&Ent,plMonsterClasses);
+      plMonsterClasses = Cons(&TuskedSkeleton,plMonsterClasses);
+      plMonsterClasses = Cons(&DaemonSkeleton,plMonsterClasses);
+      plMonsterClasses = Cons(&BatteredSkeleton,plMonsterClasses);
+      plMonsterClasses = Cons(&GroundWormQueen,plMonsterClasses);
+      plMonsterClasses = Cons(&XeoEarth,plMonsterClasses);
+      plMonsterClasses = Cons(&XeoAir,plMonsterClasses);
+      plMonsterClasses = Cons(&XeoFire,plMonsterClasses);
+      plMonsterClasses = Cons(&XeoWater,plMonsterClasses);
+      plMonsterClasses = Cons(&DarkAngel,plMonsterClasses);
+      plMonsterClasses = Cons(&Ghost,plMonsterClasses);
+      plMonsterClasses = Cons(&Lupogg,plMonsterClasses);
+
+      return;
+   }
+
+   MakeInstanceRoom(iBaseRID=RID_THRONE1,monster_class=&Mummy,iDifficultyMod=100,iExperienceMod=100,iTreasureMod=100)
+   {
+      local iRID, oRoom;
+      
+      % set up the room
+      iRID = send(self,@GetNextAvailableRID);
+      Send(SYS,@CreateOneRoomIfNew,#num=iRID,#class=&VariableInstance,#iBaseRID=iBaseRID);
+      plInstanceRooms = cons(iRID,plInstanceRooms);
+      
+      send(send(SYS,@FindRoomByNum,#num=iRID),@SetValues,
+                                              #monster_class=monster_class,
+                                              #iDifficultyMod=iDifficultyMod,
+                                              #iExperienceMod=iExperienceMod,
+                                              #iTreasureMod=iTreasureMod);
+
+      return iRID;
+   }
+
+   GetNextAvailableRID()
+   {
+      local iRID;
+
+      iRID = RID_INSTANCE_START;
+
+      if plInstanceRooms = $
+      {
+         return iRID;
+      }
+      
+      while TRUE  % Keep going until we find something!
+      {
+         if NOT FindListElem(plInstanceRooms,iRID)
+         {
+            return iRID;
+         }
+         
+         iRID = iRID + 1;
+         
+         if iRID > 9999
+         {
+            return 0;
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetValidRIDs()
+   {
+      return plRIDs;
+   }
+   
+   GetValidMonsterClasses()
+   {
+      return plMonsterClasses;
+   }
+
+   RoomDeleted(what=$)
+   {
+      local lRoomsRented, iRID;
+
+      iRID = send(what,@GetRoomNum);
+
+      if FindListElem(plInstanceRooms,iRID)
+      {
+         plInstanceRooms = DelListElem(plInstanceRooms,iRID);
+      }
+      else
+      {
+         DEBUG("RoomDeleted:: Tried to remove an unlisted room.");
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

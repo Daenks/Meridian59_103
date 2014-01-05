@@ -1,0 +1,69 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AltCrypt1 is InstanceRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_AltCrypt1 = MarDun01.roo
+   room_name_AltCrypt1 = "The crypt in Marion"
+
+   AltCrypt1_music = nec01.mid
+
+classvars:
+
+   vrName = room_name_AltCrypt1
+  
+   viTeleport_row = 11
+   viTeleport_col = 23
+
+   viTerrain_type = TERRAIN_NECROPOLIS | TERRAIN_CAVES
+
+properties:
+
+   prRoom = room_AltCrypt1
+   piRoom_num = $
+
+   piGenTime = 15000
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_NONE
+
+   prMusic = AltCrypt1_music
+   
+   piDifficultyMod = 100
+   piExperienceMod = 100
+   piTreasureMod = 100
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&SpectralMummy, 100] ];
+
+      plGenerators = [ [5, 21], [5, 36], [9, 28], [17, 35], [21, 23], [25, 11], [29, 18], [37, 35], [38, 19] ];
+
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

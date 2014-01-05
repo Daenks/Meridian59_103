@@ -1,0 +1,283 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+InstanceRoom is MonsterRoom
+
+constants:
+
+   include blakston.khd
+   
+   DIMENSIONAL_EXPIRATION_TIME = 60000
+
+resources:
+
+   InstanceRoom_name = "A room instance"
+   InstanceRoom_roo = MarDun02.roo
+
+   InstanceRoom_music = Song.mid
+   
+   InstanceRoom_expire = "Dimensional energies shift, and you find yourself violently thrown back into your own reality!"
+
+classvars:
+
+   vrName = InstanceRoom_name
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_NECROPOLIS | TERRAIN_CAVES
+
+properties:
+
+   % Used to return users to where the instance was originally created from
+   piOriginRID = $
+   piOriginRow = $
+   piOriginCol = $
+   piOriginFineRow = $
+   piOriginFineCol = $
+   piOriginAngle = $
+
+   prRoom = InstanceRoom_roo
+   piRoom_num = $
+   
+   piVariableTeleport_row = $
+   piVariableTeleport_col = $
+   piVariableTeleport_angle = $
+
+   piGenTime = 15000
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_NONE
+
+   prMusic = InstanceRoom_music
+
+   piDifficultyMod = 100
+   piExperienceMod = 100
+   piTreasureMod = 100
+
+   ptExpireTimer = $
+
+messages:
+
+   Constructor(iRID=RID_INSTANCE_START,iBaseRID=RID_THRONE1)
+   {
+      local oBaseRoom;
+
+      piRoom_num = iRID;
+      
+      oBaseRoom = Send(SYS,@FindRoomByNum,#num=iBaseRID);
+      if oBaseRoom <> $
+         AND IsClass(oBaseRoom,&MonsterRoom)
+      {
+         prRoom = Send(oBaseRoom,@GetRoomResource);
+         plGenerators = Send(oBaseRoom,@GetGenerators);
+
+         piVariableTeleport_row = Send(oBaseRoom,@GetTeleportRow);
+         piVariableTeleport_col = Send(oBaseRoom,@GetTeleportCol);
+         piVariableTeleport_angle = Send(oBaseRoom,@GetTeleportAngle);
+      }
+
+      ptExpireTimer = CreateTimer(self,@RoomExpire,DIMENSIONAL_EXPIRATION_TIME);
+
+      propagate;
+   }
+   
+   SetValues(monster_class=&Mummy,iDifficultyMod=100, iExperienceMod=100, iTreasureMod=100)
+   {
+      plMonsters = [ [monster_class, 100] ];
+
+      piDifficultyMod = iDifficultyMod;
+      piExperienceMod = iExperienceMod;
+      piTreasureMod = iTreasureMod;
+
+      return;
+   }
+   
+   SetCreatorOriginData(who=$)
+   {
+      if who <> $
+         AND IsClass(who,&User)
+         AND Send(who,@IsLoggedOn)
+         AND Send(who,@GetOwner) <> $
+      {
+         piOriginRID = Send(Send(who,@GetOwner),@GetRoomNum);
+         piOriginRow = Send(who,@GetRow);
+         piOriginCol = Send(who,@GetCol);
+         piOriginFineRow = Send(who,@GetFineRow);
+         piOriginFineCol = Send(who,@GetFineCol);
+         piOriginAngle = Send(who,@GetAngle);
+      }
+   
+      return;
+   }
+   
+   GetDifficultyMod()
+   {
+      return piDifficultyMod;
+   }
+   
+   GetExperienceMod()
+   {
+      return piExperienceMod;
+   }
+   
+   GetTreasureMod()
+   {
+      return piTreasureMod;
+   }
+   
+   LeaveHold(what = $)
+   {
+%      if IsClass(what,&User)
+%      {
+%         Post(self,@ReturnUserToOrigin,#who=what);
+%      }
+
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      propagate;
+   }
+   
+   RoomExpire()
+   {
+      local i, each_obj, oOriginRoom, oLoggedPlayer;
+      
+      ptExpireTimer = $;
+
+      for i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=InstanceRoom_expire);
+            Send(self,@ReturnUserToOrigin,#who=each_obj);
+         }
+         else
+         {
+            if IsClass(each_obj,&LogoffGhost)
+            {
+               Send(self,@ReturnUserToOrigin,#who=each_obj);
+            }
+         }
+      }
+      
+      Send(self,@Delete);
+      
+      return;
+   }
+   
+   ReturnUserToOrigin(who=$)
+   "Can return users and logoff ghosts."
+   {
+      local oOriginRoom;
+      
+      if IsClass(who,&User)
+      {
+         oOriginRoom = Send(SYS,@FindRoomByNum,#num=piOriginRID);
+
+         if oOriginRoom <> $
+            AND piOriginRow <> $
+            AND piOriginCol <> $
+            AND piOriginFineRow <> $
+            AND piOriginFineCol <> $
+         {
+            if Send(who,@IsLoggedOn)
+            {
+               Send(SYS,@UtilGoNearSquare,#what=who,#where=oOriginRoom,
+                  #new_row=piOriginRow,#new_col=piOriginCol,
+                  #fine_row=piOriginFineRow,#fine_col=piOriginFineCol,
+                  #new_angle=piOriginAngle);
+            }
+            else
+            {
+               Send(who,@AdminOfflineTeleport,#where=oOriginRoom,
+                  #new_row=piOriginRow,#new_col=piOriginCol,
+                  #fine_row=piOriginFineRow,#fine_col=piOriginFineCol,
+                  #new_angle=piOriginAngle);
+            }
+         }
+         else
+         {
+            Send(who,@AdminGoToSafety);
+         }
+      }
+      
+      if IsClass(who,&LogoffGhost)
+      {
+         oOriginRoom = Send(SYS,@FindRoomByNum,#num=piOriginRID);
+
+         if oOriginRoom <> $
+            AND piOriginRow <> $
+            AND piOriginCol <> $
+            AND piOriginFineRow <> $
+            AND piOriginFineCol <> $
+         {
+            % Return ghosted player
+            Send(Send(who,@GetGhostedPlayer),@AdminOfflineTeleport,#where=oOriginRoom,
+               #new_row=piOriginRow,#new_col=piOriginCol,
+               #fine_row=piOriginFineRow,#fine_col=piOriginFineCol,
+               #new_angle=piOriginAngle);
+               
+            % Move ghost
+            Send(SYS,@UtilGoNearSquare,#what=who,#where=oOriginRoom,
+               #new_row=piOriginRow,#new_col=piOriginCol,
+               #fine_row=piOriginFineRow,#fine_col=piOriginFineCol,
+               #new_angle=piOriginAngle);
+         }
+         else
+         {
+            Send(Send(who,@GetGhostedPlayer),@AdminGoToSafety);
+         }
+      }
+   
+      return;
+   }
+   
+   LastUserLeft()
+   {
+      propagate;
+   }
+
+   Delete()
+   {
+      Send(Send(SYS,@GetInstanceRoomMaintenance),@RoomDeleted,#what=self);
+
+      propagate;
+   }
+
+   Teleport(what=$)
+   "Overriden to employ variable blink coordinates."
+   {
+      if piVariableTeleport_row <> $ AND piVariableTeleport_col <> $
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,#where=self,
+              #new_row=piVariableTeleport_row,
+              #new_col=piVariableTeleport_col,
+              #new_angle=piVariableTeleport_angle);
+
+         return TRUE;
+      }
+
+      Send(what,@MsgSendUser,#message_rsc=room_no_teleport);
+
+      return FALSE;
+   }
+
+   RecalcBackgroundSkyGraphic()
+   "Instances don't have normal skies."
+   {
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
