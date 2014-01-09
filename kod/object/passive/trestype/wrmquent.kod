@@ -25,20 +25,19 @@ messages:
    
    constructed()
    {
-      % metal armor/weapons that could be eaten and underground stones.
-      plTreasure = [ [ &BlueMushroom, 13],
-                     [ &Diamond, 20],
-                     [ &Emerald, 10],
+      % metal armor/weapons that could be eaten.
+      plTreasure = [ [ &PurpleMushroom, 26],
+                     [ &Entrootberry, 25],
+                     [ &Yrxlsap, 10],
                      [ &Hammer, 5],
-                     [ &Sapphire, 5],
-                     [ &Ruby, 21],
+                     [ &Diamond, 5],
+                     [ &PolishedSeraphym, 10],
                      [ &InkyCap, 5],
                      [ &Money, 5],
                      [ &Axe, 1],
-                     [ &Gauntlet, 3],
-                     [ &PurpleMushroom, 3],
-                     [ &ScaleArmor, 1],
-                     [ &UncutSeraphym, 2],
+                     [ &Ruby, 3],
+                     [ &BlindWand, 2],
+                     [ &Gauntlet, 1],
                      [ &BerserkerRing, 1],
                      [ &PlateArmor, 1] ];
 

@@ -27,12 +27,12 @@ messages:
    {
       plTreasure = [ [ &Herbs, 20 ],
                      [ &Snack, 20 ],
-                     [ &Mushroom, 17 ],
-                     [ &Elderberry, 15 ],
+                     [ &Mushroom, 15 ],
+                     [ &Entrootberry, 15 ],
                      [ &RedMushroom, 10 ],
-                     [ &BlueMushroom, 8 ],
-                     [ &Emerald, 5],
-                     [ &Sapphire, 5] ];
+                     [ &FairyWing, 10 ],
+                     [ &OrcTooth, 5 ],
+                     [ &Sapphire, 5 ] ];
 
       propagate;
    }

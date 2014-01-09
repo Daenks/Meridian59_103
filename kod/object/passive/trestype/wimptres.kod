@@ -28,9 +28,9 @@ messages:
       plTreasure = [ [ &Herbs, 30 ],
                      [ &Elderberry, 20 ],
                      [ &Mushroom, 20],
-                     [ &Snack, 20],
-                     [ &RedMushroom, 5],
-                     [ &BlueMushroom, 5]
+                     [ &Snack, 10],
+                     [ &Entrootberry, 15],
+                     [ &FairyWing, 5]
                    ];
 
       propagate;

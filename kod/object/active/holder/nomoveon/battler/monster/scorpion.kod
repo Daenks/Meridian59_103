@@ -47,7 +47,7 @@ classvars:
 
    viLevel = 55
    viDifficulty = 8
-   viKarma = 20
+   viKarma = 45
    viWimpy = 40
 
    vrSound_hit = scorpion_sound_hit
@@ -63,8 +63,7 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 60, -ATCK_SPELL_ACID ],
-                        [ 60, ATCK_WEAP_SLASH ],
+      plResistances = [ [ 60, ATCK_WEAP_SLASH ],
 			[ -10, ATCK_WEAP_BLUDGEON ] ];
       propagate;
    }

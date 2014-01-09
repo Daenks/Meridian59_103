@@ -63,7 +63,7 @@ classvars:
    viAttributes = 0
    viLevel = 100
    viDifficulty = 5
-   viKarma = 30
+   viKarma = 60
    viDefault_behavior = AI_FIGHT_AGGRESSIVE
 
    vrSound_miss = GroundWorm_sound_miss
@@ -90,7 +90,6 @@ messages:
    {
       plResistances = [ [ -20, ATCK_WEAP_MAGIC ],
                         [ -30, ATCK_WEAP_BLUDGEON ],
-                        [  70, -ATCK_SPELL_ACID ],
                         [  50, -ATCK_SPELL_QUAKE ]
                       ];
 
