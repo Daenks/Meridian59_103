@@ -2363,12 +2363,20 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
 				int num_name_parms,parm_node name_parm_array[])
 {
+	if (ConfigBool(MYSQL_ENABLED) == False)
+		return -1;
+
 	val_type stat_type, stat1, stat2, stat3, stat4, stat5, stat6, stat7;
 	int success = 0;
 
 
 	//The first paramenter to RecordStat() should alwasy be a STAT_TYPE
 	stat_type = RetrieveValue(object_id,local_vars,normal_parm_array[0].type, normal_parm_array[0].value);
+	if (stat_type.v.tag != TAG_INT)
+	{
+		dprintf("STAT_TYPE expected in C_RecordStat() as first parameter");
+		return NIL;
+	}
 
 	/*
 	STAT_TYPE enum located in blakserv.h, Also defined in blakston.khd to match between C code and Kod code.
