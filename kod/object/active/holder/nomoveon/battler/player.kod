@@ -4816,7 +4816,7 @@ messages:
 	  shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
 	  if damage > 0 AND shrunken <> $
 	  {
-		Send(shrunken,@DamageDealt,#what=what,#amount=damage);
+		Send(shrunken,@DamageTaken,#what=what,#amount=damage);
 	  }	
 	  
       return damage;
@@ -4852,7 +4852,7 @@ messages:
 
       if amount > 0
       {
-         Send(self,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
+        Send(self,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
 		 
 		shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
 		if shrunken <> $
