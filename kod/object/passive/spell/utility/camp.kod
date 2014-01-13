@@ -45,6 +45,7 @@ classvars:
 
 properties:
 
+   piMinHitPoints = 30
    % Can un-lawfal cast camp wherever they want; Default false
    pbUnlawfulCantCast = TRUE
    viTranceTime = 60000
@@ -90,8 +91,8 @@ messages:
          }         
 
       if pbUnlawfulCantCast
-        AND Send(who, @CheckPlayerFlag, #flag = PFLAG_OUTLAW)
-        OR Send(who, @CheckPlayerFlag, #flag = PFLAG_MURDERER)
+        AND (Send(who, @CheckPlayerFlag, #flag = PFLAG_OUTLAW)
+        OR Send(who, @CheckPlayerFlag, #flag = PFLAG_MURDERER))
          {
             Send(who, @MsgSendUser, #message_rsc = Camp_unlawful);
             return FALSE;
