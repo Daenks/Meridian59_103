@@ -576,8 +576,13 @@ messages:
       
       poSession = session_id;
       pbLogged_on = TRUE;
-      Send(self,@EndPlayerCamp);
-
+      
+      if piIsCamped
+      {
+         Send(Send(SYS,@FindSpellByNum,#num=SID_PURGE),@DoPurge,#who=self,#iChance=100);
+         Send(self,@EndPlayerCamp);
+      }
+      
       if piLastLoginTime = 0 AND piLast_Restart_Time = 0
       {
          Debug("Sending first time appeal");
