@@ -576,6 +576,7 @@ messages:
       
       poSession = session_id;
       pbLogged_on = TRUE;
+      Send(self,@EndPlayerCamp);
 
       if piLastLoginTime = 0 AND piLast_Restart_Time = 0
       {
@@ -654,6 +655,7 @@ messages:
          AND NOT IsClass(self,&DM)
          AND Send(SYS,@GetLogoffPenaltyEnable)
          AND piLogoffPenaltyCount >= 0
+         AND NOT Send(self,@IsPlayerCamped)
          AND NOT (IsClass(poOwner,&GuildHall)
                   AND Send(poOwner,@GetGuildOwner) <> $
                   AND Send(poOwner,@CanEnter,#who=self)
@@ -7708,6 +7710,28 @@ messages:
       }
       return 0;
    }
+   
+   IsPlayerCamped()
+   {
+      return piIsCamped;
+   }
+   
+   PlayerCamped()
+   {
+      piIsCamped = 1;
+      
+      return;
+   }
+   
+   EndPlayerCamp()
+   {
+      if pbLogged_on
+      {
+        piIsCamped = 0;
+      }
+      
+      return;
+   }   
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
