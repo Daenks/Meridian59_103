@@ -100,54 +100,49 @@ messages:
       propagate;
    }
    
-   GetTranceTime(iSpellpower=0,who=$)
+   GetTranceTime(iSpellpower = 0, who = $)
    {
-      local mytest;
-      mytest = (viCast_time-(iSpellpower*1000));
-      Debug("Calculated Trance Time", mytest);
-      Debug("The iSpellpower = ", iSpellpower);
-      
       return (viCast_time-(iSpellpower*1000));      
    }
    
-   BeginTrance(who=$)
+   BeginTrance(who = $)
    {
       local oTrance;
 
-      oTrance = send(SYS,@FindSpellByNum,#num=SID_TRANCE);
+      oTrance = send(SYS, @FindSpellByNum, #num = SID_TRANCE);
 
-      Send(oTrance,@BeginCastingTrance,#what=self,#who=who,#time=viTranceTime);
-      Send(who,@WaveSendUser,#wave_rsc=spell_sound_faren);
+      Send(oTrance, @BeginCastingTrance, #what = self, #who = who, #time = viTranceTime);
+      Send(who, @WaveSendUser ,#wave_rsc = spell_sound_faren);
       Send(who, @PlayerCamped);
       Send(who, @MsgSendUser, #message_rsc = camp_finish);
 
       return;
    }
    
-   TranceBroken(oCaster=$)
+   TranceBroken(oCaster = $)
    {
-      Send(oCaster,@WaveSendUser,#wave_rsc=spell_trance_break_sound);
-      Send(oCaster,@MsgSendUser, #message_rsc = camp_failed);
-      Send(oCaster,@EndPlayerCamp);   
+      Send(oCaster, @WaveSendUser, #wave_rsc = spell_trance_break_sound);
+      Send(oCaster, @MsgSendUser, #message_rsc = camp_failed);
+      Send(oCaster, @EndPlayerCamp);   
          
       return;
    }
 
-   CastSpell(who=$)
+   CastSpell(who = $)
    {  
       %since BeginCastingTrance returns to castSpell when time elapses
       % we need to add a check here to see if we are already camped
       % otherwise we end up in an endless loop.
       if Send(who,@IsPlayerCamped)
       {
-         Send(who,@WaveSendUser,#wave_rsc=spell_trance_break_sound);
-         Send(who,@MsgSendUser, #message_rsc = camp_nologoff);
-         Send(who,@EndPlayerCamp); 
+         Send(who, @WaveSendUser, #wave_rsc = spell_trance_break_sound);
+         Send(who, @MsgSendUser, #message_rsc = camp_nologoff);
+         Send(who, @EndPlayerCamp); 
       }
       
       else
       {       
-         Send(self,@BeginTrance,#who=who);
+         Send(self, @BeginTrance, #who = who);
       }
       
       return;
