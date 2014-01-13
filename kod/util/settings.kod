@@ -89,9 +89,12 @@ properties:
 
    % Rescue always takes at least this long to cast
    piRescueBaseDelaySec = 15
-   
+
    % Time in seconds that ghosts will last before taking a penalty
    piLogoffPenaltyGhostTime = 600
+
+   % Time in seconds that outlaw / murderer ghosts will last before taking a penalty
+   piOutlawMurdererLogoffPenaltyGhostTime = 60
 
    %
    % Guild hall settings
@@ -167,6 +170,12 @@ properties:
    
    % Replaces old constant
    piIntrigueEnableHP = 50
+   
+   % If set to true, Resist Rings will lose durability upon taking an appropriate elemental hit.
+   piResistRingLoseDurability = FALSE
+
+   % If enabled, logoff penalties do not rise exponentially, and instead remain flat
+   pbFlatPenalties = TRUE
 
 messages:
 
@@ -404,7 +413,6 @@ messages:
       return piLogoffPenaltyGhostTime;
    }
    
-
    GetPlayerReflectionLimit()
    {
       return piPlayerReflectionLimit;
@@ -413,6 +421,21 @@ messages:
    GetSwingsPerImproveCheck()
    {
       return piWeaponcraftImprovementMinimumSwings;
+   }
+   
+   GetFlatPenaltiesEnable()
+   {
+      return pbFlatPenalties;
+   }
+   
+   GetOutlawMurdererLogoffPenaltyGhostTime()
+   {
+      return piOutlawMurdererLogoffPenaltyGhostTime;
+   }
+   
+   GetResistRingLoseDurability()
+   {
+      return piResistRingLoseDurability;
    }
 
 end

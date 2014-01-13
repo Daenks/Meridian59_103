@@ -22,7 +22,7 @@ constants:
    BOND_REPORT_INTERVAL = 1000 * 60 * 3
    
    % One minute
-   DEATH_RIFT_INTERVAL = 1000 * 60  
+   DEATH_RIFT_INTERVAL = 1000 * 60
 
    KARMA_TUNE_A_INVERSE = 20
    KARMA_TUNE_B_INVERSE = 5
@@ -292,6 +292,7 @@ resources:
    player_is_justicar = "Elected Royal Justicar of the Meridian."
 
    player_is_holding = " is holding "
+   player_is_wearing = " is wearing "
 
    player_known_for_mastery = "Known far and wide for mastery of "
    player_and = " and "
@@ -717,6 +718,11 @@ resources:
    player_monster_attack_string = "monster attack"
    player_no_weapon_string = "no weapon"
 
+   cannot_attack_ally = "You can't attack %s, %s's your ally!"
+   cannot_attack_guildmate = "You can't attack %s, %s's your guildmate!"
+
+   group_experience_rsc = "You absorb a small amount of the energy released from %s's slaying of the %s."
+
 classvars:
 
    viHand_space = 2
@@ -979,6 +985,13 @@ properties:
    % Is the player currently using a Death Rift spell?
    pbDeath_rift = FALSE
    ptDeathRiftTimer = $
+   
+   % Crystalize Mana Surge data
+   ptCrystalizeManaSurgeTimer = $
+   piCrystalizeManaSurging = FALSE
+
+   % Players will naturally fall out of groups if they aren't getting kills
+   ptLeaveBuilderGroupTimer = $
 
 messages:
 
@@ -1028,6 +1041,13 @@ messages:
       {
          DeleteTimer(ptSecondWind);
          ptSecondWind = $;
+      }
+      
+      if ptCrystalizeManaSurgeTimer <> $
+      {
+         DeleteTimer(ptCrystalizeManaSurgeTimer);
+         ptCrystalizeManaSurgeTimer = $;
+         piCrystalizeManaSurging = FALSE;
       }
 
       Send(self,@CancelRescue);
@@ -1770,7 +1790,16 @@ messages:
          if obj <> $
          {
             AppendTempString(Send(self,@GetHeShe,#cap=True));
-            AppendTempString(player_is_holding);
+            
+            if IsClass(obj,&Ring)
+            {
+               AppendTempString(player_is_wearing);
+            }
+            else
+            {
+               AppendTempString(player_is_holding);
+            }
+
             AppendTempString(Send(obj,@GetIndef));
             AppendTempString(Send(obj,@GetName));
             AppendTempString(player_dot);
@@ -2544,7 +2573,7 @@ messages:
             index=$, merge=TRUE)
    {
       local oItem, oDropRoom, iDropRow, iDropCol, oItemAtt;
-	  
+      
       if droppedItem <> $
       {
          oItem = droppedItem;
@@ -2599,12 +2628,12 @@ messages:
                }
 
                Send(oDropRoom,@NewHold,#what=oItem,#new_row=iDropRow,#new_col=iDropCol,#merge=merge);
-			   
+
                return TRUE;
             }
          }
       }
-
+      
       return FALSE;
    }
 
@@ -3697,12 +3726,12 @@ messages:
       return TRUE;
    }
 
-   AllowPlayerAttack(victim=$, stroke_obj=$, use_weapon=$, report=TRUE)
+   AllowPlayerAttack(victim=$, stroke_obj=$, use_weapon=$, report=TRUE, actual=TRUE)
    "Will not let a person attack someone who isnt pkill_enabled."
    "Wll not let a person who isnt pkill_enabled attack another person."
    {
-      local oRoom;
-      
+      local oRoom, oGuild, oVictimGuild;
+
       % Default location to check is where we are.
       oRoom = poOwner;
 
@@ -3715,8 +3744,9 @@ messages:
       }
 
       % Make sure room allows the attack. Check if room has special combat affects.
-      if NOT Send(oRoom,@ReqSomethingAttack,#what=self,#victim=victim,
-                  #use_weapon=use_weapon,#stroke_obj=stroke_obj,#report=report)
+      if actual = TRUE
+         AND NOT Send(oRoom,@ReqSomethingAttack,#what=self,#victim=victim,
+                  #use_weapon=use_weapon,#stroke_obj=stroke_obj,#actual=actual)
       {
          return FALSE;
       }
@@ -3731,6 +3761,31 @@ messages:
       if Send(SYS,@GetChaosNight)
       {
          return TRUE;
+      }
+
+      % Check for guildmates and allies
+      if IsClass(victim,&Player)
+      {
+         oVictimGuild = Send(victim,@GetGuild);
+         oGuild = Send(self,@GetGuild);
+         if oVictimGuild <> $
+            AND oGuild <> $
+            AND (oGuild = oVictimGuild
+               OR Send(oGuild,@IsAlly,#otherguild=oVictimGuild))
+         {
+            if report
+            {
+               if oGuild = oVictimGuild
+               {
+                  Send(self,@MsgSendUser,#message_rsc=cannot_attack_guildmate,#parm1=Send(victim,@GetName),#parm2=Send(victim,@GetHeShe));
+               }
+               if Send(oGuild,@IsAlly,#otherguild=oVictimGuild)
+               {
+                  Send(self,@MsgSendUser,#message_rsc=cannot_attack_ally,#parm1=Send(victim,@GetName),#parm2=Send(victim,@GetHeShe));
+               }
+            }
+            return FALSE;
+         }
       }
 
       % Can always attack mortal event characters.
@@ -3841,13 +3896,14 @@ messages:
       }
 
       % Finally, check status and safety.
-      if NOT Send(self,@CheckStatusAndSafety,#victim=victim,#report=report)
+      if NOT Send(self,@CheckStatusAndSafety,#victim=victim,#report=report,#actual=actual)
       {
          return FALSE;
       }
 
       % Stop any rescue attempts if the user makes an attack.
       if ptRescue <> $
+         AND actual = TRUE
       {
          Send(self,@MsgSendUser,#message_rsc=player_cancel_rescue);
          DeleteTimer(ptRescue);
@@ -3857,7 +3913,7 @@ messages:
       return TRUE;
    }
    
-   CheckStatusAndSafety(victim=$,report=TRUE)
+   CheckStatusAndSafety(victim=$,report=TRUE,actual=TRUE)
    "PFLAG_SAFETY prevents accidental attacks. You can always successfully "
    "hit a murderer or outlaw, though."     
    {
@@ -3900,7 +3956,10 @@ messages:
              AND Send(oSoldierShield,@IsEnemyAttack,#what=victim))
       {
          % Okay, attack is against a player, so record the time
-         piTimeAttackedPlayer = GetTime();
+         if actual = TRUE
+         {
+            piTimeAttackedPlayer = GetTime();
+         }
 
          return TRUE;
       }
@@ -3933,6 +3992,7 @@ messages:
          {         
             if NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
                AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+               AND actual = TRUE
             {
                % attacking someone who is without fault is cause to
                % gain the outlaw flag.
@@ -3944,13 +4004,17 @@ messages:
       }
 
       % Check for faction loss.  Handles appropriate conditions.
-      if NOT Send(self,@CheckFactionAttack,#what=victim)
+      if actual = TRUE
+         AND NOT Send(self,@CheckFactionAttack,#what=victim)
       {
          return FALSE;
       }
 
       % Okay, attack is against a player, so record the time
-      piTimeAttackedPlayer = GetTime();
+      if actual = TRUE
+      {
+         piTimeAttackedPlayer = GetTime();
+      }
       
       return TRUE;
    }
@@ -4656,10 +4720,10 @@ messages:
               report = True, report_resistance = TRUE, absolute = FALSE)
    {
       local i, iResistance, oSoldierShield, gainchance, color_rsc, iDuration, oSpell, oGort,
-      iLimit, origdamage, oWeapon, shrunken;
+            iLimit, origdamage, oWeapon;
 			
-	  origdamage = damage;	  
-
+	  origdamage = damage;
+	  
       color_rsc = player_hit_color_none;
       
       if what <> $ AND IsClass(what,&monster)
@@ -4812,20 +4876,19 @@ messages:
               #color_rsc=color_rsc);
       }
       
-	  
 	  shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
 	  if damage > 0 AND shrunken <> $
 	  {
 		Send(shrunken,@DamageTaken,#what=what,#amount=damage);
 	  }	
-	  
+
       return damage;
    }
 
    % This function handles when is damage done to opponent.
    DidDamage(what = $, amount = 0)
    {
-      local oWeapon, i, shrunken;
+      local oWeapon, i;
 
       oWeapon = Send(self,@GetWeapon);
       
@@ -4859,7 +4922,6 @@ messages:
 		{
 			Send(shrunken,@DamageDealt,#what=what,#amount=amount);
 		}		
- 
       }
 
       return;
@@ -4951,7 +5013,7 @@ messages:
    KilledSomething(what = $,use_weapon = $,stroke_obj = $)
    "Called when the player killed something."
    {
-      local i, oSoldierShield, monstkarma, iChance, oEnemyGuild, shrunken;
+      local i, oSoldierShield, monstkarma, iChance, oEnemyGuild;
 
       % If we killed someone or something, we did damage.
       Send(self,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
@@ -5075,16 +5137,12 @@ messages:
          Send(self,@AddKarma,#amount=Send(self,@CalculateKarmaChangeFromKill,
               #karma_victim=Send(what,@GetKarma),#karma_killer=Send(self,@GetKarma)),
               #bIsMob=TRUE);
+         
+         Send(self,@JoinBuilderGroup);
       }
 
       Send(what,@Killed,#what=self,#stroke_obj=stroke_obj);
 	  Send(self,@DrawHPChance);
-	  
-	  shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
-      if shrunken <> $
-      {
-		Send(shrunken,@OpponentKilled,#what=what,#stroke_obj=stroke_obj);
-      }
 
       return;
    }
@@ -5612,7 +5670,7 @@ messages:
             break;
          }
       }
-      
+
       propagate;
    }
 
@@ -6214,14 +6272,14 @@ messages:
       
       piMax_Mana = piMax_mana+amount;      
 
-      Send(self,@NewMana);
+      Post(self,@ComputeMaxMana);
       
       return (piMax_mana - iPrev_max);
    }
 
    ComputeMaxMana()
    {
-      local index, iNodeList, oNode, i;
+      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility;
 
       index = 1;
       iNodelist = piNodelist;
@@ -6255,6 +6313,20 @@ messages:
          {
             piMax_mana = piMax_mana + Send(Nth(i,2),@getManaBonus,#state=Nth(i,3));
          }
+      }
+      
+      oCrystalizeMana = Send(SYS,@FindSpellByNum,#num=SID_CRYSTALIZE_MANA);
+      iCrystalizeManaAbility = Send(self,@GetSpellAbility,#spell_num=SID_CRYSTALIZE_MANA);
+      
+      if oCrystalizeMana <> $
+         AND iCrystalizeManaAbility <> 0
+      {
+         piMax_mana = piMax_mana + Send(oCrystalizeMana,@GetManaBonus,#spell_ability = iCrystalizeManaAbility);
+      }
+      
+      if Send(self,@IsCrystalizeManaSurging)
+      {
+         piMax_mana = Send(self, @GetInitialMaxMana);
       }
       
       Send(self,@NewMana);
@@ -6820,7 +6892,7 @@ messages:
                       refigureschools = TRUE)
    {
       local i, bFound, elemnum, iability, bUsed, spellname, iChange,
-            newability, oSpell, oRoom, shrunken;
+            newability, oSpell, oRoom;
 
       oSpell = Send(sys,@FindSpellByNum,#num=spell_num);
       if oSpell = $
@@ -6869,13 +6941,8 @@ messages:
       {
          oRoom = Send(self, @GetOwner);
          Post(self,@MsgSendUser,#message_rsc=player_improved,#parm1=spellName);
-         Send(oRoom, @SomethingWaveRoom, #what=self,#wave_rsc=player_improved_wav_rsc);
-		 
-		 shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
-		 if shrunken <> $
-		 {
-			Send(shrunken,@Improvement,#spellName=spellName);
-		 }				
+         Send(oRoom, @SomethingWaveRoom, #what=self, 
+              #wave_rsc=player_improved_wav_rsc);
       }
 
       Send(self,@PlayerIsIntriguing);
@@ -7728,7 +7795,12 @@ messages:
 
    SomethingKilled(what=$,victim=$,use_weapon=$)
    {
-      if victim = poKill_target AND IsClass(victim,&Battler)
+      if NOT IsClass(victim,&Battler)
+      {
+         propagate;
+      }
+
+      if victim = poKill_target
       {
          if what = self
          {
@@ -7741,6 +7813,15 @@ messages:
          
          poKill_target=$;
          Send(self,@ResetGainFlags);
+      }
+      else
+      {
+         % Let players share XP if they're grouped, even if they're not fighting the same mob.
+         if Send(Send(self,@GetOwner),@AreGroupedHere,#who=self,#what=what)
+         {
+            Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,#parm1=Send(what,@GetName),#parm2=Send(victim,@GetName));
+            Send(self,@AdvancementCheck,#what=victim,#killing_blow=FALSE,#group_member_kill=TRUE);
+         }
       }
       
       propagate;
@@ -7757,12 +7838,12 @@ messages:
    }
 
 
-   AdvancementCheck(what=$,killing_blow=TRUE)
+   AdvancementCheck(what=$,killing_blow=TRUE,group_member_kill=FALSE)
    "A player will need, on average, to kill a number of monsters equal to"
    "their maxhealth to gain a HP.  This number is reduced by the player's"
    "stamina, all the way down to half for those with high staminas."
    {
-      local highmark, rand, dodgeskill, oSkill, monster_level, gain, gainmult, roll, iNumber, oWeapon, shrunken;
+      local highmark, rand, dodgeskill, oSkill, monster_level, gain, gainmult, roll, iNumber, oWeapon;
             
       gain = 0;
       roll = FALSE;
@@ -7776,6 +7857,8 @@ messages:
          return FALSE;  
       }
 
+	  Post(self,@DrawHPChance);
+
       if IsClass(what,&User)
       {
          monster_level = Send(what,@GetBaseMaxHealth);
@@ -7785,8 +7868,9 @@ messages:
          monster_level = Send(what,@GetLevel);
       }
 
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_DID_DAMAGE)
-         AND poKill_target = what
+      if (Send(self,@CheckPlayerFlag,#flag=PFLAG_DID_DAMAGE)
+         AND poKill_target = what)
+         OR group_member_kill
       {
          if monster_level > piBase_Max_health
          {
@@ -7799,7 +7883,8 @@ messages:
             else
             {
                % Player either did not take damage, but did killing blow (mage),
-               %  or did take damage, did not land killing blow.
+               %  or did take damage, did not land killing blow, or
+               %  it's a group member kill.
                gain = 1;
                roll = TRUE;
             }
@@ -7868,12 +7953,6 @@ messages:
                piHealth = piMax_Health;
                Send(self,@DrawHealth);
                Send(self,@EatSomething,#nutrition=200);
-			   
-			   shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
-			   if shrunken <> $
-			   {
-				  Send(shrunken,@Tougher,#hp=pibase_max_health);
-			   }
 
                piGain_chance = -(piBase_Max_health/2);
                
@@ -7893,27 +7972,24 @@ messages:
       }
       
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_DODGED)
+         AND NOT group_member_kill
       {
          dodgeskill = SKID_DODGE;
          oWeapon = Send(self,@LookupPlayerWeapon);
          if oWeapon <> $
             AND (not IsClass(oWeapon,&RangedWeapon))
             AND Send(self,@HasSkill,#num=SKID_PARRY)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_PARRY) < 99
          {
-            if random(1,100) < 30
-            {
-               dodgeskill=SKID_PARRY;
-            }
+            dodgeskill=SKID_PARRY;
          }
          
          if dodgeskill = SKID_DODGE
             AND (Send(self,@LookupPlayerShield) <> $)
             AND Send(self,@HasSkill,#num=SKID_BLOCK)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_BLOCK) < 99
          {
-            if random(1,100) < 30
-            {
-               dodgeskill=SKID_BLOCK;
-            }
+            dodgeskill=SKID_BLOCK;
          }
          
          oSkill=Send(sys,@FindSkillByNum,#num=dodgeskill);
@@ -9002,7 +9078,7 @@ messages:
 
    SetDefaultClothes(pants_color = -1,shirt_color = -1, rand=FALSE, increment = TRUE)
    {   
-      local shirt_color_xlat, pants_color_xlat, skin_color, i, bShirt, bLegs, bArms;
+      local shirt_color_xlat, pants_color_xlat, skin_color, i, bShirt, bLegs, bArms, oShirt, oRobes;
 
       skin_color = Send(self,@GetSkinColor);      
       skin_color = Send(self,@convertskincolortoXLAT,#skin_color = skin_color);
@@ -9080,6 +9156,13 @@ messages:
       if not bLegs
       {
          Send(self,@ResetPlayerLegs);
+      }
+
+      oRobes = Send(self,@FindUsing,#class=&Robe);
+      if oRobes <> $
+         AND Send(oRobes,@ItemChangesArms)
+      {
+         Post(oRobes,@SetArms);
       }
 
       if poOwner <> $
@@ -10334,6 +10417,8 @@ messages:
 
       iAmount = 80 + ((Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND) + 1) / 5);
       Send(self,@SetVigorRestThreshold,#amount=iAmount);
+      
+      Send(self,@EndCrystalizeManaSurge);
 
       % All attack modifiers should be a room enchantment, a personal enchantment
       %  or something they are wearing.  If one still exists, bug.  This is also
@@ -12224,9 +12309,8 @@ messages:
    {
       local oSnoop;
 
-      if type = SAY_NORMAL AND IsClass(what,&Player)
+      if type = SAY_NORMAL and what <> self and IsClass(what,&Player)
       {
-		 % si: removed (and what <> self) to allow communication between shrunken head and owner.
          oSnoop = Send(self,@FindHolding,#class=&ShrunkenHead);
          if oSnoop <> $
          {
@@ -12322,11 +12406,6 @@ messages:
    SomeoneOverheard(from=$,to=$,type=$,string=$)
    {
       return;
-   }
-   
-   OpponentKilled(what=$,stroke_obj=$) 
-   {
-		return;
    }
 
    RemoveInaccessibleSpells()
@@ -12736,6 +12815,120 @@ messages:
          }
       }
       
+      return;
+   }
+   
+   LeaveBuilderGroupTimer()
+   {
+      ptLeaveBuilderGroupTimer = $;
+      
+      Send(self,@LeaveBuilderGroup);
+      return;
+   }
+   
+   LeaveBuilderGroup()
+   {
+      local oRoom, i, each_obj;
+      oRoom = Send(self,@GetOwner);
+      
+      if ptLeaveBuilderGroupTimer <> $
+      {
+         DeleteTimer(ptLeaveBuilderGroupTimer);
+         ptLeaveBuilderGroupTimer = $;
+      }
+      
+      if oRoom <> $
+      {
+         Send(oRoom,@RemoveFromBuilderGroup,#who=self);
+         Send(oRoom,@SomethingChanged,#what=self);
+
+         % Let's see that we left the group
+         for i in Send(oRoom,@GetPlActive)
+         {
+            each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&User)
+               AND Send(oRoom,@AreGroupedHere,#who=self,#what=each_obj)
+            {
+               Send(self,@SomethingChanged,#what=each_obj);
+            }
+         }
+      }
+      
+      return;
+   }
+   
+   JoinBuilderGroup()
+   {
+      local oRoom, i, each_obj;
+      oRoom = Send(self,@GetOwner);
+      
+      % Refresh an active group membership
+      if ptLeaveBuilderGroupTimer <> $
+      {
+         DeleteTimer(ptLeaveBuilderGroupTimer);
+         ptLeaveBuilderGroupTimer = CreateTimer(self,@LeaveBuilderGroupTimer,Send(Send(self,@GetOwner),@GetGroupTime));
+         return;
+      }
+
+      if oRoom <> $
+      {
+         Send(oRoom,@AddToBuilderGroup,#who=self);
+         Send(oRoom,@SomethingChanged,#what=self);
+         ptLeaveBuilderGroupTimer = CreateTimer(self,@LeaveBuilderGroupTimer,Send(Send(self,@GetOwner),@GetGroupTime));
+
+         % Let's see our new group
+         for i in Send(oRoom,@GetPlActive)
+         {
+            each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&User)
+               AND Send(oRoom,@AreGroupedHere,#who=self,#what=each_obj)
+            {
+               Send(self,@SomethingChanged,#what=each_obj);
+            }
+         }
+      }
+      return;
+   }
+
+   IsCrystalizeManaSurging()
+   {
+      return piCrystalizeManaSurging;
+   }
+   
+   StartCrystalizeManaSurge(surge_time=1000)
+   {
+      if ptCrystalizeManaSurgeTimer = $
+      {
+         ptCrystalizeManaSurgeTimer = CreateTimer(self,@EndCrystalizeManaSurgeTimer,surge_time);
+         piCrystalizeManaSurging = TRUE;
+         Send(self,@ComputeMaxMana);
+      }
+      return;
+   }
+   
+   EndCrystalizeManaSurgeTimer()
+   {
+      if ptCrystalizeManaSurgeTimer <> $
+      {
+         ptCrystalizeManaSurgeTimer = $;
+      }
+      
+      Send(self,@EndCrystalizeManaSurge);
+      
+      return;
+   }
+
+   EndCrystalizeManaSurge()
+   {
+      if ptCrystalizeManaSurgeTimer <> $
+      {
+         DeleteTimer(ptCrystalizeManaSurgeTimer);
+         ptCrystalizeManaSurgeTimer = $;
+      }
+
+      piCrystalizeManaSurging = FALSE;
+      Send(self,@ComputeMaxMana);
+
       return;
    }
 

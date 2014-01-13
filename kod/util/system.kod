@@ -2232,6 +2232,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_CASTLE1,#class=&Castle1);
       Send(self,@CreateOneRoomIfNew,#num=RID_CASTLE1B,#class=&Castle1B);
       Send(self,@CreateOneRoomIfNew,#num=RID_THRONE1,#class=&Throne1);
+      Send(self,@CreateOneRoomIfNew,#num=RID_THRONE2,#class=&Throne2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DUNGEON,#class=&DungeonVictoria);
       Send(self,@CreateOneRoomIfNew,#num=RID_BADLAND1,#class=&BadLand1);
       Send(self,@CreateOneRoomIfNew,#num=RID_CANYON2,#class=&Canyon2);
@@ -2764,9 +2765,13 @@ messages:
          power_count = 1;
          for n in plShrines
          {
-            Send(n,@SetAllegiance,#allegiance=Nth(plShrine_Allegiances,power_count));
-            power_count = power_count + 1;
+            if Nth(plShrine_Allegiances,power_count) <> 0
+            {
+               Send(n,@SetAllegiance,#allegiance=Nth(plShrine_Allegiances,power_count));
+               power_count = power_count + 1;
+            }
          }
+         plShrine_Allegiances = $;
       }
 
       for i in plShrines
@@ -4750,6 +4755,7 @@ messages:
       plItemTemplates = cons(create(&Robe),plItemTemplates);
       plItemTemplates = cons(create(&LightRobe),plItemTemplates);
       plItemTemplates = cons(create(&DiscipleRobe),plItemTemplates);
+      plItemTemplates = cons(create(&LightDiscipleRobe),plItemTemplates);
       plItemTemplates = cons(create(&NeruditeArmor),plItemTemplates);
 
       plItemTemplates = cons(create(&Helm),plItemTemplates);
@@ -4869,6 +4875,8 @@ messages:
       plItemTemplates = cons(create(&ColdRing),plItemTemplates);
       plItemTemplates = cons(create(&FireRing),plItemTemplates);
       plItemTemplates = cons(create(&ShockRing),plItemTemplates);
+      
+      plItemTemplates = cons(create(&RingDefense),plItemTemplates);
 
       plItemTemplates = cons(create(&FireWand),plItemTemplates);
       plItemTemplates = cons(create(&HealWand),plItemTemplates);
