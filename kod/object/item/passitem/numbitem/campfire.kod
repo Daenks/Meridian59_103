@@ -1,0 +1,45 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CampFire is NumberItem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   CampFire_name_rsc = "Small Camp Fire"
+   CampFire_icon_rsc = firepit.bgf
+   CampFire_desc_rsc = \
+   "This small fire pit is an essential for building a camp."
+
+   CampFire_name_plural_rsc = "camp fires"
+
+classvars:
+
+   vrName = CampFire_name_rsc
+   vrIcon = CampFire_icon_rsc
+   vrDesc = CampFire_desc_rsc
+
+   vrName_plural = CampFire_name_plural_rsc
+
+   viValue_average = 20
+   viWeight = 3
+   viBulk = 3
+
+properties:
+
+   piNumber = 4
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

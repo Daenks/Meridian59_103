@@ -1,0 +1,158 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Camp is UtilitySpell
+
+constants:
+
+   include blakston.khd
+   
+resources:
+
+   Camp_name_rsc = "camp"
+   Camp_icon_rsc = brazflam.bgf
+   Camp_desc_rsc = \
+     "Allows you to build yourself a camp and log off safe anywhere.  "
+	 "Requires only the items necessary to build a fire, concentration and time for preparation."
+ 
+   Camp_cant = "You can't create a camp here."
+   Camp_already_safe = "You're already safe! There's no need to create a camp!"
+   Camp_finish = "`BIt is now `gsafe`n`B to log off. You must remain still to keep your camp!"
+   Camp_unlawful = "Unlawful players are not permitted to create camps."
+   Camp_failed = "Your concentration is broken and your camp has failed. It is `B`rNOT`n safe to log off."
+   Camp_nologoff = "Your camp lasted for too long and you didn't log off. It is now `B`rNOT`n safe to log off."
+     
+classvars:
+
+   vrName = Camp_name_rsc
+   vrIcon = Camp_icon_rsc
+   vrDesc = Camp_desc_rsc
+
+   viSpell_num = SID_CAMP
+   viSpell_level = 1
+   viSchool = SS_FAREN
+   viMana = 10
+   viSpellExertion = 20
+   viChance_To_Increase = 10
+   viFlash = FLASH_GOOD_SELF
+
+properties:
+
+   % Can un-lawfal cast camp wherever they want; Default false
+   pbUnlawfulCantCast = TRUE
+   viTranceTime = 60000
+   viCast_Time = 120000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&CampFire,1],plReagents);
+
+      return;
+   }
+   
+   CanPayCosts(who = $)
+   {
+      local oRoom;
+
+      % Can't cast just after attacking someone
+      if Send(who, @GetLastPlayerAttackTime) + 
+         Send(Send(SYS, @GetSettings), @TeleportAttackDelaySec) >
+         GetTime()
+      {
+         Send(who, @MsgSendUser, #message_rsc = spell_too_soon_since_attacking);
+         return FALSE;
+      }         
+
+      % No point in camping in already safe rooms.
+
+      oRoom = Send(who, @GetOwner);
+      
+      if Send(oRoom, @CheckRoomFlag, #flag = ROOM_SAFELOGOFF)
+         {
+            Send(who, @MsgSendUser, #message_rsc = Camp_already_safe);
+            return FALSE;
+         }
+         
+      if isClass(oRoom,&GuildHall)
+         {
+            Send(who, @MsgSendUser, #message_rsc = Camp_cant);
+            return FALSE;
+         }         
+
+      if pbUnlawfulCantCast
+        AND Send(who, @CheckPlayerFlag, #flag = PFLAG_OUTLAW)
+        OR Send(who, @CheckPlayerFlag, #flag = PFLAG_MURDERER)
+         {
+            Send(who, @MsgSendUser, #message_rsc = Camp_unlawful);
+            return FALSE;
+         }
+          
+      propagate;
+   }
+   
+   GetTranceTime(iSpellpower=0,who=$)
+   {
+      local mytest;
+      mytest = (viCast_time-(iSpellpower*1000));
+      Debug("Calculated Trance Time", mytest);
+      Debug("The iSpellpower = ", iSpellpower);
+      
+      return (viCast_time-(iSpellpower*1000));      
+   }
+   
+   BeginTrance(who=$)
+   {
+      local oTrance;
+
+      oTrance = send(SYS,@FindSpellByNum,#num=SID_TRANCE);
+
+      Send(oTrance,@BeginCastingTrance,#what=self,#who=who,#time=viTranceTime);
+      Send(who,@WaveSendUser,#wave_rsc=spell_sound_faren);
+      Send(who, @PlayerCamped);
+      Send(who, @MsgSendUser, #message_rsc = camp_finish);
+
+      return;
+   }
+   
+   TranceBroken(oCaster=$)
+   {
+      Send(oCaster,@WaveSendUser,#wave_rsc=spell_trance_break_sound);
+      Send(oCaster,@MsgSendUser, #message_rsc = camp_failed);
+      Send(oCaster,@EndPlayerCamp);   
+         
+      return;
+   }
+
+   CastSpell(who=$)
+   {  
+      %since BeginCastingTrance returns to castSpell when time elapses
+      % we need to add a check here to see if we are already camped
+      % otherwise we end up in an endless loop.
+      if Send(who,@IsPlayerCamped)
+      {
+         Send(who,@WaveSendUser,#wave_rsc=spell_trance_break_sound);
+         Send(who,@MsgSendUser, #message_rsc = camp_nologoff);
+         Send(who,@EndPlayerCamp); 
+      }
+      
+      else
+      {       
+         Send(self,@BeginTrance,#who=who);
+      }
+      
+      return;
+   }
+
+ 
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
