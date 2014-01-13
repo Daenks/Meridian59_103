@@ -57,7 +57,8 @@ messages:
    SetForSale()
    {
       plFor_sale = [
-       [ Create(&LongSword),
+       [ Create(&CampFire),
+         Create(&LongSword),
          Create(&ShortSword),	
          Create(&Mace),
          Create(&LeatherArmor)],
