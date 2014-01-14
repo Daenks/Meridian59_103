@@ -115,7 +115,7 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0, bItemCast = FALSE)
    {
-      local iDamage, iManaFocus, oRoom, oTarget;
+      local iDamage, oRoom, oTarget, i, iFrozBonus, pbIgnoreResists;
 
       oTarget = First(lTargets);
 
@@ -124,6 +124,33 @@ messages:
       Send(oRoom,@SpellCast,#who=who,#oSpell=self,#lItems=lTargets);
 
       iDamage = Random(piDamageMin, piDamageMax);
+      
+      pbIgnoreResists = pbAbsolute;
+      iFrozBonus = 0;
+      
+      % A mage may use mana focus to cut through resists, or he may use Jewels of Froz
+      % to boost damage, but he cannot do both.
+      
+      if Send(who,@CheckPlayerFlag,#flag=PFLAG_MANA_FOCUS)
+         AND Send(self,@GetSchool) = SS_FAREN
+      {
+         % Mana Focus will cut through resists.
+         pbIgnoreResists = TRUE;
+      }
+      else
+      {
+         % Froz damage is bonus damage, which is added after resists and vulnerabilities.
+         % It will not get increased by vulnerabilities, but nor is it reduced by resists.
+         % This should allow some consistency against resistant targets.
+         for i in send(who,@GetPlayerUsing)
+         {
+            if IsClass(i,&JewelofFroz)
+               OR IsClass(i,&PrincessShield)
+            {
+               iFrozBonus = Send(i,@ModifyAttackSpellDamage,#who=who,#what=oTarget,#bonus_damage=iFrozBonus,#stroke_obj=self);
+            }
+         }
+      }
 
       if IsClass(who,&Player)
       {
@@ -135,29 +162,17 @@ messages:
             % Do the sound, and the third person animation.
             piCast_successes = piCast_successes + 1 ;
             Send(who,@DoCast);      %% window overlay
-
-            % Reduce damage based on spell power.
-            iDamage = (iDamage * (50 + (iSpellPower / 2))) / SPELLPOWER_MAXIMUM;
-
-            if Send(who,@CheckPlayerFlag,#flag=PFLAG_MANA_FOCUS)
-            {
-               % Bonus if we have mana focus up.
-               iManaFocus = First(Send(who,@GetEnchantedState,
-                                  #what=Send(SYS,@FindSpellByNum,#num=SID_MANA_FOCUS)));
-
-               % This takes the spellpower of Mana Focus (iManaFocus), and uses
-               %  that to scale our "bonus" damage.
-               % Bonus damage is 1 to piManaFocusBonus, scaled by the power of iManaFocus.
-               iDamage = iDamage + ((iManaFocus * piManaFocusBonus) / SPELLPOWER_MAXIMUM) + 1;
-            }
          }
       }
-     
+
+      % Reduce damage based on spell power.
+      iDamage = (iDamage * (50 + (iSpellPower / 2))) / SPELLPOWER_MAXIMUM;
+
       % After figuring damage, do an AssessDamage.  This will handle the necessary
       %  attack messages.
       iDamage = Send(oTarget,@AssessDamage,#what=who,#damage=iDamage,
                      #atype=viAttack_type,#aspell=Send(self,@GetAttackSpell),
-                     #absolute=pbAbsolute);
+                     #bonus=iFrozBonus,#absolute=pbIgnoreResists);
 
       Send(who,@AssessHit,#what=oTarget,#damage=iDamage,#use_weapon=self);
 

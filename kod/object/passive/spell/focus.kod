@@ -116,6 +116,16 @@ messages:
          return;
       }
 
+      % Up to 75% chance to resist disruption based on spellpower
+      % This includes moving, getting hit, using items, etc so it's fine if it's high
+      if event <> EVENT_NEWOWNER
+         AND event <> EVENT_REST
+         AND state <> $
+         AND Random(1,100) < (First(state) - 24)
+      {
+         return;
+      }
+
       Send(who,@RemoveEnchantment,#what=self);
       return;
    }

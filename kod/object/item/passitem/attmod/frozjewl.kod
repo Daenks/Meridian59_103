@@ -16,6 +16,8 @@ constants:
 
    ANIM_FLASH = 2
 
+   FROZ_DAMAGE_ADD = 3
+
 resources:
 
    frozjewel_name_rsc = "Jewel of Froz"
@@ -54,41 +56,22 @@ properties:
 
 messages:
 
-   ModifyHitRoll(who = $, what = $, hit_roll = $, stroke_obj = $)
-   {
-      piHits = piHits - 1;
-      if piHits <= 0
-      {
-         Send(poOwner,@MsgSendUser,#message_rsc=frozjewel_broken,
-	           #parm1=Send(self,@GetCapDef),#parm2=vrName);
-         Send(poOwner,@TryUnuseItem,#what=self);
-         vrDesc = frozjewel_desc_broken_rsc;
-      
-         return hit_roll;
-      }
-
-      if IsClass(stroke_obj,&Spell)
-      {
-         Send(self,@DoFlash);
-      
-         % Adjust bonus by how strong the wielder is relative to their maximum potential.
-         % Throwaway characters will get very little benefit.
-         return hit_roll + (30 * Send(self,@GetHealthBonus,#who=who));
-      }
-      
-      return hit_roll + 50;
-   }
+   % Jewels of Froz no longer modify touch spell damage.
+   % Instead, they modify blast and bolt spell damage.
+   % Attmod legacy code remains in superclass to avoid attmod list errors.
    
-   ModifyDamage(who = $, what = $, damage = $, stroke_obj=$)
+   % Froz damage is bonus damage, which ignores resists and vulnerabilities.
+   ModifyAttackSpellDamage(who = $, what = $, bonus_damage = $, stroke_obj=$)
    {
       local i, iMana;
       
-      if IsClass(stroke_obj,&Spell)
+      if IsClass(stroke_obj,&AttackSpell)
       {
          iMana = 0;
          for i in send(who,@GetPlayerUsing)
          {
             if IsClass(i,&JewelOfFroz)
+               OR IsClass(i,&PrincessShield)
             {
                % First jewel = 1 mana cost.  Second = 2 mana each (4 total).
                iMana = iMana + 1;
@@ -97,42 +80,13 @@ messages:
 
          if Send(who,@LoseMana,#amount=iMana) <> 0
          {
-            % Add big damage if we spent the mana.
-            % Adjust it by how strong the wielder is relative to their maximum potential.
-            % Throwaway characters will get very little benefit.
-            return damage + Send(self,@GetHealthBonus,#who=who);
+            % Add big bonus_damage if we spent the mana.
+            Send(self,@DoFlash);
+            return bonus_damage + FROZ_DAMAGE_ADD;
          }
-
-         % Add a small amount of damage.
-         return damage + Random(1,2);
       }
       
-      return damage;
-   }
-   
-   GetHealthBonus(who = $)
-   {
-      local hp;
-
-      hp = Send(who,@GetBaseMaxHealth);
-      if hp < 50
-      {
-         return 1;
-      }
-      if hp < 75
-      {
-         return Random(1,2);
-      }
-      if hp < 100
-      {
-         return Random(1,3);
-      }
-      if hp < 125
-      {
-         return Random(2,3);
-      }
-
-      return Random(3,5);
+      return bonus_damage;
    }
 
    WeaponHitTarget()

@@ -16,6 +16,9 @@ PrincessShield is SoldierShield
 constants:
 
    include blakston.khd
+   
+   % Adds damage to attack spells
+   CESS_SHIELD_DAMAGE_ADD = 3
 
 resources:
 
@@ -88,6 +91,35 @@ properties:
    piMysticismChange = 0
 
 messages:
+
+   % Princess Shields act as a Jewel of Froz, because mages cannot use a second one while holding a shield.
+   % Froz damage is bonus damage, which ignores resists and vulnerabilities.
+   ModifyAttackSpellDamage(who = $, what = $, bonus_damage = $, stroke_obj=$)
+   {
+      local i, iMana;
+      
+      if IsClass(stroke_obj,&AttackSpell)
+      {
+         iMana = 0;
+         for i in send(who,@GetPlayerUsing)
+         {
+            if IsClass(i,&JewelOfFroz)
+               OR IsClass(i,&PrincessShield)
+            {
+               % First jewel = 1 mana cost.  Second = 2 mana each (4 total).
+               iMana = iMana + 1;
+            }
+         }
+
+         if Send(who,@LoseMana,#amount=iMana) <> 0
+         {
+            % Add big bonus_damage if we spent the mana.
+            return bonus_damage + CESS_SHIELD_DAMAGE_ADD;
+         }
+      }
+      
+      return bonus_damage;
+   }
 
    RemoveStats()
    {

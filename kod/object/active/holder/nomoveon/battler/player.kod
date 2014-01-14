@@ -4757,8 +4757,18 @@ messages:
          
          damage = Send(self,@GetDamageFromResistance,#what=damage,#value=iResistance);
 
-         % Add attmods AFTER resistance/suscep mods.    
-         damage = damage + bonus;               
+         % Add attmods AFTER resistance/suscep mods.
+         If aspell <> 0
+         {
+            for i in Send(self,@GetPlayerUsing)
+            {
+               if IsClass(i,&DukeShield)
+               {
+                  bonus = bonus - Send(i,@GetSpellDamageReduction);
+               }
+            }
+         }
+         damage = bound(damage,1,damage + bonus);
       }
       
       iDuration = 800;

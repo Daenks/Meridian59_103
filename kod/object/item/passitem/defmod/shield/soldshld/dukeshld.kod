@@ -16,6 +16,8 @@ DukeShield is SoldierShield
 constants:
 
    include blakston.khd
+   
+   DUKE_SHIELD_SPELL_DAMAGE_REDUCTION = 6
 
 resources:
 
@@ -89,6 +91,11 @@ properties:
    piAgilityChange = 0
 
 messages:
+
+   GetSpellDamageReduction()
+   {
+      return DUKE_SHIELD_SPELL_DAMAGE_REDUCTION;
+   } 
 
    RemoveStats()
    {

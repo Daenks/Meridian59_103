@@ -60,8 +60,8 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,20],
-               [-ATCK_SPELL_SHOCK,20],
+      return [ [-ATCK_SPELL_FIRE,10],
+               [-ATCK_SPELL_SHOCK,5],
                [-ATCK_SPELL_COLD,20],
                [-ATCK_SPELL_ACID,20],
                [-ATCK_SPELL_QUAKE,-20]
