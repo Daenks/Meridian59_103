@@ -124,8 +124,12 @@ messages:
          propagate;
       }
       
-      Send(who,@FreeHands);
-      Send(who,@DoDance);
+      % Jig does not make players drop tokens
+      if Send(who,@FindHolding,#class=&Token) = $
+      {
+         Send(who,@FreeHands);
+         Send(who,@DoDance);
+      }
       
       propagate;
    }
