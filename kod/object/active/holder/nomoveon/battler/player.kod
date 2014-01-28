@@ -4734,6 +4734,18 @@ messages:
          color_rsc = player_hit_color_blue;
       }
 
+      % Scale down damage done to innocents by throwaway murderers based on percentage of possible max health.
+      % No more damage cuts after 80% hp.
+      If IsClass(what,&Player)
+         AND Send(what,@GetBaseMaxHealth) < (((100+Send(what,@GetRawStamina)) * 80) / 100)
+         AND (Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+               OR Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER))
+         AND NOT (Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+                   OR Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER))
+      {
+         damage = (damage * Bound(Send(what,@GetBaseMaxHealth),0,100+Send(what,@GetRawStamina))) / (100+Send(what,@GetRawStamina));
+      }
+
       if NOT absolute
       {
          % Armor of Gort has a special effect that must go first

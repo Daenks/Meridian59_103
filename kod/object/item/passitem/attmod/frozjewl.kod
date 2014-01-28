@@ -70,10 +70,8 @@ messages:
       if IsClass(stroke_obj,&Spell)
       {
          Send(self,@DoFlash);
-      
-         % Adjust bonus by how strong the wielder is relative to their maximum potential.
-         % Throwaway characters will get very little benefit.
-         return hit_roll + (30 * Send(self,@GetHealthBonus,#who=who));
+
+         return hit_roll + Random(90,150);
       }
       
       return hit_roll + 50;
@@ -98,9 +96,7 @@ messages:
          if Send(who,@LoseMana,#amount=iMana) <> 0
          {
             % Add big damage if we spent the mana.
-            % Adjust it by how strong the wielder is relative to their maximum potential.
-            % Throwaway characters will get very little benefit.
-            return damage + Send(self,@GetHealthBonus,#who=who);
+            return damage + Random(3,5);
          }
 
          % Add a small amount of damage.
@@ -108,31 +104,6 @@ messages:
       }
       
       return damage;
-   }
-   
-   GetHealthBonus(who = $)
-   {
-      local hp;
-
-      hp = Send(who,@GetBaseMaxHealth);
-      if hp < 50
-      {
-         return 1;
-      }
-      if hp < 75
-      {
-         return Random(1,2);
-      }
-      if hp < 100
-      {
-         return Random(1,3);
-      }
-      if hp < 125
-      {
-         return Random(2,3);
-      }
-
-      return Random(3,5);
    }
 
    WeaponHitTarget()
