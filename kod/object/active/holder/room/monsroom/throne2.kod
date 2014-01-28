@@ -56,6 +56,17 @@ properties:
 
 messages:
 
+   Constructed()
+   {
+      plMonsters = [ [&TuskedSkeleton, 100] ];
+
+      plGenerators = [ [5, 3], [9, 2], [13, 3],
+                       [4, 8], [9, 8], [13, 8],
+                       [17, 6], [19, 6], [21, 6],
+                       [17, 4], [19, 4], [21, 4] ];
+      propagate;
+   }
+
    CreateStandardExits()
    {
       plExits = $;

@@ -49,8 +49,9 @@ messages:
    {
       plMonsters = [ [&TuskedSkeleton, 100] ];
 
-      plGenerators = [ [5, 3], [9, 2], [13, 3],
-                       [5, 9], [9, 10], [13, 9]];
+      plGenerators = [ [5, 3], [9, 3], [13, 3],
+                       [5, 9], [9, 9], [13, 9],
+                       [21, 3], [21, 8], [19, 5] ];
       propagate;
    }
 
