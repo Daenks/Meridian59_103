@@ -42,6 +42,10 @@ properties:
 
    % two minutes (in ms)
    piDispose_delay = 2 * 60 * 1000
+   
+   piMonster_Count_Max = 20
+   piGen_time = 10000
+   piGen_percent = 100
 
 messages:
 
@@ -49,8 +53,9 @@ messages:
    {
       plMonsters = [ [&TuskedSkeleton, 100] ];
 
-      plGenerators = [ [5, 3], [9, 2], [13, 3],
-                       [5, 9], [9, 10], [13, 9]];
+      plGenerators = [ [5, 3], [9, 3], [13, 3],
+                       [5, 9], [9, 9], [13, 9],
+                       [21, 3], [21, 8], [19, 5] ];
       propagate;
    }
 
