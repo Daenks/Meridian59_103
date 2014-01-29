@@ -48,14 +48,14 @@ properties:
    piGen_time = 45000
    piGen_percent = 70
 
-   piInit_count_min = 2
-   piInit_count_max = 5
+   piInit_count_min = 4
+   piInit_count_max = 6
 
 messages:
 
    Constructed()
    {
-      plMonsters = [ [&MolluskMonster, 100] ];
+      plMonsters = [ [&Slime, 50], [&FungusBeast, 50] ];
 
       plGenerators = [ [40, 6], [45, 13], [58, 28], [34, 34], [32, 53],
                        [53, 50], [40, 67], [14, 66], [15, 46], [4, 68] ];

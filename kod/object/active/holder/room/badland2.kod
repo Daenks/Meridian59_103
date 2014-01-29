@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Badland2 is Room
+Badland2 is MonsterRoom
 
 constants:
 
@@ -39,9 +39,29 @@ properties:
    piRoom_num = RID_BADLAND2
 
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+   
+   piGen_time = 40000
+   piGen_percent = 80
+   
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 12
 
 messages:
 
+   Constructed()
+   {
+      plMonsters = [ [&GroundWormLarva, 100] ];
+
+      plGenerators = [ [7, 20], [19,21], [21, 16], [8, 15], [9, 7],
+		      [5, 2], [10, 4], [11, 11], [13, 14], [19, 14], 
+		      [15, 10], [26, 16], [23, 13] ];
+
+      plLooping_sounds = [[ waterfall_sounda6, 16, 37 ],[ waterfall_sounda6, 2, 34 ]];
+
+      propagate;
+   }
  
    CreateStandardExits()
    {

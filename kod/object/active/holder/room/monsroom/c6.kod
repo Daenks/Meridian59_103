@@ -55,7 +55,7 @@ messages:
 
    Constructed()
    {
-      plMonsters = [ [&Spider, 70], [&Ent, 30] ];
+      plMonsters = [ [&Spider, 20], [&Ent, 80] ];
 
       plGenerators = [ [5, 7], [10, 27], [14, 46], [17, 11], [22, 17], 
 		      [27, 25], [33, 30], [26, 29], [30, 47], [36, 38],
