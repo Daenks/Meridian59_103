@@ -132,7 +132,7 @@ properties:
    piGen_time = 100000
    piGen_percent = 80
 
-   piInit_count_min = 2
+   piInit_count_min = 5
    piInit_count_max = 9
 
    piMonster_count_max = 6 % temporarily reduced from 12
@@ -166,7 +166,7 @@ messages:
    Constructed()
    {
       local oMovingSpire;
-      plMonsters = [ [&Orc, 80], [&DeathSpider, 20] ];
+      plMonsters = [ [&Troll, 90], [&Scorpion, 10] ];
       plGenerators = [ [10, 44], [25, 47], [29, 58], [22, 63], [14, 68],
 		                 [19,  6], [25, 11], [35, 12], [35, 23], [18, 20],
 		                 [ 9, 18], [13, 24], [ 8, 31], [24, 28], [14, 38],

@@ -48,13 +48,13 @@ properties:
    piInit_count_min = 3
    piInit_count_max = 6
 
-   piMonster_count_max = 8
+   piMonster_count_max = 12
 
 messages:
 
    Constructed()
    {
-      plMonsters = [ [&Centipede, 25],[&GroundwormLarva, 75] ];
+      plMonsters = [ [&Centipede, 25],[&Ant, 75] ];
 
       plGenerators = [ [15, 7], [22, 12], [28, 8], [22, 19], [7, 21],
 		      [10, 31], [15, 28], [3, 40], [19, 42], [29, 47], 
