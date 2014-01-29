@@ -52,10 +52,10 @@ classvars:
    viAttack_type =  ATCK_WEAP_BITE
    viAttributes = MOB_SPASM
    viLevel = 75
-   viDifficulty = 5
-   viKarma = -30
+   viDifficulty = 4
+   viKarma = 0
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_AGGRESSIVE
-   viWimpy = 30
+   viWimpy = 10
    
    vrSound_hit = DeathSpider_sound_hit
    vrSound_miss = DeathSpider_sound_miss

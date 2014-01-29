@@ -47,10 +47,10 @@ classvars:
    viSpeed = SPEED_AVERAGE
    viAttack_type = ATCK_WEAP_PIERCE
    viDefault_behavior = AI_FIGHT_KARMA_AGGRESSIVE
-   viLevel = 70
+   viLevel = 90
    viDifficulty = 5
-   viKarma = 80
-
+   viKarma = 60
+   
    vrSound_hit = frogman_sound_hit
    vrSound_miss = frogman_sound_miss
    vrSound_aware = frogman_sound_aware

@@ -46,9 +46,9 @@ classvars:
    viSpeed = SPEED_FAST
    viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
-   viLevel = 80
-   viDifficulty = 7
-   viKarma = -55
+   viLevel = 85
+   viDifficulty = 5
+   viKarma = -65
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS | AI_FIGHT_HYPERAGGRESSIVE | AI_FIGHT_SWITCHALOT
 
    viWimpy = 4

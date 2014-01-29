@@ -59,7 +59,7 @@ classvars:
    viNormalSpeed = SPEED_FAST
    viAttack_type = ATCK_WEAP_BLUDGEON
    viAttributes = 0
-   viKarma = -75
+   viKarma = -90
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE \
                         | AI_FIGHT_LASHOUT | AI_MOVE_FLEE_FRIGHTENERS
 
@@ -71,7 +71,7 @@ classvars:
 properties:
 
    viSpeed = SPEED_FAST
-   viLevel = 150
+   viLevel = 160
    viDifficulty = 7
 
    piAnimation = ANIM_NONE

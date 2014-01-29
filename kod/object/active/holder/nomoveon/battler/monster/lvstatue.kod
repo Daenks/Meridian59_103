@@ -148,7 +148,7 @@ classvars:
    vrSound_aware = LivingStatue_sound_aware
    vrSound_death = LivingStatue_sound_death
 
-   viKarma = -40
+   viKarma = -60
    viDead_drawfx = DRAWFX_SECONDTRANS
 
    % percentage chance to be female
@@ -167,7 +167,7 @@ properties:
    vrDead_Legs = LivingStatue_dead_male_iconb_rsc
 
    viLevel = 75
-   viDifficulty = 5
+   viDifficulty = 3
    viGender = GENDER_MALE
 
    viSpeed = SPEED_NONE
@@ -227,10 +227,10 @@ messages:
          prProfession = LivingStatue_soldier;
 
          % Give us a little boost to our stats
-         viLevel = viLevel + 15;
-         viDifficulty = viDifficulty + 2;
+         viLevel = viLevel + 5;
+         viDifficulty = viDifficulty + 1;
 
-	 % This makes the soliders not have karma
+	 % This makes the soldiers not have karma
          pbDontDispose = TRUE;
       }
       else

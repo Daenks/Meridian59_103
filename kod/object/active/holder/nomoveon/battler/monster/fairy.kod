@@ -52,8 +52,8 @@ classvars:
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_MONSTERS | AI_FIGHT_KARMA_AGGRESSIVE
    viWimpy = 10
 
-   viLevel = 60
-   viDifficulty = 5
+   viLevel = 65
+   viDifficulty = 3
    
    vrSound_hit = fairy_sound_hit
    vrSound_miss = fairy_sound_miss
@@ -63,7 +63,7 @@ classvars:
 properties:
 
    piDrawfx = BOUNCE_YES
-   viKarma = 50
+   viKarma = 60
    piAnimation = ANIM_NONE
 
 messages:

@@ -47,9 +47,9 @@ classvars:
 
    viTreasure_type = TID_MUMMY
    viSpeed = SPEED_SLOW
-   viLevel = 40
-   viDifficulty = 5
-   viKarma = -35
+   viLevel = 35
+   viDifficulty = 2
+   viKarma = -20
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS
 
    vrSound_hit = SpectralMummy_sound_hit

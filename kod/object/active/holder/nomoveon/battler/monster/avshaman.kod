@@ -81,9 +81,9 @@ classvars:
    viAttack_spell = ATCK_SPELL_QUAKE
    viSpeed = SPEED_SLOW
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_MONSTERS
-   viLevel = 100
-   viDifficulty = 8
-   viKarma = 80
+   viLevel = 130
+   viDifficulty = 4
+   viKarma = 75
 
    vrSound_hit = avarshaman_sound_hit
    vrSound_miss = avarshaman_sound_miss

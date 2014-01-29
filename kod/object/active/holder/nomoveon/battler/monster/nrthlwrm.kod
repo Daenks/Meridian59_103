@@ -51,9 +51,9 @@ classvars:
    viSpeed = SPEED_SLOW
    viAttack_type = ATCK_WEAP_PIERCE
    viAttributes = 0
-   viLevel = 120
-   viDifficulty = 7
-   viKarma = -70
+   viLevel = 130
+   viDifficulty = 6
+   viKarma = -80
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE
 
    vrSound_miss = NarthylWorm_sound_miss

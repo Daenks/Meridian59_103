@@ -489,7 +489,7 @@ messages:
 
       if Weapon <> $   %IsClass(Weapon,&Weapon)
       {
-         if IsClass(Weapon,&Bow)
+         if IsClass(Weapon,&Longbow)
          {
             piAnimation = PANM_BOW_FIRE;
 
