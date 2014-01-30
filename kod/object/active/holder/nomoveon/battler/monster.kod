@@ -1449,7 +1449,7 @@ messages:
 
    GetDefense(what = $, stroke_obj=$)
    "This returns the battler's ability to avoid being hit.  Ranges from "
-   "1 to 3000."
+   "1 to 1500."
    {
       local iDefense;
 
