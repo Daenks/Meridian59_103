@@ -51,9 +51,9 @@ classvars:
    viSpeed = SPEED_NONE
    viAttack_type = ATCK_WEAP_BITE
    viAttributes = MOB_NOMOVE
-   viLevel = 165
+   viLevel = 180
    viDifficulty = 9
-   viKarma = -90
+   viKarma = 0
    viDefault_behavior = AI_NOMOVE | AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT
    viGender = GENDER_FEMALE   
 

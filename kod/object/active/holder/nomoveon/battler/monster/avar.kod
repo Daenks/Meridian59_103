@@ -66,9 +66,9 @@ classvars:
    viAttack_type = ATCK_WEAP_BLUDGEON
    viSpeed = SPEED_AVERAGE
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_AGGRESSIVE | AI_FIGHT_MONSTERS
-   viLevel = 120
-   viDifficulty = 7
-   viKarma = 40
+   viLevel = 130
+   viDifficulty = 6
+   viKarma = 75
    viWimpy = 8
 
    vrSound_hit = avar_sound_hit

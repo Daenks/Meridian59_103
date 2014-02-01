@@ -52,8 +52,8 @@ classvars:
    viAttack_type = 0
    viAttack_spell = ATCK_SPELL_SHOCK
     
-   viLevel = 60
-   viDifficulty = 5
+   viLevel = 65
+   viDifficulty = 3
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_MONSTERS | AI_FIGHT_KARMA_AGGRESSIVE
    viWimpy = 10
 
@@ -65,7 +65,7 @@ classvars:
 properties:
 
    piDrawfx = BOUNCE_YES
-   viKarma = -50
+   viKarma = -60
    piAnimation = ANIM_NONE
 
 messages:

@@ -45,11 +45,11 @@ classvars:
    viSpeed = SPEED_AVERAGE
    viAttack_type =  ATCK_WEAP_BITE
    viAttributes = MOB_SPASM
-   viLevel = 50
-   viDifficulty = 4
-   viKarma = -30
+   viLevel = 55
+   viDifficulty = 3
+   viKarma = 0
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_AGGRESSIVE
-   viWimpy = 30
+   viWimpy = 15
    
    vrSound_hit = spider_sound_hit
    vrSound_miss = spider_sound_miss
