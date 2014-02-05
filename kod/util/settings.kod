@@ -176,6 +176,10 @@ properties:
 
    % If enabled, logoff penalties do not rise exponentially, and instead remain flat
    pbFlatPenalties = TRUE
+   
+   % Royal hunters will appear if too many PKs run together.
+   % Zero means no limit.
+   piMaxPKGroupSize = 2
 
 messages:
 
@@ -436,6 +440,12 @@ messages:
    GetResistRingLoseDurability()
    {
       return piResistRingLoseDurability;
+   }
+   
+   GetMaxPKGroupSize()
+   "Royal hunters will appear and attack PKs over a certain number in one place."
+   {
+      return piMaxPKGroupSize;
    }
 
 end

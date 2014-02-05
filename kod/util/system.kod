@@ -4723,6 +4723,7 @@ messages:
       plMonsterTemplates = cons(create(&DukeTroop),plMonsterTemplates);
       plMonsterTemplates = cons(create(&PrincessTroop),plMonsterTemplates);
       plMonsterTemplates = cons(create(&NecromancerTroop),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&HunterTroop),plMonsterTemplates);
 
       plMonsterTemplates = cons(create(&XeoFire),plMonsterTemplates);
       plMonsterTemplates = cons(create(&XeoWater),plMonsterTemplates);

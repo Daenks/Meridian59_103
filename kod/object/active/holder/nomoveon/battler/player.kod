@@ -723,6 +723,8 @@ resources:
 
    group_experience_rsc = "You absorb a small amount of the energy released from %s's slaying of the %s."
 
+   ambushed_by_royal_hunters_rsc = "As you notice several other wanted individuals in the area, you realize you're ripe for an ambush!"
+
 classvars:
 
    viHand_space = 2
@@ -1507,6 +1509,8 @@ messages:
 
    NewOwner(what = $)
    {
+      local i, each_obj, iMurdererCount;
+
       Send(self,@ResetGainFlags);
       
       % Are we moving somewhere "safe" or in a frenzy??
@@ -1525,6 +1529,39 @@ messages:
                    #level=(((piBase_Max_health*150)/100)+(5*piKill_Count_decay)),
                    #diff=bound(piBase_Max_health/10,4,10),
                    #karmic=-piKarma/100);
+         }
+         
+         if Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+            OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+         {
+            iMurdererCount = 0;
+            for i in Send(poOwner,@GetHolderActive)
+            {
+               each_obj = Send(poOwner,@HolderExtractObject,#data=i);
+               if IsClass(each_obj,&Player)
+                  AND (Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+                       OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW))
+               {
+                  iMurdererCount = iMurdererCount + 1;
+               }
+            }
+            
+            if iMurdererCount > Send(Send(SYS,@GetSettings),@GetMaxPKGroupSize)
+               AND Send(Send(SYS,@GetSettings),@GetMaxPKGroupSize) <> 0
+               AND Send(poOwner,@GetEnforceMaxPKGroupSize) = TRUE
+            {
+               for i in Send(poOwner,@GetHolderActive)
+               {
+                  each_obj = Send(poOwner,@HolderExtractObject,#data=i);
+                  if IsClass(each_obj,&Player)
+                     AND (Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+                          OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW))
+                  {
+                     Send(each_obj,@MsgSendUser,#message_rsc=ambushed_by_royal_hunters_rsc);
+                     Create(&HunterTroop,#target=each_obj);
+                  }
+               }
+            }
          }
       }
       

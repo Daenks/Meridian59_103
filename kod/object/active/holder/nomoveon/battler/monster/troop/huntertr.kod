@@ -1,0 +1,156 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HunterTroop is FactionTroop
+
+constants:
+
+include blakston.khd
+
+resources:
+
+   HunterTroop_name_rsc = "royal hunter of the realm"
+
+   HunterTroop_desc_rsc = \
+   "This soldier proudly bears the colors of the Princess, and is employed in the service of the realm as "
+   "a hunter of murderers and outlaws."
+
+   HunterTroop_dead_name_rsc = "dead hunter of the realm"
+   HunterTroop_sound_aware = trps2awr.wav
+   
+   hunter_snares_you = "The royal hunter of the realm makes a mystical motion!"
+   hunter_give_up_trail = "You sense that the royal hunters of the realm have given up on you... for now."
+   hunter_arrives = "A royal hunter of the realm enters the area, hot on the trail of %s!"
+   
+classvars:
+
+   vrName = HunterTroop_name_rsc
+   vrDesc = HunterTroop_desc_rsc
+   vrDead_name = HunterTroop_dead_name_rsc
+
+   viSpeed = SPEED_VERY_FAST
+   viAttack_type = ATCK_WEAP_SLASH
+   viAttributes = 0
+   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_FIGHT_SINGLEMINDED | AI_FIGHT_THROUGH_WALLS
+
+   viChanceFemale = 50  % percentage chance to be female
+
+   viColorTranslate1 = XLAT_TO_ORANGE     % Shirt
+   viColorTranslate2 = XLAT_TO_GREEN   % Pants
+   vcShieldClass = &PrincessShield
+
+   viFaction = FACTION_PRINCESS
+
+properties:
+
+   piBaseLevel = 150
+   piBaseDifficulty = 8
+
+   %Here so they can be set
+   viLevel = 200         % piBaseLevel
+   viDifficulty = 9      % piBaseDifficulty
+
+   vrSound_aware = PrincessTroop_sound_aware
+   
+   poHunted = $
+
+messages:
+
+   Constructor(target = $)
+   {
+      poHunted = target;
+      
+      Post(self,@GoToHunted);
+      
+      propagate;
+   }
+
+   %% If it's the target, go after them
+   SomethingLeft(what = $)
+   {
+      if what = poHunted
+      {
+         % If target leaves room, hunt them down.
+         if IsClass(send(poHunted,@GetOwner),&UnderWorld)
+            OR NOT Send(poHunted,@IsLoggedOn)
+         {
+            Post(self,@Delete);
+
+            propagate;
+         }
+         else
+         {
+            Post(self,@GoToHunted);
+         }
+      }
+      
+      return;
+   }
+
+   GoToHunted()
+   {
+      if poHunted = $
+      {
+         Post(self,@Delete);
+
+         return;
+      }
+      
+      if Send(Send(poHunted,@GetOwner),@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+      {
+         Post(self,@Delete);
+      }
+      else
+      {
+         Send(send(poHunted,@GetOwner),@NewHold,#what=self,
+              #new_row = send(poHunted,@getRow),#new_col = send(poHunted,@getcol),
+              #new_angle = send(poHunted,@GetAngle));
+         Post(self,@TargetSwitch,#what=poHunted,#iHatred=1000);
+         Post(self,@EnterStateChase);
+      }
+      
+      return;
+
+   }
+   
+   MonsterAttack(what = $)
+   {
+      local oHold;
+      
+      oHold = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
+      
+      if NOT Send(what,@IsEnchanted,#what=oHold)
+      {
+         Send(what,@MsgSendUser,#message_rsc=hunter_snares_you);
+         Send(what,@AddExertion,#amount=Send(what,@GetVigor)*10000/10);
+         Send(oHold,@CastSpell,#who=self,#lTargets=[what],#iSpellpower=99);
+      }
+   
+      propagate;
+   }
+   
+   Delete()
+   {
+      if poHunted <> $
+      {
+         Send(poHunted,@MsgSendUser,#message_rsc=hunter_give_up_trail);
+      }
+
+      propagate;
+   }
+
+   % Players are not allowed to interfere with these mobs.   
+   CanMonsterFight()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
