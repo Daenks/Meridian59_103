@@ -78,11 +78,12 @@ messages:
 			#parm1=send(apply_on,@getdef),#parm2=send(apply_on,@getname));
 	      return FALSE;
 	   }
-      
-	   if IsClass(apply_on, &User)
-      {
-		   return True;
-      }
+
+   if IsClass(apply_on, &User)
+      AND apply_on = poOwner
+   {
+      return True;
+   }
       Send(poOwner, @MsgSendUser, #message_rsc = wand_fail_rsc);
       Send(poOwner, @WaveSendUser, #wave_rsc = wand_fail_snd);
       return False;
