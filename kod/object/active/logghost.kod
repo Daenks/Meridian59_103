@@ -198,6 +198,27 @@ messages:
          return;
       }
 
+	  % Innocents who haven't attacked another player in the last 15 minutes get a free pen and trip to last safespot
+      if Send(Send(SYS,@GetSettings),@GetNoAttackWhiteFreePen)
+      AND ((Send(poGhostedPlayer,@GetLastPlayerAttackTime)+ 900) < GetTime())
+         AND NOT (Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+         OR Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_OUTLAW))
+		 {
+		    if Send(Send(SYS,@GetSettings), @ReturnToSafetyPenaltiesEnabled)
+            {
+	           Send(poGhostedPlayer,@AdminGoToLastSafeRoom);
+            }
+            else
+            {
+	           Send(poGhostedPlayer,@AdminGoToBlink);
+            }
+			
+			% delete the ghost, no penalty
+            Send(self,@Delete);
+			
+			return;
+		 }
+		 
       if Send(SYS,@GetLogoffPenaltyEnable)
       {
          if Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)

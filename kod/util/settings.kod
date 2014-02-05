@@ -176,7 +176,10 @@ properties:
 
    % If enabled, logoff penalties do not rise exponentially, and instead remain flat
    pbFlatPenalties = TRUE
-
+   
+   % If enabled, innocents who haven't struck another player will receive a free logoff penalty.
+   pbNoAttackWhiteFreePen = TRUE
+   
 messages:
 
    Constructor(server_num = $)
@@ -437,7 +440,11 @@ messages:
    {
       return piResistRingLoseDurability;
    }
-
+   
+   GetNoAttackWhiteFreePen()
+   {
+      return pbNoAttackWhiteFreePen;
+   }
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
