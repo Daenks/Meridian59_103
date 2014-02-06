@@ -723,6 +723,8 @@ resources:
 
    group_experience_rsc = "You absorb a small amount of the energy released from %s's slaying of the %s."
 
+   newb_given_rings_rsc = "Among your new items, you notice four magical rings of resistance. It would probably be a good idea to try using them."
+
 classvars:
 
    viHand_space = 2
@@ -2543,6 +2545,12 @@ messages:
 
       Send(self,@NewHold,#what=Create(&Mace));
       Send(self,@NewHold,#what=Create(&Apple,#number=5));
+      
+      Send(self,@MsgSendUser,#message_rsc=newb_given_rings_rsc);
+      Send(self,@NewHold,#what=Create(&AcidRing));
+      Send(self,@NewHold,#what=Create(&ColdRing));
+      Send(self,@NewHold,#what=Create(&ShockRing));
+      Send(self,@NewHold,#what=Create(&FireRing));
 
       return;
    }
