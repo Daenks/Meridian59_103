@@ -552,7 +552,7 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,10] ];
+      return [ [ATCK_WEAP_ALL,10] ];
    }
 
    GetBaseSpellModifier(oSpell=$)

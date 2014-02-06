@@ -86,7 +86,8 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,15],
+      return [ [ATCK_WEAP_PIERCE,25],
+               [ATCK_WEAP_ALL,10],
                [-ATCK_SPELL_HOLY,-20]
              ];
    }

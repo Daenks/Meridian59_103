@@ -43,8 +43,8 @@ classvars:
    viUse_type = ITEM_USE_HAND
    viUse_amount = 1
 
-   viHits_init_min = 50
-   viHits_init_max = 50
+   viHits_init_min = 450
+   viHits_init_max = 600
 
    viBulk = 10
    viWeight = 10
@@ -54,6 +54,9 @@ classvars:
    viGround_group = 14
    viBroken_group = 14
    viInventory_group = 7
+
+   viDefense_base = 20
+   viDamage_base = 2
 
 properties:
 
@@ -159,12 +162,6 @@ messages:
       Send(poOwner,@TryUnuseItem,#what=self);
 
       propagate;
-   }
-
-   % Torches don't allow you to use block.
-   GetBlockAbility(who = $)
-   {
-      return 0;
    }
 
    GetOverlayHotspot()
@@ -285,6 +282,13 @@ messages:
       }
 
       return 0;
+   }
+
+   GetResistanceModifiers()
+   {
+      return [ [-ATCK_SPELL_COLD,25],
+               [ATCK_WEAP_ALL,10]
+             ];
    }
 
    GetLightEffect()

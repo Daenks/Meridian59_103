@@ -90,7 +90,7 @@ messages:
 
       iSpellPower = Send(who,@GetEnchantedState,#what=self);
       iMax = 15;
-      iAbsorbed = random(0,iSpellPower/25);
+      iAbsorbed = random(0,(iSpellPower+1)/25);
       iAbsorbed = bound(iAbsorbed,1,4);
 
       if aspell <> 0
