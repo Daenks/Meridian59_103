@@ -26,10 +26,9 @@ resources:
    Evaluate_desc_rsc = \
    "This gazes deep into a person's eyes, and judges their odds of gaining another health point."
 
-   Evaluate_message_nochance = "%s has no chance of gaining a hit point, but will in about %i kills."
-   Evaluate_Message = "%s has a %i out of %i chance (%i percent) of gaining a health point with each kill."
+   Evaluate_Message = "%s has progressed %i percent towards %s next hitpoint."
    evaluate_monster = "%s should concentrate on killing monsters at about %s ability level, such as %ss and %ss."
-   Evaluate_combat = "~BCombat stats: ~B%s has an Offense of %i, Defense of %i, and can do around %i points of type %i (physical) and %i (spell) damage."
+   Evaluate_combat = "~BCombat stats: ~B%s has a Base Offense of %i, a Base Defense of %i, a Secondary Offense of %i, a Secondary Defense of %i and can do around %i points of type %i (physical) and %i (spell) damage."
 
 classvars:
    vrName = Evaluate_name_rsc
@@ -99,23 +98,16 @@ messages:
 
    ComputeEvaluateInfo(who=$,dmis=$)
    {
-      local highmark, gainchance, total, monsterA, monsterB, temp, i, maxhealth, level;
+      local iProgress, monsterA, monsterB, temp, i, maxhealth, level;
       if dmis=$ or who=$  { debug("Bad data!");  return FALSE; }
       
       if IsClass(who,&Player)
       {
-         highmark = send(who,@GetHighMark);
-         gainchance = send(who,@GetGainChance);
-         maxhealth = send(who,@GetMaxHealth);
-         if gainchance < 0
-         {
-            send(dmis,@msgsenduser,#message_rsc = evaluate_message_nochance,#parm1=send(who,@GetName),
-                 #parm2=(gainchance/2));
-         } else {
-            total = bound(((gainchance*100)/highmark),1,100);
-            send(dmis,@msgsenduser,#message_rsc = evaluate_message,#parm1=send(who,@GetName),
-                 #parm2=gainchance,#parm3=highmark,#parm4=total);
-         }      
+		
+			iProgress = 100*send(who,@GetExperience)/send(who,@NeededExperience);
+			
+			send(dmis,@msgsenduser,#message_rsc = evaluate_message,#parm1=send(who,@GetName),#parm2=iProgress,#parm3=send(who,@GetHisHer));
+ 
          monsterA=$; monsterB=$;
          for i in send(SYS,@GetMonsterTemplates)
          {
@@ -151,9 +143,10 @@ messages:
               #parm3=send(MonsterA,@GetName),#parm4=send(MonsterB,@GetName));
       }
 
-      send(dmis,@msgsenduser,#message_rsc=Evaluate_combat,#parm1=send(who,@getname),#parm2=send(who,@GetOffense),
-           #parm3=send(who,@GetDefense),#parm4=send(who,@GetDamage),#parm5=send(who,@GetDamageType),
-           #parm6=Send(who,@GetSpellType));
+      send(dmis,@msgsenduser,#message_rsc=Evaluate_combat,#parm1=send(who,@getname),#parm2=send(who,@GetBaseOffense),
+				#parm3=send(who,@GetBaseDefense),#parm4=send(who,@GetOffense),
+				#parm5=send(who,@GetDefense,#stroke_obj=send(dmis,@GetPlayerStroke,#durabilityhit=FALSE)),#parm6=send(who,@GetDamage,#durabilityhit=FALSE,#use_weapon=send(who,@GetWeapon))/100,#parm7=send(who,@GetDamageType),
+				#parm8=Send(who,@GetSpellType));
 
 
       return;

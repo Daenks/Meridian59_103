@@ -68,7 +68,7 @@ messages:
       propagate;
    }
 
-   DefendingHit()
+   DamageGear()
    {
       % Return here so we don't damage the ring!
       return;

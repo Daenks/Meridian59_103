@@ -41,6 +41,8 @@ resources:
       "your foes."
 
    TouchOfFlame_sound = fflame.wav
+	
+   ta_blind_worked = "%s%s stumbles away, screaming and clutching %s eyes!"
 
 classvars:
 
@@ -69,16 +71,9 @@ classvars:
    viSpellExertion = 2
    viMana = 9
 
-   viMin_Damage = 4
-   viMax_Damage = 9
-
-   % Max amount of damage that punch or 2*myst can add
-   viMaxProficiencyDamage = 4
-
-   viRange = 2
+   viRange = 3
 
    viSpellType = ATCK_SPELL_FIRE + ATCK_SPELL_ALL
-   viStroke = STROKE_TOUCH_OF_FLAME
 
    vbAutomatic = FALSE
 
@@ -99,6 +94,32 @@ messages:
       return;
    }
 
+  GetProf(who=$)
+  {
+     return Send(who,@GetAbility,#num=SID_MANA_FOCUS) * bound(Send(who,@GetBaseMaxHealth),0,100) / 100;
+  }
+  
+	DoSpellProc(damage=0,who=$,victim=$,prof=0)
+	{
+		local oSpell;
+		
+		% Blind the victim.
+		oSpell = send(SYS,@FindSpellByNum,#num=SID_BLIND);
+		
+		if random(1,1000) <= prof*viSpell_proc_chance/100
+		{
+			%% no duplicates
+			if not Send(victim,@IsEnchanted,#what=oSpell)
+			{        
+				send(oSpell,@CastSpell,#who=self,#ltargets=[victim],#iSpellPower=50);
+				send(who,@MsgSendUser,#message_rsc=ta_blind_worked,
+						#parm1=send(victim,@GetCapDef),#parm2=send(victim,@GetName),
+						#parm3=send(victim,@GetHisher));
+			}
+		}
+
+		return;
+	}
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

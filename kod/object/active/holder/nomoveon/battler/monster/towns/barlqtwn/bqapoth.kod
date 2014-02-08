@@ -130,11 +130,12 @@ messages:
    "Clears and recreates plFor_sale."
    {
       local lSale;
-      plFor_sale = [ [ Create(&Herbs,#number=5),
-                       Create(&Mushroom,#number=5),
-                       Create(&Elderberry,#number=5),
-                       Create(&RedMushroom,#number=4),
-                       Create(&Flask) ],
+      plFor_sale = [ [ 	Create(&Herbs,#number=5),
+								Create(&Mushroom,#number=5),
+								Create(&Elderberry,#number=5),
+								Create(&RedMushroom,#number=4),
+								Create(&MagicalPebble),
+								Create(&Flask) ],
                      $,
                      [ SID_HEAT, SID_FADE ],
                      $];

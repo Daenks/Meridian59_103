@@ -47,12 +47,16 @@ classvars:
    viSchool = SS_KRAANAN
    viSpell_level = 3
    viMana = 9
-   viChance_To_Increase = 35
+
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 3
 
    viFlash = FLASH_GOOD_SELF
 
 properties:
 
+      piDefense_bonus = 20
+	  
 messages:
 
    ResetReagents()
@@ -98,27 +102,6 @@ messages:
    GetPotionClass()
    {
       RETURN &MagicShieldPotion;
-   }
-
-   % Stuff we handle to be a defense modifier.
-
-   ModifyDefensePower(who = $,what = $,defense_power = 0)
-   {
-      local iSpellpower;
-
-      iSpellpower = send(who,@GetEnchantedState,#what=self);
-      
-      return (defense_power + 50 + (2 * iSpellpower));
-   }
-
-   ModifyDefenseDamage(who = $,what = $,damage = $)
-   {
-      return damage;
-   }
-
-   DefendingHit(who = $,what = $)
-   {
-      return;
    }
 
    

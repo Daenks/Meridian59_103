@@ -38,8 +38,8 @@ classvars:
    viInventory_group = 3
    viBroken_group = 2
 
-   viBulk = 4
-   viWeight = 5
+   viBulk = 3
+   viWeight = 3
 
 properties:
 
@@ -58,10 +58,10 @@ messages:
             send(target,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
          }
 
-         return random(3,8);
+         return 12;
       }
 
-      return random(2,6);
+      return 8;
    }
 
    SendProjectileAnimation()

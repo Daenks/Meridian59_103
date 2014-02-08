@@ -14,8 +14,6 @@ constants:
 
    include blakston.khd
 
-   HITVALUE_MAX = 100
-
 resources:
    stroke_name_rsc = "Weapon stroke"
    stroke_icon_rsc = light.bgf
@@ -24,7 +22,6 @@ resources:
    stroke_need_weapon_rsc = "You need a weapon to perform this stroke!"
 
    stroke_miss_attacker = "%sYour %s misses %s%s."
-   stroke_miss_defender = "%s%s misses you."
    stroke_miss_sound = swordmis.wav
 
    stroke_hit_attacker = "%sYour %s hits %s%s."
@@ -48,7 +45,6 @@ classvars:
    vrPlayer_was_killed = $
 
    vrMissed_Message_attacker = stroke_miss_attacker
-   vrMissed_Message_defender = stroke_miss_defender
    vrMiss_Sound = stroke_miss_sound
 
    viIndefinite = ARTICLE_NONE
@@ -58,13 +54,13 @@ classvars:
    viSkill_num = SKID_DEFAULT
    viSkill_Exertion = 2
 
-   viHit_Factor = 100
    viDamage_Factor = 100
    viRange_Factor = 0
 
    vbAutomatic = FALSE
 
-   viMaxProficiencyDamage = 5     % What's the max damage the proficiency can add for this stroke?
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 60
 
 properties:
 
@@ -96,33 +92,14 @@ messages:
 
    ImproveStroke(who=$,use_weapon=$,target=$)
    {
-     local prof, target_level;
-
-     target_level = send(target,@GetLevel);
-     prof=send(use_weapon,@GetProfNumber);
-
-     if random(1,100) > 60 or not send(who,@HasSkill,#num=prof)
-     {
-        if send(who,@GetSkillAbility,#skill_num=viSkill_num) < 100
-          {
-             % checking for stroke advancement
-             send(self,@ImproveAbility,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
-          }
-     }
-     else
-     {
-        if send(use_weapon,@getprof,#who=who) < 100
-          {
-             % checking for weapon proficiency advancement
-             send(use_weapon,@ImproveProficiency,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
-          }
-     }
+		send(self,@ImproveAbility,#who=who,#target=target);
+		send(use_weapon,@ImproveProficiency,#who=who,#target=target);
      
      return;
    }
 
    SuccessChance()
-   "Always returns TRUE for combat strokes.  COmbat strokes are figured"
+   "Always returns TRUE for combat strokes.  Combat strokes are figured"
    "differently than other skills - are figured in player.kod."
    {
       return TRUE;
@@ -144,14 +121,14 @@ messages:
       propagate;
    }
 
-   GetAttackType(weapon_used=$)
+   GetAttackType(use_weapon=$)
    {
-     return send(weapon_used,@getAttackType);
+     return send(use_weapon,@getAttackType);
    }
 
-   GetAttackSpell(weapon_used=$)
+   GetAttackSpell(use_weapon=$)
    {
-     return send(weapon_used,@getAttackSpell);
+     return send(use_weapon,@getAttackSpell);
    }
 
    GetExertion()
@@ -168,12 +145,12 @@ messages:
       return TRUE;
    }
 
-   CheckWeaponAndDoAnimation(who=$,weapon_used=$,victim=$)
+   CheckWeaponAndDoAnimation(who=$,use_weapon=$,victim=$)
    "Can the user's weapon be used with this weapon stroke?  \n"
    "Default is TRUE unless the player is unarmed."
    "Animation was also put here, for backwards compatibility."
    {
-      if weapon_used = $
+      if use_weapon = $
       {
          send(who,@msgsenduser,#message_rsc=stroke_need_weapon_rsc);
           
@@ -181,7 +158,7 @@ messages:
       }
 
       % while you're here, be sure weapon is undamaged.
-      return send(weapon_used,@ReqWeaponAttack,#what=victim);
+      return send(use_weapon,@ReqWeaponAttack,#what=victim);
    }
 
    ToHitImprovers(raw_hitroll=0)
@@ -192,31 +169,51 @@ messages:
       return Raw_hitroll; 
    }
 
-   GetRange(weapon_used = $)
+   GetRange(use_weapon = $)
    "Each weapon stroke checks the weapon for it's natural range, and then"
    "affects it depending on the stroke.  Default:  viRangeFactor = 0, meaning"
    "the weapon's raw range is used."
    {
-      return send(weapon_used,@getrange) + viRange_Factor;
+      return send(use_weapon,@getrange) + viRange_Factor;
    }
 
-   FindDamage(weapon_used=$, who=$, victim=$)
+   FindDamage(use_weapon=$, who=$, victim=$)
    "We put this here so that we can vary a stroke's damage per weapon."
    {
-      local skill_ability, damage;
+      local iAbility, damage;
       
       % base weapon damage
-      damage = send(weapon_used,@GetDamage,#who=who,#target=victim);
+      damage = send(use_weapon,@GetDamage,#who=who,#target=victim);
       
-      % put in the individual skills factor
-      damage = (damage*viDamage_factor)/100;
+      % scale the basedamage with the attacker's ability in the stroke
+      iAbility = Send(who,@GetAbility,#num=viSkill_num);
+      damage = damage * iAbility / 100;
       
-      damage = send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=weapon_used);
+      damage = send(self,@DamageFactors,#damage=damage,#who=who,#use_weapon=use_weapon);
+	  
+	  return damage;
+   }
+	
+   DamageFactors(damage=0, who=$, use_weapon = $)
+   "Different skills/strokes are affected by different stats differently."
+   {
+		% This scales damage with proficiency in the weapon. Stats are already calculated into the proficiency.
+      if use_weapon <> $
+      {
+         damage = damage + damage * send(use_weapon,@GetProf,#who=who) / 100;
+      }
+      else
+      {
+         damage = damage + damage * send(who,@GetAbility,#num=SKID_BRAWLING) / 100;
+      }
 
-      return bound(damage,1,$);
+		% allow tuning through the class variable		
+		damage = damage*viDamage_factor/100;
+      
+      return damage;
    }
 
-   SendMissMessageToAttacker(who=$,victim=$,weapon_used = $,color_rsc = $,bText = TRUE)
+   SendMissMessageToAttacker(who=$,victim=$,use_weapon = $,color_rsc = $,bText = TRUE)
    {
       local iRoll;
 
@@ -228,7 +225,7 @@ messages:
       }
 
       %% 'miss' sound
-      if IsClass(victim,&Monster) or weapon_used = $
+      if IsClass(victim,&Monster) or use_weapon = $
       {
          iRoll = Random(1,3);
          
@@ -270,18 +267,10 @@ messages:
          {   
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,
                  #wave_rsc=Send(victim,@GetSomethingMissedYouSound,#what=who,
-                 #weapon_used=weapon_used)); 
+                 #use_weapon=use_weapon)); 
          }
       }
       
-      return;
-   }
-
-   SendMissMessageToDefender(who=$,attacker=$)
-   {
-      send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
-           #parm1=send(attacker,@getcapdef),#parm2=send(attacker,@getname));
-           
       return;
    }
 
@@ -329,30 +318,6 @@ messages:
            #parm1=send(attacker,@GetDef),#parm2=send(attacker,@GetName));
            
       return TRUE;
-   }
-
-   DamageFactors(damage=0, who=$, weapon_used = $)
-   "Different skills/strokes are affected by strength differently."
-   {
-      local iDamage, might;
-
-      iDamage = damage;
-      % KLUDGEISH: this information should probably be in player.
-      % Get weapon proficiency bonuses.
-      if weapon_used <> $
-      {
-         iDamage = iDamage + (Send(weapon_used,@GetProf,#who=who)+1)*viMaxProficiencyDamage/100;
-      }
-      else
-      {
-         iDamage = iDamage + (send(who,@GetSkillAbility,#skill_num=SKID_BRAWLING))*viMaxProficiencyDamage/100;
-      }
-      
-      % Get might damage bonus.
-      might = send(who,@GetMight);
-      iDamage = ((100+bound(might-25,0,40))*iDamage)/100;
-
-      return iDamage;
    }
 
    GetHitSound()

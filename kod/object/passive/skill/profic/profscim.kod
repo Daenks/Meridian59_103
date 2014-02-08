@@ -29,13 +29,17 @@ classvars:
    viSchool = SKS_FENCING
    viSkill_num = SKID_PROFICIENCY_SCIMITAR
    viSkill_level = 4
-   viChance_to_increase = 20
 
 properties:
 
    plPrerequisites = $
 
 messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return send(who,@GetAgility);
+   }
 
 
 end

@@ -1,0 +1,103 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mace is StrikingWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   mace_name_rsc = "mace"
+   mace_icon_rsc = mace.bgf
+   mace_desc_rsc = \
+   "While the mace is not as effective in combat as the axe or the hammer, "
+   "it is also lighter to wield and a very popular choice among mages.  "
+   "If you can catch your opponent by surprise, it may also be used to temporarily "
+	"knock him out.  This trick, however, tends to only work once."
+
+	blackjack_worked = "With a satisfying >KLUNK<, your mace hits %s%s's cranium!"
+	blackjack_target = "Before you even realize what is going on, %s%s slips behind your back and knocks you unconscious!"
+	
+   mace_window_overlay_rsc = povmace.bgf
+   mace_player_overlay = maceov.bgf
+
+classvars:
+
+   vrName = mace_name_rsc
+   vrIcon = mace_icon_rsc
+   vrDesc = mace_desc_rsc
+
+   % Maces are average quality striking weapons
+   viWeaponQuality = WEAPON_QUALITY_NORMAL
+
+   viProficiency_Needed = SKID_PROFICIENCY_MACE
+
+   viValue_average = 50
+   viWeight = 60
+   viBulk = 60
+
+   vrWeapon_window_overlay = mace_window_overlay_rsc
+
+   vrWeapon_overlay = mace_player_overlay
+
+   viGround_group = 1
+   viInventory_group = 3
+   viBroken_group = 2
+
+properties:
+
+   piAttack_type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_STRIKE
+	ptBlackJack = $
+
+messages:
+
+   GetDamage(target=$)
+   {
+      local iDamage;
+		
+      % First, get base damage.
+      iDamage = send(self,@GetBaseDamage,#who=poOwner,#target=target);
+		iDamage = iDamage * 100;
+		
+      return iDamage;
+	}
+	
+	DoBlackJack(victim=$)
+	{
+		local iPower, oSpell;
+		
+		if send(victim,@GetBlackJack) = $
+		{
+			iPower = Send(poOwner,@GetAbility,#num=viProficiency_Needed);
+			oSpell = send(SYS,@FindSpellByNum,#num=SID_HOLD);
+
+			%% No macing an already held victim.
+			if not Send(victim,@IsEnchanted,#what=oSpell)
+			{	          
+				send(oSpell,@CastSpell,#who=self,#ltargets=[victim],#ispellpower=iPower);
+				
+				send(poOwner,@MsgSendUser,#message_rsc=blackjack_worked,#parm1=send(victim,@GetDef),#parm2=send(victim,@GetName));
+				
+				if IsClass(victim,&player)
+				{
+					send(victim,@MsgSendUser,#message_rsc=blackjack_target,#parm1=send(poOwner,@GetDef),#parm2=send(poOwner,@GetName));
+				}
+			}
+			
+			send(victim,@SetBlackJack);
+		}
+		
+		return;
+	}
+	
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

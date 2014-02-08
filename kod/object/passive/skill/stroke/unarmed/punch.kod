@@ -44,18 +44,12 @@ classvars:
    viSchool = SKS_FENCING
 
    viSkill_num = SKID_PUNCH
-   viskillExertion = 5
+   viskillExertion = 2
    vbCheck_exertion = FALSE
 
-   viChance_to_increase = 60
-
-   viHit_Factor = 30
    viSkill_level = 1
 
    viSkill_Num = SKID_PUNCH
-
-   viMin_Damage = 1         % Damage_min here replaces a weapon    
-   viMax_Damage = 5         % Damage_max replaces the weapon's stats.
 
    VbAutomatic = FALSE  %  If this is set to TRUE, then the effects of this
                         %  skill happen automatically, and are not accessible
@@ -66,6 +60,12 @@ classvars:
 properties:
 
 messages:
+
+   GetRequisiteStat(who=$)
+   "Varies from skill to skill and spell to spell."
+   {
+      return Send(who,@GetMight);
+   }
 
    PlayerWasHitMsg(who=$,attacker=$,damage=$)
    "The stroke may choose it's own damage give or recieve message.  Otherwise"
@@ -91,6 +91,6 @@ messages:
            #parm1=send(victim,@getCapdef),#parm2=send(victim,@getname));
       return TRUE;
    }
-
+	
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

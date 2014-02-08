@@ -54,11 +54,16 @@ classvars:
    viSpell_level = 2
    viSchool = SS_KRAANAN
 
-   viChance_To_Increase = 25
+
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 4
 
    viFlash = FLASH_GOOD_SELF
 
 properties:
+
+   piAttack_bonus = 10
+   piDamage_bonus = 10
    
 messages:
 
@@ -99,19 +104,6 @@ messages:
       
       propagate;
    }
-
-   % stuff we handle to be an attack modifier
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {
-      return hit_roll + Send(who,@GetEnchantedState,#what=self);
-   }
-   
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      return damage + Random(0,send(who,@GetEnchantedState,#what=self)/33);
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

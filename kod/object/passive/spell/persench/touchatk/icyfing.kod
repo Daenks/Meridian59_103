@@ -36,6 +36,8 @@ resources:
    IcyFingers_spell_intro = "Faren Lv. 2: Turns your touch to coldest ice, allowing for a damaging attack."
 
    IcyFingers_sound = ficefing.wav
+	
+   ta_hold_worked = "%s%s is frozen solid, unable to move even a finger."
 
 classvars:
 
@@ -64,16 +66,7 @@ classvars:
    viSpell_level = 2
    viMana = 6
 
-   viMin_Damage = 5         %% touch spells typically do good damage    
-   viMax_Damage = 8         %% but are unaffected by weapon or strength bonuses
-
-   % Max amount of damage that punch or 2*myst can add
-   viMaxProficiencyDamage = 7
-
-   viRange = 2              %% touch spell range can vary, but are typically good     
-
    viSpellType = ATCK_SPELL_COLD + ATCK_SPELL_ALL
-   viStroke = STROKE_ICY_FINGERS
 
    vbAutomatic = FALSE
 
@@ -94,5 +87,31 @@ messages:
      return;
   }
 
+  GetProf(who=$)
+  {
+     return Send(who,@GetAbility,#num=SID_MANA_FOCUS) * bound(Send(who,@GetBaseMaxHealth),0,100) / 100;
+  }
+
+	DoSpellProc(damage=0,who=$,victim=$,prof=0)
+	{
+		local oSpell;
+		
+		% Hold the victim.
+		oSpell = send(SYS,@FindSpellByNum,#num=SID_HOLD);
+
+		if random(1,1000) <= prof*viSpell_proc_chance/100
+		{
+			%% no duplicates
+			if not Send(victim,@IsEnchanted,#what=oSpell)
+			{        
+				send(oSpell,@CastSpell,#who=self,#ltargets=[victim],#ispellpower=99);
+				send(who,@MsgSendUser,#message_rsc=ta_hold_worked,
+					#parm1=send(victim,@GetCapDef),#parm2=send(victim,@GetName));
+			}
+		}
+
+		return;
+	}
+  
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

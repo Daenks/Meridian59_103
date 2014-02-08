@@ -33,10 +33,7 @@ classvars:
    viSchool = SKS_BRAWLING
 
    viskillExertion = 10
-   viHit_Factor = 30
 
-   viMin_Damage = 1
-   viMax_Damage = 3
    viRange = 2
 
    viAttack_type = 0
@@ -49,30 +46,22 @@ properties:
    plReagents = $
    plPrerequisites = $
 
-   piChanceToIncrease = 100
-
 messages:
 
    ImproveStroke(who=$,Use_weapon=$,target=$)
    {
-      if random(1,100) > 50 OR NOT send(who,@HasSkill,#num=SKID_BRAWLING)
-      {
-         send(self,@ImproveAbility,#who=who,#target=target);        
-      }
-      else
-      {
-         send(send(SYS,@FindSkillByNum,#num=SKID_BRAWLING),@ImproveAbility,#who=who,#target=target);
-      }
+		send(self,@ImproveAbility,#who=who,#target=target);        
+		send(send(SYS,@FindSkillByNum,#num=SKID_BRAWLING),@ImproveAbility,#who=who,#target=target);
 
      return;
    }
 
-   GetAttackType(weapon_used=$)
+   GetAttackType(use_weapon=$)
    {
      return viAttack_Type;
    }
 
-   GetAttackSpell(weapon_used=$)
+   GetAttackSpell(use_weapon=$)
    {
      return viSpell_type;
    }
@@ -93,15 +82,34 @@ messages:
       return viRange;      
    }
 
-   FindDamage(who=$)
-   "No weapon means we come up with the damage here, not modify a weapon's damage."
+   FindDamage(use_weapon=$, who=$, victim=$)
+   "If we aren't using a fist weapon, come up with the damage here."
    {
-      local damage, might;
-
-      damage = random(1,4);
-
+      local oMonster, damage, might, iAbility;
+		
+      % Morphed? If so, get the damage from the monster we are morphed into.
+      oMonster = Send(who,@GetIllusionForm);
+      if oMonster <> $ AND Send(who,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      {
+			return Send(oMonster,@GetDamage);
+      }
+		
+      % base weapon damage
+		if use_weapon <> $
+		{
+			damage = send(use_weapon,@GetDamage,#who=who,#target=victim);
+		}
+		else		
+		{
+			damage = 800;
+		}
+		
+      % scale the basedamage with the attacker's ability in the stroke
+      iAbility = Send(who,@GetAbility,#num=viSkill_num);
+      damage = damage * iAbility / 100;
+      
       % Take various damage factors into consideration.
-      damage = send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=$);
+      damage = send(self,@DamageFactors,#damage=damage,#who=who,#use_weapon=use_weapon);
 
       return damage;
    }

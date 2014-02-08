@@ -32,7 +32,9 @@ classvars:
 
    viHarmful = TRUE
    viOutlaw = TRUE
-   viChance_To_Increase = 10
+
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 20
 
    vbIsRangedAttack = FALSE
 
@@ -123,7 +125,7 @@ messages:
       Send(oRoom,@SomethingWaveRoom,#what=who,#wave_rsc=Send(self,@GetSpellSound));
       Send(oRoom,@SpellCast,#who=who,#oSpell=self,#lItems=lTargets);
 
-      iDamage = Random(piDamageMin, piDamageMax);
+      iDamage = piDamageMax*100;
 
       if IsClass(who,&Player)
       {
@@ -143,12 +145,12 @@ messages:
             {
                % Bonus if we have mana focus up.
                iManaFocus = First(Send(who,@GetEnchantedState,
-                                  #what=Send(SYS,@FindSpellByNum,#num=SID_MANA_FOCUS)));
+                                  #what=Send(SYS,@FindSpellByNum,#num=SID_MANA_FOCUS))) + 1;
 
                % This takes the spellpower of Mana Focus (iManaFocus), and uses
                %  that to scale our "bonus" damage.
                % Bonus damage is 1 to piManaFocusBonus, scaled by the power of iManaFocus.
-               iDamage = iDamage + ((iManaFocus * piManaFocusBonus) / SPELLPOWER_MAXIMUM) + 1;
+               iDamage = iDamage + ((iManaFocus * piManaFocusBonus) / SPELLPOWER_MAXIMUM);
             }
          }
       }
@@ -159,7 +161,7 @@ messages:
                      #atype=viAttack_type,#aspell=Send(self,@GetAttackSpell),
                      #absolute=pbAbsolute);
 
-      Send(who,@AssessHit,#what=oTarget,#damage=iDamage,#use_weapon=self);
+      Send(who,@AssessHit,#what=oTarget,#damage=iDamage,#use_weapon=self,#stroke_obj=self,#improve=FALSE);
 
       if iDamage = $
       {

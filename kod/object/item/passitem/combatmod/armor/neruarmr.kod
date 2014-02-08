@@ -1,0 +1,120 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NeruditeArmor is Armor
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   neruditearmor_name_rsc = "nerudite armor"
+   neruditearmor_icon_rsc = nerudamr.bgf
+   neruditearmor_desc_rsc = \
+      "Ixla cha'Totlak has forged this piece of remarkable craftsmanship from "
+		"mighty Nerudite, making this plate more durable, light and resistant to magic "
+		"than regular plate. Nerudite armor offers reliable protection against "
+		"all forms of physical attacks but its rigid construction restricts its "
+		"wearer's ability to move and cast in battle quite a bit."
+
+   neruditearmor_male_icon_rsc = btm.bgf
+   neruditearmor_female_icon_rsc = btn.bgf
+
+   neruarmor_shatters = "The nerudite armor shatters into a flurry of splinters!"
+
+classvars:
+
+   vrName = neruditearmor_name_rsc
+   vrIcon = neruditearmor_icon_rsc
+   vrDesc = neruditearmor_desc_rsc
+
+   viHits_init_min = 850
+   viHits_init_max = 900
+
+   viValue_average = 3000
+   viWeight = 500
+   viBulk = 500
+
+   viSpell_modifier = -20
+
+   vrIcon_male = neruditearmor_male_icon_rsc
+   vrIcon_female = neruditearmor_female_icon_rsc
+
+   viDodge_base = -25           
+   viDamage_flat_base = 0
+   viDamage_percent_base = 20
+
+properties:
+
+messages:
+
+   ShowShirt()
+   {
+      return TRUE;
+   }
+
+   GetResistanceModifiers()
+   {
+      return [ [-ATCK_SPELL_ALL,20]
+             ];
+   }
+
+   GetHeatDamage()
+   {
+      return 2;
+   }
+
+   DamageGear(who = $,what = $)
+   {
+      if random(1,100) < 75
+      {
+         piHits = piHits - 1;
+      }
+      
+      if piHits <= 0
+      {
+         send(self,@ShatterToShards);
+      }
+
+      return;
+   }
+
+   DoShatter()
+   {
+      send(self,@ShatterToShards);
+
+      propagate;
+   }
+
+   ShatterToShards()
+   {
+      if poOwner <> $ and isClass(poOwner,&User)
+      {
+         send(poOwner,@TryUnuseItem,#what=self);
+         send(poOwner,@MsgSendUser,#message_rsc=neruarmor_shatters);
+
+         if send(poOwner,@AssessDamage,#what=self,#damage=random(15,30),
+                 #report=FALSE,#atype=ATCK_WEAP_NERUDITE) = $
+         {
+            send(send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);
+            send(poOwner,@Killed,#what=self);
+         }
+
+         send(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

@@ -46,7 +46,6 @@ classvars:
    viSpellExertion = 10
    viCast_time = 5000
 
-   viChance_To_Increase = 20
    vrSucceed_wav = deathlink_sound
 
 properties:
@@ -181,19 +180,6 @@ messages:
       Send(who,@RemoveAttackModifier,#what=self);
       return;
    }
-
-   % Stuff we handle to be an attack modifier.
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {
-      return hit_roll;
-   }
-   
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      return damage;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

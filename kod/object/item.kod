@@ -15,7 +15,7 @@ constants:
    include blakston.khd
    include protocol.khd
 
-   ARMOR_TAKE_DAMAGE_PCT = 75
+   DAMAGE_CHANCE = 100
    
 resources:
 
@@ -97,6 +97,10 @@ classvars:
    % Items may have a different appearance once revealed. Values are zero if not applicable.
    viUnrevealedColor = 0
    viRevealedColor = 0
+	
+   % Layer represents clothing and gear that may override visually
+	% Higher numbers override lower numbers
+	viLayer = 0                      
 
 properties:
 
@@ -643,10 +647,10 @@ messages:
       return defense_power;            
    }
 
-   DefendingHit(who = $,what = $)
+   DamageGear(who = $,what = $)
    {
-      % Set to 75% currently
-      if random(1,100) < ARMOR_TAKE_DAMAGE_PCT   
+      % Set to 25% currently
+      if random(1,100) < DAMAGE_CHANCE   
       {
          piHits = piHits - 1;
       }
@@ -1699,6 +1703,11 @@ messages:
          return TRUE;
       }
       return FALSE;
+   }
+	
+   GetLayer()
+   {
+      return viLayer;
    }
 
 end

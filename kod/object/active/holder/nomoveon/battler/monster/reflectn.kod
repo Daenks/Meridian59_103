@@ -51,7 +51,6 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 45
    viDifficulty = 4
@@ -125,6 +124,11 @@ messages:
    {
       return Send(poOriginal,@GetName,#cap=cap);
    }
+	
+   GetWeapon()
+   {
+      return Send(poOriginal,@GetWeapon);
+   }
    
    GetDef(cap=FALSE)
    {
@@ -166,6 +170,8 @@ messages:
       if poOriginal = $
       {
          Send(self,@Delete);
+			
+			return;
       }
       
       if IsClass(poOriginal,&Player)
@@ -182,6 +188,8 @@ messages:
       if poOriginal = $
       {
          Send(self,@Delete);
+			
+			return;
       }
       else
       {
@@ -213,6 +221,8 @@ messages:
       if poOriginal = $
       {
          Send(self,@Delete);
+			
+			return;
       }
 
       % Ignore mana drain for non-players.
@@ -295,6 +305,8 @@ messages:
       if poOriginal = $
       {
          Send(self,@Delete);
+			
+			return;
       }
 
       if IsClass(poOriginal,&Player)
@@ -319,9 +331,13 @@ messages:
    {
       local iFlags;
 
+		iFlags = $;
+		
       if poOriginal = $
       {
          post(self,@Delete);
+			
+			return iFlags;
       }
 
       iFlags = Send(poOriginal,@GetObjectFlags);
@@ -341,6 +357,8 @@ messages:
       if poOriginal = $
       {
          post(self,@Delete);
+			
+			return 1;
       }
 
       if IsClass(poOriginal,&Player)
@@ -372,22 +390,36 @@ messages:
 
    GetDamage(what = $, stroke_obj=$)
    {
-      local oStroke;
+      return Send(poOriginal,@GetDamage,#what=what,#use_weapon=Send(poOriginal,@GetWeapon),#durabilityhit=FALSE);
+   }
+	
+   GetDamageType(what=$)
+	{
+      return Send(poOriginal,@GetDamageType,#what=what,#use_weapon=Send(poOriginal,@GetWeapon));
+	}
+	
+   GetSpellType(what=$)
+	{
+      return Send(poOriginal,@GetSpellType,#what=what,#use_weapon=Send(poOriginal,@GetWeapon));
+	}
 
-      oStroke = stroke_obj;
+	GetMonsterStroke()
+	{
       if IsClass(poOriginal,&Player)
       {
-         oStroke = $;
+         return Send(poOriginal,@GetPlayerStroke,#durabilityhit=FALSE);
       }
-      
-      return Send(poOriginal,@GetDamage,#what=what,#stroke_obj=oStroke);
-   }
-
+		
+		propagate;
+	}
+	
    SomethingChanged(what=$)
    {
       if poOriginal = $
       {
          post(self,@Delete);
+			
+			return;
       }
 
       % Our source object changed; tell everyone that we've changed, too.
@@ -475,8 +507,16 @@ messages:
 
    MonsterAttack(what=$)
    {
-      % Do the animation!
-      Send(self,@DoAttack);
+      % Do a casting animation if we are using touch as a stroke.
+		if IsClass(Send(self,@GetMonsterStroke),&Touch)
+		{
+			Send(self,@DoCast);
+		}
+		% Do a standard attack animation if we are not.
+		else
+		{
+			Send(self,@DoAttack);
+		}
 
       return;
    }
@@ -499,16 +539,26 @@ messages:
       return Send(poOriginal,@GetDodgeAbility,#stroke_obj=stroke_obj);
    }
 
+   DoCast()
+   "Causes the user to do spell casting arm, 1st & 3rd person"
+   {
+      piAnimation = PANM_CAST;
+      Send(poOwner,@SomethingChanged,#what=self);
+      piAnimation = PANM_NONE;
+
+      return;
+   }
+	
    DoAttack()
    {
-      local Weapon, ammotype, i;
+      local Weapon, AmmoType, i;
 
       Send(self,@GetOriginalInfo);
 
       if IsClass(poOriginal,&Player)
       {
          Weapon = Send(poOriginal,@LookupPlayerWeapon);
-         ammotype = poArrow;
+         AmmoType = poArrow;
 
          if Weapon <> $
          {
@@ -529,7 +579,14 @@ messages:
             }
             else
             {
-               piAnimation = PANM_WEAPON_ATTACK;
+					if IsClass(Weapon,&SpellStone)
+					{
+						piAnimation = PANM_FIST_ATTACK;
+					}
+					else
+					{
+						piAnimation = PANM_WEAPON_ATTACK;
+					}
             }
          }
          else
@@ -599,9 +656,9 @@ messages:
       return Send(poOriginal,@GetURL);
    }
 
-   SendMoveAnimation()
+   SendOverlays()
    {
-      return Send(poOriginal,@SendMoveAnimation);
+      return Send(poOriginal,@SendOverlays,#iAnimation=piAnimation);
    }
 
    SendMoveOverlays()
@@ -614,9 +671,9 @@ messages:
        return Send(poOriginal,@SendAnimation,#iAnimation=piAnimation);
    }
 
-   SendOverlays()
+   SendMoveAnimation()
    {
-      return Send(poOriginal,@SendOverlays,#iAnimation=piAnimation);
+      return Send(poOriginal,@SendMoveAnimation);
    }
 
    GetIllusionForm()

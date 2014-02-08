@@ -1,0 +1,68 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Riposte is Stroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   riposte_name_rsc = "riposte"
+   riposte_icon_rsc = parryico.bgf
+   riposte_desc_rsc = "Riposting allows you to retaliate after successfully parrying an attack."
+
+   riposte_skill_intro = "Weaponcraft Lv. 5: Retaliate after parrying."
+
+classvars:
+
+   vrName = riposte_name_rsc
+   vrIcon = riposte_icon_rsc
+   vrDesc = riposte_desc_rsc
+
+   vrSkill_intro = riposte_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_RIPOSTE
+   viSkill_level = 5
+
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 5
+
+   viskillExertion = 0
+   vbCheck_exertion = FALSE
+
+   viDamage_factor = 100
+
+properties:
+
+   plPrerequisites = $
+
+messages:
+
+   GetRequisiteStat(who=$)
+   "Varies from skill to skill and spell to spell."
+   {
+      return Send(who,@GetAim);
+   }
+	
+   ImproveStroke(who=$,use_weapon=$,target=$)
+   {
+		send(self,@ImproveAbility,#who=who,#target=target);
+		send(use_weapon,@ImproveProficiency,#who=who,#target=target);
+		
+		return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

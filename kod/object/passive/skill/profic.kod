@@ -34,14 +34,15 @@ classvars:
 
    vbAutomatic = TRUE    % does not show up in pull-down menu
 
+	% Chance to increase is one in viChance_To_Increase.
+   viChance_To_Increase = 60
+
 properties:
 
    % Format of reagents:  Each element of plReagents is a list, describing a single reagent.
    % First elem of this list is class of reagent; second is # of reagent required for skill.
    plPrerequisites = $
    piSchool = 0
-
-   piChanceToIncrease = 100
 
 messages:
 

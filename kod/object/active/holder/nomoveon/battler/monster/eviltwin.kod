@@ -46,7 +46,6 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 1
    viDifficulty = 9
@@ -185,6 +184,11 @@ messages:
    {
       return send(poOriginal,@GetName,#cap=cap);
    }
+	
+   GetWeapon()
+   {
+      return Send(poOriginal,@GetWeapon);
+   }
    
    GetDef(cap=FALSE)
    {
@@ -234,8 +238,10 @@ messages:
    SomethingLeft(what=$)
    {
       if poOriginal = $
-	   {
-	      Send(self,@Delete);
+      {
+         Send(self,@Delete);
+			
+			return;
       }
 
       if IsClass(poOriginal,&Player)
@@ -294,6 +300,13 @@ messages:
    GetObjectFlags()
    {
       local iFlags;
+
+		iFlags = $;
+		
+      if poOriginal = $
+      {
+			return iFlags;
+      }
       
       iFlags = send(poOriginal,@GetObjectFlags);
       if (iFlags & USER_YES) {  iFlags = (iFlags | FALSEPLAYER_YES);  }
@@ -305,6 +318,11 @@ messages:
    GetAttackRange()
    {
       local iWeapon;
+		
+      if poOriginal = $
+      {
+			return 1;
+      }
       
       iWeapon = send(poOriginal,@LookupPlayerWeapon);
       if iWeapon <> $
@@ -315,13 +333,11 @@ messages:
       return 1;
    }
 
-   % This returns the battler's ability to-hit.  Ranges from 1 to 1000
    GetOffense(what = $, stroke_obj=$)
    {
       return Send(poOriginal,@GetOffense,#what=what,#stroke_obj=stroke_obj);
    }
 
-   % This returns the battler's ability to avoid being hit.  Ranges from 1 to 1000.
    GetDefense(what = $, stroke_obj=$)
    {
       return Send(poOriginal,@GetDefense,#what=what,#stroke_obj=stroke_obj);
@@ -329,17 +345,29 @@ messages:
 
    GetDamage(what = $, stroke_obj=$)
    {
-      local oStroke;
-
-      oStroke = stroke_obj;
-      if IsClass(poOriginal,&Player)
-      {
-         oStroke = $;
-      }
-      
-      return Send(poOriginal,@GetDamage,#what=what,#stroke_obj=oStroke);
+      return Send(poOriginal,@GetDamage,#what=what,#use_weapon=Send(poOriginal,@GetWeapon),#durabilityhit=FALSE);
    }
 
+   GetDamageType(what=$)
+	{
+      return Send(poOriginal,@GetDamageType,#what=what,#use_weapon=Send(poOriginal,@GetWeapon));
+	}
+	
+   GetSpellType(what=$)
+	{
+      return Send(poOriginal,@GetSpellType,#what=what,#use_weapon=Send(poOriginal,@GetWeapon));
+	}
+
+	GetMonsterStroke()
+	{
+      if IsClass(poOriginal,&Player)
+      {
+         return Send(poOriginal,@GetPlayerStroke,#durabilityhit=FALSE);
+      }
+		
+		propagate;
+	}
+	
    GetKarma(detect=FALSE)
    {
       if detect
@@ -456,8 +484,16 @@ messages:
 
    MonsterAttack(what=$)
    {
-      % Do the animation!
-      send(self,@DoAttack);
+      % Do a casting animation if we are using touch as a stroke.
+		if IsClass(Send(self,@GetMonsterStroke),&Touch)
+		{
+			Send(self,@DoCast);
+		}
+		% Do a standard attack animation if we are not.
+		else
+		{
+			Send(self,@DoAttack);
+		}
 
       return;
    }
@@ -478,6 +514,16 @@ messages:
    {
       return Send(poOriginal,@GetDodgeAbility,#stroke_obj=stroke_obj);
    }
+	
+   DoCast()
+   "Causes the user to do spell casting arm, 1st & 3rd person"
+   {
+      piAnimation = PANM_CAST;
+      Send(poOwner,@SomethingChanged,#what=self);
+      piAnimation = PANM_NONE;
+
+      return;
+   }
 
    DoAttack()
    {
@@ -487,31 +533,39 @@ messages:
       ammotype = poArrow;
       Send(self,@GetOriginalInfo);
 
-      if Weapon <> $   %IsClass(Weapon,&Weapon)
-      {
-         if IsClass(Weapon,&Bow)
-         {
-            piAnimation = PANM_BOW_FIRE;
+		if Weapon <> $
+		{
+			if IsClass(Weapon,&Bow)
+			{
+				piAnimation = PANM_BOW_FIRE;
 
-            for i in send(poOriginal,@GetPlayerUsing)
-            {
-               if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-               {
-                  AmmoType = i;
-               }
-            }
-            
-            send(poOwner,@SomethingShot,#who=self,#target=poTarget,#projectile = AmmoType);
-         }
-         else
-         {
-            piAnimation = PANM_WEAPON_ATTACK;
-         }
-      }
-      else
-      {
-         piAnimation = PANM_FIST_ATTACK;
-      }
+				for i in Send(poOriginal,@GetPlayerUsing)
+				{
+					if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
+					{
+						AmmoType = i;
+					}
+				}
+				
+				Send(poOwner,@SomethingShot,#who=self,#target=poTarget,
+					  #projectile=AmmoType);
+			}
+			else
+			{
+				if IsClass(Weapon,&SpellStone)
+				{
+					piAnimation = PANM_FIST_ATTACK;
+				}
+				else
+				{
+					piAnimation = PANM_WEAPON_ATTACK;
+				}
+			}
+		}
+		else
+		{
+			piAnimation = PANM_FIST_ATTACK;
+		}
       
       Send(poOwner,@SomethingChanged,#what=self);
       piAnimation = PANM_NONE;

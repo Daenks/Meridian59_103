@@ -42,28 +42,6 @@ properties:
 
 messages:
    
-   ReqUseSomething(what = $)
-   {
-      if (IsClass(what,&Shield)
-         AND NOT IsClass(what,&SoldierShield))
-         OR IsClass(what,&Weapon)
-         OR IsClass(what,&Lute)
-         OR IsClass(what,&JewelOfFroz)
-         OR IsClass(what,&Book)
-      {
-         if Send(poOwner,@TryUnuseItem,#what=self)
-         {
-            propagate;
-         }
-         else
-         {
-            return FALSE;
-         }
-      }
-
-      propagate;
-   }
-
    NewUsed()
    {
       local oRoom;

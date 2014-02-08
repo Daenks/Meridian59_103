@@ -1,0 +1,123 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% A spellstone is a weapon that enhances touchattacks.
+
+SpellStone is Weapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   spellstone_broken = "%s%s pulses once before growing cold in your hands. You have drained the last of its energy."
+
+   spellstone_condition_exc = " is practically bursting with magical energy."
+   spellstone_condition_exc_mended = " is practically bursting with magical energy but seems to have lost some of its former luster."
+   spellstone_condition_good = " is buzzing with barely tapped power."
+   spellstone_condition_med = " is happily humming in your hand. "
+   spellstone_condition_poor = " is humming faintly. Its power has almost been depleted."
+   spellstone_condition_broken = " looks no different than a regular gem. It feels unnaturally cold and lifeless to the touch."
+
+classvars:
+
+   viWeaponType = WEAPON_TYPE_SPELL
+	
+   vrCondition_exc = spellstone_condition_exc 
+   vrCondition_exc_mended = spellstone_condition_exc_mended 
+   vrCondition_good = spellstone_condition_good 
+   vrCondition_med = spellstone_condition_med 
+   vrCondition_poor = spellstone_condition_poor 
+   vrCondition_broken = spellstone_condition_broken
+   vrItem_broken = spellstone_broken
+	
+   viProficiency_Needed = SKID_PROFICIENCY_SPELL
+	
+properties:
+
+messages:
+
+   CanEnchant(oSpell = $)
+   "Cannot enchant magical conduits. They are already magical!"
+   {
+		return FALSE;
+	}
+
+   DoFlash()
+   {      
+      return;
+   }
+
+   GetStrokeNumber()
+   {
+		local oSpell;
+		
+		% This will return $ if there's no Touch Attacks enchanting player.
+		oSpell = Send(poOwner,@GetEnchantmentsByClass,#EnchClass=&TouchAttackSpell);
+		if oSpell <> $
+		{
+			return SKID_TOUCH;
+		}
+	
+      return SKID_PUNCH;
+   }
+	
+   GetProfNumber()
+   {
+		local oSpell;
+		
+		% This will return $ if there's no Touch Attacks enchanting player.
+		oSpell = Send(poOwner,@GetEnchantmentsByClass,#EnchClass=&TouchAttackSpell);
+		if oSpell <> $
+		{
+			return SKID_PROFICIENCY_SPELL;
+		}
+	
+		return SKID_BRAWLING;
+   }
+	
+	% The spell decides the attack type.
+   GetAttackType(use_weapon=$)
+   {
+		local oSpell;
+		
+		oSpell = send(poOwner,@GetTouchSpell);
+		if oSpell <> $
+		{
+			return Send(oSpell,@GetAttackType,#use_weapon=use_weapon);
+		}
+		
+		propagate;
+   }
+
+	% The spell decides the spell type.
+   GetAttackSpell(use_weapon=$)
+   {
+		local oSpell;
+		
+		oSpell = send(poOwner,@GetTouchSpell);
+		if oSpell <> $
+		{
+			return Send(oSpell,@GetAttackSpell,#use_weapon=use_weapon);
+		}
+		
+		propagate;
+   }
+	
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+

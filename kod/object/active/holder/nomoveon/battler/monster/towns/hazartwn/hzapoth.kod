@@ -44,6 +44,7 @@ messages:
                      Create(&Elderberry,#number=4),
                      Create(&RedMushroom,#number=4),
                      Create(&BlueMushroom,#number=4),
+							Create(&MagicalPebble),
                      Create(&Robe,#color=XLAT_TO_SKIN1)],
                      $,
                      $];

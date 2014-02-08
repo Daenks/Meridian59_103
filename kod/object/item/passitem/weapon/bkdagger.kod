@@ -82,7 +82,7 @@ classvars:
 
    % Black daggers are low quality swords (?), just like shortswords
    viWeaponType = WEAPON_TYPE_THRUST
-   viWeaponQuality = WEAPON_QUALITY_LOW
+   viWeaponQuality = WEAPON_QUALITY_NORMAL
 
    vrWeapon_window_overlay = BlackDagger_window_overlay_rsc
    vrWeapon_overlay = BlackDagger_player_overlay
@@ -297,7 +297,7 @@ messages:
       % Does the animations and overlays
       Send(self,@WeaponAttack);
       Send(Send(SYS,@findskillbynum,#num=SKID_SLASH),@SendMissMessageToAttacker,
-           #who=poOwner,#victim=target,#weapon_used=self,#bText=FALSE);
+           #who=poOwner,#victim=target,#use_weapon=self,#bText=FALSE);
 
       return;
    }
