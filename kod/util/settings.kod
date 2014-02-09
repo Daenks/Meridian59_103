@@ -176,6 +176,12 @@ properties:
 
    % If enabled, logoff penalties do not rise exponentially, and instead remain flat
    pbFlatPenalties = TRUE
+   
+   % This setting determines how many hours a PK spends in jail per accrued kill.
+   piHoursPerKillsCountedForJail = 12
+   
+   % Does a PK atrophy each period in jail?
+   pbJailAtrophy = FALSE
 
 messages:
 
@@ -436,6 +442,16 @@ messages:
    GetResistRingLoseDurability()
    {
       return piResistRingLoseDurability;
+   }
+   
+   GetHoursPerKillsCountedForJail()
+   {
+      return piHoursPerKillsCountedForJail;
+   }
+   
+   GetJailAtrophy()
+   {
+      return pbJailAtrophy;
    }
 
 end

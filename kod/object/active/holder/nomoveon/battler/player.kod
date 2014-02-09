@@ -993,6 +993,9 @@ properties:
    % Players will naturally fall out of groups if they aren't getting kills
    ptLeaveBuilderGroupTimer = $
 
+   % PKs will accrue jail time for each innocent they kill
+   piKillsCountedForJailTime = 1
+
 messages:
 
    Constructor()
@@ -5075,6 +5078,14 @@ messages:
       if oSoldierShield <> $
       {
          Send(oSoldierShield,@KilledSomething,#what=what);
+      }
+
+      % Increment innocent kill counter for Jail time
+      If IsClass(what,&Player)
+         AND NOT (Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+                  OR Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW))
+      {
+         piKillsCountedForJailTime = piKillsCountedForJailTime + 1;
       }
 
       if IsClass(what,&User) AND NOT Send(poOwner,@SafePlayerAttack)
@@ -13121,6 +13132,17 @@ messages:
       piCrystalizeManaSurging = FALSE;
       Send(self,@ComputeMaxMana);
 
+      return;
+   }
+   
+   GetKillsCountedForJailTime()
+   {
+      return piKillsCountedForJailTime;
+   }
+   
+   SetKillsCountedForJailTime(num=0)
+   {
+      piKillsCountedForJailTime = num;
       return;
    }
 

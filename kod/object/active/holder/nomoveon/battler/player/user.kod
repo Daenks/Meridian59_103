@@ -296,6 +296,10 @@ resources:
 
    autoloot_on_msg = "You decide to pick up treasure as it drops."
    autoloot_off_msg = "You stop picking up treasure as it drops."
+   
+   days_remaining_in_jail_rsc = "With a sigh, you check the marks in your cell... and see that you still have %d days remaining on your sentence."
+   one_day_remaining_in_jail_rsc = "Only one day left until you get out of jail! You promise yourself that this time, it's all going to be different. This time, you're going to change!"
+   released_from_jail_rsc = "Although the Crown still deems you scum, room must be made for more important prisoners. You have been released from jail."
 
 classvars:
 
@@ -357,6 +361,8 @@ properties:
    piCheaterLogs = 0
 
    pbAutoloot = TRUE
+   
+   ptJailReleaseTimer = $
 
 messages:
 
@@ -385,6 +391,12 @@ messages:
    {
       Send(SYS,@SystemUserDelete,#what=self);
 
+      if ptJailReleaseTimer <> $
+      {
+         DeleteTimer(ptJailReleaseTimer);
+         ptJailReleaseTimer = $;
+      }
+      
       propagate;
    }
 
@@ -6007,6 +6019,29 @@ messages:
       }
       
       poOwner = what;
+      
+      if old = $
+         AND poOwner = Send(SYS,@FindRoomByNum,#num=RID_BAR_JAIL)
+         AND ptJailReleaseTimer <> $
+      {
+         if Send(self,@GetKillsCountedForJailTime) = 1
+         {
+            Post(self,@MsgSendUser,#message_rsc=one_day_remaining_in_jail_rsc,#parm1=Send(self,@GetKillsCountedForJailTime));
+         }
+         else
+         {
+            Post(self,@MsgSendUser,#message_rsc=days_remaining_in_jail_rsc,#parm1=Send(self,@GetKillsCountedForJailTime));
+         }
+      }
+      
+      if poOwner <> $
+         AND poOwner <> Send(SYS,@FindRoomByNum,#num=RID_BAR_JAIL)
+         AND ptJailReleaseTimer <> $
+      {
+         DeleteTimer(ptJailReleaseTimer);
+         ptJailReleaseTimer = $;
+         Send(self,@AdminGoToOOG);
+      }
 
       if poOwner <> $
       {
@@ -7034,14 +7069,240 @@ messages:
 
    AdminGoToJail()
    "Admin supported.  "
-   "Sends the user to the Barloque Jail, if they're logged in"
+   "Sends the user to the Barloque Jail."
    {
-      if pbLogged_on
+      local oJail, iHoursPerKill;
+      
+      oJail = Send(SYS,@FindRoomByNum,#num=RID_BAR_JAIL);
+      
+      If Send(self,@IsLoggedOn)
       {
-         Send(self,@TeleportTo,#RID=RID_BAR_JAIL);
-         Send(self,@MsgSendUser,#message_rsc=user_goto_jail);
-         return Send(SYS,@GetSuccessRsc);
+         Send(oJail,@Teleport,#what=self);
       }
+      else
+      {
+         piSave_room = Send(oJail,@GetRoomNum);
+         piSave_row = Send(oJail,@GetTeleportRow);
+         piSave_col = Send(oJail,@GetTeleportCol);
+         piSave_fine_row = 0;
+         piSave_fine_col = 0;
+      }
+
+      If Send(self,@GetKillsCountedForJailTime) > 0
+      {
+         iHoursPerKill = Send(Send(SYS,@GetSettings),@GetHoursPerKillsCountedForJail);
+         ptJailReleaseTimer = CreateTimer(self,@CheckForJailRelease,Send(self,@GetKillsCountedForJailTime)* 1000 * 60 * 60 * iHoursPerKill);
+      }
+      
+      return;
+   }
+   
+   CheckForJailRelease()
+   {
+      local iHoursPerKill;
+
+      ptJailReleaseTimer = $;
+      
+      Send(self,@SetKillsCountedForJailTime,#num=Send(self,@GetKillsCountedForJailTime)-1);
+      
+      If Send(self,@GetKillsCountedForJailTime) <= 0
+      {
+         Send(self,@SetKillsCountedForJailTime,#num=1);
+         Send(self,@ReleaseFromJail);
+      }
+      else
+      {
+         iHoursPerKill = Send(Send(SYS,@GetSettings),@GetHoursPerKillsCountedForJail);
+         ptJailReleaseTimer = CreateTimer(self,@CheckForJailRelease,Send(self,@GetKillsCountedForJailTime)* 1000 * 60 * 60 * iHoursPerKill);
+         
+         if Send(Send(SYS,@GetSettings),@GetJailAtrophy)
+         {
+            Send(self,@JailAtrophy);
+         }
+      }
+      
+      return;
+   }
+   
+   JailAtrophy()
+   {
+      local i, bLooped, LossCounter, BaseLossAmount, iHealth,
+            LossAmount, iLoops,
+            iStart, lSpells, iSpellAbility, iAbilityNum, numSpellPointsLost,
+            lSkills, iSkillAbility, numSkillPointsLost;
+
+      numSpellPointsLost = 0;
+      numSkillPointsLost = 0;
+
+      % Lose spell ability
+      lSpells = Send(poGhostedPlayer,@GetSpellList);
+      if lSpells <> $
+      {
+         LossCounter = 2;
+
+         if Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+         {
+            BaseLossAmount = -2;
+         }
+         else
+         {
+            BaseLossAmount = -1;
+         }
+
+         % Loop through once to reduce LossCounter below Length(lSpells), and
+         %  keep iterations down for large penalties
+         if (LossCounter > Length(lSpells))
+         {
+            i = 0;
+            % iLoops = number of complete loops we're collapsing to one
+            iLoops = LossCounter / Length(lSpells);
+            while i < Length(lSpells)
+            {
+               i = i + 1;
+               iSpellAbility = Send(poGhostedPlayer,@DecodeSpellAbility,
+                                    #compound=Nth(lSpells,i));
+               LossAmount = Bound(BaseLossAmount*iLoops,$,-(iSpellAbility-5));
+               iAbilityNum = Send(poGhostedPlayer,@DecodeSpellNum,
+                                  #compound=Nth(lSpells,i));
+               Send(poGhostedPlayer,@ChangeSpellAbility,
+                    #spell_num=iAbilityNum,#amount=LossAmount);
+               numSpellPointsLost = (numSpellPointsLost - LossAmount);
+            }
+         }
+
+         iLoops = 0;
+         LossCounter = LossCounter - (numSpellPointsLost/BaseLossAmount);
+         while (LossCounter > 0) and (iLoops < 200)
+         {
+            iLoops = iLoops + 1;
+            % This tells us if we've looped back to one yet.
+            bLooped = FALSE;
+            % Try to lower a Random spell.
+            i = Random(1,Length(lSpells));
+
+            iStart = i;
+            % If the Random lower fails, scan through and lower the first one
+            %  we can.
+            while (i <> iStart OR NOT bLooped)
+                  AND (Send(poGhostedPlayer,@DecodeSpellAbility,
+                            #compound=Nth(lSpells,i)) < 6)
+            {
+               i = i + 1;
+               if i > Length(lSpells) AND NOT bLooped
+               {
+                  % We get one free reset (since we started in the middle
+                  %  somewhere)
+                  i = 1;
+                  bLooped = TRUE;
+               }
+            }
+
+            % If we got all the way through the spell list without lowering
+            %  anything, bail.
+            if i = iStart AND bLooped
+            {
+               LossCounter = 0;
+
+               break;
+            }
+
+            iAbilityNum = Send(poGhostedPlayer,@DecodeSpellNum,
+                               #compound=Nth(lSpells,i));
+            Send(poGhostedPlayer,@ChangeSpellAbility,
+                 #spell_num=iAbilityNum,#amount=BaseLossAmount);
+            numSpellPointsLost = numSpellPointsLost - BaseLossAmount;
+            LossCounter = LossCounter - 1;
+         }
+      }
+
+      % Lose skill ability.
+      lSkills = Send(poGhostedPlayer,@GetSkillList);
+      if (lSkills <> $)
+      {
+         LossCounter = 2;
+
+         % Loop through once to reduce LossCounter below Length(lSkills),
+         %  and keep iterations down for large penalties
+         if LossCounter > Length(lSkills)
+         {
+            i = 0;
+            % Number of complete loops we're collapsing to one.
+            iLoops = LossCounter/Length(lSkills);
+            while i < Length(lSkills)
+            {
+               i = i + 1;
+               iSkillAbility = Send(poGhostedPlayer,@DecodeSkillAbility,
+                                    #compound=Nth(lSkills,i));
+               LossAmount = bound((BaseLossAmount*iLoops),$,-(iSkillAbility-5));
+               iAbilityNum = Send(poGhostedPlayer,@DecodeSkillNum,
+                                  #compound=Nth(lSkills,i));
+               Send(poGhostedPlayer,@ChangeSkillAbility,
+                    #skill_num=iAbilityNum,#amount=LossAmount);
+               numSkillPointsLost = numSkillPointsLost - LossAmount;
+            }
+         }
+
+         iLoops = 0;
+         LossCounter = LossCounter - (numSkillPointsLost/BaseLossAmount);
+         while LossCounter > 0 AND iLoops < 100
+         {
+            iLoops = iLoops + 1;
+            % This tells us if we've looped back to one yet.
+            bLooped = FALSE;
+            % Try to lower a Random skill.
+            i = Random(1,Length(lSkills));
+            iStart = i;
+
+            % If the random lower fails, scan through and lower the first one
+            %  we can.
+            while (i <> iStart OR NOT bLooped)
+                  AND (Send(poGhostedPlayer,@DecodeSkillAbility,
+                            #compound=Nth(lSkills,i)) < 6)
+            {
+               i = i + 1;
+               if i > Length(lSkills) AND NOT bLooped
+               {
+                  % We get one free reset since we started in the middle
+                  %  somewhere
+                  i = 1;
+                  bLooped = TRUE;
+               }
+            }
+            % If we got all the way through the skill list without lowering
+            %  anything, bail.
+            if i = iStart AND bLooped
+            {
+               LossCounter = 0;
+
+               break;
+            }
+
+            iAbilityNum = Send(poGhostedPlayer,@DecodeSkillNum,
+                               #compound=Nth(lSkills,i));
+            Send(poGhostedPlayer,@ChangeSkillAbility,
+                 #skill_num=iAbilityNum,#amount=BaseLossAmount);
+            numSkillPointsLost = numSkillPointsLost - BaseLossAmount;
+            LossCounter = LossCounter - 1;
+         }
+      }
+
+      return;
+   }
+   
+   ReleaseFromJail()
+   {
+      if ptJailReleaseTimer <> $
+      {
+         DeleteTimer(ptJailReleaseTimer);
+         ptJailReleaseTimer = $;
+      }
+      
+      If Send(self,@IsLoggedOn)
+      {
+         Send(self,@MsgSendUser,#message_rsc=released_from_jail_rsc);
+      }
+      
+      Send(self,@AdminGoToLastSafeRoom);
       
       return;
    }

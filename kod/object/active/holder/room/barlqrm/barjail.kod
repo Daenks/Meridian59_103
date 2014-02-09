@@ -26,7 +26,7 @@ classvars:
    viTeleport_row = 6
    viTeleport_col = 12
 
-   viPermanent_flags = ROOM_NO_COMBAT
+   viPermanent_flags = ROOM_SAFELOGOFF
    viTerrain_Type = TERRAIN_CITY
 
 properties:
@@ -37,7 +37,7 @@ properties:
    piBaseLight = LIGHT_NICE
    piOutside_factor = 3
 
-   pbLocked = FALSE
+   pbLocked = TRUE
 
 messages:
 
@@ -111,6 +111,70 @@ messages:
          }
       }
       propagate;
+   }
+
+   ReqSomethingAttack(what = $,victim = $,use_weapon = $)
+   "No one may attack here."
+   {
+      Send(what,@MsgSendUser,#message_rsc=room_no_attack);
+
+      return FALSE;
+   }
+
+   ReqSpellCast(who = $, oSpell = $, lItems = $)
+   "Only DM-level characters may cast spells here."
+   {
+      % no-magic zone
+      if IsClass(oSpell,&Spell) AND (NOT IsClass(who,&DM))
+      {
+         Send(who,@MsgSendUser,#message_rsc=room_no_spell);
+         send(self,@SomeoneSaid,#what=self,#type=SAY_MESSAGE,#string=oog_casting_message,
+              #parm1=send(who,@GetTrueName),#parm2=send(oSpell,@GetTrueName));
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   RoomReqCommunication(who=$,type=$,string=$,users=$)
+   {
+       local i;
+
+       if IsClass(who,&DM)
+       {  return TRUE;  }
+
+       if type = SAY_GUILD or type = SAY_EVERYONE or type = SAY_YELL
+       {
+          Send(who,@MsgSendUser,#message_rsc=room_no_sound);
+
+          return FALSE;
+       }
+
+       if type = SAY_GROUP or type = SAY_GROUP_ONE
+       {
+          for i in users
+          {
+             if not isClass(i,&DM)
+             {
+                Send(who,@MsgSendUser,#message_rsc=room_no_sound);
+
+                return FALSE;
+             }
+          }
+       }
+
+       return TRUE;
+   }
+
+   SeanceCheck()
+   {
+      return FALSE;
+   }
+
+   CanHavePlayerPortal()
+   {
+      return FALSE;
    }
 
 end

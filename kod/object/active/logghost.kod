@@ -81,6 +81,8 @@ resources:
 
    LogoffGhost_poof_wav_rsc = logoffghost_poof.wav
 
+   murderer_jailed_rsc = "### The notorious murderer, %s, has been captured by the valiant citizens of Meridian, and has been consigned to %d days in jail for %s crimes."
+
 classvars:
 
 
@@ -187,6 +189,8 @@ messages:
 
    PenaltyTrigger()
    {
+      local i;
+
       ptPenaltyTimer = $;
 
       % if player is logged on, some special case didn't get caught!
@@ -234,13 +238,28 @@ messages:
       
       if Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
-         if Send(Send(SYS, @GetSettings), @ReturnToSafetyPenaltiesEnabled)
+         if Send(poGhostedPlayer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+            AND Send(poGhostedPlayer,@GetKillsCountedForJailTime) > 0
          {
-	        Send(poGhostedPlayer,@AdminGoToLastSafeRoom);
+            Send(poGhostedPlayer,@AdminGoToJail);
+            
+            for i in Send(SYS,@GetUsersLoggedOn)
+            {
+               Send(i,@MsgSenduser,#message_rsc=murderer_jailed_rsc,#parm1=Send(poGhostedPlayer,@GetName),
+                                                                    #parm2=Send(poGhostedPlayer,@GetKillsCountedForJailTime)
+                                                                    #parm3=Send(poGhostedPlayer,@GetHisHer));
+            }
          }
          else
          {
-	        Send(poGhostedPlayer,@AdminGoToBlink);
+            if Send(Send(SYS, @GetSettings), @ReturnToSafetyPenaltiesEnabled)
+            {
+	           Send(poGhostedPlayer,@AdminGoToLastSafeRoom);
+            }
+            else
+            {
+	           Send(poGhostedPlayer,@AdminGoToBlink);
+            }
          }
       }
       else
