@@ -129,7 +129,7 @@ void InterfaceResizeModule(int xsize, int ysize, AREA *view)
  */
 void InterfaceRedrawModule(HDC hdc)
 {
-	UserAreaRedraw();
+  UserAreaRedraw();
   InterfaceDrawElements(hdc);
   StatsDrawBorder();
   StatsMainRedraw();
@@ -140,6 +140,34 @@ void InterfaceRedrawModule(HDC hdc)
     ShowInventory(TRUE);
     InventoryRedraw();
   }
+  
+  // si: after system save set the correct stat (spells/skills/stats or inventory!)
+  if(GetCurrentGroupStub() != -1 ) 
+  {
+	  if(GetCurrentGroupStub() == STATS_INVENTORY )
+	  {
+		// show users inventory  
+		StatsShowGroup( False );
+		ShowInventory( True );
+		DisplayInventoryAsStatGroup( GetCurrentGroupStub() );
+	  } 
+	  else 
+	  {
+		list_type stat_list;
+		// show stats/skills or spells
+		StatsShowGroup( True );
+		ShowInventory( False );
+		// Check stat cache; if group not present, ask server
+		if (StatCacheGetEntry(GetCurrentGroupStub(), &stat_list) == True)
+			DisplayStatGroup(GetCurrentGroupStub(), stat_list);
+		else
+		{
+			debug(("Resetting selected group to %d\n", GetCurrentGroupStub()));
+			RequestStats(GetCurrentGroupStub());
+		}		
+	  }
+  }
+  
 }
 /****************************************************************************/
 Bool InterfaceDrawItem(HWND hwnd, const DRAWITEMSTRUCT *lpdis)
