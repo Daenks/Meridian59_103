@@ -103,20 +103,13 @@ messages:
       if isClass(obj,&Ruby) OR isClass(obj,&Diamond) OR
          isClass(obj,&Sapphire) OR isClass(obj,&Emerald)
       {
-         %Every so often, we want to declare the gem to be fake and delete.
-         %Else we want to give them the money for it and delete the gem
+         %We want to give them the money for it and delete the gem
          %If they cant hold the money, we return the gems(return false)
          if Send(obj,@GetNumber)<4 
          {
             Post(poOwner,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
                  #string=TBank_not_gem_group);
             return False;
-         }
-         if Random(0,19) = 0
-         {
-            Post(poOwner,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
-                 #string=TBank_gems_not_quality,#parm1=Send(obj,@GetName));
-            return True;
          }
 	 
          %% be sure they actually have this many gems.
