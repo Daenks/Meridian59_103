@@ -85,9 +85,7 @@ messages:
          return FALSE;
       }
 
-      if (send(oRoom,@CountHoldingHowMany,#class=&monster) > 25)
-         or (send(oRoom,@CountHoldingSummoned) > 
-             Send(Send(SYS, @GetSettings), @GetPlayerSummonedObjectLimit))
+      if Send(self,@CheckPlayerMinionCount,#who=who) >= Send(Send(SYS, @GetSettings), @GetPlayerMinionLimit)  
       {
          send(who,@MsgSendUser,#message_rsc=Animate_failed_rsc);
 
@@ -100,6 +98,19 @@ messages:
    GetNumSpellTargets()
    {
       return 1;
+   }
+   CheckPlayerMinionCount(who = $)
+   {
+      local i,iMinionCount;
+	  iMinionCount = 0;
+	  for i in send(who,@GetControlledMinions)
+	  {
+	     if NOT isClass(i,&Reflection)
+		 {
+		    iMinionCount = iMinionCount + 1;
+		 }
+	  }
+	  return iMinionCount;
    }
 
    DoubleCheckAfterTrance(who = $, lTargets = $)

@@ -1023,9 +1023,15 @@ messages:
 
    SystemUserLogoff(what = $)
    {
-      local i, j, oNew_room;
+      local i, j, k, oNew_room;
 
       plUsers_logged_on = DelListElem(plUsers_logged_on,what);
+	  % Get Rid of those Minions & Reflections
+	  for k in send(what,@GetControlledMinions)
+	  {
+	     Send(what,@RemoveControlledMinion,#minion=k);
+	     Send(k,@Delete);
+	  }
 
       % Remember: plReflections format is:
       % [[player,[ref1,ref2]],[player2,[ref1,ref2]],...]
@@ -1034,16 +1040,11 @@ messages:
       {
          if first(i) = what
          {
-            for j in Nth(i,2)
-            {
-               Send(j,@Delete);
-            }
-
             plReflections = DelListElem(plReflections,i);
-
             break;
          }
       }
+	  
 
       return;
    }
