@@ -50,7 +50,7 @@ classvars:
    viFlash = FLASH_BAD
 
    % In seconds, since it works off GetTime()
-   viPostCast_time = 2
+   viPostCast_time = 1
 
 properties:
 
@@ -198,10 +198,10 @@ messages:
    {
       local iDuration;
 
-      % about 2 - 6 seconds
-      iDuration = 2000 + (40 * iSpellPower);
+      % about 4 - 6 seconds
+      iDuration = 4000 + (20 * iSpellPower);
 
-      return random(iDuration/2,iDuration);
+      return iDuration;
    }
 
    DoHold(what = $, otarget = $, iDurationSecs = $, iDuration = $, report=TRUE,
