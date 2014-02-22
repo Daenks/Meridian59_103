@@ -192,7 +192,7 @@ messages:
 
       iDuration = (4 + iSpellPower/6);
 
-      return random((iDuration-2),iDuration);
+      return random((iDuration-3),iDuration);
    }
    
    EndEnchantment(who = $, report = TRUE)
