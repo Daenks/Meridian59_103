@@ -30,6 +30,9 @@ resources:
       "Something burns in your eyes, causing excruciating pain and a loss "
       "of vision."
    blind_off = "Your eyes begin to function again."
+	blind_cannot_cast_yet = "You can use the blind spell again in %i seconds."
+	blind_victim_immune_caster = "Your target has temporarily grown immune to vision impairing effects!"
+	blind_victim_immune_target = "You have temporarily grown immune to vision impairing effects!"
 
    blind_sound = qblind.wav
 
@@ -42,10 +45,11 @@ classvars:
    viSpell_num = SID_BLIND
    viSchool = SS_QOR
    viSpell_level = 5
-   viMana = 15
+   viMana = 10
    viChance_To_Increase = 15
+	viPostCast_time = 0
 
-   viSpellExertion = 6
+   viSpellExertion = 0
 
    viOutlaw = TRUE
    viHarmful = TRUE
@@ -86,6 +90,13 @@ messages:
    CanPayCosts(who = $, lTargets = $, bItemCast = FALSE)
    {
       local target, i;
+		
+		% Can't cast if we are on internal cooldown.
+		if Send(who,@CanCastBlind) <> $
+      {
+			Send(who,@MsgSendUser,#message_rsc=blind_cannot_cast_yet,#parm1=Send(who,@GetBlindCooldown)/1000);
+         return FALSE;
+      }
       
       % Can cast spell if the 1 target item is a user
       if Length(lTargets) <> 1
@@ -132,41 +143,74 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0)
    {
-      local oTarget;
+      local oTarget, iDuration;
 
       oTarget = First(lTargets);
+		
+		iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower,#target=oTarget);
 
       % Spell effects
-      Send(self,@DoBlind,#what=who,#oTarget=oTarget,
-           #iDurationSecs=Send(self,@GetDuration,#iSpellPower=iSpellPower));
+      Send(self,@DoBlind,#who=who,#oTarget=oTarget,#duration=iDuration);
+		
+		% Internal Cooldown
+		Send(who,@InternalCooldown,#spellid=viSpell_num);
       
       propagate;
    }
 
-   DoBlind(what=$,oTarget=$,iDurationSecs=0)
+   DoBlind(who=$,oTarget=$,duration=0)
    {
-      local oSpell, iDuration;
+      local iBlinded, oSpell;
 
-      iDuration = iDurationSecs;
-      
+		% Let's see if the spell is suffering from diminishing returns.
+		iBlinded = Send(oTarget,@CanBeBlinded);
+		
+		if iBlinded > 0
+		{
+			duration = duration / 2;
+			
+			if iBlinded > 1
+			{
+				duration = duration / 2;
+				
+				if iBlinded > 2
+				{
+					% Target has grown immune to blind.
+					if who <> $
+					{
+						Send(who,@MsgSendUser,#message_rsc=blind_victim_immune_caster);
+					}
+					Send(oTarget,@MsgSendUser,#message_rsc=blind_victim_immune_target);
+					
+					return;
+				}
+			}
+		}
+		
+		% Increase the diminishing returns counter by 1.
+		Send(oTarget,@DiminishingReturns,#spellid=viSpell_num);
+		
+		% Reduce duration based on eagle eyes.
       oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
       if Send(oTarget,@IsEnchanted,#what=oSpell)
       {
-         iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
-                          #iDuration=iDuration);
-         if iDuration = $
-         {
-            % Resisted completely.
-            return;
-         }
+         duration = Send(oSpell,@DoEagleEyes,#oCaster=who,#oTarget=oTarget,#duration=duration);
       }
 
-      % Bound and convert duration to milliseconds
-      iDuration = bound(iDuration,3,20);
-      iDuration = iDuration * 1000;
+		if duration = 0
+		{
+			% Resisted completely.
+			return;
+		}
+
+      % Bound
+      duration = bound(duration,2000,$);
+		
+      Send(oTarget,@StartEnchantment,#what=self,#time=duration);
 
       if IsClass(oTarget,&Player)
       {
+			% Do not blind DMs.
          if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
          {
             Send(oTarget,@MsgSendUser,#message_rsc=blind_on);
@@ -178,21 +222,25 @@ messages:
          % class is Monster
          Post(oTarget,@ResetBehaviorFlags);
       }
-
-      Send(what,@MsgSendUser,#message_rsc=blind_caster,
-           #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
-      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
+		
+      if IsClass(who,&Player)
+		{
+			Send(who,@MsgSendUser,#message_rsc=blind_caster,#parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
+		}
 
       return;
    }
 
-   GetDuration(iSpellPower=0)
+   GetDuration(iSpellPower=0,target=$)
    {
       local iDuration;
 
-      iDuration = (5 + iSpellPower/6);
-
-      return random(iDuration/2,iDuration);
+      % 5 to 10 seconds based on spellpower and up to a 2 seconds bonus depending on the target's karma,
+		% to compensate for low spellpower. Capped at 10 seconds.
+      iDuration = 5000 + iSpellPower * 50 + 20 * bound(Send(target,@GetKarma,#detect=TRUE),0,100);
+		iDuration = bound(iDuration,3000,10000);
+		
+      return iDuration;
    }
    
    EndEnchantment(who = $, report = TRUE)
@@ -224,7 +272,7 @@ messages:
    RestartEnchantmentEffect(who=$,state=$)
    {
       Send(who,@MsgSendUser,#message_rsc=blind_on);
-      Send(who,@EffectSendUser, #what=self, #effect=EFFECT_BLIND_ON);
+		Send(who,@EffectSendUser, #what=self, #effect=EFFECT_BLIND_ON);
       
       return;
    }

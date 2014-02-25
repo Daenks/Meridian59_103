@@ -75,16 +75,11 @@ messages:
       return;
    }
 
-   CastSpell(who = $,iSpellPower= 0, ltargets = $)
-   {
-      Send(who,@AddAttackModifier,#what=self);
-     
-      propagate;
-   }
+   GetStateValue(who = $, iSpellPower = 0,target=$)      
+   {      
+      Send(target,@AddAttackModifier,#what=self);       
 
-   GetStateValue(iSpellpower=$)
-   {
-      return iSpellpower;
+      return iSpellPower;
    }
 
    GetDuration(iSpellPower=0)
@@ -101,17 +96,20 @@ messages:
       local oHoldSpell, iDuration;
 
       Send(who,@RemoveAttackModifier,#what=self);
-
-      % Now, for the side effect.  Hold 'em!
-      oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
-      if Send(who,@IsEnchanted,#what=oHoldSpell)
-      {
-         Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
-      }
-      
-      % Hold duration is measured in seconds, not milliseconds.  Lasts 1/6 the time of the bonus.
-      iDuration = (Send(self,@GetDuration,#iSpellPower=state))/6;
-      Send(oHoldSpell,@DoHold,#what=self,#otarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
+		
+		if report = TRUE
+		{
+			% Now, for the side effect.  Hold 'em!
+			oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
+			if Send(who,@IsEnchanted,#what=oHoldSpell)
+			{
+				Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
+			}
+			
+			% Hold duration is measured in milliseconds.  Lasts 1/6 the time of the bonus.
+			iDuration = Send(self,@GetDuration,#iSpellPower=state)/6;
+			Send(oHoldSpell,@DoHold,#who=self,#otarget=who,#duration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
+		}
       
       propagate;
    }

@@ -201,6 +201,14 @@ messages:
 
       return lRooms;
    }
+	
+   CanBeRemovedByPlayer()
+   "Returns if a spell can be removed by normal Purge/Purify"
+   {
+		% Not affected by purge. It's not a combat buff and an extreme pain to handle since the state is
+		% not the SP, as with every other PE, but a list containing draintime and listener object.
+      return FALSE;
+   }
 
 
 end

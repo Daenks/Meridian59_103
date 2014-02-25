@@ -66,8 +66,7 @@ messages:
 
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
 
-      Send(oSpell,@DoHold,#what=self,#otarget=what,
-           #iDurationSecs=BASE_HOLD_DURATION+piBonus);
+      Send(oSpell,@DoHold,#who=self,#otarget=what,#duration=(BASE_HOLD_DURATION+piBonus)*1000);
 
       propagate;
    }   

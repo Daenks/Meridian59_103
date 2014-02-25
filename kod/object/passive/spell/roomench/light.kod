@@ -65,32 +65,26 @@ messages:
       return 0;
    }
 
-   CanPayCosts(who = $, lTargets = $)
-   {
-      local oRoom;
-
-      oRoom = Send(who,@GetOwner);
-      % check if room already has light
-      if Send(oRoom,@IsEnchanted,#what=self)
-      {
-	 Send(who,@MsgSendUser,#message_rsc=light_unnecessary);
-	 return False;
-      }
-
-      propagate;
-   }
-
-
    CastSpell( who = $, iSpellPower = 0 )
    "Initiation point for the spell."
    {
       local oRoom;
 
       oRoom = Send(who,@GetOwner);
+		
       if Send(oRoom,@IsEnchanted,#what=self)
       {
-        Send(who,@MsgSendUser,#message_rsc=light_unnecessary);
-        return;
+			% Allow recasting with equal or greater SP. Just a quality of life improvement, since
+			% the duration of the spell has been significantly increased.
+			if Send(oRoom,@GetEnchantmentState,#what=self) > iSpellpower + 25
+			{
+				Send(who,@MsgSendUser,#message_rsc=light_unnecessary);
+				return;
+			}
+			else
+			{
+				Send(oRoom,@RemoveEnchantment,#what=self);
+			}
       }
 
       % global effects of the enchantment
@@ -107,10 +101,10 @@ messages:
    {
       local iDuration;
 
-      iDuration = 45 + (iSpellPower*3);  %% 30 - 228 seconds
+      iDuration = 600 + 12 * iSpellPower;  %% 10 to 30 minutes
       iDuration = iDuration * 1000;      %% convert to seconds            
 
-      return random(iDuration/2,iDuration);
+      return;
    }
 
    StartEnchantmentNewOccupant( who = $ )

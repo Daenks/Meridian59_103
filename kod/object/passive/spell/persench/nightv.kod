@@ -55,26 +55,23 @@ messages:
    ResetReagents()
    {
       plReagents = $;
-      plReagents = Cons([&ElderBerry,3],plReagents);
+      plReagents = Cons([&ElderBerry,1],plReagents);
 
       return;
    }
 
    GetStateValue(who = $, iSpellPower = 0,target=$)
    {
-      local iState;
-
-      iState = iSpellPower + 50;
-      Send(target,@GainLight,#amount=iState);
+      Send(target,@GainLight,#amount=iSpellPower+50);
       
-      return iState;
+      return iSpellPower;
    }
    
    GetDuration(iSpellpower = 0)
    {
       local iDuration;
       
-      iDuration = 1500 + 10 * iSpellPower;
+      iDuration = 1200 + 24 * iSpellPower;  %% 20 to 60 minutes
       iDuration = iDuration * 1000;
       
       return iDuration;
@@ -83,7 +80,7 @@ messages:
 
    EndEnchantment(who = $, report = TRUE, state = 0)
    {
-      Send(who,@LoseLight,#amount=state);
+      Send(who,@LoseLight,#amount=state+50);
       
       propagate;
    }

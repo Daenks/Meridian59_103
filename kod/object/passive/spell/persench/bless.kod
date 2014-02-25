@@ -71,16 +71,11 @@ messages:
       return;
    }
 
-   CastSpell(who = $,iSpellPower= 0,ltargets=$)
-   {
-      Send(First(lTargets),@AddAttackModifier,#what=self);       
+   GetStateValue(who = $, iSpellPower = 0,target=$)      
+   {      
+      Send(target,@AddAttackModifier,#what=self);       
 
-      propagate;
-   }
-
-   GetStateValue(iSpellpower=$)
-   {
-      return iSpellpower;
+      return iSpellPower;
    }
 
    GetDuration(iSpellPower=0)

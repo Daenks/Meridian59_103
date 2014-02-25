@@ -20,7 +20,7 @@ resources:
    denial_desc_rsc = \
       "Causes the caster to unrealize their wounds, but beware when "
       "you realize its a hoax, because the wounds are still just as deep!  "
-      "Requires a firesand and solagh to cast."
+      "Requires solagh to cast."
 
    denial_on_rsc = "Your wounds suspiciously disappear."
    denial_failed_rsc = "Hmmm, you can't seem to convince yourself of perfect health."
@@ -28,6 +28,9 @@ resources:
       "least not at the same time."
 
    denial_off_rsc = "Ouch - you are reminded of your previous weariness."
+	
+	denial_warning = "Your realize that your wounds are too deep to keep going.  Your life begins to fade..."
+	
    denial_sound = rdenial.wav
 
 classvars:
@@ -46,14 +49,18 @@ classvars:
    viMana = 15
 
    viSpellExertion = 5
-   viCast_time = 1000
+   viCast_time = 0
 
    vbCanCastOnOthers = FALSE
 
    vrSucceed_wav = denial_sound
+	
+	% It is viPurge_factor times as hard to purge the spell.
+	viPurge_factor = 4
 
 properties:
 
+plDelusionalPeople = $
 
 messages:
 
@@ -76,57 +83,101 @@ messages:
    ResetReagents()
    {
       plReagents = $;
-      plReagents = Cons([&FireSand,2], plReagents);
       plReagents = Cons([&Solagh,1],plReagents);
 
       return;
    }
+	
+   CastSpell(who = $,iSpellPower=0,lTargets=$)
+   {
+      local i, iHPGain;
+      
+      iHPGain = send(who,@GetMaxHealth) - send(who,@GetHealth);
+		
+		for i in plDelusionalPeople
+		{
+			if Nth(i,1) = who
+			{
+				plDelusionalPeople = DelListElem(plDelusionalPeople,i);						
+			}
+		}
+		
+		plDelusionalPeople = Cons([who,iHPGain],plDelusionalPeople);
+		
+		propagate;
+	}
 
    GetDuration(iSpellPower = 0)
    {
-      local iDuration;
-
-      % 10 - 20 plus 1 second per spellpower
-      iDuration = random(10000,20000) + (iSpellPower * 1000);
-      iDuration=bound(iDuration,20000,120000);
-      
-      return iDuration;      
+      return 60000;      
    }
 
 
    GetStateValue(who = $, Target = $, iSpellPower = 1)
    {
-      local iHPGain, iSpellpowerBonus;
+		local i, iHPGain;
+		
+		iHPGain = 0;
+		
+		for i in plDelusionalPeople
+		{
+			if Nth(i,1) = who
+			{
+				iHPGain = Nth(i,2);
+				break;
+			}
+		}
+		
+		iHPGain = iHPGain * iSpellPower / 100;
       
-      iHPGain = send(who,@GetMaxHealth) - send(who,@GetHealth);
+      send(who,@GainHealth,#amount=iHPGain);
 
-      iSpellpowerBonus = (iSpellpower + 1) / 5;  %0 - 20, this is the percent of damage you don't get back when the enchantment fails.
-      iHPGain = send(who,@GainHealthNormal,#amount=iHPGain);
-
-      return iHPGain - (iSpellpowerBonus * iHPGain)/ 100 ;
+      return iSpellPower;
    }
 
 
    EndEnchantment(who = $, state=$, report = TRUE)
-   {      
-      post(self,@EndEnchantmentEffects,#who=who,#state=state);
+   {
+		local i, iHPGain;
+		
+		iHPGain = 0;
+		
+		for i in plDelusionalPeople
+		{
+			if Nth(i,1) = who
+			{
+				iHPGain = Nth(i,2);
+				
+				if report
+				{
+					plDelusionalPeople = DelListElem(plDelusionalPeople,i);						
+				}
+				
+				break;
+			}
+		}
+		
+		iHPGain = iHPGain * state / 100;
+	
+      post(self,@EndEnchantmentEffects,#who=who,#state=iHPGain,#report=report);
       
       propagate;
    }
 
-   EndEnchantmentEffects(who=$, state=$)
+   EndEnchantmentEffects(who=$, state=1, report=TRUE)
    {
-      if state
-      {
-         Send(who,@LoseHealth,#amount=state);
-      
-         if send(who,@GetHealth) < 1
-	      {
-            % Don't die: too harsh; makes spell unusable.
-            send(who,@GainHealthNormal,#amount=1);
-	      }
-      }
-      
+		if report AND state >= send(who,@GetHealth)
+		{
+			Send(who,@MsgSendUser,#message_rsc=denial_warning);
+         Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=TRUE);
+         Send(who,@SetPlayerFlag,#flag=PFLAG_NO_FIGHT,#value=TRUE);
+         Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=TRUE);
+			Send(who,@EffectSendUser,#effect=EFFECT_PARALYZE_ON);	
+			send(who,@StartDenialDeathTimer);
+		}
+		
+		send(who,@LoseHealth,#amount=state);
+		
       return;
    } 
 
@@ -134,8 +185,13 @@ messages:
    {
       return &DenialPotion;
    }
-
-
+	
+   IsIllusion()
+   {           
+		% No simple dispelling here. Makes the spell useless.
+      return FALSE;
+   }
+	
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

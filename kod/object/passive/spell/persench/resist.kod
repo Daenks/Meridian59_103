@@ -49,11 +49,23 @@ messages:
       local iValue;
       
       iValue = send(self,@GetResistanceStrength,#iSpellPower=iSpellPower);
+		
       send(self,@AddResistances,#who=target,#value=iValue);
       
-      return iValue;
+      return iSpellPower;
    }
 
+   EndEnchantment(who = $, report = TRUE, state = 0)
+   {
+      local iValue;
+		
+      iValue = send(self,@GetResistanceStrength,#iSpellPower=state);
+
+      Send(self,@RemoveResistances,#who=who,#value=iValue);
+
+      propagate;
+   }
+	
    AddResistances(who=$,value=$)
    {
       Send(who,@AddResistance,#what=viResistanceType,#value=value);
@@ -75,14 +87,6 @@ messages:
       iDuration = iDuration * 1000;	  %% translate to milliseconds
       
       return iDuration;
-   }
-
-   EndEnchantment(who = $, report = TRUE, state = -1)
-   {
-      if state = -1  { DEBUG("Bad data!"); state = 0; }
-      Send(self,@RemoveResistances,#who=who,#value=state);
-
-      propagate;
    }
 
    RemoveResistances(who=$,value=$)

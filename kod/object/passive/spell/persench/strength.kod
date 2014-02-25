@@ -64,14 +64,18 @@ messages:
    }
 
 
-   GetStateValue(who = $, iSpellPower = 0, Target = $)
+   GetStateValue(who = $, iSpellPower = 0, target = $)
    {
-      local iMightChange;
-      iMightChange = iSpellPower/5+1;
+      send(Target,@AddMight,#points=iSpellPower/5);
 
-      send(Target,@AddMight,#points=iMightChange);
+      return iSpellPower;
+   }
 
-      return iMightChange;
+   EndEnchantment( who = $, state = 0, report = TRUE )
+   {
+      send(who,@AddMight,#points=-state/5);
+     
+      propagate;
    }
 
    GetDuration(iSpellPower = 0)
@@ -81,13 +85,6 @@ messages:
       iDuration = iDuration * 1000;
       
       return iDuration;
-   }
-
-   EndEnchantment( who = $, state = 0, report = TRUE )
-   {
-      send(who,@AddMight,#points=-state);
-     
-      propagate;
    }
 
    GetPotionClass()

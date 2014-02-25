@@ -50,6 +50,9 @@ classvars:
    viCast_time = 2000
    viChance_To_Increase = 15
    vrSucceed_wav = resistpoison_sound
+	
+	% It is viPurge_factor times as hard to purge the spell.
+	viPurge_factor = 2
 
 properties:
 
@@ -64,11 +67,7 @@ messages:
 
    GetStateValue(iSpellPower=$)
    {
-      local ifactor;    
-
-      iFactor = bound(iSpellPower,10,99);
-
-      return iFactor;
+      return iSpellPower;
    }
   
    GetDuration(iSpellPower = 0)

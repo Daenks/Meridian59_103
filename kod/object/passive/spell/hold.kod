@@ -24,9 +24,12 @@ resources:
       "Requires purple mushrooms to cast."
    
    hold_already_enchanted = "%s%s is already held."
-   hold_caster = "%s%s is now held in place by a magical force."
+   hold_caster = "%s%s stops dead in %s tracks."
    hold_on = "A magical tingling pulses through your body.  You are unable to move."
    hold_off = "The magical hold lifts and you are able to move once more."
+	hold_cannot_cast_yet = "You can use the hold spell again in %i seconds."
+	hold_victim_immune_caster = "Your target has temporarily grown immune to movement impairing effects!"
+	hold_victim_immune_target = "You have temporarily grown immune to movement impairing effects!"
 
 classvars:
 
@@ -38,8 +41,9 @@ classvars:
    viSchool = SS_QOR
    viSpell_level = 4
 
-   viSpellExertion = 8
-   viMana = 15
+   viSpellExertion = 0
+   viMana = 10
+	viPostCast_time = 0
 
    viHarmful = TRUE
    viOutlaw = TRUE
@@ -72,6 +76,13 @@ messages:
    CanPayCosts(who = $, lTargets = $, bItemCast = FALSE)
    {
       local target, i;
+		
+		% Can't cast if we are on internal cooldown.
+		if Send(who,@CanCastHold) <> $
+      {
+			Send(who,@MsgSendUser,#message_rsc=hold_cannot_cast_yet,#parm1=Send(who,@GetHoldCooldown)/1000);
+         return FALSE;
+      }
       
       % Can cast spell if the 1 target item is a user
       if Length(lTargets) <> 1
@@ -119,44 +130,17 @@ messages:
 
    CastSpell(who=$, lTargets=$, iSpellpower=0)
    {
-      local oTarget,oSpell,iDuration;
+      local oTarget,iDuration;
 
       oTarget = First(lTargets);
+		
       iDuration = Send(self,@GetDuration,#ispellPower=iSpellPower);
 
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
-
-      % Check if the target has free action
-      if Send(oTarget,@IsEnchanted,#what=oSpell)
-      {
-         iDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=who,
-                          #oTarget=oTarget,#iDuration=iDuration);
-         if iDuration = $
-         {
-            % Resisted completely
-            propagate;
-         }
-      }
-
-      Send(who,@MsgSendUser,#message_rsc=hold_caster,
-           #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
-      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,#state=TRUE);
-
-      if IsClass(oTarget,&Player)
-      {
-         Send(oTarget,@MsgSendUser,#message_rsc=hold_on);    
-
-         % Do not paralyze DMs.
-         if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
-         {
-            Send(oTarget,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
-         }
-      }
-      else  
-      {
-         % class is &Monster
-         Send(oTarget,@ResetBehaviorFlags);
-      }
+		% Spell effects
+      Send(self,@DoHold,#who=who,#oTarget=oTarget,#duration=iDuration);
+		
+		% Internal Cooldown
+		Send(who,@InternalCooldown,#spellid=viSpell_num);
       
       propagate;
    }
@@ -198,66 +182,78 @@ messages:
    {
       local iDuration;
 
-      % about 2 - 6 seconds
-      iDuration = 2000 + (40 * iSpellPower);
+      % 3 to 6 seconds based on SP.
+      iDuration = 3000 + iSpellPower * 30;
 
-      return random(iDuration/2,iDuration);
+      return iDuration;
    }
 
-   DoHold(what = $, otarget = $, iDurationSecs = $, iDuration = $, report=TRUE,
-          bAllowFreeAction=TRUE)   
+   DoHold(who = $, otarget = $, duration = $, report=TRUE, bAllowFreeAction=TRUE)   
    "Holds target for durationsecs seconds."
    {
-      local i, oSpell, iTotalDuration;
-            
+      local i, oSpell, iTotalDuration, iHeld;
+		
+		% Deal with nil arguments being passed on.
       if otarget = $
       {
          return FALSE;
       }
-
-      % check for enchantment already applied
+		
+      % Check if the target is held here since Hold is also applied by other objects than the spell itself.
       if Send(otarget,@IsEnchanted,#what=self)
       {
          return FALSE;
       }
+	
+		% Let's see if the spell is suffering from diminishing returns.
+		iHeld = Send(oTarget,@CanBeHeld);
+		
+		if iHeld > 0
+		{
+			duration = duration / 2;
+			
+			if iHeld > 1
+			{
+				duration = duration / 2;
+				
+				if iHeld > 2
+				{
+					% Target has grown immune to hold.
+					if who <> $
+					{
+						Send(who,@MsgSendUser,#message_rsc=hold_victim_immune_caster);
+					}
+					Send(oTarget,@MsgSendUser,#message_rsc=hold_victim_immune_target);
+					
+					return;
+				}
+			}
+		}
 
-      % Use iDuration (in ms).  If it is nil, then covert iDurationSecs to ms.
-      if iDuration = $
-      {
-         if iDurationSecs = $
-         {
-            iTotalDuration = 5000;
-         }
-         else
-         {
-            iTotalDuration = iDurationSecs * 1000;
-         }
-      }
-      else
-      {
-         iTotalDuration = iDuration;
-      }
-
-      % check if the target has free action unless not allowed
+		% Increase the diminishing returns counter by 1.
+		Send(oTarget,@DiminishingReturns,#spellid=viSpell_num);
+		
+      % Check if the target has free action unless not allowed.
       if bAllowFreeAction
       {
-         oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
-         if Send(otarget,@IsEnchanted,#what=oSpell)
-         {
-            iTotalDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=what,
-                                  #oTarget=oTarget,#iDuration=iTotalDuration);
-            if iTotalDuration = $
-            {
-               % Resisted completely
-               return FALSE;
-            }
-         
-            iTotalDuration = bound(iTotalDuration,500,10000);
-         }
-      }
+			% Reduce duration based on free action.
+			oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
+			if Send(oTarget,@IsEnchanted,#what=oSpell)
+			{
+				duration = Send(oSpell,@DoFreeAction,#oCaster=who,#oTarget=oTarget,#duration=duration);
+			}
+		}
+		
+		if duration = 0
+		{
+			% Resisted completely.
+			return;
+		}
+		
+      % Bound
+      duration = bound(duration,2000,$);
 
-      Send(oTarget,@StartEnchantment,#what=self,#time=iTotalDuration,
-           #report=report,#state=report);
+      Send(oTarget,@StartEnchantment,#what=self,#time=duration,#report=report,#state=report);
 
       if IsClass(oTarget,&Player)
       {
@@ -276,6 +272,11 @@ messages:
       {
          Send(oTarget,@ResetBehaviorFlags);
       }
+		
+      if IsClass(who,&Player)
+		{
+			Send(who,@MsgSendUser,#message_rsc=hold_caster,#parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName),#parm3=Send(oTarget,@GetHisHer));
+		}
       
       return;
    }

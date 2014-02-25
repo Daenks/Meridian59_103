@@ -2818,7 +2818,7 @@ messages:
       
 	  % 3.2 Get time-deltas
 	  iDelta = iCurrentTime - piLastMoveUpdateTime;
-      iDeltaVigor = iCurrentTime - piLastVigorDrainTime;
+      iDeltaVigor = abs(iCurrentTime - piLastVigorDrainTime);
 	  
 	  % 3.3 Bound time-deltas
 	  % Prevents long teleports after stops and negative numbers
@@ -2968,9 +2968,15 @@ messages:
          
          if Send(self,@CheckPlayerFlag,#flag=PFLAG2_HASTED,#flagset=2)
          {
-            iHasteLevel = Send(self,@GetEnchantedState,
-                               #what=Send(SYS,@FindSpellByNum,#num=SID_HASTE));
-
+				if Send(self,@IsEnchanted,#what=Send(SYS,@FindSpellByNum,#num=SID_HASTE))
+				{
+					iHasteLevel = Send(self,@GetEnchantedState,#what=Send(SYS,@FindSpellByNum,#num=SID_HASTE));
+				}
+				else
+				{
+					iHasteLevel = Send(self,@GetEnchantedState,#what=Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION));
+				}
+				
             iExertion = (iExertion * (100 - iHasteLevel)) / 100;
          }
 
@@ -3322,7 +3328,10 @@ messages:
       if pbLogged_on
       {
          AddPacket(1,BP_EFFECT,2,effect);
-         Send(what,@SendEffectData,#what=self);
+			if what <> $
+			{
+				Send(what,@SendEffectData,#what=self);
+			}
 
          SendPacket(poSession);
       }

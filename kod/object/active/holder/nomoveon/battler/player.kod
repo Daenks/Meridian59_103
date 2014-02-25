@@ -729,6 +729,9 @@ resources:
    player_truced = "Shal'ille's magic compels you to respect the truce."
    
    Jig_cannot_attack = "It wouldn't feel right to attack the %s while you two are dancing so well together!"
+	
+	denial_death = "Death has caught up with you. Your vision dims..."
+	denial_survived = "You pull through!"
    
 classvars:
 
@@ -1004,7 +1007,21 @@ properties:
 
    % Players will naturally fall out of groups if they aren't getting kills
    ptLeaveBuilderGroupTimer = $
+	
+	% Internal Spell Cooldowns
+	ptBlind = $
+	ptDazzle = $
+	ptHold = $
+	
+	% These 4 properties handle hold and blind diminishing returns.
+	ptBlinded = $
+	piBlinded = 0
+	ptHeld = $
+	piHeld = 0
 
+	% This here is started when a person enters limbo after dropping to 0 from a denial.
+	ptDenialDeathTimer = $
+	
 messages:
 
    Constructor()
@@ -4901,22 +4918,22 @@ messages:
 
       Send(self,@LoseHealth,#amount=damage);
 	  
-	  oWeapon = Send(what,@GetWeapon);
-	     
-	  if IsClass(what,&Monster)
-	  {
-	     RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_monster_attack_string);
-	  }
-	  else
-	  {
-	     if oWeapon <> $
-	     {
-            RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,Send(Send(what,@GetWeapon),@GetTrueName));
-	     }
-	     else
-	     {
-            RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_no_weapon_string);
-	     }
+		oWeapon = Send(what,@GetWeapon);
+		  
+		if IsClass(what,&Monster)
+		{
+			RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_monster_attack_string);
+		}
+		else
+		{
+			if oWeapon <> $
+			{
+				RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,Send(Send(what,@GetWeapon),@GetTrueName));
+			}
+			else
+			{
+				RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_no_weapon_string);
+			}
       }
 
       if piHealth <= 0
@@ -8198,6 +8215,19 @@ messages:
       %  for Portal of Life to reduce penalties.  We get the default value of
       %  piDeathCost from SYS, so that we can adjust global death penalties.
 
+		% Kill the denial death timer in case someone is killed in limbo.
+		% Also allow him to move and fight again.
+		if ptDenialDeathTimer <> $
+		{
+			DeleteTimer(ptDenialDeathTimer);
+			ptDenialDeathTimer = $;
+			
+			Send(self,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=FALSE);
+			Send(self,@SetPlayerFlag,#flag=PFLAG_NO_FIGHT,#value=FALSE);
+			Send(self,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=FALSE);
+			Send(self,@EffectSendUser,#effect=EFFECT_PARALYZE_OFF);	
+		}
+		
       if Send(self,@GetOwner) <> $
          AND Send(Send(self,@GetOwner),@GetRoomNum) = RID_UNDERWORLD
       {
@@ -13237,6 +13267,156 @@ messages:
 	   }
 	   return;
    }
+	
+	InternalCooldown(spellid=$)
+	{
+		if spellid = SID_BLIND 
+		{
+			ptBlind = CreateTimer(self,@AllowCastingBlind,30000);
+		}
+		
+		if spellid = SID_DAZZLE
+		{
+			ptDazzle = CreateTimer(self,@AllowCastingDazzle,30000);
+		}
+		
+		if spellid = SID_HOLD
+		{
+			ptHold = CreateTimer(self,@AllowCastingHold,20000);
+		}		
+		return;
+	}
+	
+	AllowCastingBlind()
+	{
+		ptBlind = $;
+		
+		return;
+	}
+	
+	CanCastBlind()
+	{
+		return ptBlind;
+	}
+	
+	GetBlindCooldown()
+	{
+		return gettimeremaining(ptBlind);
+	}
+	
+	AllowCastingDazzle()
+	{
+		ptDazzle = $;
+		
+		return;
+	}
+	
+	CanCastDazzle()
+	{
+		return ptDazzle;
+	}
 
+	GetDazzleCooldown()
+	{
+		return gettimeremaining(ptDazzle);
+	}
+	
+	AllowCastingHold()
+	{
+		ptHold = $;
+		
+		return;
+	}
+	
+	CanCastHold()
+	{
+		return ptHold;
+	}
+	
+	GetHoldCooldown()
+	{
+		return gettimeremaining(ptHold);
+	}
+	
+	DiminishingReturns(spellid=$)
+	{
+		if spellid = SID_BLIND or spellid = SID_DAZZLE
+		{
+			if ptBlinded <> $
+			{
+				DeleteTimer(ptBlinded);
+			}	
+			ptBlinded = CreateTimer(self,@AllowBlindingMe,30000);
+			piBlinded = piBlinded + 1;
+		}
+		
+		if spellid = SID_HOLD
+		{
+			if ptHeld <> $
+			{
+				DeleteTimer(ptHeld);
+			}
+			ptHeld = CreateTimer(self,@AllowHoldingMe,20000);
+			piHeld = piHeld + 1;
+		}		
+		return;
+	}
+	
+	AllowBlindingMe()
+	{
+		ptBlinded = $;
+		piBlinded = 0;
+		
+		return;
+	}
+	
+	CanBeBlinded()
+	{
+		return piBlinded;
+	}
+	
+	AllowHoldingMe()
+	{
+		ptHeld = $;
+		piHeld = 0;
+		
+		return;
+	}
+	
+	CanBeHeld()
+	{
+		return piHeld;
+	}
+	
+	StartDenialDeathTimer()
+	{
+		ptDenialDeathTimer = CreateTimer(self,@CutTheThread,10000);
+		
+		return;
+	}
+	
+	CutTheThread()
+	{
+		ptDenialDeathTimer = $;
+		
+		if send(self,@GetHealth) > 0
+		{
+			Send(self,@MsgSendUser,#message_rsc=denial_survived);
+		}
+		else
+		{
+			Send(self,@MsgSendUser,#message_rsc=denial_death);
+			Send(self,@Killed,#what=self);		
+		}
+		
+		% In either case, release the poor bastard.
+		Send(self,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=FALSE);
+		Send(self,@SetPlayerFlag,#flag=PFLAG_NO_FIGHT,#value=FALSE);
+		Send(self,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=FALSE);
+		Send(self,@EffectSendUser,#effect=EFFECT_PARALYZE_OFF);	
+		
+		return;	
+	}
+	
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

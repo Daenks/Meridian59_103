@@ -74,34 +74,36 @@ messages:
       return;
    }
 
-   GetStateValue(who=$,iSpellpower=$,target = $)
+   GetStateValue(who = $, iSpellPower = 0, target = $)
    {
-      local iFactor;
-      
-      Send(target,@AddAttackModifier,#what=self);
-      iFactor = bound(iSpellPower+1,10,100);
-      
-      return iFactor;
-   }  
+		if Send(Target,@IsEnchanted,#what=Send(SYS,@FindSpellByNum,#num=SID_NIGHT_VISION)) 
+      {
+         Send(Target,@RemoveEnchantment,#what=Send(SYS,@FindSpellByNum,#num=SID_NIGHT_VISION),#report=FALSE);
+      } 
+	   
+      send(Target,@AddAim,#points=iSpellPower/5);
+	  
+      Send(Target,@GainLight,#amount=iSpellPower*3/2);
 
-   EndEnchantment(who=$,report=TRUE,state=$)
+      return iSpellPower;
+   }
+   
+   EndEnchantment( who = $, state = 0, report = TRUE )
    {
-      Send(who,@RemoveAttackModifier,#what=self);
-      
+      send(who,@AddAim,#points=-state/5);
+      send(who,@LoseLight,#amount=state*3/2);
+     
       propagate;
    }
 
-   GetDuration(iSpellpower = 0)
+   GetDuration(iSpellPower = 0)
    {
       local iDuration;
-
-      % 2 - 8.6 minutes max.
-      iDuration = 120 + (4 * iSpellPower);
-      % Convert to ms.
+      iDuration = 300 + (iSpellpower * 6);
       iDuration = iDuration * 1000;
       
       return iDuration;
-   }   
+   }  
 
    OfferToNewCharacters()
    {
@@ -113,18 +115,16 @@ messages:
       return &EagleEyesPotion;
    }
 
-   DoEagleEyes(oCaster=$, oTarget=$, iDuration=0, iFactor=1)
+   DoEagleEyes(oCaster=$, oTarget=$, duration=0, iFactor=1)
    "Calculates adjustment of blinding spell duration.  Returns $ if resisted "
    "completely.  iFactor is the factor by which we want to increase the effect."
    {
-      local iNewDuration, iChance, oEagleEyesStrength;
+      local iNewDuration, oEagleEyesStrength;
 
       oEagleEyesStrength = Send(oTarget,@GetEnchantedState,#what=self);
 
-      % Check if they repel the blinding spell outright 1-10% base chance,
-      %  modified by factor.
-      iChance = (oEagleEyesStrength * (SPELL_RESIST_PERCENT * iFactor)) / 100;
-      if Random(0,100) <= iChance
+      % Check if they repel the blinding spell outright 1-10% base chance
+      if Random(0,100) <= oEagleEyesStrength / 10
       {
          Send(oTarget,@MsgSendUser,#message_rsc=EagleEyes_evade);
          if IsClass(oCaster,&Player)
@@ -132,11 +132,11 @@ messages:
             Send(oCaster,@MsgSendUser,#message_rsc=EagleEyes_evade_caster);
          }
          
-         return $;
+         return 0;
       }
 
-      % Duration reduced 0-50%, depending on spellpower.
-      iNewDuration = iDuration - (iDuration * oEagleEyesStrength)/200;
+      % Duration reduced 0-20%, depending on spellpower.
+      iNewDuration = duration - (duration * oEagleEyesStrength / 500);
       Post(oTarget,@MsgSendUser,#message_rsc=EagleEyes_resist);
       
       if IsClass(oCaster,&Player)
@@ -146,41 +146,6 @@ messages:
 
       return iNewDuration;
    }
-
-   %%% Attack Modifier stuff
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
-      {
-         return hit_roll + iFactor;
-      }
-
-      return hit_roll;
-   }
-
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
-      {
-         return damage + 1;
-      }
-
-      return damage;
-   }
-
-
+	
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -27,6 +27,9 @@ resources:
 
    Dazzle_on = "The world is washed away in a flood of pure light."
    Dazzle_off = "Your vision begins to clear."
+	Dazzle_cannot_cast_yet = "You can use the dazzle spell again in %i seconds."
+	Dazzle_victim_immune_caster = "Your target has temporarily grown immune to vision impairing effects!"
+	Dazzle_victim_immune_target = "You have temporarily grown immune to vision impairing effects!"
 
    Dazzle_sound = sDazzle.wav
 
@@ -39,10 +42,11 @@ classvars:
    viSpell_num = SID_DAZZLE
    viSchool = SS_SHALILLE
    viSpell_level = 4
-   viMana = 12
+   viMana = 10
    viChance_To_Increase = 15
 
-   viSpellExertion = 6
+   viSpellExertion = 0
+	viPostCast_time = 0
 
    viOutlaw = TRUE
    viHarmful = TRUE
@@ -71,6 +75,13 @@ messages:
    CanPayCosts(who = $, lTargets = $, bItemCast = FALSE)
    {
       local target, i;
+		
+		% Can't cast if we are on internal cooldown.
+		if Send(who,@CanCastDazzle) <> $
+      {
+			Send(who,@MsgSendUser,#message_rsc=Dazzle_cannot_cast_yet,#parm1=Send(who,@GetDazzleCooldown)/1000);
+         return FALSE;
+      }
       
       % Can cast spell if the 1 target item is a user
       if Length(lTargets) <> 1
@@ -122,41 +133,76 @@ messages:
       local oTarget, iDuration;
 
       oTarget = First(lTargets);
-      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower,
-                       #caster=who,#target=otarget);
+		
+      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower,#caster=who,#target=otarget);
 
-      Send(self,@DoDazzle,#what=who,#oTarget=oTarget,#iDurationSecs=iDuration);
+      % Spell effects
+      Send(self,@DoDazzle,#who=who,#oTarget=oTarget,#duration=iDuration);
+		
+		% Internal Cooldown
+		Send(who,@InternalCooldown,#spellid=viSpell_num);
       
       propagate;
    }
 
-   DoDazzle(what=$,oTarget=$,iDurationSecs=0)
+   DoDazzle(who=$,oTarget=$,duration=0)
    {
-      local oSpell, iDuration;
+      local iBlinded, oSpell;
 
-      iDuration = iDurationSecs;
+		% Let's see if the spell is suffering from diminishing returns.
+		iBlinded = Send(oTarget,@CanBeBlinded);
+		
+		if iBlinded > 0
+		{
+			duration = duration / 2;
+			
+			if iBlinded > 1
+			{
+				duration = duration / 2;
+				
+				if iBlinded > 2
+				{
+					% Target has grown immune to dazzle.
+					if who <> $
+					{
+						Send(who,@MsgSendUser,#message_rsc=Dazzle_victim_immune_caster);
+					}
+					Send(oTarget,@MsgSendUser,#message_rsc=Dazzle_victim_immune_target);
+					
+					return;
+				}
+			}
+		}
+
+		% Increase the diminishing returns counter by 1.
+		Send(oTarget,@DiminishingReturns,#spellid=viSpell_num);
      
+		% Reduce duration based on eagle eyes.
       oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
       if Send(oTarget,@IsEnchanted,#what=oSpell)
       {
-         iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
-                          #iDuration=iDuration,#iFactor=2);
-         if iDuration = $
-         {
-            % Resisted completely.
-            return;
-         }
+         duration = Send(oSpell,@DoEagleEyes,#oCaster=who,#oTarget=oTarget,#duration=duration);
       }
 
-      % Convert duration to milliseconds
-      iDuration = bound(iDuration,3,15);
-      iDuration = iDuration * 1000;
+		if duration = 0
+		{
+			% Resisted completely.
+			return;
+		}
+		
+      % Bound
+      duration = bound(duration,2000,$);
+
+      Send(oTarget,@StartEnchantment,#what=self,#time=duration);
 
       if IsClass(oTarget,&Player)
       {
-         Send(oTarget,@MsgSendUser,#message_rsc=Dazzle_on);
-         Send(oTarget,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,
-              #duration=iDuration);
+         % Do not dazzle DMs.
+         if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
+         {		
+				Send(oTarget,@MsgSendUser,#message_rsc=Dazzle_on);
+				Send(oTarget,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,#duration=duration);
+			}
       }
       else
       {
@@ -164,33 +210,23 @@ messages:
          Post(oTarget,@ResetBehaviorFlags);
       }
 
-      Send(what,@MsgSendUser,#message_rsc=Dazzle_caster,
-           #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
-      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
+      if IsClass(who,&Player)
+		{
+			Send(who,@MsgSendUser,#message_rsc=Dazzle_caster,#parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
+		}
 
       return;
    }
 
-   GetDuration(iSpellPower=0,caster=$,target=$)
+   GetDuration(iSpellPower=0,target=$)
    {
-      local iDuration,iKarmaDif,iKarma;
+      local iDuration;
 
-      % 1-8 seconds based on spellpower.
-      iDuration = (iSpellPower/12);
-      if IsClass(caster,&Battler)
-      {
-         iKarma = Send(caster,@GetKarma);
-      }
-      else
-      {
-         % Non battlers, like the sun
-         iKarma = random(30,90);
-      }
-
-       % 1-10 seconds based on Karma difference.
-      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/20;
-      iDuration = bound(iDuration + iKarmaDif,3,15);  
-
+      % 4 to 8 seconds based on spellpower and up to a 2 seconds bonus depending on the target's karma,
+		% to compensate for low spellpower. Capped at 8 seconds.
+      iDuration = 4000 + iSpellPower * 40 + 20 * bound(-Send(target,@GetKarma,#detect=TRUE),0,100);
+		iDuration = bound(iDuration,2000,8000);
+		
       return iDuration;
    }
    
@@ -203,14 +239,14 @@ messages:
             Send(who,@MsgSendUser,#message_rsc=Dazzle_off);
          }
 
-         Send(who,@EffectSendUserDuration,#effect=EFFECT_PAIN,#duration=8000);
+         Send(who,@EffectSendUserDuration,#effect=EFFECT_PAIN,#duration=2000);
          Send(who,@EffectSendUserXLat,#xlat=0);
-      } 
-      else  
+      }
+      else
       {
          % Class is monster
          % Post this so it's done AFTER the enchantment is gone from the
-         %  monster's ench list
+         % monster's ench list
          Post(who,@ResetBehaviorFlags);
       }
      

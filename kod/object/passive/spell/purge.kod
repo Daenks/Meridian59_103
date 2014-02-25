@@ -15,14 +15,6 @@ constants:
 
    include blakston.khd
 
-   % At least how many enchantments should there be on a player to check
-   %  for auto-remove?
-   MIN_ENCHANTMENTS_FOR_AUTOREMOVE = 2
-
-   % What's the minimum chance to remove spells we want before checking
-   %  for auto-remove?
-   MIN_CHANCE_FOR_AUTOREMOVE = 60
-
 resources:
 
    Purge_name_rsc = "purge"
@@ -48,7 +40,8 @@ classvars:
    viSpell_num = SID_PURGE
    viSchool = SS_SHALILLE
    viSpell_level = 5
-   viMana = 15
+   viMana = 20
+   viSpellExertion = 10
    viChance_To_Increase = 10
 
    viHarmful = TRUE
@@ -160,13 +153,12 @@ messages:
          }
       }
 
-      Send(self,@DoPurge,#who=oTarget,#iChance=iSpellPower);
+      Send(self,@DoPurge,#who=oTarget,#spellpower=iSpellPower);
 
       propagate;
    }
 
-   % Override this to allow for non-outlaw self-casting of spell on Sacred
-   %  Haven.
+   % Override this to allow for non-outlaw self-casting of spell on Sacred Haven.
    GetAttackTargets(who=$, lTargets=$, report=TRUE)
    "Returns a list of targets the caster can attack."
    {
@@ -180,72 +172,70 @@ messages:
       propagate;
    }
 
-   DoPurge(who=$, iChance=$)
+   DoPurge(who=$, spellpower=$)
    "Remove positive enchantments on who with a given chance to remove each one."
    {
-      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment,
-            oSpell, lList, bRemovedSomething;
-
+		local i, lEnchantments, oTimer, iTime, oSpell, iState, iNewState, bRemovedSomething;
+		
+		
       % Can't do this to nobody or to non-players.
-      if who = $
-         OR NOT IsClass(who,&Player)
+      if who = $ OR NOT IsClass(who,&Player)
       {
          return FALSE;
       }
 
-      % Chance of $ means that we want to remove it all.
-      if iChance = $
+		bRemovedSomething = FALSE;
+		
+      % A spellpower of $ means that we want to remove it all.
+      if spellpower = $
       {
          Send(who,@RemoveAllPersonalEnchantments);
+			
+			bRemovedSomething = TRUE;
          
          return TRUE;
       }
+		
+		lEnchantments = Send(who,@GetEnchantmentList);
+		
+		for i in lEnchantments
+		{
+			oSpell = Nth(i,2);
 
-      bRemovedSomething = FALSE;
-      lEnchantments = $;
-      lList = Send(who,@GetEnchantmentList);
-
-      for oEnchantment in lList
-      {
-         oSpell = Nth(oEnchantment,2);
-
-         if Send(oSpell,@IsPersonalEnchantment)
-            AND Send(oSpell,@CanBeRemovedByPlayer)
-            AND NOT Send(oSpell,@IsHarmful)
-         {
-            lEnchantments = cons(oSpell,lEnchantments);
-         }
-      }
-      
-      iNumEnchantments = length(lEnchantments);
-
-      % Anti-clumpy code: If there is at least two enchantments on a player
-      %  and the chance to dispell is greater than 60%, then auto-remove one
-      %  enchantment.
-      if iNumEnchantments >= MIN_ENCHANTMENTS_FOR_AUTOREMOVE
-         AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
-      {
-         oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
-         Send(who,@RemoveEnchantment,#what=oEnchantment);
-         lEnchantments = DelListElem(lEnchantments,oEnchantment);
-         iNumEnchantments = iNumEnchantments - 1;
-         bRemovedSomething = TRUE;
-      }
-
-      iModifiedChance = iChance;
-
-      for oEnchantment in lEnchantments
-      {
-         if iChance = $ OR iModifiedChance > random(1,100)
-         {
-            Send(who,@RemoveEnchantment,#what=oEnchantment);
-            bRemovedSomething = TRUE;
-         }
-      }
+			if Send(oSpell,@IsPersonalEnchantment)
+				AND Send(oSpell,@CanBeRemovedByPlayer)
+				AND NOT Send(oSpell,@IsHarmful)
+			{				
+				% Get the current state of the enchantment.
+				oTimer = Nth(i,1);
+				iTime = GetTimeRemaining(oTimer);
+				iState = Nth(i,3);
+				
+				% Calculate the new state and time of the enchantment.
+				iNewState = iState - spellpower / (2 * Send(oSpell,@GetPurgeFactor));
+				iTime = iTime * iNewState / iState;
+				
+				% Start the new enchantment with the time left and the new state,
+				% but only if iNewState is greater than 0.
+				if iNewState > 0
+				{
+					% Remove the current enchantment, but don't report.
+					Send(who,@RemoveEnchantment,#what=oSpell,#report=FALSE);
+					% Extra effects like added stat points are handled in GetStateValue, so we have to call it here.
+					Send(oSpell,@GetStateValue,#who=who,#iSpellPower=iNewState,#target=who);
+					Send(who,@StartEnchantment,#what=oSpell,#state=iNewState,#time=iTime,#lastcall=send(oSpell,@GetLastCall),#addicon=send(oSpell,@GetAddicon));
+				}
+				else
+				{
+					% Remove the current enchantment and report.
+					Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE,#eliminated=TRUE);
+					bRemovedSomething = TRUE;
+				}
+			}
+		}
       
       return bRemovedSomething;
    }
-   
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

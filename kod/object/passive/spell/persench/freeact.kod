@@ -77,27 +77,41 @@ messages:
       return;
    }
 
-   GetStateValue(iSpellpower=$)
+   GetStateValue(who = $, iSpellPower = 0, target = $)
    {
-      local iFactor;
+      send(Target,@AddAgility,#points=iSpellPower/5);
 
-      iFactor = bound(iSpellPower/2+5,10,50);      
-
-      return iFactor;
+      return iSpellPower;
+   }
+	
+   EndEnchantment( who = $, state = 0, report = TRUE )
+   {
+      send(who,@AddAgility,#points=-state/5);
+     
+      propagate;
+   }
+   
+   SetSpellPlayerFlag(who=$)
+   {
+      if Send(who,@IsEnchanted,#what=Send(SYS,@FindSpellByNum,#num=SID_HASTE)) 
+      {
+         Send(who,@RemoveEnchantment,#what=Send(SYS,@FindSpellByNum,#num=SID_HASTE),#report=FALSE);
+      } 
+   
+      Send(who,@SetPlayerFlag,#flag=PFLAG2_HASTED,#flagset=2,#value=True);
+      return;
    }
   
-   GetDuration(iSpellpower=0)
+   GetDuration(iSpellPower = 0)
    {
       local iDuration;
-
-      % 3 - 8 minutes max, converted to ms.
-      iDuration = 180 + (3 * iSpellPower);   
+      iDuration = 300 + (iSpellpower * 6);
       iDuration = iDuration * 1000;
       
       return iDuration;
    }
 
-   DoFreeAction(oHoldCaster=$, oTarget=$, iDuration=0)
+   DoFreeAction(oCaster=$, oTarget=$, duration=0)
    "Calculates adjustment if hold duration.  Returns $ if resisted completely."
    {
       local iNewDuration, oFreeActionStrength;
@@ -105,23 +119,24 @@ messages:
       oFreeActionStrength = Send(oTarget,@GetEnchantedState,#what=self);
 
       % Check if they repel hold outright 1 - 15% chance.
-      if Random(0,100) <= ((oFreeActionStrength * SPELL_RESIST_PERCENT) / 100)
+      if Random(0,100) <= oFreeActionStrength / 10
       {
          Send(oTarget,@MsgSendUser,#message_rsc=FreeAction_evade);
-         if IsClass(oHoldCaster,&Player)
+         if IsClass(oCaster,&Player)
          {
-            Send(oHoldCaster,@MsgSendUser,#message_rsc=FreeAction_evade_caster);
+            Send(oCaster,@MsgSendUser,#message_rsc=FreeAction_evade_caster);
          }
          
-         return $;
+         return 0;
       }
-
-      iNewDuration = iDuration - (iDuration * oFreeActionStrength)/150;
+		
+      % Duration reduced 0-20%, depending on spellpower.
+      iNewDuration = duration - (duration * oFreeActionStrength / 500);
       Post(oTarget,@MsgSendUser,#message_rsc=FreeAction_resist);
       
-      if IsClass(oHoldCaster,&Player)
+      if IsClass(oCaster,&Player)
       {
-         Post(oHoldCaster,@MsgSendUser,#message_rsc=FreeAction_resist_caster);
+         Post(oCaster,@MsgSendUser,#message_rsc=FreeAction_resist_caster);
       }
 
       return iNewDuration;

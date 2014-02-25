@@ -44,7 +44,9 @@ classvars:
 
    viCast_time = 3000
    viChance_To_Increase = 15
-
+	
+	% It is viPurge_factor times as hard to purge the spell.
+	viPurge_factor = 2
 
 properties:
 
@@ -63,6 +65,11 @@ messages:
       post(who,@ToCliRoomContents);
       
       propagate;
+   }
+	
+   GetStateValue(who = $, iSpellPower = 0)      
+   {      		
+      return iSpellPower;
    }
 
    SetSpellPlayerFlag(who=$)

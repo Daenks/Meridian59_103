@@ -146,7 +146,7 @@ properties:
 
    % list of resistances, Each element is [value, type].
    plResistances = $
-
+	
 messages:
 
    % The first lump of code here deals with resistances and immunities/etc.
@@ -1043,7 +1043,41 @@ messages:
    {
       return;
    }
+	
+	InternalCooldown(spellid=$)
+	{
+		return;
+	}
+	
+	CanCastBlind()
+	{
+		return $;
+	}
+	
+	CanCastDazzle()
+	{
+		return $;
+	}
 
+	CanCastHold()
+	{
+		return $;
+	}
+	
+	DiminishingReturns(spellid=$)
+	{
+		return;
+	}
+	
+	CanBeBlinded()
+	{
+		return 0;
+	}
+	
+	CanBeHeld()
+	{
+		return 0;
+	}
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

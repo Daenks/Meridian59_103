@@ -197,7 +197,7 @@ messages:
       propagate;
    }
 
-   DoHold(what = $, otarget = $, idurationsecs = $, report=TRUE)
+   DoHold(who = $, otarget = $, idurationsecs = $, report=TRUE)
    "Holds target for durationsecs seconds."
    {
       local i;

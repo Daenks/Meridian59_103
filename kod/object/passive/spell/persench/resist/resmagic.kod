@@ -63,8 +63,8 @@ messages:
 
    GetResistanceStrength(iSpellpower = 0)
    {
-      %% strength varies from 7 to 40
-      return iSpellPower/3 + 7;
+      %% strength varies from 0 to 40
+      return iSpellPower*4/10;
    }
 
    GetDuration(iSpellPower = 0)

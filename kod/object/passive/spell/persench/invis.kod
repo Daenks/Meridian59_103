@@ -78,7 +78,6 @@ messages:
       }
 
       Send(first(lTargets),@ResetPlayerFlagList);
-      Send(first(lTargets),@AddDefenseModifier,#what=self);
       
       propagate;
    }
@@ -101,9 +100,11 @@ messages:
       return iDuration;
    }
 
-   GetStateValue(iSpellpower=$)
-   {
-      return iSpellpower;
+   GetStateValue(who = $, iSpellPower = 0,target=$)      
+   {      
+      Send(target,@AddDefenseModifier,#what=self);       
+
+      return iSpellPower;
    }
 
    EndEnchantment(who = $, report = TRUE, state = 0)

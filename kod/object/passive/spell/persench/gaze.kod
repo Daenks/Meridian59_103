@@ -127,7 +127,7 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=paralyze_caster,
               #parm1=send(what,@GetCapDef),#parm2=send(what,@GetName));
 
-         Send(oSpell,@DoHold,#what=who,#oTarget=what,#iDuration=iDuration,
+         Send(oSpell,@DoHold,#who=who,#oTarget=what,#duration=iDuration,
               #iSpellpower=iSpellpower);
       }
 
