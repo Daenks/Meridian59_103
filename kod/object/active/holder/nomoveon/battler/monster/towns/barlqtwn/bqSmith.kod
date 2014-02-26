@@ -58,6 +58,10 @@ messages:
    {
       plFor_sale = [ [Create(&ChainArmor),
                      Create(&Axe),
+					 Create(&BlessRod),
+		             Create(&DetectInvisibleRod),
+		             Create(&ArmorOfGortRod),
+		             Create(&SuperStrengthRod),
                      Create(&Hammer),
                      Create(&MetalShield)],
                      $,

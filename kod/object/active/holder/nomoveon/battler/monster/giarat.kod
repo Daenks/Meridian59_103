@@ -49,8 +49,8 @@ classvars:
    viDifficulty = 1
    viKarma = -20
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT
-   viCashmin = 150
-   viCashmax = 250
+   viCashmin = 100
+   viCashmax = 200
 
    vrSound_hit = giantrat_sound_hit
    vrSound_miss = giantrat_sound_miss

@@ -27,7 +27,7 @@ messages:
    {
       % metal armor/weapons that could be eaten and underground stones.
       plTreasure = [ [ &BlueMushroom, 13],
-                     [ &Diamond, 20],
+                     [ &Diamond, 15],
                      [ &Emerald, 10],
                      [ &Hammer, 5],
                      [ &Sapphire, 5],
@@ -39,7 +39,7 @@ messages:
                      [ &ScaleArmor, 1],
                      [ &UncutSeraphym, 2],
                      [ &BerserkerRing, 1],
-                     [ &PlateArmor, 1] ];
+                     [ &PlateArmor, 6] ];
 
       propagate;
    }
