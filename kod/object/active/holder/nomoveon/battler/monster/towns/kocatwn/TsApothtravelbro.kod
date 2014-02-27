@@ -1,0 +1,82 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TosApothecaryTravelbro is KocatanTown
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   tosapothecarytravelbro_name_rsc = "Tyrone The Trader"
+   tosapothecarytravelbro_icon_rsc = cngrocer.bgf
+   tosapothecarytravelbro_desc_rsc = "Has travelled far and wide to sell his goods from the mainland. You can tell by his looks he has a greedy nature. He is the brother of Omar. "
+
+  
+
+
+classvars:
+
+   vrName = tosapothecarytravelbro_name_rsc
+   vrIcon = tosapothecarytravelbro_icon_rsc
+   vrDesc = tosapothecarytravelbro_desc_rsc
+   viMerchant_markup = MERCHANT_RIPOFF
+   viAttributes = MOB_NOFIGHT | MOB_NOMOVE | MOB_RANDOM | MOB_SELLER | MOB_LAWFUL
+   viOccupation = MOB_ROLE_MERCHANT
+
+   viGender = GENDER_MALE
+   
+   
+properties:
+   
+messages:
+
+   AffectMood(why = $, what = $)
+   {
+      if why = MOODMOD_DAWN
+      {
+         send(self,@SetMood,#new_mood=piMood+5);
+
+         return;
+      }
+      
+      if why = MOODMOD_DUSK
+      {
+         send(self,@SetMood,#new_mood=piMood-5);
+
+         return;
+      }
+      
+      return;
+   }
+
+   
+
+   SetForSale()
+   {
+      plFor_sale = [ [ Create(&Sapphire,#number=1),
+                       Create(&Mushroom,#number=5),
+                       Create(&Elderberry,#number=4),
+                       Create(&BlueMushroom,#number=4),
+                       Create(&RedMushroom,#number=4),
+                       Create(&PurpleMushroom,#number=2) ],
+                                  $,$,$ 
+								  ];
+      return;
+   }
+
+   
+   
+  
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

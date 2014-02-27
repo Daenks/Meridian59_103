@@ -130,32 +130,12 @@ messages:
  
    InitCondSale()
    {
-      local oObj, oObj2, oObj3, oObj4, oObj5;
+      local oObj;
       
       oObj = Create(&ForgetPotionRiija);
       Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
            #triggers=[Send(oObj,@GetName)],
            #action=[LIBACT_CONDITIONAL,oObj,10000,apoth_potion_riija]);
-
-      oObj2 = Create(&Herbs, #number=4);
-      Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
-           #triggers=[Send(oObj2,@GetName)],
-           #action=[LIBACT_CONDITIONAL,oObj2,400,kocatanapoth_herbs_sale]);
-           
-      oObj3 = Create(&Elderberry, #number=3);
-      Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
-           #triggers=[Send(oObj3,@GetName)],
-           #action=[LIBACT_CONDITIONAL,oObj3,500,kocatanapoth_elderberry_sale]);
-
-      oObj4 = Create(&BlueMushroom, #number=2);
-      Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
-           #triggers=[Send(oObj4,@GetName)],
-           #action=[LIBACT_CONDITIONAL,oObj4,600,kocatanapoth_bluemushroom_sale]);
-
-      oObj5 = Create(&RedMushroom, #number=2);
-      Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
-           #triggers=[Send(oObj5,@GetName)],
-           #action=[LIBACT_CONDITIONAL,oObj5,1000,kocatanapoth_redmushroom_sale]);
 
       return;
    }
