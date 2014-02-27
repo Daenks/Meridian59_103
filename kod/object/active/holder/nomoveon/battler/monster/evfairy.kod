@@ -56,8 +56,8 @@ classvars:
    viDifficulty = 5
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_MONSTERS | AI_FIGHT_KARMA_AGGRESSIVE
    viWimpy = 10
-   viCashmin = 250
-   viCashmax = 400
+   viCashmin = 100
+   viCashmax = 200
    vrSound_hit = darkfairy_sound_hit
    vrSound_miss = darkfairy_sound_miss
    vrSound_aware = darkfairy_sound_aware

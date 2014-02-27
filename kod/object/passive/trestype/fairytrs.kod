@@ -29,13 +29,13 @@ messages:
    constructed()
    {
       plTreasure = [ [ &FairyWing, 30],
-		               [ &Mushroom, 20 ],
+		               [ &Mushroom, 15 ],
                      [ &Elderberry, 15 ],
                      [ &Herbs, 10 ],
                      [ &Snack, 5 ],
-                     [ &RedMushroom, 5 ],
-                     [ &BlueMushroom, 5 ],
-                     [ &EntrootBerry, 5 ],
+                     [ &RedMushroom, 7 ],
+                     [ &BlueMushroom, 7 ],
+                     [ &EntrootBerry, 6 ],
                      [ &IllusionaryFormPotion,5 ]
 			 	  ];
 

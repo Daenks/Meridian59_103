@@ -28,20 +28,20 @@ messages:
    constructed()
    {
       plTreasure = [ [ &OrcTooth, 35 ],
-                     [ &UncutSeraphym, 10],
+                     [ &UncutSeraphym, 14],
                      [ &SlitherWand, 1],
-                     [ &DragonflyEye, 6 ],
-                     [ &Solagh, 6 ],
+                     [ &DragonflyEye, 7 ],
+                     [ &Solagh, 7 ],
                      [ &PurpleMushroom, 1 ],
-                     [ &Torch, 5 ],
-                     [ &DiscipleRobe, 11 ],
-                     [ &LightDiscipleRobe, 3 ],
-                     [ &Gauntlet, 4 ],
-                     [ &Flask, 4 ],
+                     [ &Torch, 1 ],
+                     [ &DiscipleRobe, 13 ],
+                     [ &LightDiscipleRobe, 5 ],
+                     [ &Gauntlet, 1 ],
+                     [ &Flask, 1 ],
                      [ &Lute, 3 ],
-                     [ &PolishedSeraphym, 2 ],
-                     [ &StaffOfJolting, 2 ],
-                     [ &DispellIllusionScroll, 7 ]
+                     [ &PolishedSeraphym, 1 ],
+                     [ &StaffOfJolting, 1 ],
+                     [ &DispellIllusionScroll, 10 ]
                    ];
 
       propagate;
