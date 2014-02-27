@@ -5,6 +5,6 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\wanderer.bof
-BOFS  =  jgeneral.bof minstrel.bof heretic.bof dkwizard.bof huntghst.bof izzio.bof
+BOFS  =  jgeneral.bof minstrel.bof heretic.bof dkwizard.bof huntghst.bof izzio.bof TsApothtravel.bof
 
 !include $(KODDIR)\kod.mak

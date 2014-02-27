@@ -36,7 +36,9 @@ classvars:
    viDead_drawfx = DRAWFX_BLACK
 
    viDifficulty = 4
-
+   viCashmin = 1
+   viCashmax = 20
+   
 properties:
    
    piDrawfx = DRAWFX_BLACK

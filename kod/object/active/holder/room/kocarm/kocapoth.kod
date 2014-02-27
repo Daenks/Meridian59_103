@@ -82,6 +82,10 @@ messages:
       send(self,@NewHold,#what=Create(&KocatanApothecary),
             #new_row=4,#new_col=2,#fine_row=32,#fine_col=24,
             #new_angle=ANGLE_EAST);
+			
+	  send(self,@NewHold,#what=Create(&TosApothecaryTravelbro),
+            #new_row=4,#new_col=7,#fine_row=57,#fine_col=6,
+            #new_angle=ANGLE_NORTH);
 
       % Lighting
       send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=25),

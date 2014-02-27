@@ -30,11 +30,11 @@ messages:
    constructed()
    {
       plTreasure = [ [ &OrcTooth, 40 ],
-                     [ &PurpleMushroom, 20],
-                     [ &Scimitar, 18 ],
+                     [ &PurpleMushroom, 26],
+                     [ &Scimitar, 14 ],
                      [ &MetalShield, 10 ],
                      [ &LeatherArmor, 5],
-                     [ &ShadowAmulet, 3],
+                     [ &ShadowAmulet, 1],
                      [ &RingofLethargy, 3], 
                      [ &DarknessScroll,1]
                    ];

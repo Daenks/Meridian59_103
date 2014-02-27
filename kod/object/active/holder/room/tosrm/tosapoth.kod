@@ -210,8 +210,11 @@ messages:
       % apothecary
       Send(self,@NewHold,#what=Create(&TosApothecary),
            #new_row=4,#new_col=6,#fine_row=10,#new_angle=ANGLE_SOUTH_WEST);
-
-      oBook = Create(&BookPedestal,#Name=tosapoth_book_name,#Text=tosapoth_book_text);
+		   
+	  Send(self,@NewHold,#what=Create(&TosApothecaryTravel),
+           #new_row=3,#new_col=4,#fine_row=38,#new_angle=ANGLE_SOUTH);
+		   
+	  oBook = Create(&BookPedestal,#Name=tosapoth_book_name,#Text=tosapoth_book_text);
 
       Send(self,@NewHold,#what=oBook,
            #new_row=2,#new_col=2,#fine_row=32,#fine_col=32,#new_angle=ANGLE_SOUTH_EAST);

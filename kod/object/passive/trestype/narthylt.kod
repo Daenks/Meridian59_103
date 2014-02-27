@@ -28,9 +28,9 @@ messages:
    
    constructed()
    {
-      plTreasure = [ [ &BlueDragonScale, 48 ],
+      plTreasure = [ [ &BlueDragonScale, 44 ],
                      [ &DarkAngelFeather, 48 ],
-                     [ &NightVisionPotion, 1 ],
+                     [ &InkyCap, 5 ],
                      [ &FireRing, 1 ],
                      [ &ColdRing, 1 ],
                      [ &ShockRing, 1 ]

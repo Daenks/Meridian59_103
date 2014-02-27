@@ -28,11 +28,11 @@ messages:
    
    constructed()
    {
-      plTreasure = [ [ &BlueDragonScale, 18],
-                     [ &DarkAngelFeather, 18],
+      plTreasure = [ [ &BlueDragonScale, 20],
+                     [ &DarkAngelFeather, 20],
                      [ &PurpleMushroom, 16],
-                     [ &InkyCap, 14],
-                     [ &NightVisionPotion, 25],
+                     [ &InkyCap, 15],
+                     [ &NightVisionPotion, 15],
                      [ &BerserkerRing, 5],
                      [ &MysticSword, 4]
                    ];

@@ -28,14 +28,13 @@ messages:
    
    Constructed()
    {
-      plTreasure = [ [ &NeruditeArrow, 25 ],
+      plTreasure = [ [ &NeruditeArrow, 40 ],
                      [ &ShortSword, 1 ],
-                     [ &InkyCap, 20 ],
-                     [ &Hammer, 13 ],
-                     [ &KnightShield, 14 ],
-                     [ &Scimitar, 12 ],
-                     [ &ScaleArmor, 12 ],
-                     [ &Key,  1],
+                     [ &InkyCap, 39 ],
+                     [ &Hammer, 3 ],
+                     [ &KnightShield, 5 ],
+                     [ &Scimitar, 5 ],
+                     [ &ScaleArmor, 5 ],
                      [ &EnfeebleWand, 1 ],
                      [ &ForgetWand, 1 ]
                    ];
