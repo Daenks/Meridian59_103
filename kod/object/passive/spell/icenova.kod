@@ -58,8 +58,11 @@ classvars:
    viHarmful = TRUE
    viNoNewbieOffense = TRUE
 
-   viMin_damage = 3
-   viMax_damage = 4
+   % In seconds, since it works off GetTime(),
+   viPostCast_time = 2
+
+   viMin_damage = 6
+   viMax_damage = 12
 
    % Damage is 100% within this distance
    viMax_damage_distance = 6
@@ -105,7 +108,7 @@ messages:
    CastSpell(who=$, lTargets=$, iSpellPower=0, bItemCast=FALSE)
    {
       Send(self,@DoIceNova,#who=who,#lTargets=lTargets,
-           #severity=(1+iSpellpower/25),#bItemCast=bItemCast);
+           #severity=(1+iSpellpower/10),#bItemCast=bItemCast);
 
       propagate;
    }
@@ -167,8 +170,7 @@ messages:
                else
                {
                   Send(each_obj,@MsgSendUser,#message_rsc=icenova_third_rsc,
-                       #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName),
-                       #parm3=Send(who,@GetHisHer));
+                       #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName));
                }
             }
          }
@@ -305,7 +307,7 @@ messages:
            }
        }
        % debug("percent = ", iPercent);
-       iDamage = (Random(viMin_damage,viMax_damage) * severity) * iPercent / 100;
+       iDamage = (Random(viMin_damage,viMax_damage) + severity) * iPercent / 100;
        % debug("for object ", Send(target, @GetName), " damage = ", iDamage); 
        return iDamage;
    }
