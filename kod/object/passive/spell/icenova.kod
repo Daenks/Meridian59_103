@@ -1,0 +1,315 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+IceNova is Spell
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   icenova_name_rsc = "ice nova"
+   icenova_icon_rsc = iicenova.bgf
+   icenova_desc_rsc = \
+      "Call upon the magic of Faren and propel forth a blast of ice, "
+      "chilling and blistering the skin of those around you.  "
+      "Requires red and blue mushrooms to cast."
+
+   icenova_first_rsc = \
+      "You channel the power of Faren and unleash a flurry of ice shards!"
+   icenova_third_rsc = \
+      "%s%s channels the power of Faren and unleashes a flurry of ice shards!"
+
+   icenova_killed_someone = \
+      "The ice shards fatally wound %s%s."     
+
+   icenova_cast_rsc = \
+      "You let out a cry of pain as ice shards pierce your skin, causing ~r~B%i~n damage. "
+   icenova_hit_rsc = \
+      "%s%s lets out a cry of pain as ice shards pierce %s skin for ~k~B%i~n damage."
+   icenova_killed_self = "shouldn't happen"
+
+   icenova_sound = fshatter.wav
+
+classvars:
+
+   vrName = icenova_name_rsc
+   vrDesc = icenova_desc_rsc
+   vrIcon = icenova_icon_rsc
+
+   viSpell_num = SID_ICE_NOVA
+   viSchool = SS_FAREN
+   viSpell_level = 5
+   viMana = 15
+
+   viChance_to_increase = 15
+   vrSucceed_wav = icenova_sound
+   
+   viAttack_spell = ATCK_SPELL_ALL | ATCK_SPELL_COLD
+   viOutlaw = TRUE
+   viHarmful = TRUE
+   viNoNewbieOffense = TRUE
+
+   viMin_damage = 3
+   viMax_damage = 4
+
+   % Damage is 100% within this distance
+   viMax_damage_distance = 6
+ 
+   % Damage is 0 outside this distance 
+   viZero_damage_distance = 6
+
+properties:
+
+
+messages:
+
+   ResetReagents()
+   {            
+      plReagents = $;
+      plReagents = Cons([&RedMushroom,1],plReagents);
+      plReagents = Cons([&BlueMushroom,2],plReagents);
+
+      return;
+   }
+
+   GetNumSpellTargets()
+   {
+      return 0;
+   }
+
+    GetTargets(who=$,lTargets=$)
+   "This returns a list of valid targets in range."
+   {
+      local oRoom, i, each_obj, lFinalTargets, iSpellPower;
+
+      lFinalTargets = $;
+      iSpellPower = send(self,@GetSpellPower,#who=who);
+
+
+      oRoom = send(who,@GetOwner);
+      lFinalTargets = Send(oRoom,@AreaEffectTargets,#what=self,
+                           #range=6,#center=who,#monsters=TRUE,#iSpellPower=iSpellPower);
+
+      return lFinalTargets;
+   }
+   
+   CastSpell(who=$, lTargets=$, iSpellPower=0, bItemCast=FALSE)
+   {
+      Send(self,@DoIceNova,#who=who,#lTargets=lTargets,
+           #severity=(1+iSpellpower/25),#bItemCast=bItemCast);
+
+      propagate;
+   }
+   
+   DoIceNova(who=$, where=$, lTargets=$, severity=1, bItemCast=FALSE)
+   "Does an ice nova spell in any room, if 'room' is given, but no 'who', "
+   "it is done in 'room' and blame for death is unprovided.  "
+   "If 'who' is given, but not 'room', it is done in the who's room and "
+   "damage is blamed on 'who'.  "
+   "If both are given, it is done in 'room', and any damage is blamed on "
+   "'who'."
+   {
+      local i, iDamage, oRoom, lActive, each_obj, AssessWhat, lFinalTargets,
+            lBossMonsters;
+      
+      if where <> $
+      {
+         oRoom = where;
+      }
+      else
+      {
+         if who <> $
+         {
+            oRoom = Send(who,@GetOwner);
+         }
+         else
+         {
+            return;
+         }
+      }
+
+      if who <> $
+      {
+         AssessWhat = who;
+      }
+      else
+      {
+         AssessWhat = oRoom;
+      }
+	  
+      lFinalTargets = lTargets;
+      lActive = Send(oRoom,@GetHolderActive);
+
+
+      % Send a message to all in room of spellcasters actions  
+      for i in lActive
+      {
+         each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+         
+         if isClass(each_obj,&Player)
+         {
+            if who <> $
+            {
+               if each_obj = who
+               {
+                  Send(each_obj,@MsgSendUser,
+                       #message_rsc=icenova_first_rsc);
+               }
+               else
+               {
+                  Send(each_obj,@MsgSendUser,#message_rsc=icenova_third_rsc,
+                       #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName),
+                       #parm3=Send(who,@GetHisHer));
+               }
+            }
+         }
+
+         if lTargets = $
+            AND IsClass(each_obj,&Battler)
+            AND each_obj <> who
+         {
+            lFinalTargets = cons(each_obj, lFinalTargets);
+         }
+      }
+
+      % Go through all the final targets list doing damage
+      for each_obj in lFinalTargets
+      {
+         % In guildhalls, only hurt players in the same zone as the caster.
+         if who <> $
+            AND IsClass(oRoom,&GuildHall)   
+            AND Send(oRoom,@InFoyer,#who=each_obj)
+                <> Send(oRoom,@InFoyer,#who=who)
+         {
+            continue;
+         }
+
+         if IsClass(each_obj,&Player)
+         {
+		 iDamage = Send(each_obj,@AssessDamage,#what=AssessWhat,
+                    #damage=Send(self, @ComputeDamage, 
+ 	       	       	         #who=who, #target=each_obj, #severity=severity),
+                    #atype=0,#aspell=viAttack_spell,#report=FALSE);
+					
+            if iDamage = $
+            {
+               % Ice nova killed someone.
+               if who <> $
+               {
+                  Send(who,@KilledSomething,#what=each_obj,#use_weapon=self);
+                  Send(who,@MsgSendUser,#message_rsc=icenova_killed_someone,
+                       #parm1=Send(each_obj,@GetDef),
+                       #parm2=Send(each_obj,@GetName),
+                       #parm3=Send(each_obj,@GetHeShe));
+               }
+               
+            }      
+            else
+            {
+               % Ice nova just did some amount of damage.
+               Send(each_obj,@MsgSendUser,#message_rsc=icenova_cast_rsc,#parm1=iDamage);
+               if who <> $
+               {
+                  Send(who,@MsgSendUser,#message_rsc=icenova_hit_rsc,
+                       #parm1=Send(each_obj,@GetCapdef),
+                       #parm2=Send(each_obj,@GetName),
+                       #parm3=Send(each_obj,@GetHisHer),
+                       #parm4=iDamage);
+               }
+            }
+         }   
+         else   
+         {   
+            % Class must be monster, so always do damage, unless it's a
+            %  shopkeeper/NPC.  Also avoid damage to boss monsters if
+            %  ice nova isn't player caused.
+            lBossMonsters = [ &LupoggKing, &Lich, &Ghost, &OrcPitBossBody, &Yeti,
+                              &XeoAir, &XeoFire, &XeoWater, &XeoEarth
+                            ];
+            if (Send(each_obj,@GetObjectFlags) & BATTLER_YES)
+               AND ((who <> $ AND IsClass(who,&Player))
+                    OR FindListElem(lBossMonsters,GetClass(each_obj)) = 0)
+            {
+               if Send(each_obj,@AssessDamage,#what=AssessWhat,
+                       #damage=Send(self, @ComputeDamage, 
+ 	       	       	            #who=who, #target=each_obj, #severity=severity),
+                       #atype=0,#aspell=viAttack_spell) = $
+               {
+                  if who <> $
+                  {
+                     Send(who,@KilledSomething,#what=each_obj,
+                          #use_weapon=self);
+                  }
+                  else
+                  {
+                     Send(oRoom,@SomethingKilled,#what=oRoom,#victim=each_obj);
+                     Send(each_obj,@Killed,#what=oRoom);
+                  }
+               }
+                  
+               if who <> $
+               {
+                  Send(oRoom,@SomethingAttacked,#what=who,#victim=each_obj,
+                       #use_weapon=self);
+               }
+            }
+         }
+      }
+
+      return;
+   }
+
+   ComputeDamage(who=$, target=$, severity=1)
+   "Return the damage to be applied to the given target, taking into account "
+   "distance."
+   {
+       local iPercent, iDistance_squared, iMax_distance_squared,
+         iZero_distance_squared, iDamage;
+
+       % Do full damage within viMax_damage_distance, zero damage outside
+       % viZero_damage_distance, and an amount that falls off with distance
+       % between the two.
+       iPercent = 100;
+       
+       if who <> $
+       {
+          iDistance_squared = Send(who, @SquaredDistanceTo, #what=target);
+       }
+       else
+       {
+          % Full damage for ice novas without a caster
+          iDistance_squared = 0;
+       }
+       
+       iMax_distance_squared = viMax_damage_distance * viMax_damage_distance;
+       iZero_distance_squared = viZero_damage_distance * viZero_damage_distance;
+       if iDistance_squared > iMax_distance_squared
+       {
+           if iDistance_squared > iZero_distance_squared
+           {
+               iPercent = 0;
+           }
+           else
+           {
+	       iPercent = 100 * (iZero_distance_squared - iDistance_squared) /
+                                (iZero_Distance_squared - iMax_distance_squared);
+           }
+       }
+       % debug("percent = ", iPercent);
+       iDamage = (Random(viMin_damage,viMax_damage) * severity) * iPercent / 100;
+       % debug("for object ", Send(target, @GetName), " damage = ", iDamage); 
+       return iDamage;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -313,7 +313,7 @@ messages:
             {
                if iRandom < 90      
                {
-                  iSpell = SID_SHATTER;
+                  iSpell = SID_ICE_NOVA;
                   iManaCost = 10;
                }
                else
