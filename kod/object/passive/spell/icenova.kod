@@ -18,6 +18,7 @@ resources:
 
    icenova_name_rsc = "ice nova"
    icenova_icon_rsc = iicenova.bgf
+   icenova_projectile_rsc = icebolt.bgf
    icenova_desc_rsc = \
       "Call upon the magic of Faren and propel forth a blast of ice, "
       "chilling and blistering the skin of those around you.  "
@@ -35,7 +36,6 @@ resources:
       "You let out a cry of pain as ice shards pierce your skin, causing ~r~B%i~n damage. "
    icenova_hit_rsc = \
       "%s%s lets out a cry of pain as ice shards pierce %s skin for ~k~B%i~n damage."
-   icenova_killed_self = "shouldn't happen"
 
    icenova_sound = fshatter.wav
 
@@ -84,6 +84,40 @@ messages:
       return;
    }
 
+   GetProjectileLightColor()
+   {
+      return LIGHT_DBLUE;
+   }
+
+   GetProjectileLightIntensity()
+   {
+      % Low light radius for projectiles.  Out of 255 levels.
+      return 75;
+   }
+
+   GetProjectileLightFlags()
+   {
+      % General lighting information.
+      return LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC;
+   }
+     
+   GetProjectileIcon()
+   {
+      % Return the icon used to display a spell shooting through the air.
+      return icenova_projectile_rsc;
+   }
+   
+   GetProjectileSpeed()
+   {
+      return 5;
+   }
+
+   SendProjectileAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,1);
+      return;
+   }
+   
    GetNumSpellTargets()
    {
       return 0;
@@ -107,9 +141,19 @@ messages:
    
    CastSpell(who=$, lTargets=$, iSpellPower=0, bItemCast=FALSE)
    {
+      local oRoom, i, lActive;
       Send(self,@DoIceNova,#who=who,#lTargets=lTargets,
            #severity=(1+iSpellpower/10),#bItemCast=bItemCast);
-
+      
+      oRoom = Send(who,@GetOwner);
+      lActive = Send(oRoom,@GetHolderActive);
+      
+      for i in lTargets
+      {
+         Send(oRoom,@SomethingShot,#who=who,#target=i,#projectile=self,
+               #flags=PROJ_FLAG_LIGHT_SOURCE);
+      }
+	  
       propagate;
    }
    
