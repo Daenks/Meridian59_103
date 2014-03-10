@@ -91,8 +91,8 @@ messages:
 
    GetProjectileLightIntensity()
    {
-      % Low light radius for projectiles.  Out of 255 levels.
-      return 75;
+      %Out of 255 levels.
+      return 125;
    }
 
    GetProjectileLightFlags()
@@ -109,7 +109,7 @@ messages:
    
    GetProjectileSpeed()
    {
-      return 5;
+      return 11;
    }
 
    SendProjectileAnimation()
@@ -146,6 +146,7 @@ messages:
            #severity=(1+iSpellpower/10),#bItemCast=bItemCast);
       
       oRoom = Send(who,@GetOwner);
+      Send(oRoom,@SomethingWaveRoom,#what=who,#wave_rsc=vrSucceed_wav);
       lActive = Send(oRoom,@GetHolderActive);
       
       for i in lTargets
@@ -154,7 +155,7 @@ messages:
                #flags=PROJ_FLAG_LIGHT_SOURCE);
       }
 	  
-      propagate;
+      return;
    }
    
    DoIceNova(who=$, where=$, lTargets=$, severity=1, bItemCast=FALSE)
@@ -315,43 +316,11 @@ messages:
    }
 
    ComputeDamage(who=$, target=$, severity=1)
-   "Return the damage to be applied to the given target, taking into account "
-   "distance."
+   "Removed distance calculation, damage is same to all targets in range."
    {
-       local iPercent, iDistance_squared, iMax_distance_squared,
-         iZero_distance_squared, iDamage;
+       local iDamage;
 
-       % Do full damage within viMax_damage_distance, zero damage outside
-       % viZero_damage_distance, and an amount that falls off with distance
-       % between the two.
-       iPercent = 100;
-       
-       if who <> $
-       {
-          iDistance_squared = Send(who, @SquaredDistanceTo, #what=target);
-       }
-       else
-       {
-          % Full damage for ice novas without a caster
-          iDistance_squared = 0;
-       }
-       
-       iMax_distance_squared = viMax_damage_distance * viMax_damage_distance;
-       iZero_distance_squared = viZero_damage_distance * viZero_damage_distance;
-       if iDistance_squared > iMax_distance_squared
-       {
-           if iDistance_squared > iZero_distance_squared
-           {
-               iPercent = 0;
-           }
-           else
-           {
-	       iPercent = 100 * (iZero_distance_squared - iDistance_squared) /
-                                (iZero_Distance_squared - iMax_distance_squared);
-           }
-       }
-       % debug("percent = ", iPercent);
-       iDamage = (Random(viMin_damage,viMax_damage) + severity) * iPercent / 100;
+       iDamage = Random(viMin_damage,viMax_damage) + severity;
        % debug("for object ", Send(target, @GetName), " damage = ", iDamage); 
        return iDamage;
    }
