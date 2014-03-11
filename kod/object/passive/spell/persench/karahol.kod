@@ -21,17 +21,18 @@ resources:
    KaraholsCurse_desc_rsc = \
       "Your body is possessed by the spirit of the warrior "
       "Kara'hol for a brief period, enhancing the ferocity of "
-      "your attacks.  When the spirit departs, your body "
-      "is temporarily paralyzed from shock.  "
-      "Requires the sacrifice of a few entroot berries to cast."
+      "your attacks. However, due to your singleminded focus "
+      "you take more damage from all sources for the duration of the spell. "
+      "Requires two entroot berries to cast."
    
    KaraholsCurse_on = \
       "The spirit of Kara'hol descends upon you making your "
       "blood boil and your muscles twitch with newfound vigor."
-   KaraholsCurse_off = "Your body freezes as total exhaustion grips your limbs."
+   KaraholsCurse_off = "You feel your bezerker rage subside."
    KaraholsCurse_already_enchanted_rsc = "Your blood already boils with Kara'hol's spirit!"
 
-   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat abilities, but with a price to pay later."
+   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat abilities, but "
+   "causes you to be more vulnerable to damage."
 
    KaraholsCurse_sound = qkcurse.wav
 
@@ -78,6 +79,7 @@ messages:
    CastSpell(who = $,iSpellPower= 0, ltargets = $)
    {
       Send(who,@AddAttackModifier,#what=self);
+      Send(who,@AddDefenseModifier,#what=self);
      
       propagate;
    }
@@ -98,21 +100,9 @@ messages:
 
    EndEnchantment(who=$, report=TRUE, state=0)
    {
-      local oHoldSpell, iDuration;
-
       Send(who,@RemoveAttackModifier,#what=self);
+      Send(who,@RemoveDefenseModifier,#what=self);
 
-      % Now, for the side effect.  Hold 'em!
-      oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
-      if Send(who,@IsEnchanted,#what=oHoldSpell)
-      {
-         Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
-      }
-      
-      % Hold duration is measured in seconds, not milliseconds.  Lasts 1/6 the time of the bonus.
-      iDuration = (Send(self,@GetDuration,#iSpellPower=state))/6;
-      Send(oHoldSpell,@DoHold,#what=self,#otarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
-      
       propagate;
    }
 
@@ -127,6 +117,11 @@ messages:
       return (damage + 1 + Random(0,send(who,@GetEnchantedState,#what=self)/20));
    }
 
+   ModifyDefenseDamage(damage = $)
+   {
+      return ((damage * 120)/100);
+   }
+   
    GetPotionClass()
    {
       RETURN &KaraholsCursePotion;
