@@ -50,7 +50,7 @@ classvars:
 properties:
 
    piResistanceType = 0
-   piResistanceChange = 50
+   piResistanceChange = 70
 
 messages:
 
@@ -117,9 +117,10 @@ messages:
       return;
    }
 
+   % Resist rings lower the 4 major elemental damage types by 20, but boost one by 70, for a net change of +50.
    GetResistanceModifiers()
    {
-      return [[piResistanceType,piResistanceChange]];
+      return [[piResistanceType,piResistanceChange],[-ATCK_SPELL_FIRE,-20],[-ATCK_SPELL_SHOCK,-20],[-ATCK_SPELL_COLD,-20],[-ATCK_SPELL_ACID,-20]];
    }
 
    DefendingHit()

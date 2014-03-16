@@ -58,7 +58,10 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_BLUDGEON,10]
+      return [ [ATCK_WEAP_BLUDGEON,10],
+               [ATCK_WEAP_PIERCE,25],
+               [-ATCK_SPELL_ALL,-10],
+               [-ATCK_SPELL_COLD,10]
              ];
    }
 
