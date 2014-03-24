@@ -193,6 +193,16 @@ messages:
    {
       return viLayer;
    }
+   
+   GetDamageReduction()
+   {
+      return piDamage_reduce;
+   }
+   
+   GetDefenseBonus()
+   {
+      return piDefense_bonus;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -52,6 +52,8 @@ classvars:
 
 properties:
 
+   piAttack_Type = ATCK_WEAP_NERUDITE+ATCK_WEAP_PIERCE
+   
 messages:
 
    DoShatter()

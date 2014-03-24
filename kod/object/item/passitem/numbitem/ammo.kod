@@ -35,7 +35,10 @@ classvars:
    viAmmo_type = AMMO_ARROW     
 
    viGround_group = 2
-   viInventory_group = 1   
+   viInventory_group = 1
+   
+   viMinDamage = 1
+   viMaxDamage = 5
 
 properties:
 
@@ -87,12 +90,32 @@ messages:
 
    GetDamage()
    {
-      return Random(1,5);
+      return Random(viMinDamage,viMaxDamage);
    }
 
    GetAmmoType()
    {
       return viAmmo_type;
+   }
+   
+   GetMinDamage()
+   {
+      return viMinDamage;
+   }
+   
+   GetMaxDamage()
+   {
+      return viMaxDamage;
+   }
+   
+   GetMinSpecialDamage()
+   {
+      return 0;
+   }
+   
+   GetMaxSpecialDamage()
+   {
+      return 0;
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
