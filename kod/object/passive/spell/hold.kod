@@ -198,8 +198,8 @@ messages:
    {
       local iDuration;
 
-      % about 4 - 6 seconds
-      iDuration = 4000 + (20 * iSpellPower);
+      % 2-5 seconds
+      iDuration = 2000 + (30 * iSpellPower);
 
       return iDuration;
    }
