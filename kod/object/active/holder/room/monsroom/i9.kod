@@ -35,6 +35,8 @@ resources:
       "Qor's most trusted lieutenant.\n\n%s"
 
    i9_portal_icon_rsc = teleport.bgf
+   
+   shatterlocked_portal = "The mountain winds howl madly as a spacial bridge forms to somewhere cold and dark..."
 
 classvars:
 
@@ -370,6 +372,31 @@ messages:
       return;
    }
 
+   CanShatterlockHere()
+   {
+      return TRUE;
+   }
+   
+   Shatterlocked(oPrism=$,lCasters=$)
+   {
+      local i;
+      
+      if oPrism <> $
+         AND Send(self,@IsInStonehenge,#what=oPrism)
+      {
+         Send(self,@OpenPortalToTemple);
+      }
+      
+      for i in plActive
+      {
+         if IsClass(i,&User)
+         {
+            Send(i,@MsgSendUser,#message_rsc=shatterlocked_portal);
+         }
+      }
+      
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

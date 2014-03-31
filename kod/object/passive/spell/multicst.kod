@@ -103,8 +103,20 @@ messages:
       return 0;
    }
 
-   BreakTrance(who = $, state = $)
+   BreakTrance(who = $, state = $, event = $)
    {
+      % The spell keeps going if you get damaged, move, cast, use an item, or make an attack.
+      % Players must rest or change rooms to end prism spells.
+      if event = EVENT_DAMAGE
+         OR event = EVENT_ATTACK
+         OR event = EVENT_RUN
+         OR event = EVENT_DISRUPT
+         OR event = EVENT_CAST
+         OR event = EVENT_USE
+      {
+         return FALSE;
+      }
+      
       % If caster runs out of mana or loses trance, spell ends.
       if IsClass(first(state),&prism)
       {
@@ -232,6 +244,10 @@ messages:
       return;
    }
 
+   CanBeRemovedByPlayer()
+   {
+      return FALSE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
