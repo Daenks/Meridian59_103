@@ -44,7 +44,7 @@ classvars:
    viSchool = SS_QOR
 
    viSpell_level =4
-   viMana = 17
+   viMana = 14
    viSpellExertion = 10
    vrSucceed_wav = CurseWeapon_sound
 
@@ -70,7 +70,7 @@ messages:
       return 1;
    }
 
-   CanPayCosts(who = $, lTargets = $)
+   CanPayCosts(who = $, lTargets = $, iSpellPower = 0)
    {
       local oWeapon, oTarget;
 
@@ -116,59 +116,67 @@ messages:
    
    CastSpell(who = $, lTargets = $, iSpellPower= 0)
    {
-      local oWeapon, oWeapAtt, oOwner, oRoom;
+      local oWeapon, oWeapAtt, oOwner, oRoom, iDuration;
 
       oWeapon = First(lTargets);
       oWeapAtt = Send(SYS,@FindItemAttByNum,#num=WA_CURSED);
-	  
+      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
       if IsClass(oWeapon,&User)
       {
          oWeapon = Send(oWeapon,@LookupPlayerWeapon);
       } 
       
-      if send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+	  if send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
       {
          Send(who, @MsgSendUser, #message_rsc=spell_resists,
                #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
                
          return;
-      }
-	  
-      Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
-               #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
-			   
+      }  
 
       oOwner = Send(oWeapon,@GetOwner);
 
 	  
       if IsClass(oOwner,&Player) AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
       {
+         Send(oOwner,@StartEnchantment,#what=self,#time=iDuration);
          if oOwner <> who
          {
-            send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
-            #timer_duration = send(self,@GetDuration,#iSpellPower=iSpellPower));
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration = iDuration);
             Send(oOwner,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
-            #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
          }
-
-         send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
-            #timer_duration = send(self,@GetDuration,#iSpellPower=iSpellPower));
-			
+         else
+         {
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration = iDuration);
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));           
+         }
+      }	
          oRoom = Send(oOwner,@GetOwner);
          if oRoom <> $
          {
             Send(oRoom,@SomethingChanged,#what=oOwner);
          }
-      }           
+                 
 
       propagate;
+   }
+
+   EndEnchantment()
+   {
+      return;
    }
    
    GetDuration(iSpellPower=0)
    {
       local iDuration;
-      %% duration = 25 to 35 seconds.
-      iDuration = (25+(iSpellPower/10))*1000;    
+      %% duration = 6 to 11 seconds.
+      iDuration = (6+(iSpellPower/20))*1000;    
       return iDuration;
    }
 
