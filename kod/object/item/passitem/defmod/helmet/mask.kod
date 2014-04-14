@@ -42,6 +42,14 @@ properties:
 
 messages:
 
+   Constructed()
+   {
+      % Masks always have 1 socket regardless of origin.
+      Create(&DefModSockets,#host_object=self,#num_sockets=1);
+      
+      propagate;
+   }
+
    DefendingHit(who = $,what = $)
    {
       % Return here to avoid damage.

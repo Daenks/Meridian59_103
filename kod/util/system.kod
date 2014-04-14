@@ -407,6 +407,9 @@ properties:
    % A master list of all spell-casting active objects
    plSpellTotems = $
 
+   % A master list of all object attributes, for maintenance, control, & statistics purposes
+   plObject_attributes_master = $
+   
 messages:
 
    GetName()
@@ -5038,6 +5041,17 @@ messages:
       plItemTemplates = cons(create(&ShrunkenHeadMask),plItemTemplates);
 
       plItemTemplates = cons(create(&ManaCrystal),plItemTemplates);
+      
+      
+      plItemTemplates = cons(create(&GemColdResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemFireResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemShockResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemAcidResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemSlashResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemThrustResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemBludgeonResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemPierceResistance),plItemTemplates);
+      plItemTemplates = cons(create(&GemRemove),plItemTemplates);
 
       return;
    }
@@ -6674,7 +6688,76 @@ messages:
  
        return;
     }
- 
+    
+   AddObjectAttributeToMasterList(attribute=$)
+   {
+      if attribute <> $
+         AND (plObject_attributes_master = $
+         OR FindListElem(plObject_attributes_master, attribute) = 0)
+      {
+         plObject_attributes_master = Cons(attribute,plObject_attributes_master);
+      }
+      return;
+   }
+    
+   RemoveObjectAttributeFromMasterList(attribute=$)
+   {
+      if attribute <> $
+         AND plObject_attributes_master <> $
+         AND FindListElem(plObject_attributes_master, attribute) <> 0
+      {
+         plObject_attributes_master = DelListElem(plObject_attributes_master,attribute);
+      }
+      return;
+   }
+
+   AddResistance(what = $, value = NO_RESISTANCE, resistance_list = $)
+   "Adds a resistance of type (what) and value (value).  "
+   "If a resistance already exists, the new value will be added to the old."
+   {
+      local i;
+
+      for i in resistance_list
+      {
+         if Nth(i,2) = what
+         {
+            SetNth(i,1,value + Nth(i,1));
+            if Nth(i,1) = NO_RESISTANCE
+            {
+               resistance_list = DelListElem(resistance_list,i);
+            }
+
+            return;
+         }
+      } 
+
+      resistance_list = Cons([value,what],resistance_list);
+
+      return resistance_list;
+   }
+
+   RemoveAllResistances(resistance_list = $)
+   "This clears the resistance list... for if someone's char is really messed "
+   "up."
+   {
+      local i;
+
+      for i in resistance_list
+      {
+         Send(self,@RemoveResistance,#what=Nth(i,2),#value=Nth(i,1),#resistance_list=resistance_list);
+      }
+
+      return TRUE;
+   }
+
+   RemoveResistance(what = $, value = 0, resistance_list = $)
+   "Removes a resistance of type (what) and value (value)"
+   {
+      Send(self,@AddResistance,#what=what,#value=-value,#resistance_list=resistance_list);
+
+      return TRUE;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -177,6 +177,45 @@ messages:
       propagate;
    }
 
+   AppendDesc()
+   {
+      local i, target_type;
+
+      if plObject_attributes <> $
+      {
+         for i in plObject_attributes
+         {
+            if IsClass(i,&WeaponSpellProc)
+            {
+            AppendTempString("\n\n");
+            AppendTempString("Upon a successful strike, the runes engraved on this "); 
+            AppendTempString(Send(self,@GetName));
+            AppendTempString(" will cast ");
+            AppendTempString(Send(Send(i,@GetSpell),@GetName));
+            AppendTempString(" ");
+            
+            target_type = Send(i,@GetType);
+            if target_type = 1
+            {
+               AppendTempString("on you ");
+            }
+            if target_type = 2
+            {
+               AppendTempString("on the enemy ");
+            }
+            
+            AppendTempString("with ");
+            AppendTempString(Send(i,@GetSpellPower));
+            AppendTempString(" spellpower ");
+            AppendTempString(Send(i,@GetProcChance));
+            AppendTempString("\% of the time.");
+            }
+         }
+      }
+
+      propagate;
+   }
+   
    %%% Hard Stats Functions
    %%% (Range, hit chance, damage, etc)
 
@@ -320,6 +359,11 @@ messages:
             iDamage = send(oWeapAtt,@ModifyDamage,#damage=iDamage,#wielder=poOwner,
                            #target=target,#lData=i);
          }
+      }
+      
+      for i in plObject_attributes
+      {
+         iDamage = Send(i,@ModifyDamage,#damage=iDamage,#who=poOwner,#what=target);
       }
 
       iDamage = iDamage + piDamageBonus;

@@ -49,16 +49,8 @@ messages:
       local iValue;
       
       iValue = send(self,@GetResistanceStrength,#iSpellPower=iSpellPower);
-      send(self,@AddResistances,#who=target,#value=iValue);
       
       return iValue;
-   }
-
-   AddResistances(who=$,value=$)
-   {
-      Send(who,@AddResistance,#what=viResistanceType,#value=value);
-      
-      return;
    }
 
    GetResistanceStrength(iSpellpower = 0)
@@ -66,7 +58,13 @@ messages:
       %% strength varies from 1 to 50
       return iSpellPower/2 + 1;
    }
-
+   
+   ModifyResistance(resistance_list=$)
+   {
+      resistance_list = Send(SYS,@AddResistance,#value=Send(self,@GetStateValue),#what=viResistanceType,#resistance_list=resistance_list);
+      return resistance_list;
+   }
+   
    GetDuration(iSpellPower = 0)
    {
       local iDuration;	   %%% 5 to 10 minutes
@@ -75,21 +73,6 @@ messages:
       iDuration = iDuration * 1000;	  %% translate to milliseconds
       
       return iDuration;
-   }
-
-   EndEnchantment(who = $, report = TRUE, state = -1)
-   {
-      if state = -1  { DEBUG("Bad data!"); state = 0; }
-      Send(self,@RemoveResistances,#who=who,#value=state);
-
-      propagate;
-   }
-
-   RemoveResistances(who=$,value=$)
-   {
-      Send(who,@RemoveResistance,#what=viResistanceType,#value=value);
-      
-      return;
    }
 
 end

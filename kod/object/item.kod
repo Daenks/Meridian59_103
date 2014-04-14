@@ -143,7 +143,12 @@ messages:
       % This is special 'status' stuff, like the number of 
       %  number items you have left, or the condition of your 
       %  weapon.
-      local rItem_condition, iHit_percent;
+      local rItem_condition, iHit_percent, i;
+
+      for i in plObject_attributes
+      {
+         Send(i,@AttributeDesc);
+      }
 
       if vbShow_Condition
          AND piHits_init > 0
@@ -1700,6 +1705,39 @@ messages:
       }
       return FALSE;
    }
+   
+   GetResistanceModifiers()
+   {
+      return $;
+   }
 
+   GetCurrentResistances()
+   {
+      local lCurrentResistances, oObjectAttribute;
+      
+      lCurrentResistances = Send(self,@GetResistanceModifiers);
+      
+      for oObjectAttribute in plObject_attributes
+      {
+         lCurrentResistances = Send(oObjectAttribute,@ModifyResistance,#resistance_list=lCurrentResistances);
+      }
+      
+      return lCurrentResistances;
+   }
+   
+   ModifyResistance(resistance_list=$)
+   {
+      local oResist, lCurrentResistances;
+      
+      lCurrentResistances = Send(self,@GetCurrentResistances);
+      
+      for oResist in lCurrentResistances
+      {
+         resistance_list = Send(SYS,@AddResistance,#what=Nth(oResist,2),#value=Nth(oResist,1),#resistance_list=resistance_list);
+      }
+      
+      return resistance_list;
+   }
+   
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

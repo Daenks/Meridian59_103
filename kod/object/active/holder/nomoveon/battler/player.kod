@@ -4820,6 +4820,10 @@ messages:
                           #atype=atype,#aspell=aspell);
             Send(i,@DefendingHit,#who=self,#what=what);
          }
+         for i in plDefense_modifiers
+         {
+            damage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,#damage=damage,
+                          #atype=atype,#aspell=aspell);
       
          iResistance = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
 
@@ -5783,6 +5787,11 @@ messages:
    GetPlayerUsing()
    {
       return plUsing;
+   }
+   
+   GetEquippedItems()
+   {
+      return Send(self,@GetPlayerUsing);
    }
 
    IsUsingA(class=$)
@@ -10686,17 +10695,6 @@ messages:
          
          plDefense_modifiers = $;
       }
-      
-      if plResistances <> $
-      {
-         for i in plResistances
-         {
-            Debug("Recalibrating: player",Send(self,@GetTrueName),self,
-                  "still had resistance",first(i),Nth(i,2));
-         }
-         
-         plResistances = $;
-      }
 
       piStomach = 50;
       piTimeLastStomachUpdate = GetTime();
@@ -13238,5 +13236,12 @@ messages:
 	   return;
    }
 
+   ClearOldResistanceList()
+   "Admin cleanup function. Players no longer use an active resistance list."
+   {
+      plResistances = $;
+      return 1;
+   }
+   
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

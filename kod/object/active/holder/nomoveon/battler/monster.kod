@@ -5894,7 +5894,12 @@ messages:
 	  
 	  return;
   }
-
+   
+   GetBaseResistances()
+   "Many mobs have base resistances."
+   {
+      return plResistances;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
