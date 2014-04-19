@@ -120,6 +120,16 @@ messages:
       return damage;
    }
 
+   EffectDesc(who=$)
+   {
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment affecting you currently adds 100 offense and 1-5 damage against evil enemies if you are good.");
+      
+      return;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

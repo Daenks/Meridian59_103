@@ -31,6 +31,8 @@ resources:
 
    PersonalEnchantment_bad_location = "You cannot cast enchantments upon others here."
 
+   spell_blank_template = "%q"
+   
 classvars:
 
    vrName = PersonalEnchantment_name_rsc
@@ -249,7 +251,47 @@ messages:
    {
       return defense_power;
    }
+   
+   EffectDesc(who=$)
+   {
+      AppendTempString("\n\n");
+      AppendTempString("Your ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment currently has ");
+      AppendTempString(Send(who,@GetEnchantedState,#what=self));
+      AppendTempString(" effect.");
+      
+      return;
+   }
 
+   CreateDesc(who=$)
+   {
+      ClearTempString();
+      AppendTempString("SCHOOL : ");
+      AppendTempString(Send(self,@GetSchoolStr));
+      AppendTempString("          LEVEL : ");
+      AppendTempString(Send(self,@GetLevel));
+      AppendTempString("\n\n");
+      AppendTempString(vrDesc);
+      
+      if who <> $
+         AND IsClass(who,&User)
+         AND Send(who,@IsEnchanted,#what=self)
+      {
+         Send(self,@EffectDesc,#who=who);
+      }
+      
+      return;
+   }
+   
+   ShowDesc(bShowAll = FALSE,who=$)
+   {
+      Send(self,@CreateDesc,#who=who);      
+      AddPacket(4,spell_blank_template,4,GetTempString());
+
+      return;
+   }
+         
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

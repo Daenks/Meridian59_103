@@ -140,6 +140,36 @@ messages:
 
       return FALSE;
    }
+
+   EffectDesc(who=$)
+   {
+      local i, lStrongestState;
+      
+      lStrongestState = [$,0,$];
+      
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         if Nth(i,1) = self
+         {
+            if Nth(i,2) > Nth(lStrongestState,2)
+            {
+               lStrongestState = i;
+            }
+         }
+      }
+
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment affecting you currently reduces Aim by ");
+      
+      AppendTempString(Nth(lStrongestState,2)/4);
+      AppendTempString(" and has a ");
+      AppendTempString(Bound(Nth(lStrongestState,2)/3 + 10,15,40));
+      AppendTempString("\% chance to knock fired arrows out of the air.");
+      
+      return;
+   }
    
 
 end

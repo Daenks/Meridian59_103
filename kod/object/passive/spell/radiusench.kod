@@ -53,6 +53,8 @@ resources:
 
    radius_ench_cant_fight_here = "You can't fight here."
    
+   radius_blank_template = "%q"
+   
 classvars:
 
    radius_ench_already_cast = radius_ench_default_already_cast
@@ -553,6 +555,62 @@ messages:
    GetDuration(iSpellPower=0)
    {
       return ((50 + iSpellpower)*1000);
+   }
+
+   EffectDesc(who=$)
+   {
+      local i, lStrongestState;
+
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment currently has ");
+      
+      lStrongestState = [$,0,$];
+      
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         if Nth(i,1) = self
+         {
+            if Nth(i,2) > Nth(lStrongestState,2)
+            {
+               lStrongestState = i;
+            }
+         }
+      }
+      
+      AppendTempString(Nth(lStrongestState,2));
+      AppendTempString(" spellpower.");
+      
+      return;
+   }
+
+   CreateDesc(who=$)
+   {
+      ClearTempString();
+      AppendTempString("SCHOOL : ");
+      AppendTempString(Send(self,@GetSchoolStr));
+      AppendTempString("          LEVEL : ");
+      AppendTempString(Send(self,@GetLevel));
+      AppendTempString("\n\n");
+      AppendTempString(vrDesc);
+      
+      if who <> $
+         AND IsClass(who,&User)
+         AND Send(who,@IsAffectedByRadiusEnchantment,#what=self)
+      {
+         Send(self,@EffectDesc,#who=who);
+      }
+      
+      return;
+   }
+   
+   ShowDesc(bShowAll = FALSE,who=$)
+   {
+      Send(self,@CreateDesc,#who=who);      
+      AddPacket(4,radius_blank_template,4,GetTempString());
+
+      return;
    }
 
    %%%%% Effect Functions
