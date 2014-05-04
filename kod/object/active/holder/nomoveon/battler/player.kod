@@ -2797,8 +2797,12 @@ messages:
                Send(Nth(i,2),@EndEnchantment,#who=self);
             }
 
-            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
-                 #type=ENCHANTMENT_PLAYER);
+            % Radius Enchantments clear their own icon at the end of the spell
+            if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                    #type=ENCHANTMENT_PLAYER);
+            }
 
             % TODO: i no longer exists at this point?  EndEnchantment removing it?
             plEnchantments = DelListElem(plEnchantments,i);
@@ -3197,6 +3201,11 @@ messages:
    {
       plRadiusEnchantments = Cons([what,iPower,caster],plRadiusEnchantments);
       Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_ROOM);
+
+      if caster = self
+      {
+         Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
+      }
       
       return;
    }
@@ -3214,6 +3223,12 @@ messages:
             AND Nth(i,3) = caster
          {
             Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=ENCHANTMENT_ROOM);
+            
+            if caster = self
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=ENCHANTMENT_PLAYER);
+            }
+            
             plRadiusEnchantments = DelListElem(plRadiusEnchantments,i);
             bFound = TRUE;
          }

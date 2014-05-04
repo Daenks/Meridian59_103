@@ -243,7 +243,8 @@ messages:
 
       % Put spell maintenance info in caster's enchantment list.
       Send(who,@StartEnchantment,#what=self,#time=RADIUS_CHECK_TIME,
-           #state=[iDrain,lEnchanted,iPower,iRange]);      
+           #state=[iDrain,lEnchanted,iPower,iRange],
+           #addicon=FALSE);      
 
       propagate;
    }
@@ -403,7 +404,8 @@ messages:
       }
 
       Send(who,@StartEnchantment,#what=self,#time=RADIUS_CHECK_TIME,
-          #state=[iDrain + (((viManaDrain*1000 / viDrainTime)*1000) / (1000 / RADIUS_CHECK_TIME)),lEnchanted,iPower,iRange],#Report=FALSE);
+          #state=[iDrain + (((viManaDrain*1000 / viDrainTime)*1000) / (1000 / RADIUS_CHECK_TIME)),lEnchanted,iPower,iRange],
+          #addicon=FALSE);
 
       return;
    }
