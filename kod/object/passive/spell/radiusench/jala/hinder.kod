@@ -67,6 +67,37 @@ messages:
       return altChance;
    }
 
+   EffectDesc(who=$)
+   {
+      local i, lStrongestState;
+      
+      lStrongestState = [$,0,$];
+      
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         if Nth(i,1) = self
+         {
+            if Nth(i,2) > Nth(lStrongestState,2)
+            {
+               lStrongestState = i;
+            }
+         }
+      }
+      
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment affecting you currently reduces the chance to successfully cast ");
+      AppendTempString(Send(self,@GetSchoolStr,#iSchool=viHinderedSchool));
+      AppendTempString(" spells by ");
+      AppendTempString(Nth(lStrongestState,2)/2);
+      AppendTempString("-");
+      AppendTempString(Nth(lStrongestState,2)*2/3);
+      AppendTempString("\%.");
+      
+      return;
+   }
+
 
 end
 

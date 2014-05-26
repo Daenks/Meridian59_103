@@ -1174,5 +1174,11 @@ messages:
       return FALSE;
    }
 
+  
+   GetEquippedItems()
+   {
+      return plUsing;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

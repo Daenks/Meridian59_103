@@ -122,5 +122,34 @@ messages:
       return resistance;
    }
 
+   EffectDesc(who=$)
+   {
+      local i, lStrongestState;
+      
+      lStrongestState = [$,0,$];
+      
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         if Nth(i,1) = self
+         {
+            if Nth(i,2) > Nth(lStrongestState,2)
+            {
+               lStrongestState = i;
+            }
+         }
+      }
+
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment affecting you currently adds ");
+      AppendTempString(Nth(lStrongestState,2)*2);
+      AppendTempString(" defense and up to ");
+      AppendTempString(Bound(Nth(lStrongestState,2)/5,$,20));
+      AppendTempString("\% resistance against attacks from outside its protective radius.");
+      
+      return;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

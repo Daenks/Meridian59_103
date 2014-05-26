@@ -506,11 +506,15 @@ messages:
             AND Send(who,@IsAffectedByRadiusEnchantment,#byClass=&Spellbane)
          {
             lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Spellbane);
-            if report
+            
+            if Nth(lRadiusState,2) >= iSpellPower
             {
-               Send(who,@MsgSendUser,#message_rsc=spell_spellbane_stopped,#parm1=Send(Nth(lRadiusState,3),@GetName));
+               if report
+               {
+                  Send(who,@MsgSendUser,#message_rsc=spell_spellbane_stopped,#parm1=Send(Nth(lRadiusState,3),@GetName));
+               }
+               return FALSE;
             }
-            return FALSE;
          }
 
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_SILENCE);
@@ -2438,6 +2442,11 @@ messages:
       return 1;
    }
 
+   ModifyResistance(resistance_list=$)
+   {
+      % Spells can overwrite this to change resistances temporarily.
+      return resistance_list;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -33,7 +33,7 @@ resources:
 
    unholyweapon_spell_intro = "Qor Lv. 2: Dedicates your weapon to Qor, enhancing its effectiveness against the holy."
 
-   unholyweapon_lable_rsc = "suplicant of Qor."
+   unholyweapon_label_rsc = "supplicant of Qor."
 
 classvars:
 
@@ -41,7 +41,7 @@ classvars:
    vrIcon = unholyweapon_icon_rsc
    vrDesc = unholyweapon_desc_rsc
 
-   vrEnchantment_type = unholyweapon_lable_rsc
+   vrEnchantment_type = unholyweapon_label_rsc
 
    vrSpell_intro =unholyweapon_spell_intro
    viSpell_num = SID_UNHOLY_WEAPON
