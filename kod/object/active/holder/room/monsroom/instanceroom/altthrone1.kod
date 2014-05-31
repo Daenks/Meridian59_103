@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AltThrone1 is InstanceRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   name_AltThrone1 = "The Throne Room of Victoria Castle" 
+   room_AltThrone1 = throne1.roo
+
+   AltThrone1_music = castle2.mid
+
+classvars:
+
+   vrName = name_AltThrone1
+
+   viTeleport_row = 10
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_LAIR | TERRAIN_CASTLE
+
+properties:
+
+   piBaseLight = LIGHT_VERY_DARK / 2
+   prRoom = room_AltThrone1
+   piRoom_num = $
+
+   prMusic = AltThrone1_music
+
+   piOutside_factor = OUTDOORS_NONE
+
+   piDifficultyMod = 100
+   piExperienceMod = 100
+   piTreasureMod = 100
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&Zombie,20], [&TuskedSkeleton, 80] ];
+
+      plGenerators = [ [5, 3], [9, 2], [13, 3],
+                       [5, 9], [9, 10], [13, 9]];
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      % throne
+      Send(self,@NewHold,#what=Create(&Throne),
+	   #new_row=1,#new_col=5,#new_angle=ANGLE_SOUTH);
+
+      % left row of pillars 
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=16,#new_col=3,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=13,#new_col=3,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=10,#new_col=3,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=7,#new_col=3,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=4,#new_col=3,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=1,#new_col=3,#fine_col=56);
+
+      % right row of pillars
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=16,#new_col=7,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=13,#new_col=7,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=10,#new_col=7,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=7,#new_col=7,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=4,#new_col=7,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=1,#new_col=7,#fine_col=8);
+
+      % left row of braziers
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=11,#new_col=3,
+           #fine_row=56,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=5,#new_col=3,
+           #fine_row=56,#fine_col=56);
+
+      % right row of braziers
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=11,#new_col=7,
+           #fine_row=56,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=5,#new_col=7,
+           #fine_row=56,#fine_col=8);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

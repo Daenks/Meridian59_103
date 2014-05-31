@@ -1,0 +1,49 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+VariableInstance is InstanceRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   name_VariableInstance = "A strange realityspace"
+   variableSky = 3sky.bgf
+
+classvars:
+
+   vrName = name_VariableInstance
+
+   viTeleport_row = 10
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_CASTLE
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   prBackground = variableSky
+   prRoom = $
+   piRoom_num = $
+
+   piOutside_factor = OUTDOORS_NONE
+
+   piDifficultyMod = 100
+   piExperienceMod = 100
+   piTreasureMod = 100
+
+messages:
+
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

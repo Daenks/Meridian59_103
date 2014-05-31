@@ -417,6 +417,11 @@ messages:
       
       return iCount - 1;
    }
+   
+   GetGenerators()
+   {
+      return plGenerators;
+   }
 	 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

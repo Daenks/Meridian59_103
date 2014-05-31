@@ -2813,8 +2813,12 @@ messages:
                Send(Nth(i,2),@EndEnchantment,#who=self);
             }
 
-            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
-                 #type=ENCHANTMENT_PLAYER);
+            % Radius Enchantments clear their own icon at the end of the spell
+            if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                    #type=ENCHANTMENT_PLAYER);
+            }
 
             % TODO: i no longer exists at this point?  EndEnchantment removing it?
             plEnchantments = DelListElem(plEnchantments,i);
@@ -3213,6 +3217,11 @@ messages:
    {
       plRadiusEnchantments = Cons([what,iPower,caster],plRadiusEnchantments);
       Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_ROOM);
+
+      if caster = self
+      {
+         Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
+      }
       
       return;
    }
@@ -3230,6 +3239,12 @@ messages:
             AND Nth(i,3) = caster
          {
             Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=ENCHANTMENT_ROOM);
+
+            if caster = self
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=ENCHANTMENT_PLAYER);
+            }
+
             plRadiusEnchantments = DelListElem(plRadiusEnchantments,i);
             bFound = TRUE;
          }
@@ -5806,6 +5821,11 @@ messages:
    GetPlayerUsing()
    {
       return plUsing;
+   }
+   
+   GetEquippedItems()
+   {
+      return Send(self,@GetPlayerUsing);
    }
 
    IsUsingA(class=$)
@@ -8982,6 +9002,22 @@ messages:
 
       return;
    }
+   
+   VerifyOverlays()
+   "Removes overlays of any overlaid item whose owner is not the player."
+   {
+      local i;
+      
+      for i in plOverlays
+      {
+         if Send(i,@GetOwner) <> self
+         {
+            Send(self,@RemoveOverlayObject,#what=i);
+         }
+      }
+      
+      return;
+   }
 
    SetOverlay(what = $)
    "Adds <what> to plOverlays, and tells everyone we changed."
@@ -10713,17 +10749,6 @@ messages:
          }
          
          plDefense_modifiers = $;
-      }
-      
-      if plResistances <> $
-      {
-         for i in plResistances
-         {
-            Debug("Recalibrating: player",Send(self,@GetTrueName),self,
-                  "still had resistance",first(i),Nth(i,2));
-         }
-         
-         plResistances = $;
       }
 
       piStomach = 50;
@@ -13290,5 +13315,13 @@ messages:
       
       return iArmor;
    }
+  
+   ClearOldResistanceList()
+   "Admin cleanup function. Players no longer use an active resistance list."
+   {
+      plResistances = $;
+      return 1;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

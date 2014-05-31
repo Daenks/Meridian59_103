@@ -1,0 +1,290 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+InstancePortal is Portal
+
+constants:
+
+   include blakston.khd
+   
+   % 9 minutes
+   PORTAL_EXPIRATION_TIME = 300000
+
+resources:
+
+   InstancePortal_name_rsc = "A mysterious gateway"
+   InstancePortal_icon_rsc = teleport.bgf
+   InstancePortal_desc_rsc = "This gateway pulses with dimensional energy. You sense that it leads to a place much like "
+   InstancePortal_desc2_rsc = ", with "
+   InstancePortal_desc3_rsc = "% experience gains and "
+   InstancePortal_desc4_rsc = "% treasure drops. You sense "
+   InstancePortal_desc5_rsc = " life forces within."
+
+   InstancePortal_appear = "A vast and mysterious force takes notice of your combat prowess, "
+                            "and invites you to attempt a greater challenge..."
+   InstancePortal_opening = "A strange portal appears, inviting all warriors brave enough to enter!"
+   
+   InstancePortal_closing = "The portal flickers and begins to draw imperceptibly in on itself."
+   InstancePortal_closed = "The portal disappears."
+   
+   InstancePortal_teleport_rsc = "You rush through the open gateway, ready for combat!"
+   
+   InstancePortal_sound = qunbond.wav
+
+classvars:
+
+   viObject_flags = MOVEON_TELEPORTER | DRAWFX_TRANSLUCENT_75
+
+   viMaxDistance = 0
+   
+   viExperienceModMin = 1
+   viExperienceModMax = 3
+   
+   viTreasureModMin = 2
+   viTreasureModMax = 4
+
+properties:
+
+   piBaseRID = $
+   piMonsterClass = $
+   piSecondaryMonsterClass = $
+   psMonsterName = $
+   
+   piLevel = 90
+   piDifficulty = 0
+   piKarma = 0
+   piAttack_type = ATCK_WEAP_HIT
+   piAttack_spell = 0
+   piSpeed = 0
+
+   piDifficultyMod = 100
+   piExperienceMod = 2
+   piTreasureMod = 2
+   
+   ptPortalExpireTimer = $
+   piDestRID = $
+
+messages:
+
+   Constructor(who=$,level=90,portal_room=$,portal_row=$,portal_col=$,portal_fine_row=$,portal_fine_col=$)
+   {
+      local poInstanceRoomMaintenance, iRandom, plRIDs, plMonsterClasses, i, lElementList;
+
+      piDifficultyMod = 100;
+      piExperienceMod = Random(viExperienceModMin,viExperienceModMax);
+      piTreasureMod = Random(viTreasureModMin,viTreasureModMax);
+
+      piLevel = level;
+      piDifficulty = Random(1,9);
+      piSpeed = Random(1,20);
+      
+      if Random(1,2) = 1
+      {
+         lElementList = [ATCK_WEAP_SLASH,ATCK_WEAP_BLUDGEON,ATCK_WEAP_PIERCE,ATCK_WEAP_THRUST,ATCK_WEAP_BITE,ATCK_WEAP_CLAW];
+         piAttack_type = Nth(lElementList,Random(1,Length(lElementList)));
+         piAttack_spell = 0;
+      }
+      else
+      {
+         lElementList = [ATCK_SPELL_FIRE,ATCK_SPELL_SHOCK,ATCK_SPELL_ACID,ATCK_SPELL_QUAKE,ATCK_SPELL_HOLY,ATCK_SPELL_UNHOLY,ATCK_SPELL_COLD];
+         piAttack_type = 0;
+         piAttack_spell = Nth(lElementList,Random(1,Length(lElementList)));
+      }
+      
+      if who <> $
+         AND IsClass(who,&User)
+         AND Send(who,@IsLoggedOn)
+      {
+         Send(who,@MsgSendUser,#message_rsc=InstancePortal_appear);
+      }
+      
+      poInstanceRoomMaintenance = Send(SYS,@GetInstanceRoomMaintenance);
+      
+      if poInstanceRoomMaintenance <> $
+      {
+         plRIDs = Send(poInstanceRoomMaintenance,@GetValidRIDs);
+         iRandom = Random(1,Length(plRIDs));
+         piBaseRID = Nth(plRIDs,iRandom);
+         
+         plMonsterClasses = Send(poInstanceRoomMaintenance,@GetValidMonsterClasses);
+         iRandom = Random(1,Length(plMonsterClasses));
+         piMonsterClass = Nth(plMonsterClasses,iRandom);
+
+         iRandom = Random(1,Length(plMonsterClasses));
+         piSecondaryMonsterClass = Nth(plMonsterClasses,iRandom);
+      }
+      else
+      {
+         piBaseRID = RID_THRONE1;
+         piMonsterClass = &Avar;
+         piSecondaryMonsterClass = &Lupogg;
+      }
+      
+      for i in Send(SYS,@GetMonsterTemplates)
+      {
+         if IsClass(i,piMonsterClass)
+         {
+            psMonsterName = Send(i,@GetName);
+         }
+      }
+
+      Post(self,@CreateDestination,#portal_room=portal_room,#portal_row=portal_row,#portal_col=portal_col,
+                                   #portal_fine_row=portal_fine_row,#portal_fine_col=portal_fine_col);
+      
+      propagate;
+   }
+   
+   CreateDestination(portal_room=$,portal_row=$,portal_col=$,portal_fine_row=$,portal_fine_col=$)
+   {
+      local poInstanceRoomMaintenance, iLocalRID, oDestRoom;
+      
+      if portal_room <> $
+         AND portal_row <> $
+         AND portal_col <> $
+      {
+         Send(portal_room,@NewHold,#what=self,
+               #new_row=portal_row,#new_col=portal_col,
+               #fine_row=portal_fine_row,#fine_col=portal_fine_col);
+      }
+      
+      iLocalRID = 0;
+      poInstanceRoomMaintenance = Send(SYS,@GetInstanceRoomMaintenance);
+      
+      if poInstanceRoomMaintenance <> $
+      {
+         iLocalRID = Send(poInstanceRoomMaintenance,@MakeInstanceRoom,
+                     #iBaseRID=piBaseRID,
+                     #monster_class=piMonsterClass,
+                     #secondary_monster_class=piSecondaryMonsterClass,
+                     #iDifficultyMod=piDifficultyMod,
+                     #iExperienceMod=piExperienceMod,
+                     #iTreasureMod=piTreasureMod,
+                     #iLevel=piLevel,
+                     #iDifficulty=piDifficulty,
+                     #iAttack_type=piAttack_type,
+                     #iAttack_spell=piAttack_spell,
+                     #iSpeed=piSpeed);
+
+         if iLocalRID = 0
+         {
+            Send(self,@Delete);
+         }
+         else
+         {
+            piDestRID = iLocalRID;
+         }
+
+         oDestRoom = Send(SYS,@FindRoomByNum,#num=piDestRID);
+         Send(oDestRoom,@SetCreatorOriginData,#origin_room=Send(self,@GetOwner));
+         ptPortalExpireTimer = CreateTimer(self,@PortalExpire,PORTAL_EXPIRATION_TIME);
+         Send(self,@NotifyRoomPortalAppear);
+      }
+
+      return;
+   }
+   
+   NotifyRoomPortalAppear()
+   {
+      local i, each_obj, oRoom;
+
+      oRoom = Send(self,@GetOwner);
+      
+      for i in Send(oRoom,@GetPlActive)
+      {
+         each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=InstancePortal_opening);
+            Send(each_obj,@WaveSendUser,#row=Send(self,@GetRow),
+                                        #col=Send(self,@GetCol),
+                                        #wave_rsc=InstancePortal_sound);
+         }
+      }
+      
+      % Clear stacked items to make portal visible
+      for i in Send(oRoom,@GetPlPassive)
+      {
+         each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&Item)
+            AND Send(each_obj,@GetRow) = Send(self,@GetRow)
+            AND Send(each_obj,@GetCol) = Send(self,@GetCol)
+         {
+            Send(each_obj,@DestroyDisposable);
+         }
+      }
+
+      return;
+   }
+
+   TeleportSomething(what=$)
+   {
+      local oDestRoom;
+
+      % Don't teleport if our time is up
+      If NOT IsClass(what,&User)
+         OR ptPortalExpireTimer = $
+      {
+         return;
+      }
+      
+      oDestRoom = Send(SYS,@FindRoomByNum,#num=piDestRID);
+      
+      if oDestRoom <> $
+         AND IsClass(oDestRoom,&InstanceRoom)
+      {
+         Send(what,@MsgSendUser,#message_rsc=InstancePortal_teleport_rsc);
+         Send(oDestRoom,@Teleport,#what=what);
+         Send(oDestRoom,@IncreaseKillsToWin);
+      }
+
+      return;
+   }
+   
+   PortalExpire()
+   {
+      ptPortalExpireTimer = $;
+      
+      Send(self,@Delete);
+      
+      return;
+   }
+   
+   Delete()
+   {
+      local i, each_obj, oRoom, oDestRoom;
+      
+      if ptPortalExpireTimer <> $
+      {
+         DeleteTimer(ptPortalExpireTimer);
+         ptPortalExpireTimer = $;
+      }
+
+      oRoom = Send(self,@GetOwner);
+      
+      for i in Send(oRoom,@GetPlActive)
+      {
+         each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=InstancePortal_closed);
+         }
+      }
+
+      oDestRoom = Send(SYS,@FindRoomByNum,#num=piDestRID);
+      if oDestRoom <> $
+      {
+         Send(oDestRoom,@Delete);
+      }
+   
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

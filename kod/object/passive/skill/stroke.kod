@@ -349,7 +349,7 @@ messages:
       }
       
       % Get stat damage bonus.
-      stat = send(who,@GetRequisiteStat);
+      stat = send(self,@GetRequisiteStat);
       iDamage = ((100+bound(stat-25,0,40))*iDamage)/100;
 
       return iDamage;

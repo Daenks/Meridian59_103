@@ -222,12 +222,12 @@ classvars:
    % viOccupation is what this mob does for a living, used for NPCs.
    viOccupation   = 0
    viKarma        = 0
-   % viLevel ranges from 25 to 200 (150 and above is for "boss" mobs)
+   % Level ranges from 25 to 200 (150 and above is for "boss" mobs)
    %  determines hit points.
    viLevel        = 25
    viCashmin = 1
    viCashmax = 10
-   % viDifficulty ranges from 1 to 9, increases combat prowess
+   % Difficulty ranges from 1 to 9, increases combat prowess
    viDifficulty   = 0
    viBrain_type   = BRAIN_ORIGINAL
    viDefault_behavior = 0
@@ -338,12 +338,84 @@ properties:
    piDefense = $
    piMinDamage = $
    piMaxDamage = $
+   
+   piAttack_type  = ATCK_WEAP_HIT
+   piAttack_spell = 0
+   piSpeed        = 0
+   piKarma        = 0
+   piLevel        = 25
+   piDifficulty   = 1
+   piWimpy        = 0
 
 messages:
 
-   Constructor()
+   Constructor(attack_type=$,attack_spell=$,speed=$,karma=$,level=$,difficulty=$,wimpy=$)
    "Simple enough, we create a monster. If they are questworthy, we note it."
    {
+      % Allow monster stats to be over written upon construction
+      if attack_type <> $
+      {
+         piAttack_type = attack_type;
+      }
+      else
+      {
+         piAttack_type = viAttack_type;
+      }
+
+      if attack_spell <> $
+      {
+         piAttack_spell = attack_spell;
+      }
+      else
+      {
+         piAttack_spell = viAttack_spell;
+      }
+      
+      if speed <> $
+      {
+         piSpeed = speed;
+      }
+      else
+      {
+         piSpeed = viSpeed;
+      }
+      
+      if karma <> $
+      {
+         piKarma = karma;
+      }
+      else
+      {
+         piKarma = viKarma;
+      }
+      
+      if level <> $
+      {
+         piLevel = level;
+      }
+      else
+      {
+         piLevel = viLevel;
+      }
+      
+      if difficulty <> $
+      {
+         piDifficulty = difficulty;
+      }
+      else
+      {
+         piDifficulty = viDifficulty;
+      }
+      
+      if wimpy <> $
+      {
+         piWimpy = wimpy;
+      }
+      else
+      {
+         piWimpy = viWimpy;
+      }
+      
       piMax_Hit_points = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints));
       piHit_points = piMax_hit_points;
 
@@ -1367,7 +1439,7 @@ messages:
          {
             Send(poOwner,@SomethingMoved,#what=self,
                  #new_row=iNew_row,#new_col=iNew_col,
-                 #speed=(0x80|viSpeed),#non_monsters_only=TRUE);
+                 #speed=(0x80|Send(self,@GetSpeed)),#non_monsters_only=TRUE);
          }         
       }
 
@@ -1399,7 +1471,7 @@ messages:
          {   
             Send(poOwner,@SomethingMoved,#what=self,
                  #new_row=Send(poMaster,@GetRow),#new_col=Send(poMaster,@GetCol),
-                 #speed=(0x80 | viSpeed),#non_monsters_only=TRUE);
+                 #speed=(0x80 | Send(self,@GetSpeed)),#non_monsters_only=TRUE);
 
             return TRUE;
          }
@@ -1451,7 +1523,7 @@ messages:
 
       if piOffense = $
       {
-         iAttack = (3*viLevel) + (60*viDifficulty);
+         iAttack = (3*Send(self,@GetLevel)) + (60*Send(self,@GetDifficulty));
       }
       else
       {
@@ -1474,7 +1546,7 @@ messages:
 
       if piDefense = $
       {
-         iDefense = (3*viLevel) + (60*viDifficulty);
+         iDefense = (3*Send(self,@GetLevel)) + (60*Send(self,@GetDifficulty));
       }
       else
       {
@@ -1495,7 +1567,7 @@ messages:
          return 0;
       }
 
-      return (viDifficulty * 10);
+      return (Send(self,@GetDifficulty) * 10);
    }
 
    % This returns the damage done to target "what"
@@ -1505,7 +1577,7 @@ messages:
 
       if piMinDamage = $ and piMaxDamage = $
       {
-         iDamage = Send(Self,@Fuzzy,#num=viLevel/Random(10,15));
+         iDamage = Send(Self,@Fuzzy,#num=Send(self,@GetLevel)/Random(10,15));
       }
       else
       {
@@ -1531,13 +1603,13 @@ messages:
    % This is the type of damage done.
    GetDamageType(what = $)
    {
-      return viAttack_type;
+      return piAttack_type;
    }
 
    % This is the magical type of damage done.
    GetSpellType(what = $)
    {
-      return viAttack_spell;
+      return piAttack_spell;
    }
 
    AssessDamage(what = $,damage = $,atype = 0, aspell = 0, bonus = 0,
@@ -1690,13 +1762,13 @@ messages:
    GetVisionDistance()
    "With difficulty going from 0 to 10, this is either 4,5,or 6."
    {
-      return 4 + viDifficulty/2;
+      return 4 + Send(self,@GetDifficulty)/2;
    }
 
    GetAttackRange()
    "With difficulty going from 0 to 10, this is either 2 or 3."
    {
-      return Bound(2 + viDifficulty/6,2,3);
+      return Bound(2 + Send(self,@GetDifficulty)/6,2,3);
    }
 
    GetOptimalRange()
@@ -1907,7 +1979,7 @@ messages:
                  #new_row=iNew_row,#new_col=iNew_col,
                  #server_validate=(NOT(piBehavior&AI_MOVE_WALKTHROUGH_WALLS)))
          {
-            Send(poOwner,@SomethingMoved,#what=self,#speed=viSpeed,
+            Send(poOwner,@SomethingMoved,#what=self,#speed=Send(self,@GetSpeed),
                  #new_row=iNew_row,#new_col=iNew_col,
                  #fine_row=FINENESS/2+Random(-15,15),
                  #fine_col=FINENESS/2+Random(-15,15),
@@ -3117,6 +3189,17 @@ messages:
          Send(self,@CreateTreasure,#who=what,#corpse=oBody);
          Send(self,@CreateCash,#who=what,#corpse=oBody);
          
+         If Random(1,100) <= Send(Send(SYS,@GetSettings),@GetInstancePortalChance)
+            AND NOT IsClass(Send(self,@GetOwner),&InstanceRoom)
+            AND Send(Send(self,@GetOwner),@CanHavePlayerPortal)
+         {
+            Create(&InstancePortal,#who=what,#level=Send(self,@GetLevel),
+                                   #portal_room=Send(self,@GetOwner),
+                                   #portal_row=Send(self,@GetRow),#portal_col=Send(self,@GetCol),
+                                   #portal_fine_row=Send(self,@GetFineRow),
+                                   #portal_fine_col=Send(self,@GetFineCol));
+         }
+         
 		 % Delete here so we don't accidentally "kill" then delete system
          %  template monsters.
          Send(self,@Delete);
@@ -4073,12 +4156,12 @@ messages:
    "construction, and to heal the monster, as well as for indicating "
    "its current damage."
    {
-      if viLevel < 40
+      if Send(self,@GetLevel) < 40
       {
-         return viLevel;
+         return Send(self,@GetLevel);
       }
 
-      return ((120 * viLevel) / 100);
+      return ((120 * Send(self,@GetLevel)) / 100);
    }
    
    ReturnMaxHitPoints()
@@ -4108,13 +4191,22 @@ messages:
 
    GetLevel()
    {
-      return viLevel;
+      return piLevel;
    }
 
+   GetSpeed()
+   {
+      return piSpeed;
+   }
+   
+   GetWimpy()
+   {
+      return piWimpy;
+   }
    
    GetDifficulty()
    {
-      return viDifficulty;
+      return piDifficulty;
    }
 
    ClearBehavior(timer = $)
@@ -4213,7 +4305,7 @@ messages:
       local iPlayer_karma;
 
       % This means the monster has no Karma.
-      if viKarma = $
+      if Send(self,@GetKarma) = $
       {
          return TRUE;
       }
@@ -4221,7 +4313,7 @@ messages:
       iPlayer_karma = Send(who,@GetKarma);
       
       % Second clause is to give newbies a break
-      if (viKarma * Send(who,@GetKarma)) < 0
+      if (Send(self,@GetKarma) * Send(who,@GetKarma)) < 0
          AND abs(iPlayer_karma) >= 10
       {
          return FALSE;
@@ -4317,7 +4409,7 @@ messages:
    GetAttackTime()
    {
       return Send(self,@Fuzzy,#num=MOB_ATTACK_TIMER_WAIT)
-             + 3500-70*(3*viDifficulty+viSpeed);
+             + 3500-70*(3*Send(self,@GetDifficulty)+Send(self,@GetSpeed));
    }
 
    GetMoveTime()
@@ -4325,11 +4417,11 @@ messages:
       if poMaster <> $ and Send(poMaster,@GetOwner) = poOwner
       {
          return Send(self,@Fuzzy,#num=MOB_FOLLOW_TIMER_WAIT)
-                + 100*(26-Bound(Send(Self,@Fuzzy,#num=viSpeed),0,25));
+                + 100*(26-Bound(Send(Self,@Fuzzy,#num=Send(self,@GetSpeed)),0,25));
       }
 
       return Send(self,@Fuzzy,#num=MOB_MOVE_TIMER_WAIT)
-             + 300*(26-Bound(Send(Self,@Fuzzy,#num=viSpeed),0,25));
+             + 300*(26-Bound(Send(Self,@Fuzzy,#num=Send(self,@GetSpeed)),0,25));
    }
 
    GetChaseTime()
@@ -4344,7 +4436,7 @@ messages:
          iTime = 1414 * iTime / 1000;
       }
 
-      return iTime + 2000 - 40*(viDifficulty+2*viSpeed);
+      return iTime + 2000 - 40*(Send(self,@GetDifficulty)+2*Send(self,@GetSpeed));
    }
 
    CutWantedItem(class = $)
@@ -4922,7 +5014,7 @@ messages:
          return 0;
       }
       
-      return viKarma;
+      return piKarma;
    }
 
    GetTreasureType()
@@ -4962,10 +5054,10 @@ messages:
          }
          else
          {
-            % Random number of treasure items are dropped based on viLevel
-            %  and viDifficulty.  The higher these values are, the more items
+            % Random number of treasure items are dropped based on Level
+            %  and Difficulty.  The higher these values are, the more items
             %  that may be dropped.
-            iNumberItems = 1 + (viLevel/55) + Random(0,viDifficulty/3);
+            iNumberItems = 1 + (Send(self,@GetLevel)/55) + Random(0,Send(self,@GetDifficulty)/3);
             iNumberItems = Bound(iNumberItems,$,6);
             iNumberItems = (Send(Send(SYS, @GetSettings), @GetItemFactor)*iNumberItems)/100;
             iNumberItems = Bound(iNumberItems,1,$);
@@ -4976,7 +5068,7 @@ messages:
       
          while i <= iNumberItems
          {
-            oTreasure = Send(oTreasure_type,@GenerateTreasure,#level=viLevel,
+            oTreasure = Send(oTreasure_type,@GenerateTreasure,#level=Send(self,@GetLevel),
                              #who=who,#mob=self,#tokengen=tokengen,
                              #corpse=corpse);
 
@@ -4990,7 +5082,7 @@ messages:
                         AND iSafetyCntr < 5
                   {
                      oTreasure = Send(oTreasure_type,@GenerateTreasure,
-                                      #level=viLevel,#who=who,#mob=self,
+                                      #level=Send(self,@GetLevel),#who=who,#mob=self,
                                       #tokengen=tokengen,#corpse=corpse);
                      iSafetyCntr = iSafetyCntr + 1;
                   }
@@ -5448,14 +5540,14 @@ messages:
    HealthBelowWimpy()
    {
       % Wimpy of 0 means monster never runs, just fights til the end.
-      if viWimpy = 0
+      if Send(self,@GetWimpy) = 0
       {
          return FALSE;
       }
       
       % If wimpy is set at 50, monster will flee once his health is at 49% of
       %  max.
-      if ((piHit_points * 100)/ piMax_Hit_points) < viWimpy
+      if ((piHit_points * 100)/ piMax_Hit_points) < Send(self,@GetWimpy)
       {
          return TRUE;
       }
@@ -5767,7 +5859,7 @@ messages:
          ptUnturn = $;
       }
 
-      ptUnturn = CreateTimer(self,@UnTurn,TURN_TIME/viDifficulty);
+      ptUnturn = CreateTimer(self,@UnTurn,TURN_TIME/Send(self,@GetDifficulty));
       
       return;
    }
@@ -5894,6 +5986,11 @@ messages:
 	  return;
   }
 
+   GetBaseResistances()
+   "Many mobs have base resistances."
+   {
+      return plResistances;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

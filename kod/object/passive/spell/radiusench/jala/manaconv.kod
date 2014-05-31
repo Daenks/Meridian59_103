@@ -92,6 +92,33 @@ messages:
       return iSpellPower + Nth(state,2);
    }
 
+   EffectDesc(who=$)
+   {
+      local i, lStrongestState;
+      
+      lStrongestState = [$,0,$];
+      
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         if Nth(i,1) = self
+         {
+            if Nth(i,2) > Nth(lStrongestState,2)
+            {
+               lStrongestState = i;
+            }
+         }
+      }
+      
+      AppendTempString("\n\n");
+      AppendTempString("Your ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment currently adds ");
+      AppendTempString(Nth(lStrongestState,2));
+      AppendTempString(" spellpower to all spells cast under its effect.");
+      
+      return;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
