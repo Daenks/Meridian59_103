@@ -2798,8 +2798,10 @@ messages:
 
    EnchantmentTimer(timer = $)
    {
-      local i,oEnchanter;
+      local i,oEnchanter, bDoReset;
  
+      bDoReset = FALSE;
+       
       for i in plEnchantments
       {
          if First(i) = timer
@@ -2812,13 +2814,23 @@ messages:
             {
                Send(Nth(i,2),@EndEnchantment,#who=self);
             }
+            
+            if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+            {
+               bDoReset = TRUE;
+            }
 
             Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
                  #type=ENCHANTMENT_PLAYER);
 
             % TODO: i no longer exists at this point?  EndEnchantment removing it?
             plEnchantments = DelListElem(plEnchantments,i);
-            Send(self,@ResetPlayerFlagList,#who=self);
+            
+            If bDoReset
+            {
+               Send(self,@ResetPlayerFlagList,#who=self);
+            }
+
             if poOwner <> $
             {
                Send(poOwner,@SomethingChanged,#what=self);
@@ -2893,7 +2905,12 @@ messages:
       }
 
       plEnchantments = Cons(lNew_enchantment,plEnchantments);
-      Send(self,@ResetPlayerFlagList,#who=self);
+      
+      if NOT IsClass(what,&RadiusEnchantment)
+      {
+         Send(self,@ResetPlayerFlagList,#who=self);
+      }
+
       if addicon
       {
          Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
@@ -2977,7 +2994,10 @@ messages:
 
       for i in plEnchantments
       {
-         Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
       }
       
       return;
