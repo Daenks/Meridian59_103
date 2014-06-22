@@ -172,7 +172,7 @@ messages:
       local iDuration,iKarmaDif,iKarma;
 
       % 1-8 seconds based on spellpower.
-      iDuration = (iSpellPower/14);
+      iDuration = (iSpellPower/12);
       if IsClass(caster,&Battler)
       {
          iKarma = Send(caster,@GetKarma);
@@ -183,8 +183,8 @@ messages:
          iKarma = random(30,90);
       }
 
-       % 1-5 seconds based on Karma difference.
-      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/40;
+       % 1-6 seconds based on Karma difference.
+      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/30;
       iDuration = bound(iDuration + iKarmaDif,3,12);  
 
       return iDuration;
