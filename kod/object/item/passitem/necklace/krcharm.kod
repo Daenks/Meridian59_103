@@ -44,6 +44,7 @@ classvars:
    viMax_Disp_hits = 5
 
    viGround_group = 2
+   viSpell_modifier = 10
 
 properties:
    
@@ -74,10 +75,8 @@ messages:
       piAgility_change = send(what,@addAgility,#points=Agility_CHANGE);
       piMight_change = send(what,@addmight,#points = MIGHT_CHANGE);
 
-      if random(1,5) = 3   %% 20% chance
-        {
-          send(what,@msgsenduser,#message_rsc=KraananCharm_whisper);
-        }
+      Send(what,@MsgSendUser,#message_rsc=KraananCharm_whisper);
+
       propagate;
    }
 
@@ -89,7 +88,17 @@ messages:
       propagate;
    }
 
-   DestroyDisposable()
+   GetBaseSpellModifier(oSpell=$)
+   {
+      if Send(oSpell,@GetSchool) = SS_KRAANAN
+      {
+         return viSpell_modifier;
+      }
+
+      return 0;
+   }
+ 
+ DestroyDisposable()
    {
       if piDisp_Hits = 0
         {
