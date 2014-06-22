@@ -81,17 +81,18 @@ messages:
 
    GetStateValue(who=$,iSpellpower=$,target=$)
    {
-      local iFactor;
+      local iAimChange;
+      iAimChange = iSpellPower/10+1;
 
-      Send(target,@AddAttackModifier,#what=self);
-      iFactor = Bound(iSpellPower+1,10,100);
+      send(Target,@AddAim,#points=iAimChange);
+      
+      return iAimChange;
+   }  
 
-      return iFactor;
-   }
 
    EndEnchantment(who=$,report=TRUE,state=$)
    {
-      Send(who,@RemoveAttackModifier,#what=self);
+      Send(who,@AddAgility,#points=-state);      
 
       propagate;
    }
@@ -124,7 +125,7 @@ messages:
    {
       local i, iNewDuration, iChance, oEagleEyesStrength;
 
-      oEagleEyesStrength = Send(oTarget,@GetEnchantedState,#what=self);
+      oEagleEyesStrength = (Send(oTarget,@GetEnchantedState,#what=self))*10;
 
       % Give players a decent chance to improve the spell!
       for i in Send(oTarget,@GetPassiveImprovementList)
@@ -149,8 +150,8 @@ messages:
          return $;
       }
 
-      % Duration reduced 0-50%, depending on spellpower.
-      iNewDuration = iDuration - (iDuration * oEagleEyesStrength)/200;
+      % Duration reduced 0-30%, depending on spellpower.
+      iNewDuration = iDuration - (iDuration * oEagleEyesStrength)/330;
       Post(oTarget,@MsgSendUser,#message_rsc=EagleEyes_resist);
       
       if IsClass(oCaster,&Player)
@@ -165,33 +166,11 @@ messages:
 
    ModifyHitRoll(who=$,what=$,hit_roll=$)
    {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
-      {
-         return hit_roll + iFactor;
-      }
-
       return hit_roll;
    }
 
    ModifyDamage(who=$,what=$,damage=$)
    {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
-      {
-         return damage + 1;
-      }
-
       return damage;
    }
 

@@ -145,7 +145,7 @@ messages:
       }
 
       % Convert duration to milliseconds
-      iDuration = bound(iDuration,3,15);
+      iDuration = bound(iDuration,4,12);
       iDuration = iDuration * 1000;
 
       if IsClass(oTarget,&Player)
@@ -172,7 +172,7 @@ messages:
       local iDuration,iKarmaDif,iKarma;
 
       % 1-8 seconds based on spellpower.
-      iDuration = (iSpellPower/12);
+      iDuration = (iSpellPower/14);
       if IsClass(caster,&Battler)
       {
          iKarma = Send(caster,@GetKarma);
@@ -183,9 +183,9 @@ messages:
          iKarma = random(30,90);
       }
 
-       % 1-10 seconds based on Karma difference.
-      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/20;
-      iDuration = bound(iDuration + iKarmaDif,3,15);  
+       % 1-5 seconds based on Karma difference.
+      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/40;
+      iDuration = bound(iDuration + iKarmaDif,3,12);  
 
       return iDuration;
    }
@@ -199,7 +199,7 @@ messages:
             Send(who,@MsgSendUser,#message_rsc=Dazzle_off);
          }
 
-         Send(who,@EffectSendUserDuration,#effect=EFFECT_PAIN,#duration=8000);
+         Send(who,@EffectSendUserDuration,#effect=EFFECT_PAIN,#duration=3000);
          Send(who,@EffectSendUserXLat,#xlat=0);
       }
       else

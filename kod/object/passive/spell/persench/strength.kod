@@ -78,7 +78,7 @@ messages:
    GetStateValue(who=$,iSpellPower=0,Target=$)
    {
       local iMightChange;
-      iMightChange = iSpellPower/5+1;
+      iMightChange = iSpellPower/10+1;
 
       Send(Target,@AddMight,#points=iMightChange);
 
