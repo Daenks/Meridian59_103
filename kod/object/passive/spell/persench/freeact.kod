@@ -78,7 +78,7 @@ messages:
       return;
    }
 
-   GetStateValue(iSpellpower=$)
+   GetStateValue(who = $, iSpellPower = 0, Target = $)
    {
       local iAgilChange;
      
