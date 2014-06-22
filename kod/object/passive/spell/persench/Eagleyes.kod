@@ -92,7 +92,9 @@ messages:
 
    EndEnchantment(who=$,report=TRUE,state=$)
    {
-      Send(who,@AddAgility,#points=-state);      
+
+      Send(who,@RemoveAttackModifier,#what=self);
+      Send(who,@AddAim,#points=-state);      
 
       propagate;
    }
