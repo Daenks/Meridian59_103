@@ -96,16 +96,20 @@ messages:
 
    % Stuff we handle to be an attack modifier.
 
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
+   AddChanceToHit(who=$,what=$,lRadiusState=0)
    {
+      local addChance;
+	  
+      addChance = 0;
+	  
       % Only affect the good ones...
       if Send(what,@GetKarma,#detect=TRUE) > 0
       {
-         % Give a small bonus
-         return hit_roll + 100;
+         % Add 1-5% chance to hit, based on spellpower
+         addChance = ((Nth(lRadiusState,2))+1)/20;
       }
 
-      return hit_roll;
+      return addChance;
    }
    
    ModifyDamage(who = $,what = $,damage = $)
@@ -120,6 +124,10 @@ messages:
       return damage;
    }
 
+   ModifyHitRoll(who=$,what=$,damage=$)
+   {
+      return damage;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

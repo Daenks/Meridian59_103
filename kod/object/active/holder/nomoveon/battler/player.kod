@@ -4490,19 +4490,7 @@ messages:
       {
          iOffense = Send(i,@ModifyHitRoll,#who=self,#what=what,
                          #hit_roll=iOffense,#stroke_obj=stroke_obj);
-      }
-      
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Melancholy);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,#hit_roll=iOffense);
-      }
-      
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Mirth);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,#hit_roll=iOffense);
-      }
+      }      
 
       iOffense = iOffense + Send(Send(SYS,@GetParliament),
                                  @GetFactionHitrollBonus,#who=self);

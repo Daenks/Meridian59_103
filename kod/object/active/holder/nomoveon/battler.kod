@@ -323,10 +323,11 @@ messages:
    % For a monster, the stroke_obj is itself.
    TryAttack(what = $,stroke_obj=$)
    {
-      local iChanceToHit, iDamage, oWeapon;
+      local iAddChance, iChanceToHit, iDamage, lRadiusState, oWeapon;
 
       oWeapon = Send(self,@GetWeapon);
-
+      iAddChance = 0;
+	  
       % Derived class should have checked all specific restrictions by this
       %  point.
 
@@ -336,8 +337,27 @@ messages:
                       * EQUAL_CHANCE_HIT)
                      / Send(what,@GetDefense,#what=self,
                             #stroke_obj=stroke_obj);
-      iChanceToHit = bound(iChanceToHit,10,95);
-      if iChanceToHit >= random(1,100)
+      
+      % Check for mirth and melancholy here, to avoid errors in GetOffense()
+      if IsClass(self,&Player)
+      {
+         if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+         {
+            lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Melancholy);
+            iAddChance = Send(Nth(lRadiusState,1),@AddChanceToHit,#who=self,#what=what,#lRadiusState=lRadiusState);
+         }
+      
+         if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
+         {
+            lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Mirth);
+            iAddChance = Send(Nth(lRadiusState,1),@AddChanceToHit,#who=self,#what=what,#lRadiusState=lRadiusState);
+         }
+      }
+	  
+	  iChanceToHit = iChanceToHit + iAddChance;
+	  	 	  
+	  iChanceToHit = bound(iChanceToHit,10,95);
+	  if iChanceToHit >= random(1,100)
       {
          % We hit!
          iDamage = Send(what,@AssessDamage,#what=self,
