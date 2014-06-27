@@ -150,7 +150,7 @@ messages:
             if iRandom < 30
             {
                % Summoning an Evil Twin
-			   oSpell = SID_EVIL_TWIN;
+               oSpell = SID_EVIL_TWIN;
                lTargets = [poTarget];
             }
             else
@@ -246,7 +246,7 @@ messages:
          oTwin = Create(&Reflection,#iSpellpower=100,#oMaster=self);  
       }
 
-	  iRow = Send(target,@GetRow);
+      iRow = Send(target,@GetRow);
       iCol = Send(target,@GetCol);
 
       Send(oTwin,@SetOriginal,#who=target);

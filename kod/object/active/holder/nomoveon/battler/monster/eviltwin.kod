@@ -296,7 +296,7 @@ messages:
    {
       local iFlags;
 
-	  iFlags = send(poOriginal,@GetObjectFlags);
+      iFlags = send(poOriginal,@GetObjectFlags);
       if (iFlags & USER_YES) {  iFlags = (iFlags | FALSEPLAYER_YES);  }
 
       return iFlags;
