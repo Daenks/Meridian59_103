@@ -10798,6 +10798,8 @@ messages:
       % Reset death costs to 0.
       piDeathCost = 0;
 
+      pbHasEvilTwin = FALSE;
+
       return Send(SYS,@GetSuccessRsc);
    }
 
