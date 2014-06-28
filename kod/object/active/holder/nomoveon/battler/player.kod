@@ -13292,6 +13292,30 @@ messages:
       
       return iArmor;
    }
-  
+
+   CanEvilTwin()
+   {
+      return TRUE;
+   }
+
+   AddEvilTwin()
+   {
+      pbHasEvilTwin = TRUE;
+
+      return;
+   }
+
+   RemoveEvilTwin()
+   {
+      pbHasEvilTwin = FALSE;
+
+      return;
+   }
+
+   HasEvilTwin()
+   {
+      return pbHasEvilTwin;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -22,6 +22,8 @@ resources:
    summonEvilTwin_bad_target = "You can't cast evil twin on %s%s."
    summonEvilTwin_no_self = \
       "You decide you really don't want to summon your evil against yourself."
+   summonEvilTwin_only_one = \
+      "%s is already being pursued by an evil twin."
 
    summonEvilTwin_sound = rmirrimg.wav
 
@@ -82,7 +84,8 @@ messages:
       }
       
       if NOT IsClass(oTarget,&Battler)
-         OR Send(oTarget,@CanEvilTwin)=FALSE
+         OR (IsClass(oTarget,&Monster)
+               AND Send(oTarget,@CanEvilTwin)=FALSE)
       {
          % Lich, lupogg king, evil twins, reflections and revenants 
          % all not valid targets
@@ -100,9 +103,16 @@ messages:
          {
             % Morph protects against evil twin
             Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_bad_target,
-                 #parm1=Send(First(ltargets),@GetDef),
-                 #parm2=Send(First(ltargets),@GetName));
-            
+                 #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+            return FALSE;
+         }
+
+         if Send(oTarget,@HasEvilTwin)
+         {
+            Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_only_one,
+                 #parm1=Send(oTarget,@GetName));
+
             return FALSE;
          }
 
@@ -117,7 +127,6 @@ messages:
       oRoom = Send(SYS,@UtilGetRoom,#what=who);
 
       if Send(oRoom,@CountHoldingHowMany,#class=&Monster) > 25
-         OR Send(oRoom,@CountHoldingHowMany,#class=&EvilTwin) > 0
          OR Send(oRoom,@CountHoldingSummoned) > 
             Send(Send(SYS,@GetSettings), @GetPlayerSummonedObjectLimit)
       {
@@ -180,15 +189,6 @@ messages:
 
       propagate;
    }
-
-   EndEnchantment(who=$, state=$)
-   {
-      Send(First(state),@Delete);
-      
-      return;
-   }
-
- 
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
