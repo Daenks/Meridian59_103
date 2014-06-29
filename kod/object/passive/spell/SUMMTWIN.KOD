@@ -22,6 +22,8 @@ resources:
    summonEvilTwin_bad_target = "You can't cast evil twin on %s%s."
    summonEvilTwin_no_self = \
       "You decide you really don't want to summon your evil against yourself."
+   summonEvilTwin_only_one = \
+      "%s is already being pursued by an evil twin."
 
    summonEvilTwin_sound = rmirrimg.wav
 
@@ -81,34 +83,43 @@ messages:
          return FALSE;
       }
       
-	  if NOT IsClass(oTarget,&Battler)
-	     OR Send(oTarget,@CanEvilTwin)=FALSE
+      if NOT IsClass(oTarget,&Battler)
+         OR Send(oTarget,@IsIllusion)
+		 OR (IsClass(oTarget,&Monster)
+               AND Send(oTarget,@CanEvilTwin)=FALSE)
       {
          % Lich, lupogg king, evil twins, reflections and revenants 
-		 % all not valid targets
+         % all not valid targets
 		 
-		 Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_bad_target,
-		      #parm1=Send(oTarget,@GetDef),
+         Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_bad_target,
+              #parm1=Send(oTarget,@GetDef),
               #parm2=Send(oTarget,@GetName));
-		 return FALSE;
+         return FALSE;
       }		 
 
       
       if IsClass(oTarget,&Player)
       {
-	     if Send(oTarget,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+         if Send(oTarget,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
          {
-		    % Morph protects against evil twin
+            % Morph protects against evil twin
             Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_bad_target,
-                 #parm1=Send(First(ltargets),@GetDef),
-                 #parm2=Send(First(ltargets),@GetName));
-            
+                 #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+            return FALSE;
+         }
+
+         if Send(oTarget,@HasEvilTwin)
+         {
+            Send(who,@MsgSendUser,#message_rsc=summonEvilTwin_only_one,
+                 #parm1=Send(oTarget,@GetName));
+
             return FALSE;
          }
 
          if IsClass(who,&Player)
-		    AND NOT IsClass(self,&DM)
-		    AND NOT Send(who,@AllowPlayerAttack,#victim=oTarget)
+               AND NOT IsClass(self,&DM)
+               AND NOT Send(who,@AllowPlayerAttack,#victim=oTarget)
          {
             return FALSE;
          }
@@ -117,7 +128,6 @@ messages:
       oRoom = Send(SYS,@UtilGetRoom,#what=who);
 
       if Send(oRoom,@CountHoldingHowMany,#class=&Monster) > 25
-         OR Send(oRoom,@CountHoldingHowMany,#class=&EvilTwin) > 0
          OR Send(oRoom,@CountHoldingSummoned) > 
             Send(Send(SYS,@GetSettings), @GetPlayerSummonedObjectLimit)
       {
@@ -137,26 +147,26 @@ messages:
       
       if IsClass(oTarget,&Player)
       {	  
-	     oTwin = Create(&EvilTwin,#iSpellpower=iSpellpower,#oMaster=who,
+         oTwin = Create(&EvilTwin,#iSpellpower=iSpellpower,#oMaster=who,
                      #oTarget=oTarget);
       }
-	  else
-	  {
-	  % Should be a monster. Make a low HP copy of it.
-		 oTwin = Create((GetClass(oTarget)));
-		 Send(oTwin,@SetIllusion,#value=TRUE);
+      else
+      {
+         % Should be a monster. Make a low HP copy of it.
+         oTwin = Create((GetClass(oTarget)));
+         Send(oTwin,@SetIllusion,#value=TRUE);
          Send(oTwin,@SetSummoned,#value=TRUE);
       }
 	  
-	  oRoom = Send(who,@GetOwner);
+      oRoom = Send(who,@GetOwner);
 
       iRow = Send(oTarget,@GetRow);
       iCol = Send(oTarget,@GetCol);
       iFine_Row = Send(oTarget,@GetFineRow);
       iFine_Col = Send(oTarget,@GetFineCol);
 
-	  if IsClass(oTarget,&Player)
-	  {
+      if IsClass(oTarget,&Player)
+      {
          Send(oTwin,@SetOriginal,#who=oTarget);
       }
 	  
@@ -167,28 +177,20 @@ messages:
 
       Send(SYS,@AddReflection,#who=oTarget,#oReflection=oTwin);
 
-      if IsClass(oTarget,&Monster)
-	  {
-	     Send(oTwin,@EnterStateMove);
-		 Send(oTwin,@TargetSwitch,#what=oTarget,#iHatred=1000);
+      if oTarget <> $
+         AND IsClass(oTarget,&Monster)
+      {
+         Send(oTwin,@EnterStateMove);
+         Send(oTwin,@TargetSwitch,#what=oTarget,#iHatred=1000);
          Send(oTwin,@EnterStateAttack);
-		 i = Send(oTwin,@ReturnMaxHitPoints);
+         i = Send(oTwin,@ReturnMaxHitPoints);
          j = i/(100/((1+iSpellPower)/20));
          j = bound(j,1,25);
-		 Send(oTwin,@SetMaxHitPoints,#amount=j);
+         Send(oTwin,@SetMaxHitPoints,#amount=j);
       }
 
       propagate;
    }
-
-   EndEnchantment(who=$, state=$)
-   {
-      Send(First(state),@Delete);
-      
-      return;
-   }
-
- 
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
