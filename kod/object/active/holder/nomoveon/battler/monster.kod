@@ -5838,11 +5838,6 @@ messages:
   {
       local oTreasure, iNumber, idrop;
 
-      if pbIllusion
-      {
-         return;
-      }
-	  
       idrop = Random(1,100);
 
        

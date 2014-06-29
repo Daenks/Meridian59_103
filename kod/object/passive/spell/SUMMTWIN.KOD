@@ -84,7 +84,8 @@ messages:
       }
       
       if NOT IsClass(oTarget,&Battler)
-         OR (IsClass(oTarget,&Monster)
+         OR Send(oTarget,@IsIllusion)
+		 OR (IsClass(oTarget,&Monster)
                AND Send(oTarget,@CanEvilTwin)=FALSE)
       {
          % Lich, lupogg king, evil twins, reflections and revenants 
@@ -176,7 +177,8 @@ messages:
 
       Send(SYS,@AddReflection,#who=oTarget,#oReflection=oTwin);
 
-      if IsClass(oTarget,&Monster)
+      if oTarget <> $
+         AND IsClass(oTarget,&Monster)
       {
          Send(oTwin,@EnterStateMove);
          Send(oTwin,@TargetSwitch,#what=oTarget,#iHatred=1000);
