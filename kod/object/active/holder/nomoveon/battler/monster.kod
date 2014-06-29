@@ -5838,7 +5838,7 @@ messages:
   {
       local oTreasure, iNumber, idrop;
 
-     idrop = Random(1,100);
+      idrop = Random(1,100);
 
        
 	 if idrop > 55 
