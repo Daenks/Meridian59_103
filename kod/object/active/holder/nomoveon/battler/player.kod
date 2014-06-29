@@ -3838,9 +3838,14 @@ messages:
             
             % Check status and safety against the owner of the reflection.
             if NOT Send(oRoom,@ReqSomethingAttack,#what=self,#victim=Send(victim,@GetCaster))
-               OR NOT Send(self,@CheckStatusAndSafety,#victim=Send(victim,@GetCaster),#report=report)
             {
-               return FALSE;
+               if NOT IsClass(oRoom,&GuildHall)
+               {
+                  if NOT Send(self,@CheckStatusAndSafety,#victim=Send(victim,@GetCaster),#report=report)
+                  {
+                     return FALSE;
+                  }
+               }
             }
          }
             
