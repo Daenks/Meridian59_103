@@ -13247,10 +13247,15 @@ messages:
    }
 
    RemoveControlledMinion(minion = $)
-   {	  
-      plControlledMinions = DelListElem(plControlledMinions,minion);	
-      return;	   
+   {  
+      if plControlledMinions <> $
+      {
+         plControlledMinions = DelListElem(plControlledMinions,minion);	
+      }
+
+      return;		 
    }
+   
    GetControlledMinions()
    {	   
       return plControlledMinions;
