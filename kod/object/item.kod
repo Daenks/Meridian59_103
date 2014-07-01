@@ -1242,7 +1242,8 @@ messages:
          if Length(i) >= 2 AND Nth(i,2) = timer
          {  
             % This is the timer that just expired.
-	    SetNth(i,2,$); % clear it in the data structure first
+
+            SetNth(i,2,$); % clear it in the data structure first
             iNum = Send(self,@GetNumFromCompound,#compound=First(i));
             oItemAtt = Send(SYS,@FindItemAttByNum,#num=iNum);
             Send(oItemAtt,@TimerExpired,#oItem=self,#lData=i);
@@ -1252,7 +1253,7 @@ messages:
       }
       
       Debug("AttributeTimer didn't find enchantment to get rid of!");
-      
+      Debug("AttributeTimer called with object ",self," and timer ",timer);
       return;
    }
 
@@ -1333,7 +1334,7 @@ messages:
       {
          return $;
       }
-
+      Debug("Created AttributeTimer with object",self," for duration ",timer_duration);
       tTimer = CreateTimer(self,@AttributeTimer,timer_duration);
       
       return tTimer;
