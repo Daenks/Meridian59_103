@@ -73,7 +73,7 @@ messages:
       return iDuration;
    }
 
-   DoEffect(what = $)
+   DoSpell(what = $)
    {
       local iDamage, oIllusWounds, iDuration, rMessage;
 

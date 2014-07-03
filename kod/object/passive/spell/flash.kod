@@ -117,7 +117,7 @@ messages:
          else
          {
             % Is a monster, stun it.
-            send(oHold,@DoHold,#what=who,#otarget=i,#iDurationSecs=1,#bAllowFreeAction=FALSE);
+            send(oHold,@DoSpell,#what=who,#otarget=i,#iDuration=1000,#bAllowFreeAction=FALSE);
          }
       }
       

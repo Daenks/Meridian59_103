@@ -72,7 +72,7 @@ messages:
       return iDuration;
    }
 
-   DoEffect(what = $, periodic=FALSE)
+   DoSpell(what = $, periodic=FALSE)
    {
       local iDamage, iMaxDamage, oWatcher, rMessage;
     

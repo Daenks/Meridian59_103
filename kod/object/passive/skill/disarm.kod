@@ -179,8 +179,8 @@ messages:
          % The better you are, the better your weapon, the longer your stun is.
          % The bigger the monster is, the shorter the stun is.
          % Stun between 2 and 6 seconds.
-         iAbil = bound((iAbil + iModifier - Send(oTarget,@GetLevel)/2)/10,2,6);
-         Send(oHoldSpell,@DoHold,#what=who,#otarget=oTarget,#idurationsecs=iAbil,#report=FALSE);
+         iAbil = bound((iAbil + iModifier - Send(oTarget,@GetLevel)/2)*100,2000,6000);
+         Send(oHoldSpell,@DoSpell,#what=who,#oTarget=oTarget,#iDuration=iAbil,#report=FALSE);
       }
 
       propagate;

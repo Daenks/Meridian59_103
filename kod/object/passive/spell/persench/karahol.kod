@@ -109,9 +109,9 @@ messages:
          Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
       }
       
-      % Hold duration is measured in seconds, not milliseconds.  Lasts 1/6 the time of the bonus.
-      iDuration = (Send(self,@GetDuration,#iSpellPower=state))/6;
-      Send(oHoldSpell,@DoHold,#what=self,#otarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
+      % Hold duration now measured in milliseconds. Hold lasts roughly 1/6 duration.
+      iDuration = (Send(self,@GetDuration,#iSpellPower=state))*150;
+      Send(oHoldSpell,@DoSpell,#what=self,#oTarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
       
       propagate;
    }

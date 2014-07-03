@@ -202,7 +202,7 @@ messages:
          }
       }
 
-      Send(self,@DoEffect,#what=what,#new_row=new_row,#new_col=new_col);
+      Send(self,@DoSpell,#what=what,#new_row=new_row,#new_col=new_col);
 
       return TRUE;
    }
@@ -233,7 +233,7 @@ messages:
       return;
    }
 
-   DoEffect(what = $, new_row = $, new_col = $)
+   DoSpell(what = $, new_row = $, new_col = $)
    "Apply the wall's effect to 'what'."
    {
       % Keep track that we've affected this object.
@@ -342,6 +342,6 @@ messages:
    {
       return poCaster;
    }
-
+   
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

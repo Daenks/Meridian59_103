@@ -70,8 +70,8 @@ classvars:
    viDefault_behavior = AI_FIGHT_AGGRESSIVE |  AI_FIGHT_WIZARD_KILLER | AI_FIGHT_HYPERAGGRESSIVE
    viAttributes = MOB_SPASM
    viGender = GENDER_MALE   
-   viCashmin = 20000
-   viCashmax = 50000
+   viCashmin = 200
+   viCashmax = 800
    vrSound_hit = lupoggking_sound_hit
    vrSound_miss = lupoggking_sound_miss
    vrSound_aware = lupoggking_sound_aware
@@ -84,8 +84,8 @@ properties:
 
    piHoldAttackChance = 12       % Chance he'll attack with a hold
    piHoldCounterChance = 5    % Chance he'll counter a spell or arrow with a hold
-   piHoldDurationMax = 45  % seconds
-   piHoldDurationMin = 30  % seconds
+   piHoldDurationMax = 45000  % seconds
+   piHoldDurationMin = 30000  % seconds
 
 messages:
 
@@ -323,7 +323,7 @@ messages:
 
       Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=lupoggking_cast_sound);
       Send(self,@DoCast);
-      Send(oSpell,@DoHold,#what=self,#oTarget=oTarget,#iDurationSecs=iRandom);
+      Send(oSpell,@DoSpell,#what=self,#oTarget=oTarget,#iDuration=iRandom);
       Send(oTarget,@MsgSendUser,#message_rsc=lupoggking_cast_spell);
       Send(oTarget,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=iRandom*1000,#xlat=SPIT_COLOR); 
 
@@ -544,7 +544,6 @@ messages:
    {
       return FALSE;
    }
-   
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
