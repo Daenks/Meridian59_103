@@ -79,18 +79,24 @@ messages:
       return;
    }
 
-   StartSpecialEffect(who=$,iPower=0,caster=$)
+   StartSpecialEffect(what=$,iPower=0,source=$)
    {
-      Send(who,@SetAction,#action=UA_HAPPY);
+      if IsClass(what,&User)
+      {
+         Send(what,@SetAction,#action=UA_HAPPY);
+      }
+
       propagate;
    }
    
-   EndSpecialEffect(who=$,iPower=0,caster=$)
+   EndSpecialEffect(what=$,iPower=0,source=$)
    {
-      if Send(who,@GetAction) = UA_HAPPY
+      if IsClass(what,&User)
+         AND Send(what,@GetAction) = UA_HAPPY
       {
-         Send(who,@SetAction,#action=UA_NORMAL);
+         Send(what,@SetAction,#action=UA_NORMAL);
       }
+      
       propagate;
    }
 
