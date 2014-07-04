@@ -7493,6 +7493,33 @@ messages:
       return TRUE;
    }
    
+   AdminOfflineTeleport(where=$,new_row=$,new_col=$,fine_row=$,fine_col=$,new_angle=$)
+   {
+      if where=$
+         OR new_row=$
+         OR new_col=$
+         OR fine_row=$
+         OR fine_col=$
+      {
+         return 0;
+      }
+
+      piSave_room = Send(where,@GetRoomNum);
+      piSave_row = new_row;
+      piSave_col = new_col;
+      piSave_fine_row = fine_row;
+      piSave_fine_col = fine_col;
+      if new_angle = $
+      {
+         piSave_angle = ANGLE_SOUTH;
+      }
+      else
+      {
+         piSave_angle = new_angle;
+      }
+
+      return 1;
+   }
 
    TeleportToInitialLocation()
    "Assertion:  you are NOT logged on"
