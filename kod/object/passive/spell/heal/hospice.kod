@@ -1,0 +1,70 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Hospice is Heal
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   hospice_name_rsc = "hospice"
+   hospice_icon_rsc = ihospice.bgf
+   hospice_desc_rsc = \
+      "Rejuvenates the target of the spell with Shal'ille's healing energy.  "
+      "Shal'ille gives a small reward toward the karma of the mage who heals "
+      "another good soul.  "
+      "Requires herbs to cast."
+
+classvars:
+
+   vrName = hospice_name_rsc
+   vrIcon = hospice_icon_rsc
+   vrDesc = hospice_desc_rsc
+
+   viSchool = SS_SHALILLE
+   viSpell_num = SID_HOSPICE
+   viMana = 10
+   viSpellExertion = 5
+   viSpell_level = 3
+   viChance_To_Increase = 15
+
+   viKarmaSwingFactor = 2
+
+   viFlash = FLASH_GOOD
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      % separate message so can change, then set from admin mode
+
+      plReagents = $;
+      plReagents = Cons([&Herbs,3],plReagents);
+
+      return;
+   }
+   
+   CalculateHeal(who=$,target=$,iSpellPower=0)
+   {
+      local iHeal;
+      
+      iHeal = random(1,5) + ((iSpellPower+1)/10);
+      iHeal = bound(iHeal,1,15);
+            
+      return iHeal;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

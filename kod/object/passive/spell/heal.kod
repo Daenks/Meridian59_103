@@ -24,12 +24,12 @@ resources:
       "good soul.  "
       "Requires herbs to cast."
 
-   heal_cast_rsc = "%s%s's spell heals some minor injuries, restoring ~g~B%i~B~n hitpoints."
-   heal_cast_self = "Shal'ille's holy magic heals some minor injuries, restoring ~g~B%i~B~n hitpoints."
-   heal_cast_on_other = "You heal %s%s for ~g~B%i~B~n hitpoints."
+   heal_cast_rsc = "%s%s's healing magic mends your wounds, restoring ~g~B%i~B~n health."
+   heal_cast_self = "You summon healing energies within yourself, restoring ~g~B%i~B~n health."
+   heal_cast_on_other = "You imbue %s%s with healing energy, restoring ~g~B%i~B~n health."
    heal_unnecessary_rsc = "%s%s is perfectly healthy."
 
-   heal_spell_intro = "Shal'ille Lv. 1: Bestows the healing touch of Shal'ille, restoring points of health."
+   heal_spell_intro = "Shal'ille Lv. 1: Bestows the healing touch of Shal'ille, restoring health."
 
 classvars:
 
@@ -43,8 +43,11 @@ classvars:
    viSchool = SS_SHALILLE
    viSpell_level = 1
    viMana = 3
+   viSpellExertion = 0
 
-   viCast_time = 600
+   viCast_time = 0
+   
+   viKarmaSwingFactor = 1
 
    viFlash = FLASH_GOOD
 
@@ -103,14 +106,7 @@ messages:
 
       oTarget = First(lTargets);
       
-      iHeal = random(1,5) + ((iSpellPower + 1)/20) + (Send(oTarget,@GetKarma)/20);
-      iHeal = bound(iHeal,1,10);
-
-      % A little boost for casting on newbies, even if you're the newbie!
-      if NOT send(oTarget,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
-      {
-         iHeal = iHeal + random(2,5);
-      }
+      iHeal = Send(self,@CalculateHeal,#who=who,#target=oTarget,#iSpellPower=iSpellPower);
       
       if who <> oTarget
       {
@@ -125,7 +121,7 @@ messages:
          {
             send(who,@AddKarma,#amount = send(who,@CalculateKarmaChangeFromAct,
                 #karma_doer=send(who,@GetKarma),#karma_act=send(oTarget,@GetKarma),
-                #Swing_factor = 1));
+                #Swing_factor = viKarmaSwingFactor));
          }
       }
 
@@ -138,7 +134,27 @@ messages:
 
       propagate;
    }
+   
+   CalculateHeal(who=$,target=$,iSpellPower=0)
+   {
+      local iHeal;
+      
+      iHeal = random(1,3) + ((iSpellPower + 1)/20);
+      iHeal = bound(iHeal,1,8);
 
+      % A little boost for casting on newbies, even if you're the newbie!
+      if NOT send(target,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+      {
+         iHeal = iHeal + random(2,5);
+      }
+      
+      return iHeal;
+   }
+
+   SuccessChance()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

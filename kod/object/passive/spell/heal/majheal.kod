@@ -1,0 +1,70 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MajorHeal is Heal
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   majorheal_name_rsc = "major heal"
+   majorheal_icon_rsc = imajheal.bgf
+   majorheal_desc_rsc = \
+      "The compassionate power of Shal'ille heals severe "
+      "wounds in the caster or another player.  "
+      "Shal'ille gives a reward toward the karma of the mage who heals another "
+      "good soul.  "
+      "Requires herbs to cast."
+
+classvars:
+
+   vrName = majorheal_name_rsc
+   vrIcon = majorheal_icon_rsc
+   vrDesc = majorheal_desc_rsc
+
+   viSpell_num = SID_MAJOR_HEAL
+   viMana = 20
+   viSpellExertion = 10
+   viSchool = SS_SHALILLE
+   viSpell_level = 5
+   
+   viKarmaSwingFactor = 3
+
+   viFlash = FLASH_GOOD
+   
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      % separate message so can change, then set from admin mode
+
+      plReagents = $;
+      plReagents = Cons([&Herbs,5],plReagents);
+
+      return;
+   }
+   
+   CalculateHeal(who=$,target=$,iSpellPower=0)
+   {
+      local iHeal;
+      
+      iHeal  = random(1,10) + ((iSpellPower+1)/5);
+      iheal = bound(iHeal,1,30);
+            
+      return iHeal;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
