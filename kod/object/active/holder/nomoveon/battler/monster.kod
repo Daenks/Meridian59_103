@@ -1462,13 +1462,13 @@ messages:
    }
 
    GetOffense(what = $, stroke_obj=$)
-   "This returns the battler's ability to-hit.  Ranges from 1 to 1500."
+   "This returns the battler's ability to-hit.  Ranges from 1 to 3000."
    {
       local iAttack;
 
       if piOffense = $
       {
-         iAttack = (3*viLevel) + (60*viDifficulty);
+         iAttack = (12*viLevel) + (120*viDifficulty);
       }
       else
       {
@@ -1480,12 +1480,12 @@ messages:
          iAttack = iAttack * 3 / 4;
       }
       
-      return Bound(iAttack,1,1500);
+      return Bound(iAttack,1,3000);
    }
 
    GetDefense(what = $, stroke_obj=$)
    "This returns the battler's ability to avoid being hit.  Ranges from "
-   "1 to 1500."
+   "1 to 3000."
    {
       local iDefense;
 
@@ -1498,7 +1498,7 @@ messages:
          iDefense = piDefense;
       }
      
-      return Bound(iDefense,1,1500);
+      return Bound(iDefense,1,3000);
    }
 
    % The next message deals with the three defense skills.  These messages
@@ -1522,7 +1522,7 @@ messages:
 
       if piMinDamage = $ and piMaxDamage = $
       {
-         iDamage = Send(Self,@Fuzzy,#num=viLevel/Random(10,15));
+         iDamage = Send(Self,@Fuzzy,#num=((viDifficulty*3/Random(2,3))+(viLevel/Random(15,20))));
       }
       else
       {
@@ -3214,10 +3214,10 @@ messages:
       for i in plOffer_items
       {
          Send(oHolder,@NewHold,#what=i);
-		 if IsClass(i,&Money)
-		 {
-		    Send(Send(SYS,@GetStatistics),@MoneyCreated,#amount=Send(i,@GetNumber));
-		 }
+                 if IsClass(i,&Money)
+                 {
+                    Send(Send(SYS,@GetStatistics),@MoneyCreated,#amount=Send(i,@GetNumber));
+                 }
       }
 
       % take stuff the user put there
@@ -3770,12 +3770,12 @@ messages:
                iAmount = First(lNumbers);
 
                % Make sure requested number of items is within the limits
-			   
-			   if (iAmount = $)
-			   {
-			      iAmount = 1;
-			   }
-			   
+                           
+                           if (iAmount = $)
+                           {
+                              iAmount = 1;
+                           }
+                           
                if (iAmount < MIN_BUY_AMOUNT)
                {
                   iAmount = MIN_BUY_AMOUNT;
@@ -5915,7 +5915,7 @@ messages:
          if Send(who,@ReqNewHold,#what=oMoney)
          {
             Send(who,@NewHold,#what=oMoney);
-			Send(Send(SYS,@GetStatistics),@MoneyCreated,#amount=Send(oMoney,@GetNumber));
+                        Send(Send(SYS,@GetStatistics),@MoneyCreated,#amount=Send(oMoney,@GetNumber));
          }
       }
       
