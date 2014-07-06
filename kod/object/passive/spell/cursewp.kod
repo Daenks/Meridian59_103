@@ -22,18 +22,19 @@ resources:
    curseweapon_no_weapon = "%s%s has no wielded weapon."
    curseweapon_no_can = "You cannot curse %s%s."
    curseweapon_cap_your = "Your "
-   
-   
+
+
    curseweapon_name_rsc = "curse weapon"
    curseweapon_icon_rsc = iunholyw.bgf
    curseweapon_desc_rsc = \
       "Makes the target weapon nearly ineffective for a time, "
       "and curses the user to wield it until he or she gains "
       "divine aid.  "
-      "Requires the blood of a magic-casting beast and teeth of a fierce fighting monster."
+      "Requires the blood of a magic-casting beast and a tooth 
+      "from a fierce fighting monster."
 
    curseweapon_sound = qcurweap.wav
-   
+
 classvars:
 
    vrName = curseweapon_name_rsc
@@ -51,14 +52,14 @@ classvars:
    viOutlaw = TRUE
    viHarmful = TRUE
    viNoNewbieOffense = TRUE
-   
+
 properties:
 
 messages:
 
    ResetReagents()
    {
-      plReagents = $;      
+      plReagents = $;
       plReagents = Cons([&ShamanBlood,1],plReagents);
       plReagents = Cons([&OrcTooth,1],plReagents);
 
@@ -86,35 +87,35 @@ messages:
          if oWeapon = $
          {
             Send(who,@MsgSendUser,#message_rsc=curseweapon_no_weapon,
-                 #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
-                    
+                  #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
             return FALSE;
          }
          else
          {
             oTarget = oWeapon;
          }
-            
-         if send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+
+         if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
          {
-            Send(who, @MsgSendUser, #message_rsc=spell_resists,
-                 #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
-               
+            Send(who,@MsgSendUser,#message_rsc=spell_resists,
+                  #parm1=Send(oWeapon,@GetCapdef),#parm2=Send(oWeapon,@GetName));
+
             return FALSE;
          }
       }
       else
       {
          Send(who,@MsgSendUser,#message_rsc=curseweapon_no_can,
-              #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
-                 
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
          return FALSE;
       }
 
       propagate;
    }
-   
-   CastSpell(who = $, lTargets = $, iSpellPower= 0)
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
    {
       local oWeapon, oWeapAtt, oOwner, oRoom, iDuration;
 
@@ -124,22 +125,23 @@ messages:
       if IsClass(oWeapon,&User)
       {
          oWeapon = Send(oWeapon,@LookupPlayerWeapon);
-      } 
-      
-	  if send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+      }
+
+      if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
       {
          Send(who, @MsgSendUser, #message_rsc=spell_resists,
                #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
-               
+
          return;
-      }  
+      }
 
       oOwner = Send(oWeapon,@GetOwner);
 
-	  
-      if IsClass(oOwner,&Player) AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
+      if IsClass(oOwner,&Player)
+         AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
       {
          Send(oOwner,@StartEnchantment,#what=self,#time=iDuration);
+
          if oOwner <> who
          {
             Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
@@ -152,17 +154,17 @@ messages:
          else
          {
             Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
-                  #timer_duration = iDuration);
+                  #timer_duration=iDuration);
             Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
-                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));           
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
          }
-      }	
+      }
          oRoom = Send(oOwner,@GetOwner);
+
          if oRoom <> $
          {
             Send(oRoom,@SomethingChanged,#what=oOwner);
          }
-                 
 
       propagate;
    }
@@ -171,15 +173,15 @@ messages:
    {
       return;
    }
-   
+
    GetDuration(iSpellPower=0)
    {
       local iDuration;
       %% duration = 6 to 11 seconds.
-      iDuration = (6+(iSpellPower/20))*1000;    
+      iDuration = (6+(iSpellPower/20))*1000;
+
       return iDuration;
    }
 
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
