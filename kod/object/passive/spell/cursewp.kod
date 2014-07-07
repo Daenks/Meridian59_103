@@ -45,8 +45,9 @@ classvars:
    viSchool = SS_QOR
 
    viSpell_level =4
-   viMana = 14
    viSpellExertion = 10
+   viChance_To_Increase = 20
+
    vrSucceed_wav = CurseWeapon_sound
 
    viOutlaw = TRUE
@@ -54,6 +55,10 @@ classvars:
    viNoNewbieOffense = TRUE
 
 properties:
+
+   viMana = 25
+   viCast_time = 600
+   viPostCast_time = 1     % In seconds
 
 messages:
 
