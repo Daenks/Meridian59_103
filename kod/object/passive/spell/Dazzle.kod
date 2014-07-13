@@ -51,6 +51,10 @@ classvars:
    vrSucceed_wav = Dazzle_sound
 
 properties:
+
+   piSpellPowerMultiplier = 80
+   piKarmaPowerMultiplier = 50
+   piDeviation = 0
    
 messages:
 
@@ -119,22 +123,19 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0)
    {
-      local oTarget, iDuration;
+      local oTarget;
 
       oTarget = First(lTargets);
-      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower,
-                       #caster=who,#target=otarget);
 
-      Send(self,@DoDazzle,#what=who,#oTarget=oTarget,#iDurationSecs=iDuration);
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,#iDuration=Send(self,@GetDuration,
+               #iSpellPower=iSpellPower,#caster=who,#target=oTarget));
       
       propagate;
    }
 
-   DoDazzle(what=$,oTarget=$,iDurationSecs=0)
+   DoSpell(what=$,oTarget=$,iDuration=0)
    {
-      local oSpell, iDuration;
-
-      iDuration = iDurationSecs;
+      local oSpell;
      
       oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
       if Send(oTarget,@IsEnchanted,#what=oSpell)
@@ -148,9 +149,7 @@ messages:
          }
       }
 
-      % Convert duration to milliseconds
-      iDuration = bound(iDuration,3,15);
-      iDuration = iDuration * 1000;
+      iDuration = bound(iDuration,3000,15000);
 
       if IsClass(oTarget,&Player)
       {
@@ -168,7 +167,7 @@ messages:
            #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
       Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
 
-      return;
+      propagate;
    }
 
    GetDuration(iSpellPower=0,caster=$,target=$)
@@ -176,7 +175,7 @@ messages:
       local iDuration,iKarmaDif,iKarma;
 
       % 1-8 seconds based on spellpower.
-      iDuration = (iSpellPower/12);
+      iDuration = iSpellPower*piSpellPowerMultiplier;
       if IsClass(caster,&Battler)
       {
          iKarma = Send(caster,@GetKarma);
@@ -188,8 +187,9 @@ messages:
       }
 
        % 1-10 seconds based on Karma difference.
-      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))/20;
-      iDuration = bound(iDuration + iKarmaDif,3,15);  
+      iKarmaDif = (iKarma - Send(target,@GetKarma,#detect=TRUE))*piKarmaPowerMultiplier;
+      iDuration = bound(iDuration + iKarmaDif,3000,15000);
+      iDuration = random(iDuration*(100-piDeviation)/100,iDuration);
 
       return iDuration;
    }

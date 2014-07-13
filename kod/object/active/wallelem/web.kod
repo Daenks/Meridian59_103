@@ -96,7 +96,7 @@ messages:
       propagate;
    }
 
-   DoEffect(what = $, new_row = $, new_col = $)
+   DoSpell(what = $, new_row = $, new_col = $)
    {
       local iHoldTime, oSpell, oWatcher, rMessage;
 
@@ -123,7 +123,7 @@ messages:
 
       if iHoldTime > 0
       {
-         Send(oSpell,@DoHold,#what=poCaster,#oTarget=what,#iDurationSecs=iHoldTime,
+         Send(oSpell,@DoSpell,#what=poCaster,#oTarget=what,#iDuration=iHoldTime,
               #report=FALSE);
       }
 

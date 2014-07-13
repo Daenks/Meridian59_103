@@ -54,6 +54,10 @@ classvars:
 
 properties:
 
+   piBaseDuration = 2000
+   piSpellPowerModifier = 40
+   piDeviation = 50
+   
 messages:
 
    ResetReagents()
@@ -117,51 +121,20 @@ messages:
       propagate;   % Check other things higher up
    }
 
-   CastSpell(who=$, lTargets=$, iSpellpower=0)
+   CastSpell(who=$,lTargets=$,iSpellpower=0)
    {
-      local oTarget,oSpell,iDuration;
+      local oTarget;
 
       oTarget = First(lTargets);
-      iDuration = Send(self,@GetDuration,#ispellPower=iSpellPower);
+	  
+	  % Spell effects
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,
+           #iDuration=Send(self,@GetDuration,#iSpellPower=iSpellPower));
 
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
-
-      % Check if the target has free action
-      if Send(oTarget,@IsEnchanted,#what=oSpell)
-      {
-         iDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=who,
-                          #oTarget=oTarget,#iDuration=iDuration);
-         if iDuration = $
-         {
-            % Resisted completely
-            propagate;
-         }
-      }
-
-      Send(who,@MsgSendUser,#message_rsc=hold_caster,
-           #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
-      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,#state=TRUE);
-
-      if IsClass(oTarget,&Player)
-      {
-         Send(oTarget,@MsgSendUser,#message_rsc=hold_on);    
-
-         % Do not paralyze DMs.
-         if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
-         {
-            Send(oTarget,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
-         }
-      }
-      else  
-      {
-         % class is &Monster
-         Send(oTarget,@ResetBehaviorFlags);
-      }
-      
-      propagate;
+      propagate;	  
    }
 
-   EndEnchantment(who = $,report = TRUE,state=$)
+   EndEnchantment(who=$,report=TRUE,state=$)
    {
       if IsClass(who,&Player)
       {
@@ -194,69 +167,65 @@ messages:
       return;
    } 
 
-   GetDuration(iSpellPower = 0)
+   GetDuration(iSpellPower=0)
    {
       local iDuration;
 
-      % about 2 - 6 seconds
-      iDuration = 2000 + (40 * iSpellPower);
+      % All duration calculations now use class properties, modifiable in game
+      % By default, base duration 2000ms, total time 2000-6000ms using 40x
+      % spellpower multiplier, with the final duration 50-100% max
+	  
+      iDuration = (piBaseDuration + (iSpellPower+1)*piSpellPowerModifier);
+      iDuration = random(iDuration*(100-piDeviation)/100,iDuration);
 
-      return random(iDuration/2,iDuration);
+      return iDuration;	  
    }
 
-   DoHold(what = $, otarget = $, iDurationSecs = $, iDuration = $, report=TRUE,
-          bAllowFreeAction=TRUE)   
+   DoSpell(what=$,oTarget=$,iDuration=$,report=TRUE,bAllowFreeAction=TRUE)   
    "Holds target for durationsecs seconds."
    {
-      local i, oSpell, iTotalDuration;
+      local i, oSpell;
             
-      if otarget = $
+      if oTarget = $
       {
          return FALSE;
       }
 
       % check for enchantment already applied
-      if Send(otarget,@IsEnchanted,#what=self)
+      if Send(oTarget,@IsEnchanted,#what=self)
       {
          return FALSE;
       }
 
-      % Use iDuration (in ms).  If it is nil, then covert iDurationSecs to ms.
+      % Check for spell called with $ iDuration, apply default time if so.
       if iDuration = $
       {
-         if iDurationSecs = $
-         {
-            iTotalDuration = 5000;
-         }
-         else
-         {
-            iTotalDuration = iDurationSecs * 1000;
-         }
+         iDuration = 5000;
       }
       else
       {
-         iTotalDuration = iDuration;
+         iDuration = iDuration;
       }
 
       % check if the target has free action unless not allowed
       if bAllowFreeAction
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
-         if Send(otarget,@IsEnchanted,#what=oSpell)
+         if Send(oTarget,@IsEnchanted,#what=oSpell)
          {
-            iTotalDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=what,
-                                  #oTarget=oTarget,#iDuration=iTotalDuration);
-            if iTotalDuration = $
+            iDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=what,
+                                  #oTarget=oTarget,#iDuration=iDuration);
+            if iDuration = $
             {
                % Resisted completely
                return FALSE;
             }
          
-            iTotalDuration = bound(iTotalDuration,500,10000);
+            iDuration = bound(iDuration,500,10000);
          }
       }
 
-      Send(oTarget,@StartEnchantment,#what=self,#time=iTotalDuration,
+      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,
            #report=report,#state=report);
 
       if IsClass(oTarget,&Player)
@@ -276,8 +245,11 @@ messages:
       {
          Send(oTarget,@ResetBehaviorFlags);
       }
-      
-      return;
+       
+      Send(what,@MsgSendUser,#message_rsc=hold_caster,
+           #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));     
+
+      propagate;
    }
 
    ModifyMonsterBehavior(mob = $)

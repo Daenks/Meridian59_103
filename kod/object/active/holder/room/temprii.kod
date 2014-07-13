@@ -400,8 +400,8 @@ messages:
          send(SYS,@UtilGotoSquare,#what=what,#where=send(SYS,@FindRoomByNum,#num=RID_KOC_INN),
               #new_row=8,#new_col=6,#new_angle=ANGLE_NORTH);
          send(what,@LoseHealth,#amount=(send(what,@GetHealth)-1));
-         send(send(sys,@FindSpellByNum,#num=SID_HOLD),@DoHold,
-              #what=self,#oTarget=what,#iDurationSecs=5,#report=FALSE,#bAllowFreeAction=FALSE);
+         send(send(sys,@FindSpellByNum,#num=SID_HOLD),@DoSpell,
+              #what=self,#oTarget=what,#iDuration=5000,#report=FALSE,#bAllowFreeAction=FALSE);
          send(what,@EffectSendUserDuration,#effect=EFFECT_PAIN,#duration=2000);
          send(what,@EffectSendUserXLat,#xlat=0);
          send(what,@EffectSendUser,#what=what,#effect=EFFECT_PARALYZE_OFF);
@@ -415,7 +415,7 @@ messages:
               #where=send(SYS,@FindRoomByNum,#num=RID_KOC_INN),
               #new_row=8,#new_col=6,#new_angle=ANGLE_NORTH);
          send(what,@Losehealth,#amount=(send(what,@GetHealth)-1));
-         send(send(sys,@FindSpellByNum,#num=SID_HOLD),@DoHold,#oTarget=what,#iDurationSecs=30,#report=FALSE);
+         send(send(sys,@FindSpellByNum,#num=SID_HOLD),@DoSpell,#oTarget=what,#iDuration=20000,#report=FALSE);
          
          ptDeathMessageTimer = createtimer(self,@TimerMessage1,5000); 
       }

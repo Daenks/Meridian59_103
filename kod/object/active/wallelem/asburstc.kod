@@ -15,7 +15,7 @@ constants:
    include blakston.khd
 
    % What's the base duration for the hold effect?
-   BASE_HOLD_DURATION = 5 
+   BASE_HOLD_DURATION = 5000 
 
 resources:
 
@@ -45,7 +45,7 @@ classvars:
 properties:
 
    piRangeSquared = 1
-   piBonus = 1
+   piBonus = 1000
 
 messages:
    
@@ -54,20 +54,20 @@ messages:
       if range <> $
       {
          piRange = range;
-         piBonus = range;
+         piBonus = range*1000;
       }
 
       propagate;
    }
 
-   DoEffect(what=$)
+   DoSpell(what=$)
    {
       local oSpell;
 
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
 
-      Send(oSpell,@DoHold,#what=self,#otarget=what,
-           #iDurationSecs=BASE_HOLD_DURATION+piBonus);
+      Send(oSpell,@DoSpell,#what=self,#oTarget=what,
+           #iDuration=BASE_HOLD_DURATION+piBonus);
 
       propagate;
    }   

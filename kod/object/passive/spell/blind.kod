@@ -55,7 +55,10 @@ classvars:
 
 properties:
 
-
+   piBaseDuration = 5000
+   piSpellPowerModifier = 150
+   piDeviation = 50
+   
 messages:
 
    ResetReagents()
@@ -137,17 +140,15 @@ messages:
       oTarget = First(lTargets);
 
       % Spell effects
-      Send(self,@DoBlind,#what=who,#oTarget=oTarget,
-           #iDurationSecs=Send(self,@GetDuration,#iSpellPower=iSpellPower));
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,
+           #iDuration=Send(self,@GetDuration,#iSpellPower=iSpellPower));
       
       propagate;
    }
 
-   DoBlind(what=$,oTarget=$,iDurationSecs=0)
+   DoSpell(what=$,oTarget=$,iDuration=0)
    {
-      local oSpell, iDuration;
-
-      iDuration = iDurationSecs;
+      local oSpell;
       
       oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
       if Send(oTarget,@IsEnchanted,#what=oSpell)
@@ -161,9 +162,8 @@ messages:
          }
       }
 
-      % Bound and convert duration to milliseconds
-      iDuration = bound(iDuration,3,20);
-      iDuration = iDuration * 1000;
+      % Duration already in milliseconds
+      iDuration = bound(iDuration,3000,20000);
 
       if IsClass(oTarget,&Player)
       {
@@ -183,16 +183,21 @@ messages:
            #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
       Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
 
-      return;
+      propagate;
    }
 
    GetDuration(iSpellPower=0)
    {
       local iDuration;
 
-      iDuration = (5 + iSpellPower/6);
+      % All duration calculations now use class properties, modifiable in game
+      % By default, base duration 5000ms, total time 5000-20000ms using 150x
+      % spellpower multiplier, with the final duration 50-100% max
+	  
+      iDuration = (piBaseDuration + (iSpellPower+1)*piSpellPowerModifier);
+      iDuration = random(iDuration*(100-piDeviation)/100,iDuration);
 
-      return random(iDuration/2,iDuration);
+      return iDuration;	  
    }
    
    EndEnchantment(who = $, report = TRUE)
