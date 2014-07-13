@@ -85,17 +85,11 @@ messages:
             return [SID_HOLD, 5];
          }
          else
-         {
-            if iRandom < 90
-            {
-               return $; % removed for lag reasons: [SID_SUMMON_POISON_FOG, 5];
-            }
-            else
-            {
-               return [SID_SHATTER, 15];
-            }
+         {  
+            return [SID_ICE_NOVA, 10];
          }
       }
+   
 
       return $;
    }

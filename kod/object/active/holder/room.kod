@@ -2893,6 +2893,35 @@ messages:
       return;
    }
 
+   AreaEffectTargets(what = $, range = 0, center = $, monsters = FALSE,
+                    iSpellPower = 0)
+   % Center is the reference object for range measurements.
+   {
+      local iRange_squared, iRowDiff, iColDiff, iRowCenter, iColCenter,
+            lTargets, each_obj, i;
+
+      lTargets = $ ;
+      iRange_squared = range * range ;
+      iRowCenter = Send(center,@GetRow);
+      iColCenter = Send(center,@GetCol);
+      for i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj, &Player)
+            OR (monsters and IsClass(each_obj, &Monster))
+         {
+            iRowDiff = iRowCenter - Send(each_obj,@GetRow);
+            iColDiff = iColCenter - Send(each_obj,@GetCol);
+            if (iRowDiff*iRowDiff + iColDiff*iColDiff) < iRange_squared
+            {
+               lTargets = Cons(each_obj,lTargets);
+            }
+         }
+      }
+
+      return lTargets;
+   }
+   
    EnchantAllOccupants(what = $, iSpellPower=0)
    {
       local i, each_obj;
