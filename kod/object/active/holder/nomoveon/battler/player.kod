@@ -959,6 +959,7 @@ properties:
    piJustified_kill_count = 0
 
    ptAttackTimer = $
+	ptCastTimer = $
 
    psHonor = $
 
@@ -1074,6 +1075,12 @@ messages:
       {
          DeleteTimer(ptAttackTimer);
          ptAttackTimer = $;
+      }
+		
+      if ptCastTimer <> $
+      {
+         DeleteTimer(ptCastTimer);
+         ptCastTimer = $;
       }
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
@@ -4274,7 +4281,11 @@ messages:
       if NOT Send(self,@IsOkayAttackTime) 
       {
          return FALSE;
-      }  
+      }
+
+		Send(self,@StartAttackTimer);
+		
+		Send(self,@StartCastTimer);
 
       % Is it in the same room?
       if poOwner <> Send(what,@GetOwner) 
@@ -5737,42 +5748,78 @@ messages:
       return;
    }
 
-   IsOkayAttackTime(time = 1000, seconds = $)
-   "Have we waited long enough since the last attack/spell?  Sets new valid attack time."
-   "(time in msec, default 1 second)"
+   IsOkayAttackTime()
    {
-      local i;
-
       if ptAttackTimer <> $
       {
          return FALSE;
       }
 
-      if seconds <> $
+      return TRUE;
+   }
+	
+   StartAttackTimer(time=1000)
+   {
+		if ptAttackTimer <> $
+		{
+			if time > GetTimeRemaining(ptAttackTimer)
+			{
+				DeleteTimer(ptAttackTimer);
+				ptAttackTimer = $;
+			}
+		}
+		
+      if time > 0 AND ptAttackTimer = $
       {
-         i = seconds*1000;
-      }
-      else
-      {
-         i = time;
-      }
-
-      if i > 0
-      {
-         ptAttackTimer = CreateTimer(self,@AttackTimer,i);
+         ptAttackTimer = CreateTimer(self,@AttackTimer,time);
       }
       
-      return TRUE;
+      return;
    }
 
    AttackTimer()
-   "Sets the attack timer variable to NIL so we know it's okay to attack again."
    {
       ptAttackTimer = $;
 
       return;
    }
 
+   IsOkayCastTime()
+   {
+      if ptCastTimer <> $
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+	
+   StartCastTimer(time=1000)
+   {
+		if ptCastTimer <> $
+		{
+			if time > GetTimeRemaining(ptCastTimer)
+			{
+				DeleteTimer(ptCastTimer);
+				ptCastTimer = $;
+			}
+		}
+		
+      if time > 0 AND ptCastTimer = $
+      {
+         ptCastTimer = CreateTimer(self,@CastTimer,time);
+      }
+      
+      return;
+   }
+
+   CastTimer()
+   {
+      ptCastTimer = $;
+
+      return;
+   }
+	
    SendAttackOutOfRangeMessage(what = $, use_weapon = $, stroke_obj = $)
    {
       if use_weapon <> $
@@ -12976,6 +13023,12 @@ messages:
       {
          DeleteTimer(ptAttackTimer);
          ptAttackTimer = $;
+      }
+		
+      if ptCastTimer <> $
+      {
+         DeleteTimer(ptCastTimer);
+         ptCastTimer = $;
       }
 
       time = GetTime();

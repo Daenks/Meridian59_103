@@ -744,13 +744,6 @@ messages:
          }
       }
       
-      if NOT Send(who,@IsOkayAttackTime,#seconds=viPostCast_Time)
-      {
-         return FALSE;
-      }
-
-      oRoom = Send(who,@GetOwner);
-
       oVictim = $;
       % Only have a victim if we're not aiming at a group.
       if lTargets <> $
@@ -758,6 +751,27 @@ messages:
       {
          oVictim = First(lTargets);
       }
+
+      if NOT Send(who,@IsOkayAttackTime)
+      {		
+         return FALSE;
+      }
+		
+      if NOT Send(who,@IsOkayCastTime)
+      {
+			if oVictim <> $ AND viHarmful
+			{
+				Send(who,@UserAttack,#what=oVictim);
+			}
+			
+         return FALSE;
+      }
+		
+		Send(who,@StartAttackTimer);
+
+		Send(who,@StartCastTimer,#time=viPostCast_time*1000);
+
+      oRoom = Send(who,@GetOwner);
 
       % Do they have a token?  Avoid token PKing or mule abuse.
       if (oVictim = $ OR oVictim <> who)
