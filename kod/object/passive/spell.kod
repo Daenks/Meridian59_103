@@ -87,7 +87,7 @@ resources:
 
    spell_fail_wav = spelfail.wav
 
-   spell_desc_rsc = "SCHOOL : %s          LEVEL : %i \n\n%s %s%s"
+   spell_desc_rsc = "SCHOOL : %s          LEVEL : %i \n\n%s %s%s%q"
    spell_school_riija = "Riija"
    spell_school_shalille = "Shal'ille"
    spell_school_qor = "Qor"
@@ -305,9 +305,9 @@ messages:
       return rSchool;
    }
 
-   ShowDesc()
+   ShowDesc(who=$)
    {
-      local rSchool, rOutlaw, rExtra;
+      local rSchool, rOutlaw, rExtra, rEffectDesc;
 
       if viSchool <> SS_DM_COMMAND
       {
@@ -321,13 +321,29 @@ messages:
 
          rExtra = Send(self,@GetExtraDesc);
 
+         ClearTempString();
+         
+         if who <> $
+            AND IsClass(who,&User)
+            AND (Send(who,@IsEnchanted,#what=self)
+               OR Send(Send(who,@GetOwner),@IsEnchanted,#what=self))
+         {
+            Send(self,@EffectDesc,#who=who);
+         }
+
+         rEffectDesc = GetTempString();
          AddPacket(4,spell_desc_rsc, 4,rSchool, 4,viSpell_Level, 4,vrDesc,
-                   4,rOutlaw, 4,rExtra);
-                   
+                   4,rOutlaw, 4,rExtra, 4,rEffectDesc);
+
          return;
       }
-      
+
       propagate;
+   }
+
+   EffectDesc(who=$)
+   {
+      return;
    }
 
    GetExtraDesc()
