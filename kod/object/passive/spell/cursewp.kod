@@ -17,20 +17,24 @@ constants:
 resources:
 
    curseweapon_cast_rsc = "%s%s gains an eerie, red glow."
-   
+   curseweapon_broken = "You cannot enchant %s%s. It's broken."
    curseweapon_fails = "%s%s is strangely unaffected by the spell."
-   
-   
+   curseweapon_no_weapon = "%s%s has no wielded weapon."
+   curseweapon_no_can = "You cannot curse %s%s."
+   curseweapon_cap_your = "Your "
+
+
    curseweapon_name_rsc = "curse weapon"
    curseweapon_icon_rsc = iunholyw.bgf
    curseweapon_desc_rsc = \
       "Makes the target weapon nearly ineffective for a time, "
       "and curses the user to wield it until he or she gains "
       "divine aid.  "
-      "Requires the blood of a magic-casting beast and teeth of a fierce fighting monster."
+      "Requires the blood of a magic-casting beast and a tooth 
+      "from a fierce fighting monster."
 
    curseweapon_sound = qcurweap.wav
-   
+
 classvars:
 
    vrName = curseweapon_name_rsc
@@ -43,19 +47,27 @@ classvars:
    viMeditate_ratio = 30
 
    viSpell_level =4
-   viMana = 25
-   viSpellExertion = 40
-   viCast_time = 20000
+   viSpellExertion = 10
+   viChance_To_Increase = 20
+
    vrSucceed_wav = CurseWeapon_sound
 
+   viOutlaw = TRUE
+   viHarmful = TRUE
+   viNoNewbieOffense = TRUE
+
 properties:
+
+   viMana = 25
+   viCast_time = 600
+   viPostCast_time = 1     % In seconds
 
 messages:
 
    ResetReagents()
    {
-      plReagents = $;      
-      plReagents = Cons([&ShamanBlood,2],plReagents);
+      plReagents = $;
+      plReagents = Cons([&ShamanBlood,1],plReagents);
       plReagents = Cons([&OrcTooth,1],plReagents);
 
       return;
@@ -66,76 +78,117 @@ messages:
       return 1;
    }
 
-   CanPayCosts(who = $, lTargets = $)
+   CanPayCosts(who = $, lTargets = $, iSpellPower = 0)
    {
       local oWeapon, oTarget;
-   
-      oTarget = First(lTargets);
 
-      % Check that target is enchantable
-      if NOT isClass(oTarget,&weapon) OR NOT send(oTarget,@CanEnchant,#oSpell=self)
+      oTarget = first(lTargets);
+      if oTarget = $
       {
-         Send(who, @MsgSendUser,#message_rsc=curseweapon_fails,
-              #parm1=send(oTarget,@getcapdef),#parm2=send(oTarget,@getname));
-            
          return FALSE;
       }
 
-      propagate;   % Check other things higher up
-   }
-   
-   IsTargetInRange(who = $,target = $)
-   {
-      if who = Send(target, @GetOwner)
-         OR send(who,@getOwner) = send(target,@getowner)
+      if IsClass(oTarget,&User)
       {
-         return TRUE;
+         oWeapon = Send(oTarget,@LookupPlayerWeapon);
+         if oWeapon = $
+         {
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_no_weapon,
+                  #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+            return FALSE;
+         }
+         else
+         {
+            oTarget = oWeapon;
+         }
+
+         if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+         {
+            Send(who,@MsgSendUser,#message_rsc=spell_resists,
+                  #parm1=Send(oWeapon,@GetCapdef),#parm2=Send(oWeapon,@GetName));
+
+            return FALSE;
+         }
       }
-
-      return FALSE;
-   }
-
-   CastSpell(who = $, lTargets = $, iSpellPower = 0)
-   {
-      local oItem, oItemAtt;
-
-      oItem = first(lTargets);
-
-      if send(oItem,@HasAttribute,#ItemAtt = WA_CURSED)
+      else
       {
-         Send(who, @MsgSendUser, #message_rsc=spell_resists,
-               #parm1=send(oItem,@getCapdef),#parm2=send(oItem,@getname));
-               
-         return;
-      }
-      
-      if NOT Send(oItem,@CanEnchant,#oSpell = self)
-      {
-         Send(who, @MsgSendUser, #message_rsc=spell_resists,
-              #parm1=send(oItem,@getCapdef),#parm2=send(oItem,@getname));
-              
-         return;
-      }
-      
-      oItemAtt = send(SYS,@finditemattbynum,#num=WA_CURSED);
+         Send(who,@MsgSendUser,#message_rsc=curseweapon_no_can,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
 
-      send(oItemAtt,@AddToItem,#oItem=oItem,#iPower=random(iSpellPower/20,iSpellPower/10),
-           #timer_duration = send(self,@GetDuration,#iSpellPower=iSpellPower));
-      Send(who, @MsgSendUser, #message_rsc=curseweapon_cast_rsc,
-           #parm1=Send(oItem,@GetCapdef),#parm2=send(oItem,@getName));
+         return FALSE;
+      }
 
       propagate;
+   }
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
+   {
+      local oWeapon, oWeapAtt, oOwner, oRoom, iDuration;
+
+      oWeapon = First(lTargets);
+      oWeapAtt = Send(SYS,@FindItemAttByNum,#num=WA_CURSED);
+      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
+      if IsClass(oWeapon,&User)
+      {
+         oWeapon = Send(oWeapon,@LookupPlayerWeapon);
+      }
+
+      if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+      {
+         Send(who, @MsgSendUser, #message_rsc=spell_resists,
+               #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
+
+         return;
+      }
+
+      oOwner = Send(oWeapon,@GetOwner);
+
+      if IsClass(oOwner,&Player)
+         AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
+      {
+         Send(oOwner,@StartEnchantment,#what=self,#time=iDuration);
+
+         if oOwner <> who
+         {
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration = iDuration);
+            Send(oOwner,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
+         }
+         else
+         {
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration=iDuration);
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+         }
+      }
+         oRoom = Send(oOwner,@GetOwner);
+
+         if oRoom <> $
+         {
+            Send(oRoom,@SomethingChanged,#what=oOwner);
+         }
+
+      propagate;
+   }
+
+   EndEnchantment()
+   {
+      return;
    }
 
    GetDuration(iSpellPower=0)
    {
       local iDuration;
-      %% duration = 1 to 25 hours, plus a smattering of minutes.
-      iDuration = bound((iSpellPower+1)/4,1,25)*3600000;
-      iDuration = iDuration + random(1,3600000);    
+      %% duration = 6 to 11 seconds.
+      iDuration = (6+(iSpellPower/20))*1000;
+
       return iDuration;
    }
 
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
