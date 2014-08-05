@@ -1,0 +1,185 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CurseWeapon is Debuff
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   include cursewp.lkod
+
+   curseweapon_cast_rsc = "%s%s gains an eerie, red glow."
+   curseweapon_broken = "You cannot enchant %s%s. It's broken."
+   curseweapon_fails = "%s%s is strangely unaffected by the spell."
+   curseweapon_no_weapon = "%s%s has no wielded weapon."
+   curseweapon_no_can = "You cannot curse %s%s."
+   curseweapon_cap_your = "Your "
+
+
+   curseweapon_name_rsc = "curse weapon"
+   curseweapon_icon_rsc = iunholyw.bgf
+   curseweapon_desc_rsc = \
+      "Makes the target weapon nearly ineffective for a time, "
+      "and curses the user to wield it until he or she gains "
+      "divine aid.  "
+      "Requires the blood of a magic-casting beast and a tooth "
+      "from a fierce fighting monster."
+
+   curseweapon_sound = qcurweap.wav
+
+classvars:
+
+   vrName = curseweapon_name_rsc
+   vrIcon = curseweapon_icon_rsc
+   vrDesc = curseweapon_desc_rsc
+
+   viSpell_num = SID_CURSE_WEAPON
+   viSchool = SS_QOR
+
+   viSpell_level =4
+   viSpellExertion = 10
+   viChance_To_Increase = 15
+   viMeditate_ratio = 50
+
+   vrSucceed_wav = CurseWeapon_sound
+
+properties:
+
+   viMana = 18
+   viPostCast_time = 1     % In seconds
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&ShamanBlood,1],plReagents);
+      plReagents = Cons([&OrcTooth,1],plReagents);
+
+      return;
+   }
+
+   CanPayCosts(who=$,lTargets=$,iSpellPower=0)
+   {
+      local oWeapon, oTarget;
+
+      oTarget = first(lTargets);
+      if oTarget = $
+      {
+         return FALSE;
+      }
+
+      if IsClass(oTarget,&User)
+      {
+         oWeapon = Send(oTarget,@LookupPlayerWeapon);
+         if oWeapon = $
+         {
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_no_weapon,
+                  #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+            return FALSE;
+         }
+         else
+         {
+            oTarget = oWeapon;
+         }
+
+         if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+         {
+            Send(who,@MsgSendUser,#message_rsc=spell_resists,
+                  #parm1=Send(oWeapon,@GetCapdef),#parm2=Send(oWeapon,@GetName));
+
+            return FALSE;
+         }
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=curseweapon_no_can,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
+   {
+      local oWeapon, oWeapAtt, oOwner, oRoom, iDuration;
+
+      oWeapon = First(lTargets);
+      oWeapAtt = Send(SYS,@FindItemAttByNum,#num=WA_CURSED);
+      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
+      if IsClass(oWeapon,&User)
+      {
+         oWeapon = Send(oWeapon,@LookupPlayerWeapon);
+      }
+
+      if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
+      {
+         Send(who, @MsgSendUser, #message_rsc=spell_resists,
+               #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
+
+         return;
+      }
+
+      oOwner = Send(oWeapon,@GetOwner);
+
+      if IsClass(oOwner,&Player)
+         AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
+      {
+         Send(oOwner,@StartEnchantment,#what=self,#time=iDuration);
+
+         if oOwner <> who
+         {
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration = iDuration);
+            Send(oOwner,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
+         }
+         else
+         {
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+                  #timer_duration=iDuration);
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+                  #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
+         }
+      }
+         oRoom = Send(oOwner,@GetOwner);
+
+         if oRoom <> $
+         {
+            Send(oRoom,@SomethingChanged,#what=oOwner);
+         }
+
+      propagate;
+   }
+
+   EndEnchantment()
+   {
+      return;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDuration;
+      %% duration = 6 to 11 seconds.
+      iDuration = (6+(iSpellPower/20))*1000;
+
+      return iDuration;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
