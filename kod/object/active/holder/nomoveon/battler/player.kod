@@ -8285,6 +8285,7 @@ messages:
                AND killing_blow
                AND (monster_level + 5) > piBase_Max_health
                AND Send(self,@CheckPlayerFlag,#flag=PFLAG_TOOK_DAMAGE)
+               AND monster_level > piBase_Max_health
             {
                gain = gain + 1;
             }
