@@ -149,8 +149,8 @@ messages:
          return $;
       }
 
-      % Duration reduced 0-50%, depending on spellpower.
-      iNewDuration = iDuration - (iDuration * oEagleEyesStrength)/200;
+      % Duration reduced 0-20%, depending on spellpower.
+      iNewDuration = iDuration - (iDuration * oEagleEyesStrength)/500;
       Post(oTarget,@MsgSendUser,#message_rsc=EagleEyes_resist);
       
       if IsClass(oCaster,&Player)
