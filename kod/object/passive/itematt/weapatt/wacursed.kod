@@ -80,25 +80,26 @@ messages:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
    ModifyDamage(damage=0,target=$,wielder=$,lData=$)
-   "Wielder gets a -2*bonus to damage."
+   "Wielder damage reduced by iPower."
    {
       local iPower;
 
-      iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
-      iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
+      iPower = First(lData);
+      iPower = (iPower / 10) MOD 10;
 
-      return (damage - (2*iPower));
+      return (damage - iPower);
    }
 
    ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
-   "Wielder gets a -2*bonus to damage."
+   "Wielder hitroll reduced by (iPower+1)*20."
    {
       local iPower;
 
-      iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
-      iPower = Send(self,@DecipherHitrollFromPower,#iPower=iPower);
+      iPower = First(lData);
+      iPower = (iPower / 10) MOD 10;
+      iPower = (iPower + 1) * 20;
 
-      return (hitroll - (2*iPower));
+      return (hitroll - iPower);
    }
 
    ItemReqUnuse(oItem=$)
@@ -189,10 +190,12 @@ messages:
       local oPlayer;
 
       oPlayer = Send(oItem,@GetOwner);
-      if oPlayer<> $ and IsClass(oPlayer,&player)
+      if oPlayer <> $ and IsClass(oPlayer,&Player)
       {
          Send(oPlayer,@MsgSendUser,#message_rsc = wacursed_gone,
                #parm1=Send(oItem,@GetName));
+         
+         Post(oPlayer,@DrawOffense);
       }
 
       propagate;
