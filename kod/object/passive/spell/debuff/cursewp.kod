@@ -18,6 +18,7 @@ resources:
 
    include cursewp.lkod
 
+   curseweapon_cast_other_rsc = "%s%s's %s gains an eerie, red glow."
    curseweapon_cast_rsc = "%s%s gains an eerie, red glow."
    curseweapon_broken = "You cannot enchant %s%s. It's broken."
    curseweapon_fails = "%s%s is strangely unaffected by the spell."
@@ -52,6 +53,9 @@ classvars:
    viMeditate_ratio = 50
 
    vrSucceed_wav = CurseWeapon_sound
+   viOutlaw = TRUE
+   viHarmful = TRUE
+   viNoNewbieOffense = TRUE
 
 properties:
 
@@ -73,7 +77,7 @@ messages:
    {
       local oWeapon, oTarget;
 
-      oTarget = first(lTargets);
+      oTarget = First(lTargets);
       if oTarget = $
       {
          return FALSE;
@@ -89,15 +93,11 @@ messages:
 
             return FALSE;
          }
-         else
-         {
-            oTarget = oWeapon;
-         }
 
          if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
          {
             Send(who,@MsgSendUser,#message_rsc=spell_resists,
-                  #parm1=Send(oWeapon,@GetCapdef),#parm2=Send(oWeapon,@GetName));
+                  #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
 
             return FALSE;
          }
@@ -115,54 +115,48 @@ messages:
 
    CastSpell(who=$,lTargets=$,iSpellPower=0)
    {
-      local oWeapon, oWeapAtt, oOwner, oRoom, iDuration;
+      local oTarget, oWeapon, oWeapAtt, oRoom, iDuration;
 
-      oWeapon = First(lTargets);
+      oTarget = First(lTargets);
       oWeapAtt = Send(SYS,@FindItemAttByNum,#num=WA_CURSED);
       iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
-      if IsClass(oWeapon,&User)
+      oWeapon = Send(oTarget,@LookupPlayerWeapon);
+
+      if IsClass(oTarget,&Player)
+         AND Send(oTarget,@LookupPlayerWeapon) = oWeapon
       {
-         oWeapon = Send(oWeapon,@LookupPlayerWeapon);
-      }
+         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
 
-      if Send(oWeapon,@HasAttribute,#ItemAtt = WA_CURSED)
-      {
-         Send(who, @MsgSendUser, #message_rsc=spell_resists,
-               #parm1=send(oWeapon,@getCapdef),#parm2=send(oWeapon,@getname));
+         % Note: item attribute powers are stored as a value between 0-9,
+         % so don't send an iPower higher than that amount until a sanity
+         % check is placed there.
 
-         return;
-      }
-
-      oOwner = Send(oWeapon,@GetOwner);
-
-      if IsClass(oOwner,&Player)
-         AND Send(oOwner,@LookupPlayerWeapon) = oWeapon
-      {
-         Send(oOwner,@StartEnchantment,#what=self,#time=iDuration);
-
-         if oOwner <> who
+         if oTarget <> who
          {
-            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
-                  #timer_duration = iDuration);
-            Send(oOwner,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=(iSpellPower/15),
+                  #timer_duration=iDuration);
+            Send(oTarget,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
                   #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
-            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
-                  #parm1=Send(oWeapon,@GetCapDef),#parm2=Send(oWeapon,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_other_rsc,
+                  #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName),
+                  #parm3=Send(oWeapon,@GetName));
          }
          else
          {
-            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=random(iSpellPower/20,iSpellPower/10),
+            Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=(iSpellPower/15),
                   #timer_duration=iDuration);
             Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
                   #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
          }
       }
-         oRoom = Send(oOwner,@GetOwner);
+         oRoom = Send(oTarget,@GetOwner);
 
          if oRoom <> $
          {
-            Send(oRoom,@SomethingChanged,#what=oOwner);
+            Send(oRoom,@SomethingChanged,#what=oTarget);
          }
+
+      Post(oTarget,@DrawOffense);
 
       propagate;
    }
