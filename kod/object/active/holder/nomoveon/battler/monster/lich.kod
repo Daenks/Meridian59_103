@@ -130,8 +130,8 @@ properties:
 
    piBlindAttackChance = 15       % Chance she'll attack with blind
    piBlindCounterChance = 7       % Chance she'll counter a spell or arrow with blind
-   piBlindDurationMin = 20000  % seconds
-   piBlindDurationMax = 30000  % seconds
+   piBlindDurationMin = 20000  % milliseconds
+   piBlindDurationMax = 30000  % milliseconds
 
    ptDeathSequence = $
    piDeathSequenceTimestep = 200  % milliseconds
