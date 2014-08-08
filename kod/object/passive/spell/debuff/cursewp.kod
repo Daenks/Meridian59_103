@@ -25,7 +25,7 @@ resources:
    curseweapon_no_weapon = "%s%s has no wielded weapon."
    curseweapon_no_can = "You cannot curse %s%s."
    curseweapon_cap_your = "Your "
-
+   curseweapon_already_enchanted = "%s%s is already under a curse."
 
    curseweapon_name_rsc = "curse weapon"
    curseweapon_icon_rsc = iunholyw.bgf
@@ -44,23 +44,27 @@ classvars:
    vrIcon = curseweapon_icon_rsc
    vrDesc = curseweapon_desc_rsc
 
+   vrAlreadyEnchanted = curseweapon_already_enchanted
+   vrEnchantment_On = curseweapon_cast_rsc
+   vrSuccess = curseweapon_cast_other_rsc
+
    viSpell_num = SID_CURSE_WEAPON
    viSchool = SS_QOR
 
-   viSpell_level =4
+   viSpell_level = 4
    viSpellExertion = 10
    viChance_To_Increase = 15
    viMeditate_ratio = 50
 
    vrSucceed_wav = CurseWeapon_sound
-   viOutlaw = TRUE
-   viHarmful = TRUE
-   viNoNewbieOffense = TRUE
 
 properties:
 
    viMana = 18
    viPostCast_time = 1     % In seconds
+   piBaseDuration = 6000
+   piSpellPowerModifier = 50
+   piDeviation = 10
 
 messages:
 
@@ -115,11 +119,21 @@ messages:
 
    CastSpell(who=$,lTargets=$,iSpellPower=0)
    {
-      local oTarget, oWeapon, oWeapAtt, oRoom, iDuration;
+      local oTarget;
 
       oTarget = First(lTargets);
+
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,#iSpellPower=iSpellPower,
+           #iDuration=Send(self,@GetDuration,#iSpellPower=iSpellPower));
+
+      propagate;
+   }
+
+   DoSpell(what=$,oTarget=$,iSpellPower=$,iDuration=$)
+   {
+      local oWeapon, oWeapAtt, oRoom;
+
       oWeapAtt = Send(SYS,@FindItemAttByNum,#num=WA_CURSED);
-      iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
       oWeapon = Send(oTarget,@LookupPlayerWeapon);
 
       if IsClass(oTarget,&Player)
@@ -131,13 +145,13 @@ messages:
          % so don't send an iPower higher than that amount until a sanity
          % check is placed there.
 
-         if oTarget <> who
+         if oTarget <> what
          {
             Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=(iSpellPower/15),
                   #timer_duration=iDuration);
             Send(oTarget,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
                   #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
-            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_other_rsc,
+            Send(what,@MsgSendUser,#message_rsc=curseweapon_cast_other_rsc,
                   #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName),
                   #parm3=Send(oWeapon,@GetName));
          }
@@ -145,7 +159,7 @@ messages:
          {
             Send(oWeapAtt,@AddToItem,#oItem=oWeapon,#iPower=(iSpellPower/15),
                   #timer_duration=iDuration);
-            Send(who,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
+            Send(what,@MsgSendUser,#message_rsc=curseweapon_cast_rsc,
                   #parm1=curseweapon_cap_your,#parm2=Send(oWeapon,@GetName));
          }
       }
@@ -169,8 +183,13 @@ messages:
    GetDuration(iSpellPower=0)
    {
       local iDuration;
-      %% duration = 6 to 11 seconds.
-      iDuration = (6+(iSpellPower/20))*1000;
+
+      % Duration calculation now uses class properties, modifiable in game
+      % By default, base duration 4000ms, total time 4000-12000ms using 80x
+      % spellpower multiplier, with the final duration 90-100% max
+
+      iDuration = (piBaseDuration + (iSpellPower+1)*piSpellPowerModifier);
+      iDuration = Random(iDuration*(100-piDeviation)/100,iDuration);
 
       return iDuration;
    }
