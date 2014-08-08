@@ -31,7 +31,8 @@ resources:
    Purge_name_rsc = "purge"
    Purge_icon_rsc = ipurge.bgf
    Purge_desc_rsc = \
-      "Strips helpful personal enchantments off of the target. "
+      "Reduces the effectiveness of the target's helpful personal enchantments.  "
+      "With enough power, it can even remove the enchantment completely.  "
       "Requires five emeralds and two purple mushrooms to cast."
    
    Purge_on = \
@@ -66,6 +67,9 @@ classvars:
 
 properties:
 
+   pbPurgeNoRemove = FALSE
+   pbRemoveWithPercentChance = FALSE
+
 messages:
 
    ResetReagents()
@@ -85,6 +89,8 @@ messages:
    CanPayCosts(who=$,lTargets=$,bItemCast=FALSE)
    {
       local target, i, lEnchantment, bHasEnchantment, oSpell;
+
+      bHasEnchantment = FALSE;
 
       % Can cast spell if the 1 target item is a user
       if Length(lTargets) <> 1
@@ -108,7 +114,6 @@ messages:
 
       % The target must have an enchantment
       lEnchantment = Send(target,@GetEnchantmentList);
-      bHasEnchantment = IsClass(who,&DM);
 
       if lEnchantment <> $
       {
@@ -128,7 +133,7 @@ messages:
 
       if NOT bHasEnchantment
       {
-         Send(who,@MsgSendUser,#message_rsc=Purge_not_enchanted, 
+         Send(who,@MsgSendUser,#message_rsc=Purge_not_enchanted,
                #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
 
          return FALSE;
@@ -214,65 +219,91 @@ messages:
    }
 
    DoPurge(who=$,iChance=$)
-   "Remove positive enchantments on who with a given chance to remove each one."
+   "Recasts the target's PEs at the new spellpower, or removes them at/below 0 spellpower."
    {
-      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment,
-            oSpell, lList, bRemovedSomething;
+      local i, lEnchantments, iSpellPower, oTimer, iTime, oSpell, iCastPower, iNewPower, bRemovedSomething;
+
+      iSpellPower = iChance;
 
       % Can't do this to nobody or to non-players.
-      if who = $
-         OR NOT IsClass(who,&Player)
+      if who = $ OR NOT IsClass(who,&Player)
       {
          return FALSE;
       }
 
-      % Chance of $ means that we want to remove it all.
-      if iChance = $
+      bRemovedSomething = FALSE;
+
+      % A spellpower of $ or 100 means that we want to remove it all.
+      if iSpellPower = $
+         OR iSpellPower = 100
       {
          Send(who,@RemoveAllPersonalEnchantments);
+         bRemovedSomething = TRUE;
 
          return TRUE;
       }
 
-      bRemovedSomething = FALSE;
-      lEnchantments = $;
-      lList = Send(who,@GetEnchantmentList);
+      lEnchantments = Send(who,@GetEnchantmentList);
 
-      foreach oEnchantment in lList
+      foreach i in lEnchantments
       {
-         oSpell = Nth(oEnchantment,2);
+         oSpell = Nth(i,2);
 
-         if Send(oSpell,@IsPersonalEnchantment)
+         if IsClass(oSpell,&PersonalEnchantment)
             AND Send(oSpell,@CanBeRemovedByPlayer)
             AND NOT Send(oSpell,@IsHarmful)
          {
-            lEnchantments = cons(oSpell,lEnchantments);
-         }
-      }
+            % Get the timer, so we can put it back on later.
+            oTimer = Nth(i,1);
+            iTime = GetTimeRemaining(oTimer);
 
-      iNumEnchantments = length(lEnchantments);
+            % Get the cast power from the target, as it checks the right
+            % location in the list.
+            iCastPower = Send(who,@GetCastPower,#what=oSpell);
 
-      % Anti-clumpy code: If there is at least two enchantments on a player
-      % and the chance to dispell is greater than 60%, then auto-remove one
-      % enchantment.
-      if iNumEnchantments >= MIN_ENCHANTMENTS_FOR_AUTOREMOVE
-         AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
-      {
-         oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
-         Send(who,@RemoveEnchantment,#what=oEnchantment);
-         lEnchantments = DelListElem(lEnchantments,oEnchantment);
-         iNumEnchantments = iNumEnchantments - 1;
-         bRemovedSomething = TRUE;
-      }
+            % Calculate the new spellpower and time of the enchantment.
+            iNewPower = iCastPower - (iSpellPower * Send(oSpell,@GetPurgeFactor)) / 100;
 
-      iModifiedChance = iChance;
+            % If purge removing buffs is turned off, bind the new spellpower at 1
+            if pbPurgeNoRemove
+               OR pbRemoveWithPercentChance
+            {
+               iNewPower = Bound(iNewPower,1,99);
+            }
+            else
+            {
+               iNewPower = Bound(iNewPower,$,99);
+            }
 
-      foreach oEnchantment in lEnchantments
-      {
-         if iChance = $ OR iModifiedChance > random(1,100)
-         {
-            Send(who,@RemoveEnchantment,#what=oEnchantment);
-            bRemovedSomething = TRUE;
+            % Start the new enchantment with the time left and the new state,
+            % but only if iNewPower is greater than 0.
+            if iNewPower > 0
+            {
+               % If we have percent chance removal instead, we either remove the buff or we don't.
+               if pbRemoveWithPercentChance = TRUE
+               {
+                  if ((iSpellPower * Send(oSpell,@GetPurgeFactor))/100) > Random(1,100)
+                  {
+                     Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
+                     bRemovedSomething = TRUE;
+                  }
+
+                  continue;
+               }
+
+               % Remove the current enchantment, but don't report.
+               Send(who,@RemoveEnchantment,#what=oSpell,#report=FALSE);
+
+               Send(who,@StartEnchantment,#what=oSpell,#iSpellPower=iNewPower,
+                     #state=(Send(oSpell,@GetStateValue,#who=who,#iSpellPower=iNewPower,#target=who)),
+                     #time=iTime,#lastcall=Send(oSpell,@GetLastCall),#addIcon=Send(oSpell,@GetAddIcon));
+            }
+            else
+            {
+               % Remove the current enchantment and report.
+               Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
+               bRemovedSomething = TRUE;
+            }
          }
       }
 

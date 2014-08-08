@@ -78,6 +78,11 @@ properties:
    % give the player a chance to completely resist a blinding spell?
    piResistPercent = 5
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 30
+
 messages:
 
    ResetReagents()
