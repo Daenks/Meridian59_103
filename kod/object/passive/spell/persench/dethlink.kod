@@ -65,6 +65,11 @@ classvars:
 
 properties:
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 40
+
 messages:
 
    ResetReagents()
@@ -74,6 +79,13 @@ messages:
       plReagents = Cons([&PolishedSeraphym,1],plReagents);
 
       return;
+   }
+
+   GetStateValue(iSpellpower=$,target=$,who=$)
+   {
+      Send(target,@AddAttackModifier,#what=self);
+
+      return iSpellpower;
    }
 
    CastSpell(who=$,iSpellPower=0,lTargets=$)
