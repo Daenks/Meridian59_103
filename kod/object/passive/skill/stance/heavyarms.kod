@@ -1,0 +1,92 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HeavyArms is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   HeavyArms_name_rsc = "heavy arms"
+   HeavyArms_icon_rsc = armorico.bgf
+   HeavyArms_desc_rsc = "An intermediate stance that emphasizes defensive capability at the cost of offensive power."
+   
+   HeavyArms_begin = "You shift back slightly, holding your arms in a defensive position."
+   HeavyArms_end = "You return your arms to their normal position."
+
+classvars:
+
+   vrName = HeavyArms_name_rsc
+   vrIcon = HeavyArms_icon_rsc
+   vrDesc = HeavyArms_desc_rsc
+   
+   stance_begin_msg = HeavyArms_begin
+   stance_end_msg = HeavyArms_end
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_HEAVY_ARMS
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 4
+   viChance_to_Increase = 15
+   viMeditate_ratio = 100
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+
+   LastPriorityModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      local iHeavyArmsAbility, iHitRollPenalty;
+
+      iHeavyArmsAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+
+      % Down to 50% at max skill, agility does not help with offense penalty
+      iHitRollPenalty = 100 - ((iHeavyArmsAbility+1) / 2);
+      iHitRollPenalty = Bound(iHitRollPenalty,50,100);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);  
+      
+      return hit_roll * (100-iHitRollPenalty) / 100;
+   }
+
+   LastPriorityModifyDefensePower(who=$,what=$,defense_power=0)
+   {
+      local iHeavyArmsAbility, iStat, iDefensePowerBonus;
+
+      iHeavyArmsAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      % Up to 25% from skill, 10% from stat
+      iDefensePowerBonus = 100 + ((iHeavyArmsAbility+1) / 4) + (iStat/5);
+      iDefensePowerBonus = Bound(iDefensePowerBonus,100,135);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);  
+      
+      return defense_power * iDefensePowerBonus / 100;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,139 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Sneak is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Sneak_name_rsc = "sneak"
+   Sneak_icon_rsc = ieavesdr.bgf
+   Sneak_desc_rsc = "Allows proficient never-do-wells to avoid detection when entering areas. "
+                    "Only the most astute adversaries will detect a master of sneaking. To attempt to begin sneaking, "
+                    "walk slowly for four seconds."
+   
+   begin_sneaking_rsc = "You begin moving stealthily."
+   fail_sneak_rsc = "You fail to move with stealth."
+   
+   sneak_stop = "You stop sneaking."
+
+classvars:
+
+   vrName = Sneak_name_rsc
+   vrIcon = Sneak_icon_rsc
+   vrDesc = Sneak_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_SNEAK
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 3
+   viChance_to_Increase = 10
+   viMeditate_ratio = 30
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+   plSneaking = $
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+   
+   DoSkill(who=$)
+   {
+      local chance, iAgility, iAbility;
+      
+      if Send(self,@IsSneaking,#who=who)
+      {
+         return;
+      }
+      
+      iAgility = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      
+      chance = (iAgility/2) + iAbility;
+      chance = bound(chance,5,95);
+      
+      if chance > Random(1,100)
+      {
+         Send(self,@BeginSneaking,#who=who);
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=fail_sneak_rsc);
+         return;
+      }
+      
+      propagate;
+   }
+   
+   BeginSneaking(who=$)
+   {
+      if who <> $
+         AND IsClass(who,&Player)
+         AND (plSneaking = $ OR FindListElem(plSneaking,who) = 0)
+      {
+         plSneaking = Cons(who,plSneaking);
+         Send(who,@MsgSendUser,#message_rsc=begin_sneaking_rsc);
+         Send(who,@ShowAddEnchantment,#what=self,#type=ENCHANTMENT_PLAYER);
+      }
+
+      return;
+   }
+   
+   StopSneaking(who=$)
+   {
+      if plSneaking <> $
+         AND FindListElem(plSneaking,who) <> 0
+      {
+         plSneaking = DelListElem(plSneaking,who);
+         Send(who,@MsgSendUser,#message_rsc=sneak_stop);
+         Send(who,@ShowRemoveEnchantment,#what=self,#type=ENCHANTMENT_PLAYER);
+      }
+
+      return;
+   }
+   
+   IsSneaking(who=$)
+   {
+      local i;
+      
+      for i in plSneaking
+      {
+         if i = who
+         {
+            return 1;
+         }
+      }
+      
+      return 0;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x02;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

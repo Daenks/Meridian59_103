@@ -123,6 +123,15 @@ messages:
       {
          return FALSE;
       }
+      
+      if IsClass(oTarget,&Player)
+         AND Send(oTarget,@GetSkillAbility,#skill_num=SKID_TIGHT_GRIP) > 0
+      {
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_TIGHT_GRIP),@DoSkill,#who=oTarget,#what=who,#oWeapon=oWeapon)
+         {
+            return FALSE;
+         }
+      }
 
       % Get player's ability in this skill.
       iAbil = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);

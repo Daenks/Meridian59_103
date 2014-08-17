@@ -417,6 +417,11 @@ properties:
 
    pbAutoCombine = TRUE
    pbAutoloot = TRUE
+   
+   ptSneakTimer = $
+   piAccruedSneak = 0
+   ptHideTimer = $
+   piAccruedHide = 0
 
    ptLogonDelayTimer = $
 
@@ -2602,6 +2607,13 @@ messages:
             continue;
          }
 
+         if IsClass(oThing,&User)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=oThing)
+            AND oThing <> self
+         {
+            continue;
+         }
+
          objs = objs + 1;
       }
 
@@ -2614,6 +2626,13 @@ messages:
          % Don't do stealthed DMs.
          if IsClass(oThing,&DM)
             AND Send(oThing,@IsDMStealthed)
+            AND oThing <> self
+         {
+            continue;
+         }
+
+         if IsClass(oThing,&User)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=oThing)
             AND oThing <> self
          {
             continue;
@@ -3096,16 +3115,61 @@ messages:
             return;
          }
 
-         % Break trance
-         if (piFlags & PFLAG_TRANCE)
+         Send(self,@BreakTrance,#event=EVENT_RUN);
+
+         If Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
          {
-            Send(self,@BreakTrance,#event=EVENT_RUN);
+            piAccruedSneak = 0;
+            if ptSneakTimer <> $
+            {
+               DeleteTimer(ptSneakTimer);
+               ptSneakTimer = $;
+            }
+         }
+
+         If Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+         {
+            piAccruedHide = 0;
+            if ptHideTimer <> $
+            {
+               DeleteTimer(ptHideTimer);
+               ptHideTimer = $;
+            }
          }
 
          % Stop dance
          if Send(self,@CheckPlayerFlag,#flag=PFLAG2_DANCING,#flagset=2)
          {
             Send(self,@StopDancing);
+         }
+      }
+      else
+      {
+         if ptSneakTimer = $
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
+            AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+         {
+            ptSneakTimer = CreateTimer(self,@AttemptSneak,1000);
+         }
+
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+            AND piAccruedSneak <> 0
+         {
+            piAccruedSneak = 0;
+         }
+         
+         if ptHideTimer = $
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+            AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+         {
+            ptHideTimer = CreateTimer(self,@AttemptHide,1000);
+         }
+
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+            AND piAccruedHide <> 0
+         {
+            piAccruedHide = 0;
          }
       }
 
@@ -3158,6 +3222,11 @@ messages:
                iExertion = (iExertion * (100 - iHasteLevel)) / 100;
             }
          }
+         
+         if Send(self,@GetStance) <> $
+         {
+            iExertion = Send(Send(self,@GetStance),@ModifyExertion,#who=self,#exertion=iExertion);
+         }
 
          Send(self,@AddExertion,#amount=iExertion);
 
@@ -3191,6 +3260,38 @@ messages:
 
       return;
    }
+   
+   AttemptSneak()
+   {
+      ptSneakTimer = $;
+      
+      piAccruedSneak = piAccruedSneak + 1000;
+
+      if Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
+         AND piAccruedSneak > 4000
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+      {
+         piAccruedSneak = 0;
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@DoSkill,#who=self);
+      }
+      return;
+   }
+   
+   AttemptHide()
+   {
+      ptHideTimer = $;
+      
+      piAccruedHide = piAccruedHide + 1000;
+      
+      if Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+         AND piAccruedHide > 4000
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+      {
+         piAccruedHide = 0;
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@DoSkill,#who=self);
+      }
+      return;
+   }
 
    NotifyMonstersOfPresence()
    % When a player first enters the room, the game will prevent AIs from
@@ -3204,6 +3305,7 @@ messages:
    {
       % Sanity check, or if we want to call the function externally.
       if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
       {
          Send(self,@SetPlayerFlag,#flag=PFLAG_MOVED_SINCE_ENTRY,#value=TRUE);  
          Send(poOwner,@FirstMove,#what=self,#new_row=piRow,#new_col=piCol);
@@ -4117,7 +4219,7 @@ messages:
 
    UserSay(type=$,string=$)
    {
-      local i, oSpell, lEnchantData, bTranceBlocksSay;
+      local i, oSpell, lEnchantData, bTranceBlocksSay, oPrey;
 
       % A room can completely block a piece of communication if it chooses.
       % An excellent example is Out Of Grace, which blocks all tells to 
@@ -4161,6 +4263,99 @@ messages:
          {
             Send(self,@SetAutoloot,#value=FALSE);
             Send(self,@MsgSendUser,#message_rsc=autoloot_off_msg);
+            return;
+         }
+
+         If StringContain(String,"stop tracking")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_TRACK) > 0
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@StopTracking,#who=self);
+
+            return;
+         }
+         
+         If StringContain(String,"track ")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_TRACK) > 0
+         {
+            StringSubstitute(String,"track ","");
+            oPrey = Send(SYS,@FindUserByString,#string=String);
+            
+            if oPrey <> $
+               AND IsClass(oPrey,&User)
+            {
+               Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@StartTracking,#who=self,#oTarget=oPrey);
+            }
+
+            return;
+         }
+
+         If StringContain(String,"stance none")
+            AND Send(self,@GetStance) <> $
+         {
+            Send(self,@ClearStance);
+            return;
+         }
+
+         If StringContain(String,"stance normal")
+            AND Send(self,@GetStance) <> $
+         {
+            Send(self,@ClearStance);
+            return;
+         }
+
+         If StringContain(String,"stance charged clutch")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_CHARGED_CLUTCH) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_CHARGED_CLUTCH)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_CHARGED_CLUTCH),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance poised soul")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_POISED_SOUL) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_POISED_SOUL)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_POISED_SOUL),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance focused mind")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_FOCUSED_MIND) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_FOCUSED_MIND)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_FOCUSED_MIND),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance reckless heart")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_RECKLESS_HEART) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_RECKLESS_HEART)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_RECKLESS_HEART),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance heavy arms")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_HEAVY_ARMS) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_HEAVY_ARMS)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_HEAVY_ARMS),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance swift hands")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_SWIFT_HANDS) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_SWIFT_HANDS)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_SWIFT_HANDS),@BeginStance,#who=self);
+            return;
+         }
+
+         If StringContain(String,"stance light feet")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_LIGHT_FEET) > 0
+            AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,#num=SKID_LIGHT_FEET)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_LIGHT_FEET),@BeginStance,#who=self);
             return;
          }
 
@@ -4851,10 +5046,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_USE);
-      }
+      Send(self,@BreakTrance,#event=EVENT_USE);
       
       if NOT IsClass(what,&Item) 
       {
@@ -4875,10 +5067,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_USE);
-      }
+      Send(self,@BreakTrance,#event=EVENT_USE);
 
       if not IsClass(what,&Item)
       {
@@ -4906,10 +5095,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_ATTACK);
-      }
+      Send(self,@BreakTrance,#event=EVENT_ATTACK);
 
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT)
       {
@@ -5008,10 +5194,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }   
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
-      }
+      Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
 
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_MAGIC)
          AND NOT IsClass(oSpell,&Phase)
@@ -6088,10 +6271,7 @@ messages:
 
    UserApply(what = $,apply_on = $)
    {
-      if (piFlags & PFLAG_TRANCE)
-      {
-         Send(self,@BreakTrance,#event=EVENT_USE);
-      }
+      Send(self,@BreakTrance,#event=EVENT_USE);
 
       if NOT IsClass(what,&Item) 
       {
@@ -6333,7 +6513,7 @@ messages:
    NewOwner(what = $)
    "A user has a new owner when they enter a new room."
    {
-      local old;
+      local old, oAwareness, oObject, oPlayer, oHide, oSpy;
 
       old = $;
       Send(self,@CancelIfOffer);
@@ -6389,6 +6569,16 @@ messages:
          {
             Send(self,@CheckLeavingNewbieOrGuest,#leaving=old);
             Send(self,@CheckTokenInNewRoom,#what=old);
+
+            for oObject in Send(old,@GetHolderActive)
+            {
+               oPlayer = Send(old,@HolderExtractObject,#data=oObject);
+               If IsClass(oPlayer,&User)
+                  AND Send(oPlayer,@GetSkillAbility,#skill_num=SKID_AWARENESS) > 0
+               {
+                  Send(Send(SYS,@FindSkillByNum,#num=SKID_AWARENESS),@DoSkill,#who=oPlayer,#oTarget=self);
+               }
+            }
          }
          
          % If room is no combat and safe logoff, record it as the player's last safe location
@@ -6406,6 +6596,32 @@ messages:
          {
             Send(self,@ToCliPlayer);
             Send(self,@ToCliRoomContents);
+         }
+
+         for oObject in Send(poOwner,@GetHolderActive)
+         {
+            oPlayer = Send(poOwner,@HolderExtractObject,#data=oObject);
+            If IsClass(oPlayer,&User)
+               AND Send(oPlayer,@GetSkillAbility,#skill_num=SKID_AWARENESS) > 0
+            {
+               Send(Send(SYS,@FindSkillByNum,#num=SKID_AWARENESS),@DoSkill,#who=oPlayer,#oTarget=self);
+            }
+         }
+         
+         if Send(self,@GetSkillAbility,#skill_num=SKID_TRACK) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@IsTracking,#who=self)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@DoSkill,#who=self,#oTarget=Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@GetTrackedTarget,#who=self));
+         }
+         
+         oHide = Send(SYS,@FindSkillByNum,#num=SKID_HIDE);
+         if Send(oHide,@IsHiding,#who=self)
+         {
+            oSpy = Send(SYS,@FindSkillByNum,#num=SKID_SPY);
+            if Send(self,@GetSkillAbility,#skill_num=SKID_SPY) > 0
+            {
+               Send(oSpy,@DoSkill,#who=self);
+            }
          }
       }
       
@@ -6442,6 +6658,13 @@ messages:
          return;
       }
 
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
+         AND what <> self
+      {
+         return;
+      }
+
       if pbLogged_on
       {
          AddPacket(1,BP_CREATE);
@@ -6466,6 +6689,13 @@ messages:
          return;
       }
 
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
+         AND what <> self
+      {
+         return;
+      }
+
       if pbLogged_on
       {
          AddPacket(1,BP_REMOVE,4,what);
@@ -6482,6 +6712,13 @@ messages:
 
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
+         AND what <> self
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
          AND what <> self
       {
          return;
@@ -6518,6 +6755,13 @@ messages:
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
          AND what <> self         
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#Num=SKID_SPY),@IsSpying,#who=what)
+         AND what <> self
       {
          return;
       }
@@ -6902,6 +7146,13 @@ messages:
 
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
+         AND what <> self
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
          AND what <> self
       {
          return;
@@ -8256,6 +8507,11 @@ messages:
          iFlags = (iFlags & ~MOVEON_NO);
       }
 
+      If Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+      {
+         iFlags = (iFlags & ~BATTLER_YES);
+      }
+
       return iFlags;
    }
 
@@ -8864,6 +9120,20 @@ messages:
       
       return sReturn;
    
+   }
+
+   SpellCast(who = $, oSpell = $, lItems = $)
+   "Notification sent when a spell is cast in the room."
+   {
+      local oPerception;
+
+      if Send(self,@GetSkillAbility,#skill_num=SKID_PERCEPTION) > 0
+      {
+         oPerception = Send(SYS,@FindSkillByNum,#num=SKID_PERCEPTION);
+         Send(oPerception,@DoSkill,#who=self,#caster=who,#oSpell=oSpell,#lItems=lItems);
+      }
+
+      propagate;
    }
 
 end

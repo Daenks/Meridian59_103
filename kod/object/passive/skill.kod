@@ -34,6 +34,11 @@ resources:
    skill_school_fencing = "Weaponcraft"
    skill_school_brawling = "Brawling"
    skill_school_thievery = "Thievery"
+   skill_school_banditry = "Banditry"
+   skill_school_faren = "Faren"
+   skill_school_shalille = "Shal'ille"
+   skill_school_qor = "Qor"
+   skill_school_jala = "Jala"
 
    Skill_meditate_ratio_one_rsc = "\n\nIt will cost you "
    Skill_meditate_ratio_two_rsc = " training points to improve in this skill."
@@ -75,6 +80,8 @@ classvars:
    viAnimation_end = 1
    viIcon_animation_start = 2
    viIcon_animation_end = 2
+   
+   vbUtilitySkill = FALSE
 
 properties:
 
@@ -130,6 +137,31 @@ messages:
       if viSchool = SKS_THIEVERY
       {
          rSchool = skill_school_thievery;
+      }
+      
+      if viSchool = SKS_BANDITRY
+      {
+         rSchool = skill_school_banditry;
+      }
+      
+      if viSchool = SS_FAREN
+      {
+         rSchool = skill_school_faren;
+      }
+      
+      if viSchool = SS_SHALILLE
+      {
+         rSchool = skill_school_shalille;
+      }
+      
+      if viSchool = SS_QOR
+      {
+         rSchool = skill_school_qor;
+      }
+      
+      if viSchool = SS_JALA
+      {
+         rSchool = skill_school_jala;
       }
       
       if piMeditate_ratio = 0
@@ -535,6 +567,10 @@ messages:
       return TRUE;
    }
 
+   IsUtilitySkill()
+   {
+      return vbUtilitySkill;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

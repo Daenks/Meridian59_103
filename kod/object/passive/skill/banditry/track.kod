@@ -1,0 +1,245 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Track is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Track_name_rsc = "track"
+   Track_icon_rsc = ihunt.bgf
+   Track_desc_rsc = "Allows a veteran bandit to track the location of nearby enemies. To begin tracking a target, "
+                    "say track, followed by their name."
+   
+   begin_tracking_rsc = "You begin tracking %s."
+   tracking_stop = "You stop tracking your target."
+   already_tracking = "You're already tracking that target."
+   
+   tracking_target_is_hiding = "%s is near, but seems to be hiding..."
+   tracking_direction = "You sense %s may be in the direction of %s."
+   tracking_found = "~BYou've found your quarry!"
+   cannot_find_yourself = "Finding yourself is purely an inner journey - no amount of skill can help with that."
+
+classvars:
+
+   vrName = Track_name_rsc
+   vrIcon = Track_icon_rsc
+   vrDesc = Track_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_TRACK
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 5
+   viChance_to_Increase = 15
+   viMeditate_ratio = 100
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+   plTracking = $
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+   
+   StartTracking(who=$, oTarget=$)
+   {
+      local i;
+      
+      if who = oTarget
+      {
+         Send(who,@MsgSendUser,#message_rsc=cannot_find_yourself);
+         return;
+      }
+
+      for i in plTracking
+      {
+         if Nth(i,1) = who
+            AND Nth(i,2) = oTarget
+         {
+            Send(who,@MsgSendUser,#message_rsc=already_tracking);
+            return;
+         }
+      }
+
+      plTracking = Cons([who,oTarget],plTracking);
+      Send(who,@MsgSendUser,#message_rsc=begin_tracking_rsc,#parm1=Send(oTarget,@GetTrueName));
+
+      return;
+   }
+   
+   StopTracking(who=$)
+   {
+      local i;
+      
+      for i in plTracking
+      {
+         if Nth(i,1) = who
+         {
+            Send(who,@MsgSendUser,#message_rsc=tracking_stop);
+            plTracking = DelListElem(plTracking, i);
+            return;
+         }
+      }
+      return;
+   }
+   
+   IsTracking(who=$)
+   {
+      local i;
+
+      for i in plTracking
+      {
+         if Nth(i,1) = who
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+   
+   GetTrackedTarget(who=$)
+   {
+      local i;
+
+      for i in plTracking
+      {
+         if Nth(i,1) = who
+         {
+            return Nth(i,2);
+         }
+      }
+
+      return $;
+   }
+   
+   DoSkill(who=$, oTarget=$)
+   {
+      local chance, iStat, iAbility, iRID, oRoom, oRoomLayerTwo, iRIDLayerTwo, oRoomLayerThree, iRIDLayerThree;
+      
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      
+      chance = (iStat/2) + iAbility;
+      chance = bound(chance,5,95);
+      
+      if chance > Random(1,100)
+      {
+         If Send(who,@GetOwner) <> $
+            AND Send(oTarget,@GetOwner) <> $
+         {
+            if oTarget <> $
+               AND Send(oTarget,@GetOwner) <> $
+               AND Send(who,@GetOwner) = Send(oTarget,@GetOwner)
+            {
+               Send(who,@MsgSendUser,#message_rsc=tracking_found);
+               propagate;
+            }
+
+            for iRID in Send(Send(who,@GetOwner),@GetYellZone)
+            {
+               oRoom = Send(SYS,@FindRoomByNum,#num=iRID);
+               if oRoom <> $
+                  AND oRoom = Send(oTarget,@GetOwner)
+               {
+                  if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=oTarget)
+                  {
+                      Send(who,@MsgSendUser,#message_rsc=tracking_target_is_hiding,#parm1=Send(oTarget,@GetTrueName));
+                      propagate;
+                  }
+                  
+                  Send(who,@MsgSendUser,#message_rsc=tracking_direction,#parm1=Send(oTarget,@GetTrueName),#parm2=Send(oRoom,@GetName));
+                  propagate;
+               }
+            }
+            
+            for iRID in Send(Send(who,@GetOwner),@GetYellZone)
+            {
+               oRoom = Send(SYS,@FindRoomByNum,#num=iRID);
+               for iRIDLayerTwo in Send(oRoom,@GetYellZone)
+               {
+                  oRoomLayerTwo = Send(SYS,@FindRoomByNum,#num=iRIDLayerTwo);
+                  if oRoomLayerTwo <> $
+                     AND oRoomLayerTwo = Send(oTarget,@GetOwner)
+                  {
+                     if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=oTarget)
+                     {
+                         Send(who,@MsgSendUser,#message_rsc=tracking_target_is_hiding,#parm1=Send(oTarget,@GetTrueName));
+                         propagate;
+                     }
+
+                     Send(who,@MsgSendUser,#message_rsc=tracking_direction,#parm1=Send(oTarget,@GetTrueName),#parm2=Send(oRoom,@GetName));
+                     propagate;
+                  }
+               }
+            }
+            
+            for iRID in Send(Send(who,@GetOwner),@GetYellZone)
+            {
+               oRoom = Send(SYS,@FindRoomByNum,#num=iRID);
+               for iRIDLayerTwo in Send(oRoom,@GetYellZone)
+               {
+                  oRoomLayerTwo = Send(SYS,@FindRoomByNum,#num=iRIDLayerTwo);
+                  for iRIDLayerThree in Send(oRoomLayerTwo,@GetYellZone)
+                  {
+                     oRoomLayerThree = Send(SYS,@FindRoomByNum,#num=iRIDLayerThree);
+                     if oRoomLayerThree <> $
+                        AND oRoomLayerThree = Send(oTarget,@GetOwner)
+                     {
+                        if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=oTarget)
+                        {
+                           Send(who,@MsgSendUser,#message_rsc=tracking_target_is_hiding,#parm1=Send(oTarget,@GetTrueName));
+                           propagate;
+                        }
+                        
+                        Send(who,@MsgSendUser,#message_rsc=tracking_direction,#parm1=Send(oTarget,@GetTrueName),#parm2=Send(oRoom,@GetName));
+                        propagate;
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         If Send(who,@GetOwner) <> $
+         {
+            for iRID in Send(Send(who,@GetOwner),@GetYellZone)
+            {
+               if Random(0,100) > 25
+                  AND Send(SYS,@FindRoomByNum,#num=iRID) <> Send(who,@GetOwner)
+               {
+                  Send(who,@MsgSendUser,#message_rsc=tracking_direction,#parm1=Send(oTarget,@GetTrueName),#parm2=Send(Send(SYS,@FindRoomByNum,#num=iRID),@GetName));
+                  propagate;
+               }
+            }
+         }
+         return;
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

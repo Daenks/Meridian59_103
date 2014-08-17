@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SwiftHands is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   SwiftHands_name_rsc = "swift hands"
+   SwiftHands_icon_rsc = brawlico.bgf
+   SwiftHands_desc_rsc = "An intermediate stance that emphasizes offensive capability at the cost of defensive reaction speed."
+
+   SwiftHands_skill_intro = "Banditry Lv. 2: A stance that improves one's offense at the cost of defense."
+   
+   SwiftHands_begin = "You shift forward slightly, readying your limbs for offense."
+   SwiftHands_end = "You return your limbs to their normal position."
+
+classvars:
+
+   vrName = SwiftHands_name_rsc
+   vrIcon = SwiftHands_icon_rsc
+   vrDesc = SwiftHands_desc_rsc
+   
+   stance_begin_msg = SwiftHands_begin
+   stance_end_msg = SwiftHands_end   
+
+   vrSkill_intro = SwiftHands_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_SWIFT_HANDS
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 2
+   viChance_to_Increase = 15
+   viMeditate_ratio = 100
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAim);
+   }
+
+   LastPriorityModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      local iSwiftHandsAbility, iStat, iHitRollBonus;
+
+      iSwiftHandsAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      % Up to 25% from skill, 10% from stat
+      iHitRollBonus = 100 + ((iSwiftHandsAbility+1) / 4) + (iStat/5);
+      iHitRollBonus = Bound(iHitRollBonus,100,135);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);  
+      
+      return hit_roll * iHitRollBonus / 100;
+   }
+
+   LastPriorityModifyDefensePower(who=$,what=$,defense_power=0)
+   {
+      local iSwiftHandsAbility, iDefensePenalty;
+
+      iSwiftHandsAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+
+      % Down to 50% at max skill, aim does not help with defense penalty
+      iDefensePenalty = 100 - ((iSwiftHandsAbility+1) / 2);
+      iDefensePenalty = Bound(iDefensePenalty,50,100);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);  
+      
+      return defense_power * (100-iDefensePenalty) / 100;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
