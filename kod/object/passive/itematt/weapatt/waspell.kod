@@ -14,19 +14,19 @@ WeapAttSpellCaster is WeaponAttribute
 %
 %  This weapon enacts a particular spell effect on its target.
 %
-%  Form is: 
+%  Form is:
 %
-%       [ WA_SPELLCASTER, Spell, spellpower ]
-%	
+%      [ WA_SPELLCASTER, Spell, spellpower ]
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 constants:
 
-   include blakston.khd   
+   include blakston.khd
 
 resources:
 
-   WeapAttSpellCaster_desc = "  Mystical energy flits about this weapon."      
+   WeapAttSpellCaster_desc = " Mystical energy flits about this weapon."
    WeapAttSpellCaster_dm = "spellcaster"
 
 classvars:
@@ -40,7 +40,7 @@ classvars:
    vrDM_trigger = WeapAttSpellCaster_dm
 
 properties:
-  
+
    piValue_modifier = 150   %% modify the object's price by 100%
    piValue_power_modifier = 10
 
@@ -65,21 +65,22 @@ Constructor()
 %%  Effect Functions
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      
-   ModifyDamage(damage = 0, target = $, wielder = $, lData= $)
+
+   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
    "Wielder has a chance of affecting the target with the given spell."
    {
       local oSpell;
-      
-      if (random(1,100) <= ((100-nth(lData,3))/10)) and send(wielder,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+
+      if (Random(1,100) <= ((100-Nth(lData,3))/10))
+         AND Send(wielder,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
-         oSpell = nth(lData,2);
-         if send(oSpell,@CanPayCosts,#who=self,#ltargets=[target],#ispellpower=nth(lData,3))
+         oSpell = Nth(lData,2);
+         if Send(oSpell,@CanPayCosts,#who=self,#ltargets=[target],#ispellpower=Nth(lData,3))
          {
-            send(oSpell,@CastSpell,#who=wielder,#ltargets=[target],#ispellpower=nth(lData,3),#bItemCast=TRUE);
+            Send(oSpell,@CastSpell,#who=wielder,#ltargets=[target],#ispellpower=Nth(lData,3),#bItemCast=TRUE);
          }
       }
-      
+
       return Damage;
    }
 
@@ -96,88 +97,91 @@ Constructor()
 
       if who = $ OR string= $ OR oWeapon = $
       {
-         DEBUG("BAD data sent to DMCreateItemAtt!");
+         Debug("BAD data sent to DMCreateItemAtt!");
 
          return FALSE;
       }
 
-      if not stringContain(string,WeapAttSpellCaster_dm)
+      if NOT StringContain(string,WeapAttSpellCaster_dm)
       {
          return FALSE;
       }
-      
+
       iSpell = 0;
       for i in plSpells
       {
-         if stringContain(string,send(send(SYS,@FindSpellByNum,#num=first(i)),@GetName))
+         if StringContain(string,Send(Send(SYS,@FindSpellByNum,#num=first(i)),@GetName))
          {
             iSpell = first(i);
          }
       }
-      
+
       if iSpell = 0
       {
          return FALSE;
       }
-      
-      if send(self,@ReqAddToItem,#state1=iSpell,#oItem=oWeapon)
+
+      if Send(self,@ReqAddToItem,#state1=iSpell,#oItem=oWeapon)
       {
-         debug("Adding to item");
-         
-         send(self,@AddToItem,#oItem=oWeapon, #spellNum = iSpell,
+         Debug("Adding to item");
+
+         Send(self,@AddToItem,#oItem=oWeapon, #spellNum = iSpell,
               #random_gen=TRUE);
-              
+
          return TRUE;
       }
-      
-      debug("Failed to add");
-      
+
+      Debug("Failed to add");
+
       return FALSE;
    }
 
-   AddToItem(oItem=$,spellNum=$,oPlayer=$,identified=false)   
+   AddToItem(oItem=$,spellNum=$,oPlayer=$,identified=false)
    {
       local lData, iValue, i;
-          
+
       lData = $;
 
       %spellpower
-      lData = cons(random(30,60),lData);
+      lData = Cons(Random(30,60),lData);
 
       %spell
       if spellNum = $
       {
-         iValue = random(1,100);
+         iValue = Random(1,100);
          spellNum = first(first(plSpells));
-         
+
          for i in plSpells
          {
-            if iValue <= nth(i,2)
+            if iValue <= Nth(i,2)
             {
-               spellNum = nth(i,1);
+               spellNum = Nth(i,1);
             }
             else
             {
-               iValue = iValue - nth(i,2);
+               iValue = iValue - Nth(i,2);
             }
          }
       }
-      
-      lData = cons(send(SYS,@FindSpellByNum, #num=spellNum),lData);
-      
-      iValue = send(self,@SetCompound,#oItem=oItem,#iPower=0);
-      lData = cons(iValue,lData);
-          
+
+      lData = Cons(Send(SYS,@FindSpellByNum,#num=spellNum),lData);
+
+      iValue = Send(self,@SetCompound,#oItem=oItem,#iPower=0);
+      lData = Cons(iValue,lData);
+
       if identified
       {
-         send(self,@AddEffects,#oItem=oItem,#lData=lData,#oPlayer=oPlayer);
+         Send(self,@AddEffects,#oItem=oItem,#lData=lData,#oPlayer=oPlayer);
       }
 
-      
-      send(oItem,@AddAttributeSpecifics,#lItemAtt=lData);
-      return;            
+      Send(oItem,@AddAttributeSpecifics,#lItemAtt=lData);
+      return;
    }
-   
+
+   IsMagicalEffect()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

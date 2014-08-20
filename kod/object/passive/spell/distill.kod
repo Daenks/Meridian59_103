@@ -53,6 +53,7 @@ classvars:
    viSpellExertion = 25
    viCast_time = 30000   
    viChance_To_Increase = 20
+   viMeditate_ratio = 50
 
 properties:
 
@@ -134,7 +135,8 @@ messages:
          bFound = FALSE;
 
          lLists = [ Send(caster,@GetHolderActive),
-                    Send(caster,@GetHolderPassive)
+                    Send(caster,@GetHolderPassive),
+                    Send(caster,@GetReagentBagContents)
                   ];
 
          % Count # of reagent that user has; complain if not enough
@@ -210,15 +212,21 @@ messages:
          iNumNeeded = Nth(lIngredient, 2);
          iLists = 1;
 
-         while iLists <= 2 
+         while iLists <= 3
          {
             if iLists = 1
             {
                lItems = Send(caster, @GetHolderActive);
             }
-            else
+
+            if iLists = 2
             {
-               lItems = Send(caster, @GetHolderPassive);
+               lItems = Send(caster,@GetHolderPassive);
+            }
+
+            if iLists = 3
+            {
+               lItems = Send(caster,@GetReagentBagContents);
             }
 
             % Since spell is cast, we can be cavalier about deleting things
@@ -326,6 +334,11 @@ messages:
 
       return lIngredients;
    }
+   
+   TranceBlocksSay()
+   {
+      return TRUE;
+   }
 
    SomethingSaidDuringTrance(who=$,string=$,lTargets = $)
    "Check if string is a potion spell.  If it is make it the target."
@@ -386,6 +399,11 @@ messages:
       
       return;
    }  
+
+   SpellBannedInArena()
+   {
+      return TRUE;
+   }
 
 
 end

@@ -12,18 +12,18 @@ ItemAttPKPointer is ItemAttribute
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  This item prevents anyone from picking up loot after a player kill,
-%     unless they are also killable.  
-% 
-%  Form is: 
+%   This item prevents anyone from picking up loot after a player kill,
+%   unless they are also killable.  
 %
-%   	[IA_PKPOINTER, tTimer]
-%	
-%       tTimer :: When this expires, the attribute goes away.
+%   Form is:
 %
-%  A final word: this pointer will stick around for only 10 minutes
-%     after a kill, then it will delete itself, removing it from the
-%     item's plItem_attribute's list.
+%      [IA_PKPOINTER, tTimer]
+%
+%      tTimer :: When this expires, the attribute goes away.
+%
+%   A final word: this pointer will stick around for only 10 minutes
+%   after a kill, then it will delete itself, removing it from the
+%   item's plItem_attribute's list.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -33,55 +33,57 @@ constants:
 
 resources:
  
-   PKpointer_no_loot = "You reach for %s%s, but you are mystically barred from grasping it."   
-   PKPointer_no_offer_accept = "%s tries to offer you %s%s, but you are mystically barred from grasping it."   
+   PKpointer_no_loot = \
+      "You reach for %s%s, but you are mystically barred from grasping it."
+   PKPointer_no_offer_accept = \
+      "%s tries to offer you %s%s, but you are mystically barred from grasping it."
    PKpointer_no_offer = "%s is unable to take %s%s off your hands."
-   
+
 classvars:
 
    viItem_Att_Num = IA_PKPOINTER
    vrDesc = resource_blank
 
 properties:
-  
+
 messages:
-  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %%  Effect Functions
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   
+
    % A player can only pick up an item from a player if he is also killable.
 
-   CanGetAffectedItem(lData = $, Who = $, oItem = $, type = 0)
+   CanGetAffectedItem(lData=$,Who=$,oItem=$,type=0)
    {
       local oCorpse;
-	   
-      %% is this the player that died?  He can always get his own stuff.
-      if who = nth(lData,3)
+
+      %% Is this the player that died?  He can always get his own stuff.
+      if who = Nth(lData,3)
          OR NOT IsClass(who,&Player)
       {
          return TRUE;
       }
 
-      if NOT send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+      if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
          if type = 0
          {
-            send(who,@MsgSendUser,#message_rsc=PKpointer_no_loot,
-                 #parm1=send(oItem,@GetDef),#parm2=send(oItem,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=PKpointer_no_loot,
+                 #parm1=Send(oItem,@GetDef),#parm2=Send(oItem,@GetName));
 
             return FALSE;
          }
          else
          {
-            send(who,@MsgSendUser,#message_rsc=PKpointer_no_offer_accept,
-                 #parm1=send(send(oItem,@GetOwner),@GetName),
-                 #parm2=send(oItem,@GetDef),#parm3=send(oItem,@GetName));
-            send(send(oItem,@GetOwner),@MsgSendUser,#message_rsc=PKPointer_no_offer,
-                 #parm1=send(who,@GetName),
-                 #parm2=send(oItem,@GetDef),#parm3=send(oItem,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=PKpointer_no_offer_accept,
+                  #parm1=Send(Send(oItem,@GetOwner),@GetName),
+                  #parm2=Send(oItem,@GetDef),#parm3=Send(oItem,@GetName));
+            Send(Send(oItem,@GetOwner),@MsgSendUser,#message_rsc=PKPointer_no_offer,
+                  #parm1=Send(who,@GetName),
+                  #parm2=Send(oItem,@GetDef),#parm3=Send(oItem,@GetName));
 
             return FALSE;
          }
@@ -101,7 +103,7 @@ messages:
    TimerExpired(oItem=$,lData=$)
    {
       SetNth(lData,2,$);   %% timer is gone, now remove reference
-      send(self,@RemoveFromItem,#oItem=oItem, #lData = lData);
+      Send(self,@RemoveFromItem,#oItem=oItem, #lData = lData);
    
       return;
    }
@@ -128,7 +130,7 @@ messages:
    InitiallyIdentified()
    {
       return TRUE;
-   }   
+   }
 
    CanBeSpoofed()
    {
@@ -145,14 +147,13 @@ messages:
    {
       if state1=$
       {
-         debug("ILLEGAL!  PKpointer called without someone to point to!");
+         Debug("ILLEGAL!  PKpointer called without someone to point to!");
 
          return FALSE;
       }
 
-      return state1;		
+      return state1;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

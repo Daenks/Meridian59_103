@@ -159,7 +159,7 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_AVERAGE
-   viAttack_types = ATCK_WEAP_SLASH
+   viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
    viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
 
@@ -173,6 +173,9 @@ classvars:
    viShieldColor2 = XLAT_TO_RED
    viShieldShape = SHIELDSHAPE_SLASH
    viInsignia = $
+   
+   viCashMin = 200
+   viCashMax = 600
 
 properties:
 
@@ -1172,6 +1175,11 @@ messages:
    CanMorphTo() 
    {
       return FALSE;
+   }
+   
+   GetEquippedItems()
+   {
+      return plUsing;
    }
 
 end

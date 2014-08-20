@@ -49,7 +49,7 @@ classvars:
    viDifficulty = 5
    viKarma = 15
    viCashmin = 150
-   viCashmax = 450
+   viCashmax = 300
    vrSound_hit = centipede_sound_hit
    vrSound_miss = centipede_sound_miss
    vrSound_aware = centipede_sound_aware
@@ -65,10 +65,10 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 40, -ATCK_SPELL_FIRE ],
-                        [ 20, ATCK_WEAP_SLASH],
-			[ -20, ATCK_WEAP_MAGIC],
-                        [-20, -ATCK_SPELL_SHOCK] ];
+      plResistances = [ [-ATCK_SPELL_FIRE, 40 ],
+                        [ATCK_WEAP_SLASH, 20],
+                        [ATCK_WEAP_MAGIC, -20],
+                        [-ATCK_SPELL_SHOCK, -20] ];
       propagate;
    }
 

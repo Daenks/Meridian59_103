@@ -56,6 +56,7 @@ static char colorinfo[][15] = {
 	{ "255,255,255"},   /* COLOR_BAR4 */
 	{ "192,192,192"},   /* COLOR_INVNUMFGD */
 	{ "0,0,0"},         /* COLOR_INVNUMBGD */
+	{ "255,80,0"}       /* COLOR_ITEM_MAGIC_FG */
 };
 
 static char color_section[] = "Colors";  /* Section for colors in INI file */
@@ -69,6 +70,7 @@ static char color_section[] = "Colors";  /* Section for colors in INI file */
 #define NAME_COLOR_SUPER_FG    PALETTEINDEX(250) // green
 #define NAME_COLOR_DM_FG       PALETTEINDEX(254) // cyan
 #define NAME_COLOR_BLACK_FG    PALETTERGB(0, 0, 0)
+#define NAME_COLOR_DAENKS_FG   PALETTERGB(179,0,179)
 
 extern HPALETTE hPal;
 
@@ -403,20 +405,27 @@ HBRUSH DialogCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
 * GetItemListColor:  Get given color id # for given owner-drawn list box.
 *    (Inventory has different colors than popup dialog lists)
 *    Doesn't return color itself so that caller can use id to call GetBrush.
+*    Now colors magic items; any future item colors should be added here.
 */
-WORD GetItemListColor(HWND hwnd, int type)
+WORD GetItemListColor(HWND hwnd, int type, int flags)
 {
-	switch(type)
-	{
-	case UNSEL_FGD:
-		return COLOR_LISTFGD;
-	case UNSEL_BGD:
-		return COLOR_LISTBGD;
-	case SEL_FGD:
-		return COLOR_LISTSELFGD;
-	case SEL_BGD:
-		return COLOR_LISTSELBGD;
+	if ((flags != NULL) && (GetItemFlags(flags) == (OF_ITEM_MAGIC | OF_GETTABLE)))
+		return COLOR_ITEM_MAGIC_FG;
+	else
+   {
+		switch(type)
+		{
+		case UNSEL_FGD:
+			return COLOR_LISTFGD;
+		case UNSEL_BGD:
+			return COLOR_LISTBGD;
+		case SEL_FGD:
+			return COLOR_LISTSELFGD;
+		case SEL_BGD:
+			return COLOR_LISTSELBGD;
+		}
 	}
+
 	return 0;
 }
 
@@ -439,7 +448,7 @@ COLORREF GetPlayerNameColor(int flags,char*name)
 		case PF_OUTLAW:
 			return NAME_COLOR_OUTLAW_FG;
 		case PF_CREATOR:
-			return NAME_COLOR_CREATOR_FG;
+			return NAME_COLOR_DAENKS_FG;
 		case PF_SUPER:
 			return NAME_COLOR_SUPER_FG;
 		case PF_EVENTCHAR:
@@ -462,7 +471,7 @@ COLORREF GetPlayerWhoNameColor(int flags,char*name)
         case PF_DM:
             return NAME_COLOR_DM_FG;
         case PF_CREATOR:
-            return NAME_COLOR_CREATOR_FG;
+            return NAME_COLOR_DAENKS_FG;
         case PF_SUPER:
             return NAME_COLOR_SUPER_FG;
         case PF_EVENTCHAR:

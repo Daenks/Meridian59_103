@@ -49,8 +49,8 @@ classvars:
    viDifficulty = 8
    viKarma = -40
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_WIZARD_KILLER
-   viCashmin = 325
-   viCashmax = 975
+   viCashmin = 225
+   viCashmax = 600
    vrSound_hit = redant_sound_hit
    vrSound_miss = redant_sound_miss
    vrSound_aware = redant_sound_aware
@@ -64,10 +64,10 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 65, -ATCK_SPELL_FIRE ],
-                        [ 65, ATCK_WEAP_BLUDGEON ],
-                        [ -10, ATCK_WEAP_NERUDITE ],
-                        [ -10, ATCK_WEAP_MAGIC] ];
+      plResistances = [ [-ATCK_SPELL_FIRE, 65 ],
+                        [ATCK_WEAP_BLUDGEON, 65 ],
+                        [ATCK_WEAP_NERUDITE, -10 ],
+                        [ATCK_WEAP_MAGIC, -10] ];
 
       propagate;
    }

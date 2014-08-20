@@ -47,6 +47,7 @@ classvars:
    viSpell_level = 1
    
    viChance_To_Increase = 30
+   viMeditate_ratio = 10
 
 properties:
 
@@ -125,6 +126,23 @@ messages:
    {
       Send(where,@SomeoneSaid,#type=SAY_MESSAGE,#string=light_off,#what=self);
       Send(where,@AddBaseLight,#amount=(-1)*state);
+      return;
+   }
+
+   EffectDesc(who=$)
+   {
+      local i, iState;
+
+      AppendTempString("\n\n");
+      AppendTempString("The ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment currently adds ");
+      
+      iState = Send(Send(who,@GetOwner),@GetEnchantedState,#what=self);
+      
+      AppendTempString(iState);
+      AppendTempString(" light level to the area.");
+      
       return;
    }
 

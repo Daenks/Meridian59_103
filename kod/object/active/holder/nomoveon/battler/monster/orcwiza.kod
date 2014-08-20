@@ -71,8 +71,8 @@ classvars:
    viDifficulty = 7
    viKarma = -60
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 400
-   viCashmax = 1200
+   viCashmin = -800
+   viCashmax = 800
    viWimpy = 3
 
    vrSound_hit = orc_sound_hit
@@ -112,10 +112,10 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 40, -ATCK_SPELL_UNHOLY ],
-                        [ 40, ATCK_WEAP_PIERCE ],
-                        [ 40, ATCK_WEAP_SLASH ],
-                        [-25, -ATCK_SPELL_HOLY ] ];
+      plResistances = [ [-ATCK_SPELL_UNHOLY, 40 ],
+                        [ATCK_WEAP_PIERCE, 40 ],
+                        [ATCK_WEAP_SLASH, 40 ],
+                        [-ATCK_SPELL_HOLY, -25 ] ];
       propagate;
    }
 

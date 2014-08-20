@@ -75,14 +75,14 @@ classvars:
    viTreasure_type = TID_MOLLUSK
    viSpeed = SPEED_FAST
    viDefault_behavior = AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_NEWBIESAFE
-   viAttack_types = ATCK_WEAP_BLUDGEON
+   viAttack_type = ATCK_WEAP_BLUDGEON
 
    viAttributes = 0
    viLevel = 140
    viDifficulty = 7
    viKarma = 90
-   viCashmin = 700
-   viCashmax = 2100
+   viCashmin = 400
+   viCashmax = 1500
    vrSound_miss = MolluskMonster_sound_miss
    vrSound_aware = MolluskMonster_sound_aware
    vrSound_death = MolluskMonster_sound_death
@@ -96,9 +96,9 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ -10, ATCK_WEAP_MAGIC ],
-                        [  30, ATCK_WEAP_BLUDGEON ],
-                        [  50, -ATCK_SPELL_QUAKE ]
+      plResistances = [ [ATCK_WEAP_MAGIC, -10 ],
+                        [ATCK_WEAP_BLUDGEON, 30 ],
+                        [-ATCK_SPELL_QUAKE, 50 ]
                       ];
 
       piAnimation = ANIM_NONE;

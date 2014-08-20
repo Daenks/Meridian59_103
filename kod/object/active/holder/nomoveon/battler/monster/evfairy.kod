@@ -57,7 +57,7 @@ classvars:
    viDefault_behavior = AI_MOVE_REGROUP | AI_FIGHT_MONSTERS | AI_FIGHT_KARMA_AGGRESSIVE
    viWimpy = 10
    viCashmin = 300
-   viCashmax = 900
+   viCashmax = 600
    vrSound_hit = darkfairy_sound_hit
    vrSound_miss = darkfairy_sound_miss
    vrSound_aware = darkfairy_sound_aware
@@ -73,10 +73,10 @@ messages:
 
    Constructor()
    {	  
-      plResistances = [ [ -30, -ATCK_SPELL_HOLY ],
-                        [ 30, -ATCK_SPELL_ALL ],
-                        [ 30, ATCK_WEAP_MAGIC ],
-                        [ 30, -ATCK_SPELL_UNHOLY ]
+      plResistances = [ [-ATCK_SPELL_HOLY, -30 ],
+                        [-ATCK_SPELL_ALL, 30 ],
+                        [ATCK_WEAP_MAGIC, 30 ],
+                        [-ATCK_SPELL_UNHOLY, 30 ]
                       ];
 
       propagate;

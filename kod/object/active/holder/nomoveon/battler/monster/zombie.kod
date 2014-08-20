@@ -48,8 +48,8 @@ classvars:
 
    viDifficulty = 4
    viKarma = -45
-   viCashmin = 275
-   viCashmax = 975
+   viCashmin = 175
+   viCashmax = 375
    vrSound_hit = zombie_sound_hit
    vrSound_miss = zombie_sound_miss
    vrSound_aware = zombie_sound_aware
@@ -73,8 +73,8 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 50, -ATCK_SPELL_UNHOLY ],
-                        [-25, -ATCK_SPELL_HOLY ] ];
+      plResistances = [ [-ATCK_SPELL_UNHOLY, 50 ],
+                        [-ATCK_SPELL_HOLY, -25 ] ];
       propagate;
    }
 

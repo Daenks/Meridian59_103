@@ -50,8 +50,8 @@ classvars:
    viDifficulty = 4
    viKarma = -70
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 400
-   viCashmax = 1000
+   viCashmin = 100
+   viCashmax = 320
    vrSound_miss = BatteredSkeleton_sound_miss
    vrSound_aware = BatteredSkeleton_sound_aware
    vrSound_death = BatteredSkeleton_sound_death
@@ -66,13 +66,13 @@ messages:
 
    SetResistances()
    {
-      plResistances = [ [ 70, ATCK_WEAP_PIERCE ],
-                        [ 70, -ATCK_SPELL_UNHOLY ],
-                        [ 70, -ATCK_SPELL_SHOCK ],
-                        [ 70, -ATCK_SPELL_COLD ],
-                        [ -10, -ATCK_SPELL_FIRE ],
-                        [ -20, -ATCK_SPELL_HOLY ],
-                        [ -20, ATCK_WEAP_BLUDGEON ]
+      plResistances = [ [ATCK_WEAP_PIERCE, 70 ],
+                        [-ATCK_SPELL_UNHOLY, 70 ],
+                        [-ATCK_SPELL_SHOCK, 70 ],
+                        [-ATCK_SPELL_COLD, 70 ],
+                        [-ATCK_SPELL_FIRE, -10 ],
+                        [-ATCK_SPELL_HOLY, -20 ],
+                        [ATCK_WEAP_BLUDGEON, -20 ]
                       ];
 
       return;

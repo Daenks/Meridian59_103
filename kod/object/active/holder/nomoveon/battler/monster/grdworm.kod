@@ -48,6 +48,8 @@ resources:
    GroundWorm_sound_death = gwrmdie.wav
    GroundWorm_sound_aware = gwrm1awr.wav
 
+   groundworm_cannot_hit = "You are unable to reach the groundworm with your attacks."
+
 classvars:
 
    vrKocName = GroundWorm_koc_name_rsc
@@ -65,8 +67,8 @@ classvars:
    viDifficulty = 5
    viKarma = -30
    viDefault_behavior = AI_FIGHT_AGGRESSIVE
-   viCashmin = 500
-   viCashmax = 1500
+   viCashmin = -500
+   viCashmax = 700
    vrSound_miss = GroundWorm_sound_miss
    vrSound_aware = GroundWorm_sound_aware
    vrSound_death = GroundWorm_sound_death
@@ -89,10 +91,10 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ -20, ATCK_WEAP_MAGIC ],
-                        [ -30, ATCK_WEAP_BLUDGEON ],
-                        [  70, -ATCK_SPELL_ACID ],
-                        [  50, -ATCK_SPELL_QUAKE ]
+      plResistances = [ [ATCK_WEAP_MAGIC, -20 ],
+                        [ATCK_WEAP_BLUDGEON, -30 ],
+                        [-ATCK_SPELL_ACID, 70 ],
+                        [-ATCK_SPELL_QUAKE, 50 ]
                       ];
 
       propagate;
@@ -390,9 +392,11 @@ messages:
       {
          if use_weapon = $
             OR NOT (IsClass(use_weapon,&Hammer)
-                    OR IsClass(use_weapon,&SpiritualHammer))
+               OR IsClass(use_weapon,&SpiritualHammer)
+               OR IsClass(use_weapon,&Mace))
          { 
-            return FALSE; 
+            Send(who,@MsgSendUser,#message_rsc=groundworm_cannot_hit);
+            return FALSE;			
          }
       }
 

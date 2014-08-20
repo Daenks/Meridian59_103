@@ -21,6 +21,8 @@ resources:
    RoomEnchantment_desc_rsc = \
       "An enchantment which is attached to a room."
 
+   room_blank_template = "%q"
+
 classvars:
 
    vrName = RoomEnchantment_name_rsc
@@ -57,6 +59,31 @@ messages:
       propagate;
    }
 
+   EffectDesc(who=$)
+   {
+      return;
+   }
+
+   CreateStatsDesc(who=$)
+   {
+      ClearTempString();
+      
+      if who <> $
+         AND IsClass(who,&User)
+         AND Send(Send(who,@GetOwner),@IsEnchanted,#what=self)
+      {
+         Send(self,@EffectDesc,#who=who);
+      }
+      
+      return;
+   }
+   
+   GetStatsDesc(who=$)
+   {
+      Send(self,@CreateStatsDesc,#who=who);      
+
+      return GetTempString();
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

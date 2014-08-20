@@ -56,8 +56,8 @@ classvars:
    viKarma = -90
    viDefault_behavior = AI_NOMOVE | AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT
    viGender = GENDER_FEMALE   
-   viCashmin = 200
-   viCashmax = 800
+   viCashmin = 0
+   viCashmax = 4000
    vrSound_hit = spiderqueen_sound_hit
    vrSound_miss = spiderqueen_sound_miss
    vrSound_aware = spiderqueen_sound_aware
@@ -71,11 +71,11 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 85, -ATCK_SPELL_ALL],
-                        [ 85, ATCK_WEAP_MAGIC],
-                        [ 85, ATCK_WEAP_BLUDGEON],
-                        [-50, -ATCK_SPELL_ACID],
-                        [-20, ATCK_WEAP_THRUST]
+      plResistances = [ [-ATCK_SPELL_ALL, 85],
+                        [ATCK_WEAP_MAGIC, 85],
+                        [ATCK_WEAP_BLUDGEON, 85],
+                        [-ATCK_SPELL_ACID, -50],
+                        [ATCK_WEAP_THRUST, -20]
                       ];
 
       propagate;

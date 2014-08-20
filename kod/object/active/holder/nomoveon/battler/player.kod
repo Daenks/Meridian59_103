@@ -177,6 +177,8 @@ resources:
 
    player_cancel_rescue = \
       "~IYour aggression halts your attempt to escape from the current situation."
+   player_cancel_rescue_phase = \
+      "~IThe protective magics that might have rescued you instead snap and fade as you phase out of existence."
 
    player_improved = "~I~BYou have improved in the art of %s."
    player_improved_wav_rsc = imp.wav
@@ -200,6 +202,13 @@ resources:
    player_wanted_now = "You are now wanted for the murder of %s%s."
    player_haunted_on = "%s%s's violent death summons forth a revenant."
    player_haunted_off = "The revenant is satisfied."
+   
+   player_training_inform =  "You now have ~B%i~B training points!"
+   player_reached_maxtraining = "You now have ~B1000~B training points and can not advance any further!  Meditate to use them!"
+   player_gained_training = "You have gained ~B%i~B training points!"
+   player_spent_training = "You have spent ~B%i~B training points!"
+   player_logon_bonus =  "You have received your daily training bonus of ~B%i~B points!  Come back tomorrow for more!"
+   player_nologon_bonus =  "Welcome back!  Log in again tomorrow to receive some bonus training points!"
 
    player_health_gain_maxed = "Your health cannot increase any further."
    
@@ -714,6 +723,7 @@ resources:
    player_logged_off_wav_rsc = player_logout2.wav
    
    death_rift_stayed_too_long = "Having lingered too long while still alive, you find yourself ejected back into reality!"
+   second_wind_finished = "You feel more relaxed as your second wind dissipates."
    
    player_monster_attack_string = "monster attack"
    player_no_weapon_string = "no weapon"
@@ -729,6 +739,13 @@ resources:
    player_truced = "Shal'ille's magic compels you to respect the truce."
    
    Jig_cannot_attack = "It wouldn't feel right to attack the %s while you two are dancing so well together!"
+   
+   phased_out_cant_use = "You try to use your item, but your phased hands pass right through it."
+   cannot_attack_phased_self_rsc = "You can't attack anyone while phased out."
+   cannot_attack_phased_player_rsc = "Your strike would just go right through someone who is phased out."
+   phase_fatigue_cleared = "This area of peace lifts your phase fatigue."
+   phased_player_description = "This is the ghosted body of %q, whose consciousness has travelled to "
+                               "another plane of existence."
    
 classvars:
 
@@ -759,6 +776,15 @@ properties:
    % This is used to determine raises in hit points only.
    poKill_target = $
    piGain_chance = 0
+   
+   % This keeps track of training points that players accumulate when killing mobs.
+   piTraining_points = 0
+   piInform = TRUE
+
+   % This is the amount of training points people receive for logging on daily.
+   piLogon_bonus = 0
+   piLogon_timestamp = 0
+   piReward_timestamp = 0
 
    % Flags for various character attributes.
    piFlags = 0
@@ -776,7 +802,9 @@ properties:
    % store minions
    plControlledMinions = $
    ptMinionControlCheck = $
-   
+
+   % Evil twin object
+   poEvilTwin = $
 
    % list of spells we know, in the form of a 3-part compound
    plSpells = $
@@ -888,15 +916,7 @@ properties:
 
    % Light source at player.
    % Default strength of light source at player is 5
-   piLight = 5       
-
-   % List of enchantments.
-   % Each element is [ timer, object of spell, [optional state] ].
-   plEnchantments = $
-   
-   % List of enchantments applied by radius spells.
-   % Each element is [song object, spellpower, caster]
-   plRadiusEnchantments = $
+   piLight = 5
 
    % Attack modifiers to attack roll & damage (includes items & spells)
    plAttack_modifiers = $
@@ -997,13 +1017,25 @@ properties:
    % Is the player currently using a Death Rift spell?
    pbDeath_rift = FALSE
    ptDeathRiftTimer = $
-   
+
+   % This list keeps track of selfcast buffs for passive improvement.
+   plPassiveImprovement = $
+
    % Crystalize Mana Surge data
    ptCrystalizeManaSurgeTimer = $
    piCrystalizeManaSurging = FALSE
 
    % Players will naturally fall out of groups if they aren't getting kills
    ptLeaveBuilderGroupTimer = $
+  
+   % Time remaining phased out
+   ptPhaseTimer = $
+   ptPhaseVisualEffectTimer = $
+   piRemainingPhaseTime = 60000 * 8
+   ptCanPhaseTimer = $
+
+   % Put new reagents in your bag
+   pbReagentBagAuto = TRUE
 
 messages:
 
@@ -1011,6 +1043,7 @@ messages:
    {
       % Let the poor bastards eat something.
       piTimeLastStomachUpdate = GetTime();
+      piReward_timestamp = GetTime();
       
       propagate;
    }
@@ -1053,6 +1086,8 @@ messages:
       {
          DeleteTimer(ptSecondWind);
          ptSecondWind = $;
+         Send(self,@ShowRemoveEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SECOND_WIND),
+                 #type=ENCHANTMENT_PLAYER);
       }
       
       if ptCrystalizeManaSurgeTimer <> $
@@ -1203,7 +1238,9 @@ messages:
       return FALSE;
    }
 
-   ResetPlayerFlagList()
+   % Added a nodraw paramater to this function to deal with buggy Jala implementation
+   % Can remove this and 3 instances of it used in player.kod when Jala fixed   
+   ResetPlayerFlagList(nodraw=FALSE)
    {
       local i;
 	  
@@ -1241,9 +1278,12 @@ messages:
          Send(poOwner,@SomethingChanged,#what=self);
       }
       
-      Post(self,@DrawOffense);
-      Post(self,@DrawDefense);
-	  
+      if nodraw=FALSE
+      {
+         Post(self,@DrawOffense);
+         Post(self,@DrawDefense);
+      }
+
       return;
    }
    
@@ -1329,6 +1369,9 @@ messages:
       iAmount = 80 + ((Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND) + 1) / 5);
       Send(self,@SetVigorRestThreshold,#amount=iAmount);
       Send(self,@NewVigor);
+      Send(self,@MsgSendUser,#message_rsc=second_wind_finished);
+      Send(self,@ShowRemoveEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SECOND_WIND),
+                 #type=ENCHANTMENT_PLAYER);
       
       return;
    }
@@ -1403,7 +1446,7 @@ messages:
       local iAmount;
 
       % If we cannot gain vigor (probably due to Second Wind), return out if trying to take away exertion
-      if (ptSecondWind <> $) AND (amount < 0)
+      if ((ptSecondWind <> $) AND (amount < 0)) OR Send(self,@IsPhasedOut)
       {
          return;
       }
@@ -1535,6 +1578,8 @@ messages:
 
    NewOwner(what = $)
    {
+      local iBasePhaseTime;
+
       Send(self,@ResetGainFlags);
       
       % Are we moving somewhere "safe" or in a frenzy??
@@ -1561,6 +1606,16 @@ messages:
       if (piFlags2 & PFLAG2_HUNTED)
       {
          Send(self,@InformHunters);
+      }
+
+      if Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+      {
+         iBasePhaseTime = Send(self,@GetBasePhaseTime);
+         if piRemainingPhaseTime <> iBasePhaseTime
+         {
+            Send(self,@MsgSendUser,#message_rsc=phase_fatigue_cleared);
+            Send(self,@RefreshPhaseTimeToBase);
+         }
       }
 
       return;
@@ -1642,7 +1697,8 @@ messages:
          AND NOT (piFlags & PFLAG_TUTORIAL)
       {
          Send(self,@SetPlayerFlag,#flag=PFLAG_TUTORIAL,#value=TRUE);
-         if StringEqual(psHonor,player_newbie_honor_string)
+         if psHonor <> $
+            AND StringEqual(psHonor,player_newbie_honor_string)
          {
             Send(self,@SetHonorString);
          }
@@ -1914,7 +1970,7 @@ messages:
 
    UserLogonHook()
    {
-      local i, oGame, oSnoop, oRoom;
+      local i, oGame, oSnoop, oRoom, iBonus;
       
       for i in plPassive
       {
@@ -1929,7 +1985,7 @@ messages:
       % Restart Health and Mana timers
       Send(self,@NewHealth);
       Send(self,@NewMana);
-      
+
       Send(self,@SendUserAllWindowOverlays);
 
       if Send(SYS,@GetParliament)<>$
@@ -2000,12 +2056,48 @@ messages:
               #wave_rsc=player_logged_on_wav_rsc);
       }
 
+      % Reset the training points bonus if people haven't logged in for a while.
+      if GetTime() - piLogon_timestamp > 28*60*60
+      {
+         piLogon_bonus = 0;
+      }
+
+      % Reward people for logging on by granting them some free training points!
+      if GetTime() - piReward_timestamp > 20*60*60
+      {
+         if piTraining_points = 1000
+         {
+            return;
+         }
+
+         if piLogon_bonus = 0
+         {
+            if piReward_timestamp <> 0
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_nologon_bonus);
+            }
+            
+            piLogon_bonus = 25;
+         }
+         else
+         {
+            iBonus = piLogon_bonus * (GetTime() - piReward_timestamp) / (24*60*60);
+            Send(self,@MsgSendUser,#message_rsc=player_logon_bonus,#parm1=iBonus);
+            Send(self,@AddTrainingPoints,#points=iBonus,#report=FALSE);
+            piLogon_bonus = bound(piLogon_bonus*2,25,200);
+         }
+         
+         piReward_timestamp = GetTime();
+      }
+
       return;
    }
 
    UserLogoffHook()
    {
       local i, oSnoop, oRoom;
+
+      piLogon_timestamp = GetTime();
    
       oSnoop = Send(SYS,@GetInvestigator);
       if oSnoop <> $
@@ -2481,6 +2573,8 @@ messages:
    {
       Send(self,@AddSpell,#num=SID_BLINK,#initial=TRUE);
       Send(self,@AddSpell,#num=SID_CONVEYANCE,#initial=TRUE);
+      Send(self,@AddSpell,#num=SID_PHASE,#initial=TRUE);
+      Send(self,@AddSpell,#num=SID_MEDITATE,#initial=TRUE,#iability=1);
       
       return;
    }
@@ -2798,7 +2892,7 @@ messages:
 
    EnchantmentTimer(timer = $)
    {
-      local i,oEnchanter;
+      local i, j, oEnchanter;
  
       for i in plEnchantments
       {
@@ -2818,7 +2912,31 @@ messages:
 
             % TODO: i no longer exists at this point?  EndEnchantment removing it?
             plEnchantments = DelListElem(plEnchantments,i);
-            Send(self,@ResetPlayerFlagList,#who=self);
+            
+            % Also remove from passive improvement list.
+            for j in plPassiveImprovement
+            {
+               if First(j) = Nth(i,2)
+               {
+                  plPassiveImprovement = DelListElem(plPassiveImprovement,j);
+               }
+            }
+
+            if IsClass(Nth(i,2),&Mirth)
+               OR IsClass(Nth(i,2),&Melancholy)
+            {
+               Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+            }
+            else
+            {
+               Send(self,@ResetPlayerFlagList,#who=self);
+            }
+
+            if poOwner <> $
+            {
+               Send(poOwner,@SomethingChanged,#what=self);
+            }
+
             if poOwner <> $
             {
                Send(poOwner,@SomethingChanged,#what=self);
@@ -2861,7 +2979,7 @@ messages:
       return;
    }
 
-   StartEnchantment(what = $,time = $,state = $,lastcall=TRUE,addicon=TRUE)
+   StartEnchantment(what=$,who=$,time=$,state = $,lastcall=TRUE,addicon=TRUE,ltype=$)
    "Adds <what> to our enchantments, and creates a timer that will cause it "
    "to end."
    {
@@ -2892,99 +3010,70 @@ messages:
          lNew_enchantment = [oTimer, what, state];
       }
 
-      plEnchantments = Cons(lNew_enchantment,plEnchantments);
-      Send(self,@ResetPlayerFlagList,#who=self);
+      plEnchantments = Cons(lNew_enchantment,plEnchantments);      
+
+      % If we are also the source of the enchantment, add the enchantment to our passive improvement list.
+      % ltype has the form [oSpell,Defensive,Offensive,Resistance]
+      if who = self
+      {
+         plPassiveImprovement = Cons(ltype,plPassiveImprovement);
+      }
+
+      if IsClass(what,&Mirth)
+         OR IsClass(what,&Melancholy)
+      {
+         Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+      }
+      else
+      {
+         Send(self,@ResetPlayerFlagList,#who=self);
+      }
+
       if addicon
       {
          Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
       }
 
+      Post(self,@DrawResistances);
+
       return;
    }
 
-   GetEnchantmentList()
-   {
-      return plEnchantments;
-   }
-
-   GetEnchantmentsByClass(enchClass=&Spell)
-   "returns a subset of plEnchantments whose elements are of the given class"
-   {
-      local i, returnList;
-      returnList = $;
-
-      for i in plEnchantments
-      {
-         if IsClass(Nth(i,2),enchClass)
-         {
-            returnList = cons(i,returnList);
-         }
-      }
-      
-      return returnList;
-   }
-
-   IsEnchanted(what = $, byClass = &Spell)
-   "Returns whether or not currently enchanted by <what>."
-   {
-      local i;
-
-      if what = $
-      {
-         for i in plEnchantments
-         {
-            if IsClass(Nth(i,2),byClass)
-            {
-               return TRUE;
-            }
-         }
-      }
-      else
-      {
-         for i in plEnchantments
-         {
-            if Nth(i,2) = what
-            {
-               return TRUE;
-            }
-         }      
-      }
-      
-      return FALSE;
-   }
-
-   GetEnchantedState(what = $)
-   "If enchanted by <what>, returns the state data (which MUST exist, or it's an error.  "
-   "In other words, the caller must know that <what> adds state data).  Returns $ otherwise."
-   {
-      local i;
-
-      for i in plEnchantments
-      {
-         if Nth(i,2) = what
-         {
-            return Nth(i,3);
-         }
-      }
-      
-      return $;
-   }
-
    RemoveAllEnchantments(report=TRUE)
-   "Remove all current enchantments."
+   "Remove all current enchantments and reset the passive improvement list."
    {
       local i;
 
       for i in plEnchantments
       {
-         Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
       }
-      
+
+      plPassiveImprovement = $;
+
+      return;
+   }
+   
+   RemoveAllRadiusEnchantments(report=TRUE)
+   "Remove all current radius enchantments."
+   {
+      local i;
+
+      for i in plRadiusEnchantments
+      {
+         Send(self,@RemoveRadiusEnchantment,#what=Nth(i,1),#iPower=Nth(i,2),#caster=Nth(i,3),#report=report);
+      }
+
+      plRadiusEnchantments = $;
+
       return;
    }
 
    RemoveAllPersonalEnchantments(report=TRUE,override=FALSE)
-   "Remove all current *personal* enchantments."
+   "Remove all current *personal* enchantments and reset the passive improvement list."
    {
       local i, oSpell, removedSomething;
 
@@ -3000,12 +3089,14 @@ messages:
            removedSomething = TRUE;
         }
       }
-      
+
       % Just to be sure, reset the player's flag list.
       %  this should remove any excess flags like invis or shadowform.
       Send(self,@ResetPlayerFlagList);
       Send(self,@ResetPlayerDrawfx,#SendSomethingChanged=TRUE);
-      
+
+      plPassiveImprovement = $;
+
       return removedSomething;
    }
 
@@ -3018,19 +3109,22 @@ messages:
       {
          if First(i) <> $
          {
-            iTime = GetTimeRemaining(First(i));
-            DeleteTimer(First(i));
-
-            % If it's a negative enchantment, add a bit to the time in
-            %  order to prevent people from just "flashing" on and off
-            %  to wait out an enchantment and be relatively unhittable.
-            if Send(Nth(i,2),@IsHarmful)
+            if IsClass(Nth(i,2),&Boon)=FALSE
             {
-               % Time is measured in milliseconds, 3000 = 3 seconds.
-               iTime = iTime + 3000;
-            }
+               iTime = GetTimeRemaining(First(i));
+               DeleteTimer(First(i));
 
-            SetNth(i,1,iTime);
+               % If it's a negative enchantment, add a bit to the time in
+               %  order to prevent people from just "flashing" on and off
+               %  to wait out an enchantment and be relatively unhittable.
+               if Send(Nth(i,2),@IsHarmful)
+               {
+                  % Time is measured in milliseconds, 3000 = 3 seconds.
+                  iTime = iTime + 3000;
+               }
+
+               SetNth(i,1,iTime);
+            }
          }
       }
 
@@ -3044,34 +3138,43 @@ messages:
 
       for i in plEnchantments
       {
-         state = $;
-         if length(i) > 2
+         % Phase reactivates enchantments while it is still in plEnchantments
+         if IsClass(Nth(i,2),&Phase)
          {
-            state = Nth(i,3);
+            continue;
          }
 
-         iTime = first(i);
+         if IsClass(Nth(i,2),&Boon)=FALSE
+         {
+            state = $;
+            if length(i) > 2
+            {
+               state = Nth(i,3);
+            }
+
+            iTime = first(i);
          
-         if iTime = $ OR iTime < 1
-         {
-            Debug("Trying to make a negative timer!",
-                  Send(Nth(i,2),@GetTrueName));
-         }
+            if iTime = $ OR iTime < 1
+            {
+               Debug("Trying to make a negative timer!",
+                     Send(Nth(i,2),@GetTrueName));
+            }
 
-         if Send(Nth(i,2),@IsPeriodic,#state=state,#who=self)
-         {
-            SetNth(i,1,CreateTimer(self,@PeriodicEnchantmentTimer,iTime));
-         }
-         else
-         {
-            SetNth(i,1,CreateTimer(self,@EnchantmentTimer,iTime));
-         }
+            if Send(Nth(i,2),@IsPeriodic,#state=state,#who=self)
+            {
+               SetNth(i,1,CreateTimer(self,@PeriodicEnchantmentTimer,iTime));
+            }
+            else
+            {
+               SetNth(i,1,CreateTimer(self,@EnchantmentTimer,iTime));
+            }
           
-         Send(Nth(i,2),@RestartEnchantmentEffect,#who=self,#state=state);
+            Send(Nth(i,2),@RestartEnchantmentEffect,#who=self,#state=state);
+         }
       }
-      
+
       Send(self,@ResetPlayerFlagList,#who=self);
-      
+
       return;
    }
 
@@ -3080,7 +3183,7 @@ messages:
       local i, oSpell, each_obj;
 
       for i in plEnchantments 
-      {                       
+      {
          oSpell = Nth(i,2);
          if Send(oSpell,@IsIllusion)
             AND Random(1,100) <= iChance
@@ -3088,9 +3191,9 @@ messages:
             Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
          }
       }
-      
+
       % Kludgy, but oh well.  Not like any other code from this era is
-      %  exactly well-engineered or even "good", really.
+      % exactly well-engineered or even "good", really.
       for i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
@@ -3099,7 +3202,7 @@ messages:
             Send(each_obj,@DispelIllusions);
          }
       }
-      
+
       return;
    }
 
@@ -3107,8 +3210,8 @@ messages:
    {
       local i, oSpell, each_obj;
 
-      for i in plEnchantments 
-      {                       
+      for i in plEnchantments
+      {
          oSpell = Nth(i,2);
          if Send(oSpell,@GetSchool) = school
          {
@@ -3131,6 +3234,7 @@ messages:
          if Nth(i,2) = what
          {
             if Send(self,@IsLoggedOn)
+               OR IsClass(what,&Phase)
             {
                % TODO: First(i) isn't always a timer?
                if First(i) <> $
@@ -3143,16 +3247,34 @@ messages:
             {
                state = Nth(i,3);
             }
-       
+
             Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,#state=state,#report=report);
-       
+
             Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),#type=ENCHANTMENT_PLAYER);
 
-            plEnchantments = DelListElem(plEnchantments,i); 
-            Send(self,@ResetPlayerFlagList,#who=self);
+            plEnchantments = DelListElem(plEnchantments,i);
+
+            if IsClass(what,&Mirth)
+               OR IsClass(what,&Melancholy)
+            {
+               Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+            }
+            else
+            {
+               Send(self,@ResetPlayerFlagList,#who=self);
+            }
          }
       }
-      
+
+      % Also remove from passive improvement list.
+      for i in plPassiveImprovement
+      {
+         if First(i) = what
+         {
+            plPassiveImprovement = DelListElem(plPassiveImprovement,i);
+         }
+      }
+
       return;
    }
 
@@ -3160,7 +3282,7 @@ messages:
    "If have a current enchantment set by anything in class, end it."
    {
       local i,state,removedSomething;
-      
+
       removedSomething = FALSE;
 
       for i in plEnchantments
@@ -3187,8 +3309,23 @@ messages:
             Send(self,@ResetPlayerFlagList,#who=self);
          }
       }
-      
+
+      % Also remove from passive improvement list.
+      for i in plPassiveImprovement
+      {
+         if IsClass(First(i),class)
+         {
+            plPassiveImprovement = DelListElem(plPassiveImprovement,i);
+         }
+      }
+
       return removedSomething;
+   }
+
+   % Returns the list of currently active, self-cast buffs, that the player is eligible to improve in passively.
+   GetPassiveImprovementList()
+   {
+      return plPassiveImprovement;
    }
 
    SendEnchantmentIcons()
@@ -3204,129 +3341,14 @@ messages:
             Send(self,@ShowAddEnchantment,#what=each_obj,#type=ENCHANTMENT_PLAYER);
          }
       }
-      
-      return;
-   }
 
-   AddRadiusEnchantment(what=$,iPower=0,caster=$)
-   "Adds what and power to plRadiusEnchantments, which carry out spell effects."
-   {
-      plRadiusEnchantments = Cons([what,iPower,caster],plRadiusEnchantments);
-      Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_ROOM);
-      
-      return;
-   }
-
-   RemoveRadiusEnchantment(what=$,iPower=0,caster=$)
-   "Removes <what> from plRadiusEnchantments."
-   {
-      local i, bFound;
-
-      bFound = FALSE ;
-      for i in plRadiusEnchantments
+      if ptSecondWind <> $
       {
-         if Nth(i,1) = what
-            AND Nth(i,2) = iPower
-            AND Nth(i,3) = caster
-         {
-            Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=ENCHANTMENT_ROOM);
-            plRadiusEnchantments = DelListElem(plRadiusEnchantments,i);
-            bFound = TRUE;
-         }
-      }
-
-      if NOT bFound
-      {
-         Debug(self,"Tried to remove radius enchantment ",what," but not in list",
-               plRadiusEnchantments);
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,
+            #num=SKID_SECOND_WIND),#type=ENCHANTMENT_PLAYER);
       }
 
       return;
-   }
-   
-   IsAffectedByRadiusEnchantment(what=$,caster=$,byClass=&RadiusEnchantment)
-   "Returns whether or not currently enchanted by <what> radius enchantment."
-   {
-      local i;
-      
-      if plRadiusEnchantments = $
-      {
-         return FALSE;
-      }
-
-      if what = $
-      {
-         for i in plRadiusEnchantments
-         {
-            if IsClass(Nth(i,1),byClass)
-            {
-               if caster = $
-               {
-                  return TRUE;
-               }
-               else
-               {
-                  if Nth(i,3) = caster
-                  {
-                     return TRUE;
-                  }
-               }
-            }
-         }
-      }
-      else
-      {
-         for i in plRadiusEnchantments
-         {
-            if Nth(i,1) = what
-            {
-               if caster = $
-               {
-                  return TRUE;
-               }
-               else
-               {
-                  if Nth(i,3) = caster
-                  {
-                     return TRUE;
-                  }
-               }
-            }
-         }      
-      }
-      
-      return FALSE;
-   }
-   
-   GetMostPowerfulRadiusEnchantmentState(byClass=&RadiusEnchantment)
-   {
-      local i, oHighest;
-   
-      oHighest = $;
-   
-      for i in plRadiusEnchantments
-      {
-         if IsClass(Nth(i,1), byClass)
-         {
-            if oHighest = $
-            {
-               oHighest = i;
-            }
-            else
-            {
-               if Nth(i,2) > Nth(oHighest,2)
-               {
-                  oHighest = i;
-               }
-            }
-         }
-      }
-      return oHighest;
-   }
-   
-   GetRadiusEnchantments()
-   {
-      return plRadiusEnchantments;
    }
 
    AddAttackModifier(what = $)
@@ -3503,6 +3525,12 @@ messages:
    TryUseItem(what = $)
    {
       local i,iSpace,iUse_type;
+      
+      if Send(self,@IsPhasedOut)
+      {
+         Send(self,@MsgSendUser,#message_rsc=phased_out_cant_use);
+         return FALSE;
+      }
 
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
@@ -3626,6 +3654,7 @@ messages:
       }
       
       Send(self,@ResetPlayerFlagList);
+      Post(self,@DrawResistances);
       
       return TRUE;
    }
@@ -3682,6 +3711,7 @@ messages:
                Send(what,@NewUnused,#what=self);
             }
 
+            Post(self,@DrawResistances);
             return TRUE;
          }
       }
@@ -3758,6 +3788,12 @@ messages:
       {
          oRoom = Send(victim,@GetOwner);
       }
+      
+      % No attacking logged out players under any circumstances
+      if Send(victim,@GetOwner) = $
+      {
+         return FALSE;
+      }
 
       % Make sure room allows the attack. Check if room has special combat affects.
       if actual = TRUE
@@ -3820,6 +3856,18 @@ messages:
       {
          return TRUE;
       }
+      
+      if Send(self,@IsPhasedOut)
+      {
+         Send(self,@MsgSendUser,#message_rsc=cannot_attack_phased_self_rsc);
+         return FALSE;
+      }
+      
+      if IsClass(victim,&Player)
+         AND Send(victim,@IsPhasedOut)
+      {
+         return FALSE;
+      }
 
       if IsClass(victim,&Monster)
       {
@@ -3835,9 +3883,14 @@ messages:
             
             % Check status and safety against the owner of the reflection.
             if NOT Send(oRoom,@ReqSomethingAttack,#what=self,#victim=Send(victim,@GetCaster))
-               OR NOT Send(self,@CheckStatusAndSafety,#victim=Send(victim,@GetCaster),#report=report)
             {
-               return FALSE;
+               if NOT IsClass(oRoom,&GuildHall)
+               {
+                  if NOT Send(self,@CheckStatusAndSafety,#victim=Send(victim,@GetCaster),#report=report)
+                  {
+                     return FALSE;
+                  }
+               }
             }
          }
             
@@ -3982,7 +4035,7 @@ messages:
          OR (Send(victim,@FindUsing,#class=&Token) <> $)
       {
          % Unless they're factioned.
-         if NOT Send(self,@CheckFactionAttack,#what=victim)
+         if NOT Send(self,@CheckFactionAttack,#what=victim,#report=report)
          {
             return FALSE;
          }
@@ -4062,7 +4115,7 @@ messages:
 
       % Check for faction loss.  Handles appropriate conditions.
       if actual = TRUE
-         AND NOT Send(self,@CheckFactionAttack,#what=victim)
+         AND NOT Send(self,@CheckFactionAttack,#what=victim,#report=report)
       {
          return FALSE;
       }
@@ -4088,7 +4141,7 @@ messages:
       if what = $
          OR piFaction = FACTION_NEUTRAL
          OR what = self
-         OR Send(poOwner,@IsArena)
+         OR (poOwner <> $ AND Send(poOwner,@IsArena))
          OR Send(SYS,@GetChaosNight)
       {
          return TRUE;
@@ -4173,7 +4226,7 @@ messages:
 
    TryAttack(what = $,use_weapon = $,stroke_obj=$)
    {
-      local iRange, lWindsState, lSandstormState;
+      local i, iRange, lWindsState, lSandstormState;
 
       % Can't target self.
       if what = self
@@ -4184,11 +4237,10 @@ messages:
       }
 
       % Check attack time.
-      % IsOkayAttackTime defaults to 1 second
-      if NOT Send(self,@IsOkayAttackTime) 
+      if NOT Send(self,@IsOkayAttackTime)
       {
          return FALSE;
-      }  
+      }
 
       % Is it in the same room?
       if poOwner <> Send(what,@GetOwner) 
@@ -4329,11 +4381,20 @@ messages:
          Send(self,@SwingWeapon,#times=1);
       }
 
+      % Give offensive buffs a small chance to improve each swing!
+      for i in plPassiveImprovement
+      {
+         if Nth(i,3) AND random(1,50) = 50
+         {
+            Send(First(i),@ImproveAbility,#who=self,#target=what);
+         }
+      }
+
       propagate;
    }
 
    % Determines if target is within attacking range, and within sight.
-   %  iRange=$ means there's no range check.
+   % iRange=$ means there's no range check.
    TargetWithinSightAndRange(oTarget=$,iRange=$,use_weapon=$,stroke_obj=$)
    {
       local iSquareRange, iDist, oTargetOwner, oFinalTarget, iAngle, iRow, iCol,
@@ -4351,7 +4412,7 @@ messages:
       oFinalTarget = oTarget;
 
       % Strange case of us targetting something that someone else is holding.
-      %  This cannot be owned by us, since we already checked that.
+      % This cannot be owned by us, since we already checked that.
       if oTargetOwner <> $
          AND IsClass(oTargetOwner,&Battler)
       {
@@ -4383,7 +4444,7 @@ messages:
       }
 
       % See if target is in a reasonable viewing area.
-      %  Only applies to weapon strokes and single-target spells.
+      % Only applies to weapon strokes and single-target spells.
       if IsClass(oFinalTarget,&Battler)
          AND stroke_obj <> $
          AND (IsClass(stroke_obj,&Stroke)
@@ -4397,18 +4458,18 @@ messages:
 
          % What this does:
          % Basically, it finds your direction and makes sure you aren't trying to target
-         %  something behind you.  "Behind you" is defined as behind the line defined
-         %  by the cardinal directions that are the closest to being perpendicular to the
-         %  player's direction vector.  For example, if you're facing mostly east, then
-         %  the cardinal direction direction line runs north/south; in essense, anything
-         %  that is further west than you is "behind" you.  The more interesting cases
-         %  are when the player is facing one of the corner directions.  We calculate
-         %  the equation of the line using the point-slope formula and determine which
-         %  side of the line the target is.
-         %    Equation of the SW-NE line: iTargetRow - iRow = iCol - iTargetRow
-         %    Equation of the SE-NW line: iTargetRow - iRow = iTargetCol - iCol
+         % something behind you. "Behind you" is defined as behind the line defined
+         % by the cardinal directions that are the closest to being perpendicular to the
+         % player's direction vector. For example, if you're facing mostly east, then
+         % the cardinal direction direction line runs north/south; in essense, anything
+         % that is further west than you is "behind" you. The more interesting cases
+         % are when the player is facing one of the corner directions. We calculate
+         % the equation of the line using the point-slope formula and determine which
+         % side of the line the target is.
+         % Equation of the SW-NE line: iTargetRow - iRow = iCol - iTargetRow
+         % Equation of the SE-NW line: iTargetRow - iRow = iTargetCol - iCol
          if iDist > 1
-            AND (   ((iAngle > ANGLE_ENE OR iAngle <= ANGLE_ESE)
+            AND ( ((iAngle > ANGLE_ENE OR iAngle <= ANGLE_ESE)
                     AND iTargetCol < iCol)
                  OR (iAngle > ANGLE_ESE AND iAngle <= ANGLE_SSE
                     AND (iTargetRow - iRow) < (iCol - iTargetCol))
@@ -4477,7 +4538,7 @@ messages:
          }
 
          iAim = Send(self,@GetAim);
-         iOffense = (iStroke*3) + (iProficiency*2) + (iAim*4) + (piBase_Max_Health*3/2);
+         iOffense = (iStroke*2) + (iProficiency*2) + (iAim*8) + (200 * piBase_Max_Health)/(100 + Send(self,@GetStamina));
 
          if oWeapon <> $
          {
@@ -4490,18 +4551,20 @@ messages:
       {
          iOffense = Send(i,@ModifyHitRoll,#who=self,#what=what,
                          #hit_roll=iOffense,#stroke_obj=stroke_obj);
-      }
-      
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Melancholy);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,#hit_roll=iOffense);
-      }
-      
+      }      
+
       if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
       {
          lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Mirth);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,#hit_roll=iOffense);
+         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
+                        #hit_roll=iOffense,#lRadiusState=lRadiusState);
+      }
+
+      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+      {
+         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Melancholy);
+         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
+                        #hit_roll=iOffense, #lRadiusState=lRadiusState);
       }
 
       iOffense = iOffense + Send(Send(SYS,@GetParliament),
@@ -4521,7 +4584,7 @@ messages:
       % The universal modifier.
       iOffense = iOffense + ((iOffense * piFlags3) / 100);
 
-      return bound(iOffense,1,1000);
+      return bound(iOffense,1,2000);
    }
 
    % This returns the battler's ability to avoid being hit.  Ranges from 1 to 1000.
@@ -4551,7 +4614,7 @@ messages:
          iDodge = Send(self,@GetDodgeAbility,#stroke_obj=stroke_obj);
 
          iAgility = Send(self,@GetAgility);
-         iDefense = (iParry*2) + (iBlock) + (iDodge*3) + (iAgility*4) + (piBase_Max_Health*3/2);
+         iDefense = iParry + iBlock + (iDodge*2) + (iAgility*8) + (200 * piBase_Max_Health)/(100 + Send(self,@GetStamina));
       }
 
       for i in plDefense_modifiers
@@ -4569,7 +4632,7 @@ messages:
       % The universal modifier.
       iDefense = iDefense + ((iDefense * piFlags3) / 100);
 
-      return bound(iDefense,1,1000);
+      return bound(iDefense,1,2000);
    }
 
    % The next three messages deal with the three defense skills.  These messages return the relative values of the three
@@ -4805,10 +4868,10 @@ messages:
    }
 
    % Handles damage done to player
-   AssessDamage(what = $,damage = $, atype = 0, aspell = 0, stroke_obj = $,bonus = 0,
+   AssessDamage(what = $,damage = $, atype = 0, aspell = 0, stroke_obj = $,bonus = 0, scalefactor = 1000,
               report = True, report_resistance = TRUE, absolute = FALSE)
    {
-      local i, iResistance, oSoldierShield, gainchance, color_rsc, iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,oMinion;
+      local i, j, iResistance, oSoldierShield, gainchance, color_rsc, iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,oMinion;
 			
 	  origdamage = damage;
 	  
@@ -4853,8 +4916,19 @@ messages:
          
          damage = Send(self,@GetDamageFromResistance,#what=damage,#value=iResistance);
 
+         % Allow protective spells a chance to improve when they take effect!
+         for i in plPassiveImprovement
+         {
+            if (aspell & -Nth(i,4)) AND random(1,10) = 10
+            {
+               Send(First(i),@ImproveAbility,#who=self,#target=what);
+            }
+         }
+
          % Add attmods AFTER resistance/suscep mods.    
-         damage = damage + bonus;               
+         damage = damage + bonus;
+
+         damage = damage * scalefactor / 1000;
       }
       
       iDuration = 800;
@@ -4923,23 +4997,23 @@ messages:
       }
 
       Send(self,@LoseHealth,#amount=damage);
-	  
-	  oWeapon = Send(what,@GetWeapon);
-	     
-	  if IsClass(what,&Monster)
-	  {
-	     RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_monster_attack_string);
-	  }
-	  else
-	  {
-	     if oWeapon <> $
-	     {
+
+      if IsClass(what,&Monster)
+      {
+         RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_monster_attack_string);
+      }
+
+      if IsClass(what,&Player)
+      {
+         oWeapon = Send(what,@GetWeapon);
+         if oWeapon <> $
+         {
             RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,Send(Send(what,@GetWeapon),@GetTrueName));
-	     }
-	     else
-	     {
+         }
+         else
+         {
             RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),Send(what,@GetTrueName),aspell,atype,damage,origdamage,player_no_weapon_string);
-	     }
+         }
       }
 
       if piHealth <= 0
@@ -5127,10 +5201,19 @@ messages:
    KilledSomething(what = $,use_weapon = $,stroke_obj = $)
    "Called when the player killed something."
    {
-      local i, oSoldierShield, monstkarma, iChance, oEnemyGuild, shrunken;
+      local bReflection, i, oSoldierShield, monstkarma, iChance, oEnemyGuild, shrunken;
 
       % If we killed someone or something, we did damage.
       Send(self,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
+
+         % Stop reflections ruining our karma, they are kind of bloodthirsty
+         % and tend to kill indiscriminately (especially mobs)
+         bReflection = FALSE;
+         if use_weapon <> $
+            AND IsClass(use_weapon,&Reflection)
+         {
+            bReflection = TRUE;
+         }
 
       % Send text message - a stroke may want to provide it's own.
       if NOT Send(what,@SayDyingWords,#what=self)
@@ -5150,17 +5233,17 @@ messages:
             {
                Send(self,@MsgSendUser,#message_rsc=player_killed_something,
                     #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-            }          
+            }
          }
       }
-      
+
       if IsClass(what,&Monster)
          AND (use_weapon = $
               OR NOT IsClass(use_weapon,&ActiveWallElement))
       {
          Send(self,@JoinBuilderGroup);
       }
-      
+
       Send(poOwner,@SomethingKilled,#what=self,#victim=what);
 
       % Let our shield know we killed something.
@@ -5174,7 +5257,7 @@ messages:
          AND what <> self
       {
          Send(Send(SYS, @GetStatistics), @PlayerKillsCounter);
-         
+
          if Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
             OR Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
          {
@@ -5183,12 +5266,15 @@ messages:
          else
          {
             piKill_count = piKill_count + 1;
-            piKill_count_decay = piKill_count_decay + 1;              
+            piKill_count_decay = piKill_count_decay + 1;
          }
-         
-         Send(self,@AddKarma,#amount=Send(self,@CalculateKarmaChangeFromKill,
-              #karma_killer=Send(self,@GetKarma),#karma_victim=Send(what,@GetKarma)));
-         
+
+         if NOT bReflection
+         {
+            Send(self,@AddKarma,#amount=Send(self,@CalculateKarmaChangeFromKill,
+                  #karma_killer=Send(self,@GetKarma),#karma_victim=Send(what,@GetKarma)));
+         }
+
          if NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
             AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
             AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
@@ -5233,7 +5319,7 @@ messages:
                      Send(self,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=FALSE);
                      Send(self,@EvaluatePKStatus,#dbug=TRUE);
                   }
-   
+
                   % Does the lucky murderer win a Revenant?
                   % If it was an easy fight, lets haunt em more often than if
                   % it was competitive (or the victim at least had a shot)
@@ -5255,7 +5341,8 @@ messages:
       }
 
       if IsClass(what,&Monster)
-      {         
+         AND NOT bReflection
+      {
          Send(self,@AddKarma,#amount=Send(self,@CalculateKarmaChangeFromKill,
               #karma_victim=Send(what,@GetKarma),#karma_killer=Send(self,@GetKarma)),
               #bIsMob=TRUE);
@@ -5647,6 +5734,16 @@ messages:
 
       return;
    }
+   
+   CheckAttackTimer()
+   {
+      if ptAttackTimer <> $
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
 
    IsOkayAttackTime(time = 1000, seconds = $)
    "Have we waited long enough since the last attack/spell?  Sets new valid attack time."
@@ -5807,6 +5904,11 @@ messages:
    {
       return plUsing;
    }
+   
+   GetEquippedItems()
+   {
+      return Send(self,@GetPlayerUsing);
+   }
 
    IsUsingA(class=$)
    {
@@ -5953,13 +6055,6 @@ messages:
 
       iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                            #who=self,#hpregen=TRUE);
-      
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Restorate)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Restorate);
-         iTime = Send(Nth(lRadiusState,1),@AdjustHealthTime,#time=iTime,#lRadiusState=lRadiusState);
-         return bound(iTime,500,60000);
-      }
 
       return bound(iTime,1000,60000);
    }
@@ -5983,13 +6078,6 @@ messages:
                               #who=self,#hpregen=FALSE);
 
          iTime = bound(iTime,1000,60000);
-
-         if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Rejuvenate)
-         {
-            lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Rejuvenate);
-            iTime = Send(Nth(lRadiusState,1),@AdjustManaTime,#time=iTime,#lRadiusState=lRadiusState);
-            iTime = bound(iTime,500,60000);
-         }
 
          % Mana Focus will adjust mana regen time based on its spellpower.
          oSpell = Send(SYS,@FindSpellByNum,#Num=SID_MANA_FOCUS);
@@ -6036,6 +6124,11 @@ messages:
    "decay = TRUE if you lose a HP over time because you are boosted over max "
    "by some sort of vamp effect.  If this is true, you shouldn't break a trance."
    {
+      if Send(self,@IsPhasedOut)
+      {
+         return;
+      }
+
       if piFlags & PFLAG_TRANCE AND NOT decay
       {
          Send(self,@BreakTrance,#event=EVENT_DAMAGE);
@@ -6051,14 +6144,17 @@ messages:
    GainHealth(amount = $)
    "Some attempt here to quell the vamp touch bugs"
    {
-      if (2*piMax_health) < (piHealth+amount)
+      if NOT Send(self,@IsPhasedOut)
       {
-         Send(self,@MsgSendUser,#message_rsc=player_health_gain_maxed);
-         piHealth = 2 * piMax_health;
-      }
-      else
-      {
-         piHealth = piHealth + amount;
+         if (2*piMax_health) < (piHealth+amount)
+         {
+            Send(self,@MsgSendUser,#message_rsc=player_health_gain_maxed);
+            piHealth = 2 * piMax_health;
+         }
+         else
+         {
+            piHealth = piHealth + amount;
+         }
       }
 
       Send(self,@NewHealth);
@@ -6083,10 +6179,13 @@ messages:
          return 0;
       }
 
-      pihealth = piHealth + amount;
-      if piHealth > piMax_health
+      if NOT Send(self,@IsPhasedOut)
       {
-         piHealth = piMax_health;
+         pihealth = piHealth + amount;
+         if piHealth > piMax_health
+         {
+            piHealth = piMax_health;
+         }
       }
 
       Send(self,@NewHealth);
@@ -6487,14 +6586,18 @@ messages:
    GainMana(amount=0, bCapped=FALSE)
    {
       local iManaGained;
-   
-      iManaGained = amount;
-      piMana = piMana + amount;
 
-      if bCapped AND piMana > piMax_Mana
+      iManaGained = amount;
+      
+      if NOT Send(self,@IsPhasedOut)
       {
-         iManaGained = amount - (piMana - piMax_Mana);
-         piMana = piMax_Mana;
+         piMana = piMana + amount;
+
+         if bCapped AND piMana > piMax_Mana
+         {
+            iManaGained = amount - (piMana - piMax_Mana);
+            piMana = piMax_Mana;
+         }
       }
       
       Send(self,@NewMana);
@@ -6805,7 +6908,7 @@ messages:
 
    CalculateKarmaChangeFromKill( karma_killer = 0, karma_victim = 0, bIsMob = FALSE )
    {
-      local iChange, iSwing, oRoom;
+      local iChange, iSwing, oRoom, oSpellDeathLink;
 
       % No karma changes from killing players during Frenzies.
       % Also, no Karma change from event monsters: Xeos and admin-spawned.
@@ -6825,6 +6928,13 @@ messages:
 
       % No karma changes from killing neutral monsters.
       if bIsMob AND karma_victim = NEUTRAL
+      {
+         return 0;
+      }
+
+      % Death link prevents karma changes
+      oSpellDeathLink = Send(SYS,@FindSpellByNum,#num=SID_DEATH_LINK);
+      if Send(self,@IsEnchanted,#what=oSpellDeathLink)
       {
          return 0;
       }
@@ -7911,11 +8021,19 @@ messages:
 
    SomethingKilled(what=$,victim=$,use_weapon=$)
    {
-      local i, bGained, bGainedCharge;
+      local i, bGained, bGainedCharge, oSpellDeathLink;
 
       if NOT IsClass(victim,&Battler)
       {
          propagate;
+      }
+
+      % If we have death link up, give a vigor boost
+      oSpellDeathLink = Send(SYS,@FindSpellByNum,#Num=SID_DEATH_LINK);
+
+      if Send(self,@IsEnchanted,#what=oSpellDeathLink)
+      {
+         Send(oSpellDeathLink,@GiveKilledBenefits,#Caster=self,#Victim=victim);
       }
 
       % Let our recharging rods know we killed something.
@@ -7985,7 +8103,7 @@ messages:
    "their maxhealth to gain a HP.  This number is reduced by the player's"
    "stamina, all the way down to half for those with high staminas."
    {
-      local highmark, rand, dodgeskill, oSkill, monster_level, gain, gainmult, roll, iNumber, oWeapon, shrunken, lBuilderGroup;
+      local i, highmark, rand, dodgeskill, oSkill, monster_level, gain, gainmult, roll, iNumber, oWeapon, shrunken, lBuilderGroup;
             
       gain = 0;
       roll = FALSE;
@@ -8014,6 +8132,19 @@ messages:
          AND poKill_target = what)
          OR group_member_kill
       {
+         % Allow players to improve defensive spells!
+         if killing_blow 
+            AND (Send(self,@CheckPlayerFlag,#flag=PFLAG_TOOK_DAMAGE) OR Send(self,@CheckPlayerFlag,#flag=PFLAG_DODGED))
+         {
+            for i in plPassiveImprovement
+            {
+               if Nth(i,2) and random(1,5) = 5
+               {
+                  Send(First(i),@ImproveAbility,#who=self,#target=what);
+               }
+            }
+         }
+
          if monster_level > piBase_Max_health
          {
             if killing_blow AND Send(self,@CheckPlayerFlag,#flag=PFLAG_TOOK_DAMAGE)
@@ -8085,7 +8216,7 @@ messages:
          }
          else
          {
-            % Give solo pkill-enabled builders a little bonus.
+            % Give solo pkill-enabled builders a little bonus, for appropriate monsters.
             % This will roughly equal building with one other player in the room.
             % Bonus requires that the player is fighting normally (no firewalls / distance killing)
             lBuilderGroup = Send(Send(self,@GetOwner),@GetBuilderGroup);
@@ -8093,6 +8224,7 @@ messages:
                AND Length(lBuilderGroup) = 1
                AND NOT group_member_kill
                AND killing_blow
+               AND (monster_level + 5) > piBase_Max_health
                AND Send(self,@CheckPlayerFlag,#flag=PFLAG_TOOK_DAMAGE)
             {
                gain = gain + 1;
@@ -8100,7 +8232,7 @@ messages:
          }
 
          % If they're cheesing the situation by fighting wussy monsters in an altered form,
-         %  penalize the gain amount.
+         % penalize the gain amount.
          if piMax_health > piBase_Max_health * 2
             AND monster_level < piMax_health
          {
@@ -8108,17 +8240,50 @@ messages:
             roll = FALSE;
          }
 
-         gainmult = bound(Send(Send(SYS, @GetSettings), @GetHPGainMultiplier),1,500);
+         gainmult = Bound(Send(Send(SYS,@GetSettings),@GetHPGainMultiplier),1,500);
          gain = gain * gainmult;
-		 
+
          piGain_chance = piGain_chance + gain;
+
+         % Here, we work out if the player deserves a training point.
+         % They qualify if they got at least one gain point from the monster,
+         % and also got the killing blow (no double points from single mobs).
+         if gain > 0
+            AND killing_blow
+         {
+            piTraining_points = piTraining_points + 1;
+         }
+
+         % Let the player know how many training points they have, if they
+         % either reached the max, or a multiple of 100.
+         if piTraining_points > 999
+         {
+            if piInform
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining);
+               piInform = FALSE;
+            }
+            piTraining_points = 1000;
+         }
+         else
+         {
+            if piTraining_points mod 100 = 0
+               AND piTraining_points <> 0
+               AND piInform
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_training_inform,#parm1=piTraining_points);
+            }
+         }
+
+         % Draw the training points bar.
+         Post(self,@DrawTraining);
 
          if roll
          {
             highmark = Send(self,@GetHighMark);
-            rand = random(1,highmark);
+            rand = Random(1,highmark);
             iNumber = Send(self,@GetGainChance) + bound((monster_level-piBase_Max_health)/5,0,10);
-                  
+
             if rand < iNumber
                AND piBase_Max_health < (101 + Send(self,@GetStamina))
             {
@@ -8139,23 +8304,23 @@ messages:
                Send(self,@EatSomething,#nutrition=200);
                Post(self,@DrawOffense);
                Post(self,@DrawDefense);
-			   
-			   % report to shrunken head
-			   shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
-			   if shrunken <> $
-			   {
-				  send(shrunken,@Tougher,#hp=pibase_max_health);
-			   }		 	
-			   
+
+               % report to shrunken head
+               shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
+               if shrunken <> $
+               {
+                  Send(shrunken,@Tougher,#hp=pibase_max_health);
+               }
+
                piGain_chance = -(piBase_Max_health/2);
                
                if piBase_max_health > 30
                {
-			      %stam = 50
-				  %pigain = pigain - ((50-50)/2) =  pigain - 0
-				  %stam = 25 
-				  %pigain = pigain - ((50-25)/2) = pigain - 12.5
-				  % so, after 30 hps, any stamina less thatn 50 penalizes you by about 0.5 piGain points
+                 %stam = 50
+                 %pigain = pigain - ((50-50)/2) =  pigain - 0
+                 %stam = 25 
+                 %pigain = pigain - ((50-25)/2) = pigain - 12.5
+                 % so, after 30 hps, any stamina less thatn 50 penalizes you by about 0.5 piGain points
                   piGain_chance = piGain_chance - ((50-Send(self,@GetStamina))/2);
                }
 
@@ -8163,7 +8328,7 @@ messages:
             }
          }
       }
-      
+
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_DODGED)
          AND NOT group_member_kill
       {
@@ -8201,6 +8366,67 @@ messages:
       return piGain_chance;
    }
 
+   GetTrainingPoints()
+   {
+      return piTraining_points;
+   }
+
+   AddTrainingPoints(points=0,report=TRUE)
+   {
+      if points = 0
+      {
+         return;
+      }
+
+      points = bound(points,-piTraining_points,1000 - piTraining_points);
+
+      if report AND points > 0
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_gained_training,#parm1=points);
+      }
+
+      if report AND points < 0
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_spent_training,#parm1=-points);
+      }
+
+      piTraining_points = piTraining_points + points;
+
+      if piTraining_points < 1000
+      {
+         piInform = TRUE;
+      }
+      else
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining);
+         piInform = FALSE;
+      }
+
+      Post(self,@DrawTraining);
+
+      return;
+   }
+
+   GetLogOnBonus()
+   {
+      return piLogon_bonus;
+   }
+
+   SetLogOnBonus(points=0)
+   {
+      piLogon_bonus = points;
+
+      return;
+   }
+
+   ResetLogOnBonus()
+   {
+      piLogon_bonus = 0;
+      piReward_timestamp = GetTime();
+      
+      return;
+   }
+
    GetHighMark()
    {
       local index, highmark;
@@ -8215,8 +8441,8 @@ messages:
 
    Killed(what = $)
    {
-      local lItems,i, amount, oBody, oSoldierShield, bNo_drop_death, oItemAtt,
-            oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, oItem, iRoom;
+      local lItems,i, j, amount, oBody, oSoldierShield, bNo_drop_death, oItemAtt,
+            oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, oItem, iRoom, lInventoryContents, lReagentBagContents;
 
       % Skill, spell and hp penalties are handled by ApplyDeathPenalties, which
       %  is called from LeaveHold() in the Underworld.  This is to allow time
@@ -8238,6 +8464,16 @@ messages:
          Debug("Averted double-death of",vrName);
 
          return;
+      }
+
+      % If we have Apparitions attacking us, delete them.
+      if plApparitionList <> $
+      {
+         for j in plApparitionList
+         {
+            Send(j,@Delete);
+         }
+         plApparitionList = $;
       }
 
       % Stop any rescue attempts that were going on.
@@ -8375,8 +8611,18 @@ messages:
          {
             oItemAtt = Send(sys,@FindItemAttByNum,#num=IA_PKPOINTER);
          }
+         
+         lReagentBagContents = Send(self,@GetReagentBagContents);
+         if lReagentBagContents <> $
+         {
+            lInventoryContents = [plActive,plPassive,lReagentBagContents];
+         }
+         else
+         {
+            lInventoryContents = [plActive,plPassive];
+         }
 
-         for lItems in [plActive,plPassive]
+         for lItems in lInventoryContents
          {
             for i in lItems
             {
@@ -8465,16 +8711,16 @@ messages:
       if Send(SYS,@GetChaosNight)
       {
          % It's a frenzy!  Give us a leg up.
-         piHealth = piMax_Health / 2;
-         piMana = piMax_Mana / 2;
-         piVigor = 100;
+         piHealth = 4*(piMax_Health/5);
+         piMana = 4*(piMax_Mana/5);
+         piVigor = 200;
       }
       else
       {
          % We're not in a frenzy.  Give us the bare minimums.
          piMana = 1;
          piHealth = 1;
-         piVigor = bound(piVigor/4,0,50);   
+         piVigor = bound(piVigor/4,15,50);   
       }
       
       Send(self,@NewHealth);
@@ -8983,6 +9229,22 @@ messages:
       return;
    }
 
+   VerifyOverlays()
+   "Removes overlays of any overlaid item whose owner is not the player."
+   {
+      local i;
+      
+      for i in plOverlays
+      {
+         if Send(i,@GetOwner) <> self
+         {
+            Send(self,@RemoveOverlay,#what=i);
+         }
+      }
+      
+      return;
+   }
+   
    SetOverlay(what = $)
    "Adds <what> to plOverlays, and tells everyone we changed."
    {
@@ -10219,6 +10481,11 @@ messages:
       {
          return;
       }
+      
+      if Send(self,@IsPhasedOut)
+      {
+         return;
+      }
 
       if NOT Send(poOwner,@SafePlayerAttack) OR Send(poOwner,@IsValidTarget,#who=self)
       {
@@ -10383,12 +10650,6 @@ messages:
       local iTime, lRadiusState;
 
       iTime = 1000 + (30* (51-Send(self,@getStamina))); 
-
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Invigorate)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Invigorate);
-         iTime = Send(Nth(lRadiusState,1),@AdjustVigorTime,#time=iTime,#lRadiusState=lRadiusState);
-      }
       
       return iTime;
    }
@@ -10542,6 +10803,14 @@ messages:
             bFound = TRUE;
          }
       }
+      
+      for i in plRadiusEnchantments
+      {
+         if Nth(i,3) = self
+         {
+            Send(Nth(i,1),@BreakTrance,#who=Nth(i,3),#event=event);
+         }
+      }
 
       if event = EVENT_NEWOWNER
       {
@@ -10567,23 +10836,6 @@ messages:
 
    RecalcBulkAndWeight()
    {
-      local i;
-
-      piBulk_hold = 0;
-      piWeight_hold = 0;
-
-      for i in plPassive
-      {
-         piBulk_hold = piBulk_hold + Send(i,@GetBulk);
-         piWeight_hold = piWeight_hold + Send(i,@GetWeight);
-      }
-
-      for i in plActive
-      {
-         piBulk_hold = piBulk_hold + Send(i,@GetBulk);
-         piWeight_hold = piWeight_hold + Send(i,@GetWeight);
-      }
-
       return;
    }
 
@@ -10683,6 +10935,9 @@ messages:
       {
          DeleteTimer(ptSecondWind);
          ptSecondWind = $;
+         Send(self,@MsgSendUser,#message_rsc=second_wind_finished);
+         Send(self,@ShowRemoveEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SECOND_WIND),
+                 #type=ENCHANTMENT_PLAYER);
       }
 
       iAmount = 80 + ((Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND) + 1) / 5);
@@ -10795,6 +11050,8 @@ messages:
       % Reset death costs to 0.
       piDeathCost = 0;
 
+      poEvilTwin = $;
+
       return Send(SYS,@GetSuccessRsc);
    }
 
@@ -10836,6 +11093,11 @@ messages:
          nObj = Send(SYS,@FindSpellByNum,#num=nSID);
          
          if nObj = $
+         {
+            continue;
+         }
+         
+         if IsClass(nObj,&UtilitySpell)
          {
             continue;
          }
@@ -11581,16 +11843,28 @@ messages:
       
       return;
    }
-      
+
    FactionServiceTimer(renew=TRUE)
    {
-      local iHistory;
-      
+      % Attempts to delete any existing timer, then passes to FactionServiceRenew
+      % which creates a new timer if conditions are met.
+
       if ptFactionTimer <> $
       {
          DeleteTimer(ptFactionTimer);
          ptFactionTimer = $;
       }
+      
+      Send(Self,@FactionServiceRenew,#renew=renew);
+      return;
+   }
+
+   FactionServiceRenew(renew=TRUE)
+   {
+      % This function now handles renewal of ptFactionTimer and should only be accessed
+      % from FactionServiceTimer() after the $ check.
+ 
+      local iHistory;
       
       if piFaction = FACTION_NEUTRAL
       {
@@ -11645,12 +11919,12 @@ messages:
       if renew AND Send(SYS,@GetParliament) <> $
          AND (NOT Send(Send(SYS,@GetParliament),@IsShutdown))
       {
-         ptFactionTimer = CreateTimer(self,@FactionServiceTimer,FACTION_UPDATE_TIME);
+         ptFactionTimer = CreateTimer(self,@FactionServiceRenew,FACTION_UPDATE_TIME);
       }
       
       return;
    }
-
+   
    PlayerIsIntriguing()
    "Evaluates player and sets the PFLAG_INTRIGUING"
    {
@@ -11805,6 +12079,21 @@ messages:
            #parm1=Send(factliege,@GetDef),#parm2=Send(factliege,@GetName));
            
       return TRUE;
+   }
+
+   ResignLoyaltyFailed()
+   {
+      % Don't boot the player unless they've been factioned longer
+      % than 5400 seconds (90 minutes)	  
+
+      if piFactionServiceUpdate < 5400
+      {  
+         return;
+      }
+
+      Send(self,@ResignFaction);
+      
+      return;
    }
 
    ResignFaction()
@@ -12106,6 +12395,8 @@ messages:
 
          return FALSE;
       }
+      
+      Send(self,@BreakTrance,#event=EVENT_REQNEWOWNER);
       
       return TRUE;
    }
@@ -12520,7 +12811,22 @@ messages:
       
       return $;
    }
-   
+
+   GetShieldOverlayHotspot()
+   {
+      local i;
+      
+      for i in plOverlays
+      {
+         if IsClass(i,&Shield)
+         {
+            return Send(i,@GetOverlayHotspot);
+         }
+      }
+
+      return $;
+   }
+
    GetShieldTranslation()
    {  
       local i;
@@ -12875,6 +13181,7 @@ messages:
             for oLightObject in plRadiusEnchantments
             {
                if Nth(oLightObject,3) = self
+                  AND NOT Send(Nth(oLightObject,1),@GetOldAreaEnchStyle)
                {
                   if (piDrawFX & FLICKERING_YES)
                   {
@@ -13237,10 +13544,15 @@ messages:
    }
 
    RemoveControlledMinion(minion = $)
-   {	  
-      plControlledMinions = DelListElem(plControlledMinions,minion);	
-      return;	   
+   {  
+      if plControlledMinions <> $
+      {
+         plControlledMinions = DelListElem(plControlledMinions,minion);	
+      }
+
+      return;		 
    }
+   
    GetControlledMinions()
    {	   
       return plControlledMinions;
@@ -13292,6 +13604,207 @@ messages:
       
       return iArmor;
    }
-  
+
+   CanEvilTwin()
+   {
+      return TRUE;
+   }
+
+   GetReagentBag()
+   {
+      local i;
+      
+      for i in plPassive
+      {
+         if IsClass(i,&ReagentBag)
+         {
+            return i;
+         }
+      }
+
+      return $;
+   }
+   
+   GetReagentBagContents()
+   {
+      local i;
+      
+      for i in plPassive
+      {
+         if IsClass(i,&ReagentBag)
+         {
+            return Send(i,@GetReagentBagContents);
+         }
+      }
+      
+      return $;
+   }
+
+   IsPhasedOut()
+   {
+      return Send(self,@IsEnchanted,#byClass=&Phase);
+   }
+   
+   StartPhaseTimer()
+   {
+      if ptPhaseTimer = $
+      {
+         ptPhaseTimer = CreateTimer(self,@PhaseTimerEnd,piRemainingPhaseTime);
+
+         % Stop any rescue attempts if the user phases out.
+         if ptRescue <> $
+         {
+            Send(self,@MsgSendUser,#message_rsc=player_cancel_rescue_phase);
+            DeleteTimer(ptRescue);
+            ptRescue = $;
+         }
+      }
+      
+      if ptPhaseVisualEffectTimer = $
+      {
+         ptPhaseVisualEffectTimer = CreateTimer(self,@PhaseVisualEffectTimer,2000);
+      }
+      
+      return;
+   }
+   
+   PhaseVisualEffectTimer(timer = $)
+   {
+      ptPhaseVisualEffectTimer = $;
+      Send(self,@PhaseVisualEffect);
+
+      return;
+   }
+   
+   PhaseVisualEffect()
+   {
+      if ptPhaseVisualEffectTimer <> $
+      {
+         DeleteTimer(ptPhaseVisualEffectTimer);
+         ptPhaseVisualEffectTimer = $;
+      }
+      
+      Send(Send(SYS,@FindSpellByNum,#num=SID_PHASE),@AdjustVisualEffectBasedOnTimeRemaining,#who=self);
+      
+      if ptPhaseVisualEffectTimer = $
+         AND Send(self,@IsPhasedOut)
+      {
+         ptPhaseVisualEffectTimer = CreateTimer(self,@PhaseVisualEffectTimer,2000);
+      }
+      
+      return;
+   }
+
+   FreezePhaseTimer()
+   {
+      if ptPhaseTimer <> $
+      {
+         piRemainingPhaseTime = GetTimeRemaining(ptPhaseTimer);
+         DeleteTimer(ptPhaseTimer);
+         ptPhaseTimer = $;
+         
+         if ptPhaseVisualEffectTimer <> $
+         {
+            DeleteTimer(ptPhaseVisualEffectTimer);
+            ptPhaseVisualEffectTimer = $;
+         }
+      }
+
+      return;
+   }
+
+   PhaseTimerEnd()
+   {
+      local oPhase;
+
+      ptPhaseTimer = $;
+         
+      if ptPhaseVisualEffectTimer <> $
+      {
+         DeleteTimer(ptPhaseVisualEffectTimer);
+         ptPhaseVisualEffectTimer = $;
+      }
+      
+      oPhase = Send(SYS,@FindSpellByNum,#num=SID_PHASE);
+      Send(self,@RemoveEnchantment,#what=oPhase);
+      Send(oPhase,@NotifyRoomPenalty,#who=self);
+      Send(oPhase,@InflictFlatPenalties,#who=self);
+      
+      Post(self,@AdminGoToLastSafeRoom);
+
+      Send(self,@RefreshPhaseTimeToBase);
+ 
+      return;
+   }
+
+   GetRemainingPhaseTime()
+   {
+      if ptPhaseTimer <> $
+      {
+         return GetTimeRemaining(ptPhaseTimer);
+      }
+      return piRemainingPhaseTime;
+   }
+   
+   GetBasePhaseTime()
+   {
+      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+         OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+      {
+         return Send(Send(SYS,@GetSettings),@GetOutlawMurdererLogoffPenaltyGhostTime);
+      }
+
+      return Send(Send(SYS,@GetSettings),@GetLogoffPenaltyGhostTime);
+   }
+
+   RefreshPhaseTimeToBase()
+   {
+      if piRemainingPhaseTime <> Send(self,@GetBasePhaseTime)
+      {
+         piRemainingPhaseTime = Send(self,@GetBasePhaseTime);
+      }
+      return;
+   }
+
+   SetPhaseTimeEqualTo(amount=60000)
+   "Used by logoff ghosts to sync up penalty times."
+   {
+      piRemainingPhaseTime = amount;
+      return;
+   }
+
+   CanPhaseAgain(time=$)
+   {
+      if ptCanPhaseTimer <> $
+      {
+         return FALSE;
+      }
+
+      if time > 0
+      {
+         ptCanPhaseTimer = CreateTimer(self,@CanPhaseTimer,time);
+      }
+
+      return TRUE;
+   }
+
+   CanPhaseTimer()
+   {
+      ptCanPhaseTimer = $;
+
+      return;
+   }
+
+   GetReagentBagAuto()
+   {
+      return pbReagentBagAuto;
+   }
+   
+   SetReagentBagAuto(value=TRUE)
+   {
+      pbReagentBagAuto = value;
+      return;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

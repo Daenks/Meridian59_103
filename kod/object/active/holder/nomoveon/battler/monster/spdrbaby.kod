@@ -48,8 +48,8 @@ classvars:
    viLevel = 25
    viDifficulty = 4
    viKarma = -10
-   viCashmin = 125
-   viCashmax = 300
+   viCashmin = 25
+   viCashmax = 50
    vrSound_hit = spiderbaby_sound_hit
    vrSound_miss = spiderbaby_sound_miss
    vrSound_aware = spiderbaby_sound_aware
@@ -63,7 +63,7 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ -15, ATCK_WEAP_BLUDGEON] ];
+      plResistances = [ [ATCK_WEAP_BLUDGEON, -15] ];
       propagate;
    }
 

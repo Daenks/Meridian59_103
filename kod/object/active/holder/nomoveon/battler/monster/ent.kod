@@ -56,8 +56,8 @@ classvars:
    viLevel = 50
    viDifficulty = 4
    viKarma = 40
-   viCashmin = 250
-   viCashmax = 750
+   viCashmin = 100
+   viCashmax = 500
    
    vrSound_hit = ent_sound_hit
    vrSound_miss = ent_sound_miss
@@ -103,10 +103,10 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 50, -ATCK_SPELL_COLD ],
-                        [ 50, ATCK_WEAP_BLUDGEON ],
-                        [-10, ATCK_WEAP_SLASH ],
-                        [-10, -ATCK_SPELL_FIRE ] ];
+      plResistances = [ [-ATCK_SPELL_COLD, 50 ],
+                        [ATCK_WEAP_BLUDGEON, 50 ],
+                        [ATCK_WEAP_SLASH, -10 ],
+                        [-ATCK_SPELL_FIRE, -10 ] ];
       propagate;
    }
 

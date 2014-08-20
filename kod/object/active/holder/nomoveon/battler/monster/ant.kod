@@ -49,8 +49,8 @@ classvars:
    viLevel = 40
    viDifficulty = 4
    viKarma = -10
-   viCashmin = 200
-   viCashmax = 600
+   viCashmin = 100
+   viCashmax = 300
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_WIZARD_KILLER
    viAttributes = MOB_SPASM
 
@@ -69,7 +69,7 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ -20, -ATCK_WEAP_ALL] ];
+      plResistances = [ [-ATCK_WEAP_ALL, -20] ];
 
       propagate;
    }

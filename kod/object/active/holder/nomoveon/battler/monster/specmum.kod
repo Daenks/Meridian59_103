@@ -51,8 +51,8 @@ classvars:
    viDifficulty = 5
    viKarma = -35
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 220
-   viCashmax = 620
+   viCashmin = 120
+   viCashmax = 320
    vrSound_hit = SpectralMummy_sound_hit
    vrSound_miss = SpectralMummy_sound_miss
    vrSound_aware = SpectralMummy_sound_aware
@@ -66,11 +66,11 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 20, -ATCK_SPELL_UNHOLY ],
-                        [ -10, -ATCK_SPELL_HOLY ],
-                        [ -10, -ATCK_SPELL_FIRE ],
-                        [ -15, -ATCK_SPELL_SHOCK ],
-                        [ -15, ATCK_WEAP_BLUDGEON ]
+      plResistances = [ [-ATCK_SPELL_UNHOLY, 20 ],
+                        [-ATCK_SPELL_HOLY, -10 ],
+                        [-ATCK_SPELL_FIRE, -10 ],
+                        [-ATCK_SPELL_SHOCK, -15 ],
+                        [ATCK_WEAP_BLUDGEON, -15 ]
                       ];
 
       propagate;

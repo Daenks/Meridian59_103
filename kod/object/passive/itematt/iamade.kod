@@ -12,28 +12,29 @@ ItemAttMade is ItemAttribute
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  This item was made by a player.  It is considered worthless by shopkeepers and
-%  will disapear when the ittematt timer fires.
+%   This item was made by a player.  It is considered worthless by shopkeepers
+%   and will disapear when the ittematt timer fires.
 %
-%  Form is: 
+%   Form is:
 %
-%   	[IA_MADE, tTimer ]
+%      [IA_MADE, tTimer ]
 %
-%  tTimer :: timer counting down until the item disapears.
-%  iNumber :: number of items we're keeping track of, -1 for items that aren't NumberItems
-%	
+%   tTimer :: timer counting down until the item disapears.
+%   iNumber :: number of items we're keeping track of, -1 for items that 
+%   aren't NumberItems
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 constants:
 
-   include blakston.khd   
+   include blakston.khd
    include protocol.khd
 
 resources:
- 
+
    itematt_made_desc = "  It shimmers insubstantially."
    iaMade_gone = "Your %s disappears in a puff of smoke."
-   
+
 classvars:
 
    viItem_Att_Num = IA_MADE
@@ -42,7 +43,7 @@ classvars:
    viDifficulty = 5
 
 properties:
-  
+
 messages:
 
    InitiallyIdentified()
@@ -65,17 +66,19 @@ messages:
    TimerExpired(oItem=$,lData=$)
    {
       local oOwner;
-      
+
       SetNth(lData,2,$);   %% timer is gone, now remove reference
 
-      oOwner = send(oItem,@GetOwner);
+      oOwner = Send(oItem,@GetOwner);
 
-      if oOwner <> $ AND isClass(oOwner,&Player) AND (send(oOwner,@IsLoggedOn))
+      if oOwner <> $
+         AND IsClass(oOwner,&Player)
+         AND Send(oOwner,@IsLoggedOn)
       {
-         send(oOwner,@MsgSendUser,#message_rsc=iaMade_gone,#parm1=send(oItem,@GetName));
+         Send(oOwner,@MsgSendUser,#message_rsc=iaMade_gone,#parm1=Send(oItem,@GetName));
       }
 
-      send(self,@RemoveFromItem,#oItem=oItem,#lData=lData);
+      Send(self,@RemoveFromItem,#oItem=oItem,#lData=lData);
 
       return;
    }
@@ -89,13 +92,13 @@ messages:
    }
 
 
-   RemoveFromItem(oItem=$, lData=$)
+   RemoveFromItem(oItem=$,lData=$)
    {
       % Future (for dealing with number items)
       % If state is -1, then post(oItem,@Delete);
       % if state is > 0, then delete the proper number.
 
-      post(oItem,@Delete);
+      Post(oItem,@Delete);
 
       propagate;
    }
@@ -115,15 +118,15 @@ messages:
       return;
    }
 
-   AdjustPrice(value = -1,iCompound=0)
+   AdjustPrice(value=-1,iCompound=0)
    {
-      return -1;        
+      return -1;
    }
 
    ItemReqLeaveOwner(oItem=$)
    {
       return TRUE;
-   }	
+   }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -140,6 +143,6 @@ messages:
    {
       return FALSE;
    }
-	     
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
