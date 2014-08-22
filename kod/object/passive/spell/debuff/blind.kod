@@ -158,7 +158,7 @@ messages:
       }
 
       % Bound and convert duration to milliseconds
-      iDuration = bound(iDuration,3,20);
+      iDuration = bound(iDuration,4,13);
       iDuration = iDuration * 1000;
 
       if IsClass(oTarget,&Player)
@@ -186,9 +186,9 @@ messages:
    {
       local iDuration;
 
-      iDuration = (5 + iSpellPower/6);
+      iDuration = (5 + iSpellPower/12);
 
-      return random(iDuration/2,iDuration);
+      return random(iDuration-3,iDuration);
    }
 
    EndEnchantment(who=$,report=TRUE)

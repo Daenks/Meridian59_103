@@ -78,13 +78,15 @@ messages:
       return;
    }
 
-   GetStateValue(iSpellpower=$)
+   GetStateValue(who = $, iSpellPower = 0, Target = $)
    {
-      local iFactor;
+      local iAgilChange;
+     
+      iAgilChange = iSpellPower/10+1;
 
-      iFactor = bound(iSpellPower/2+5,10,50);
+      send(Target,@AddAgility,#points=iAgilChange);
 
-      return iFactor;
+      return iAgilChange;
    }
 
    GetDuration(iSpellpower=0)
@@ -103,8 +105,6 @@ messages:
    {
       local i, iNewDuration, oFreeActionStrength;
 
-      oFreeActionStrength = Send(oTarget,@GetEnchantedState,#what=self);
-
       % Give players a decent chance to improve the spell!
       for i in Send(oTarget,@GetPassiveImprovementList)
       {
@@ -113,6 +113,8 @@ messages:
             Post(First(i),@ImproveAbility,#who=oTarget);
          }
       }
+
+      oFreeActionStrength = (Send(oTarget,@GetEnchantedState,#what=self))*5;
 
       % Check if they repel hold outright 1 - 15% chance.
       if Random(0,100) <= ((oFreeActionStrength * SPELL_RESIST_PERCENT) / 100)
@@ -141,6 +143,13 @@ messages:
    {
       % It's a PK-types spell.  Don't offer to newbies.
       return FALSE;
+   }
+
+   EndEnchantment( who = $, state = 0, report = TRUE )
+   {
+      Send(who,@AddAgility,#points=-state);
+     
+      propagate;
    }
 
    GetPotionClass()
