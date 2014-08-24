@@ -1468,7 +1468,26 @@ messages:
 
          return;
       }
-   
+
+      if iPrizeType = QN_PRIZETYPE_RECEIVE_LICH
+      {
+         % format for a prize entry of this type:
+         %     [ QN_PRIZETYPE_RECEIVE_LICH ]
+
+         oLich = Send(Send(SYS,@FindRoomByNum,#num=RID_GUILDH15),
+                      @FindHoldingActive,#class=&DeadLich);
+         if oLich <> $
+         {
+            Send(oLich,@RaiseLich,#oTarget=First(recipients));
+         }
+         else
+         {
+            Debug("QN_PRIZETYPE_RECEIVE_LICH: no lich!");
+         }
+
+         return;
+      }
+
       if iPrizeType = QN_PRIZETYPE_ESTABLISH_NECROGUILD
       {
          % format for a prize entry of this type:

@@ -693,7 +693,17 @@ resources:
       "You have failed me.  I shall seek another to bring me back into this world."
    necroguild_success_3 = "Ah!  LIFE!!  I, along with my dark Order of Necromancers, have been reborn!  "
       "For your faithful service to me, I appoint you Master of the Order."
-      
+
+   lichraise_assign_2 = "I crave to return to your plane of existence, my dark child.  Wilt thou help "
+      "me to rise again?"
+   lichraise_trigger_2 = "yes"
+   lichraise_assign_3 = "Excellent.  My soul craves the blood of the innocent.  Bring me this, that I might "
+      "rule Meridian once again!"
+   lichraise_failure_3 = "Subject: you have failed.\n"
+      "You have failed me.  I shall seek another to bring me back into this world."
+   lichraise_success_3 = "Ah!  LIFE!!  You have much power in you, to succeed in this quest.  Your undead corpse "
+      "will serve me well... for eternity!"
+
    aphrodesiac_assign_2 = "Yes, I desperately need a courier!  I will try to put this delicately.  "
       "I am having... uh... problems with... well, man problems.  I am told that %NPC knows of a powerful "
       "aphrodisiac.  Please, make haste and ask %HIMHER_NPC of it."
@@ -2297,6 +2307,16 @@ messages:
                   [],\
                   100,
                   [[ Q_R2_HAS_HEALTH_LEVEL, 75 ], [ Q_R2_DOES_NOT_HAVE_ITEM, &RebelShield ]]
+                                                ], plQuestTemplates );
+      % QST_ID_RAISE_LICH
+      plQuestTemplates = Cons([  piDefaultNumPlayers,\
+                  piDefaultQuestType,\
+                  Q_PLAYER_NOTNEWBIE,\
+                  [ 217, 218, 219 ],\
+                  1,\
+                  [],\
+                  100,
+                  [ [ Q_R2_HAS_HEALTH_LEVEL, 120 ]  ]
                                                 ], plQuestTemplates );
 
       % Now we fix up the faction service quests, since they need to have as many scheduled as members.
@@ -5918,8 +5938,43 @@ messages:
       {
          Debug( "Error building QN #216" );
       }
-
-
+      % template #217 is lichraise quest
+      if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_SHOWUP )
+      {
+         lNPCs = $;
+         for oNPC in Send( Send( SYS, @GetLibrary ), @GetOccupationList, #cNPC_class = &DeadLich ) { lNPCs = cons( oNPC, lNPCs );}
+         Send( self, @SetQuestNodeNPCList, #index = 217, #new_NPC_list = lNPCs );
+      }
+      else
+      {
+         debug( "Error building QN #217" );
+      }
+      % template #218 is lich raise quest
+      if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_MESSAGE, #NPC_modifier = QN_NPCMOD_SAME,
+            #cargolist = [ lichraise_trigger_2 ],
+            #timelimit = 120 )    % 2 min
+      {
+         Send( self, @SetQuestNodeAssignHint, #index = 218, #new_hint = lichraise_assign_2 );
+      }
+      else
+      {
+         debug( "Error building QN #218" );
+      }
+      % template #219 is lich raise quest
+      if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_ITEMFINDCLASS, #NPC_modifier = QN_NPCMOD_SAME,
+            #cargolist = [ [ QN_PRIZETYPE_ITEMCLASS, &OfferingQor, 1 ] ],
+            #prizelist = [ [ QN_PRIZETYPE_RECEIVE_LICH ] ],
+            #penaltylist = [ [QN_PRIZETYPE_BOON, QN_PRIZE_BOON_MYSTICISM , -3, 2 ] ],
+            #timelimit = 3 * 24 * 3600 )    % 3 days
+      {
+         Send( self, @SetQuestNodeAssignHint, #index = 219, #new_hint = lichraise_assign_3 );
+         Send( self, @SetQuestNodeSuccessHint, #index = 219, #new_hint = lichraise_success_3 );
+         Send( self, @SetQuestNodeFailureHint, #index = 219, #new_hint = lichraise_failure_3 );
+      }
+      else
+      {
+         debug( "Error building QN #219" );
+      }
 
 %   % template # is  quest
 %   if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_MESSAGE, #NPC_modifier = QN_NPCMOD_NONE,
