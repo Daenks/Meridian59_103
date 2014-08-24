@@ -5965,7 +5965,7 @@ messages:
             #cargolist = [ [ QN_PRIZETYPE_ITEMCLASS, &OfferingQor, 1 ] ],
             #prizelist = [ [ QN_PRIZETYPE_RECEIVE_LICH ] ],
             #penaltylist = [ [QN_PRIZETYPE_BOON, QN_PRIZE_BOON_MYSTICISM , -3, 2 ] ],
-            #timelimit = 3 * 24 * 3600 )    % 3 days
+            #timelimit = 2 * 3600 )    % 2 hours
       {
          Send( self, @SetQuestNodeAssignHint, #index = 219, #new_hint = lichraise_assign_3 );
          Send( self, @SetQuestNodeSuccessHint, #index = 219, #new_hint = lichraise_success_3 );
