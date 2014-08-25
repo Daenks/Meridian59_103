@@ -10,13 +10,15 @@
  */
 
 #include "client.h"
+#include "client.h"
 
 player_info player;
 room_type current_room;
 BOOL dataValid = FALSE;
 
 // si: currently selected group (invent,spells,skills||stats)
-BYTE group = -1;
+// 5 == STATS_INVENTORY 
+BYTE group = 5;
 
 /* This flag is True before we get the first player info message from the server,
  * and when we're not in the game.  We use it to keep track of entering the game,
