@@ -142,7 +142,7 @@ classvars:
    viDifficulty = 9
    viVisionDistance = 60
    viKarma = -100
-   viDefault_behavior = AI_FIGHT_AGGRESSIVE |  AI_FIGHT_WIZARD_KILLER | AI_FIGHT_HYPERAGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS | AI_FIGHT_THROUGH_WALLS | AI_FIGHT_SWITCHALOT
+   viDefault_behavior = AI_FIGHT_AGGRESSIVE |  AI_FIGHT_WIZARD_KILLER | AI_FIGHT_HYPERAGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS | AI_FIGHT_THROUGH_WALLS | AI_FIGHT_SWITCHALOT | AI_MOVE_WALKTHROUGH_WALLS
    viAttributes = MOB_LISTEN | MOB_RECEIVE | MOB_TEACHER
 
    vrSound_miss = lich_sound_miss
@@ -218,7 +218,7 @@ messages:
 
    SetForSale()
    {
-      plFor_sale = $; % [ $, $, [ SID_DEATHS_DOOR ], $ ];
+      plFor_sale = [ $, $, $ ];
 
       return;
    }
@@ -360,7 +360,7 @@ messages:
    }
 
    %
-   % Damage and new quest code
+   % Damage and new quest/boss battle code
    %
 
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0)
@@ -439,7 +439,10 @@ messages:
          }
       }
 
-      plAttackers = Cons(what,plAttackers);
+      if IsClass(what,&Player)
+      {
+         plAttackers = Cons(what,plAttackers);
+      }
 
       propagate;
    }
@@ -516,8 +519,20 @@ messages:
 
       % Only continue if a monster died
       if victim = self
-         OR IsClass(victim,&Player)
       {
+         return;
+      }
+
+      if IsClass(victim,&Player)
+      {
+         for i in plAttackers
+         {
+            if i = victim
+            {
+               plAttackers = DelListElem(plAttackers, i);
+            }
+         }
+
          return;
       }
 
@@ -536,7 +551,7 @@ messages:
          Send(self,@ResumeSlaughter,#oTarget=what);
       }
 
-      return;
+      propagate;
    }
 
    ResumeSlaughter(oTarget=$)
@@ -568,6 +583,14 @@ messages:
       }
 
       return;
+   }
+
+   SomethingMoved()
+   "Delete walls around us"
+   {
+      Send(Send(self,@GetOwner),@DeleteWallsAroundBattler,#who=self);
+
+      propagate;
    }
 
    MonsterAttack(what=$)
@@ -654,13 +677,13 @@ messages:
          propagate;
       }
 
-      if ((Random(1,piBlindCounterChance) = 1)
+      if ((Random(1,(100-piBlindCounterChance)) = 1)
          OR (Send(oSpell,@GetSchool)=SS_QOR))
          AND Send(self,@CanSee,#what=who)
       {
          Send(self,@MonsterCastAttackSpell,#what=who);
 
-         return FALSE;
+         propagate;
       }
 
       propagate;
@@ -673,7 +696,7 @@ messages:
          if IsClass(use_weapon,&RangedWeapon)
             AND victim = self
             AND Send(self,@CanSee,#what=what)
-            AND random(1,piBlindCounterChance) = 1
+            AND random(1,(100-piBlindCounterChance)) = 1
          {
             Send(self,@MonsterCastAttackSpell,#What=what);
 
