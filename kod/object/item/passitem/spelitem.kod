@@ -490,7 +490,7 @@ messages:
       {
          Send(poOwner,@MsgSendUser,#message_rsc=combine_spell_item_rsc,#parm1=Send(sacrificed_item,@GetName),#parm2=piHits,#parm3=piSpellPower);
       }
-      Send(sacrificed_item,@Delete);
+      Post(sacrificed_item,@Delete);
       
       return;
    }
