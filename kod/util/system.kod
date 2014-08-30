@@ -3176,6 +3176,8 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      Send(self,@CreateOneSpellIfNew,#num=SID_GUILDHALL_RECALL,#class=&GuildHallRecall);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HOMETOWN_RECALL,#class=&HometownRecall);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);
@@ -5089,6 +5091,9 @@ messages:
       plItemTemplates = cons(create(&FeignDeathPotion),plItemTemplates);
       plItemTemplates = cons(create(&RescuePotion),plItemTemplates);
       plItemTemplates = cons(create(&EagleEyesPotion),plItemTemplates);
+      plItemTemplates = cons(create(&GuildhallRecallPotion),plItemTemplates);
+      plItemTemplates = cons(create(&HometownRecallPotion),plItemTemplates);
+
 
       plItemTemplates = cons(create(&NecromancerAmulet),plItemTemplates);
       plItemTemplates = cons(create(&HunterSword),plItemTemplates);

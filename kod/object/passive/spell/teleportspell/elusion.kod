@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Elusion is Spell
+Elusion is TeleportationSpell
 
 constants:
 
@@ -39,12 +39,18 @@ resources:
 
    % Yeah, it's Illusionary wounds sound, but it fits.  Plus, Ill. Wounds wasn't using it anymore.
    Elusion_sound = riluswnd.wav
+   
+   Elusion_Start = "You engage yourself in teleporting."
+   Elusion_Already_Cast = "You are already attempting to teleport, and your deeper focus fails."
 
 classvars:
 
    vrName = Elusion_name_rsc
    vrIcon = Elusion_icon_rsc
    vrDesc = Elusion_desc_rsc
+   
+   Teleport_Start_Rsc = Elusion_Start
+   Teleport_Already_Cast_Rsc = Elusion_Already_Cast
 
    viSpell_num = SID_ELUSION
    viSchool = SS_RIIJA
@@ -61,7 +67,7 @@ classvars:
 properties:
 
    % If true, can cast elusion from any room.  Otherwise it's limited.
-   pbCanCastFromAnywhere = FALSE
+   pbCanCastFromAnywhere = TRUE
 
 messages:
 
@@ -77,22 +83,13 @@ messages:
    {
       local oRoom, iRoomNum;
 
-      % Can't cast just after attacking someone
-      if Send(who, @GetLastPlayerAttackTime) + 
-         Send(Send(SYS, @GetSettings), @TeleportAttackDelaySec) >
-         GetTime()
-      {
-         Send(who, @MsgSendUser, #message_rsc = spell_too_soon_since_attacking);
-         return FALSE;
-      }         
-
       if pbCanCastFromAnywhere
       {
          propagate;
       }
 
       % Can only cast from certain rooms.  This was added because being
-      % able to escapt from anywhere was too powerful.
+      % able to escape from anywhere was too powerful.
 
       oRoom = Send(who, @GetOwner);
       iRoomNum = Send(oRoom, @GetRoomNum);
@@ -145,7 +142,7 @@ messages:
 
    SomethingSaidDuringTrance(who=$,string=$,lTargets = $)
    {
-      local lAllTargets, oGuildHall, sRoomName, bFound, oRoom, i, each_obj;
+      local lAllTargets, oGuildHall, sRoomName, bFound, oRoom;
 
       % Check if string is a location.  If it is, and the caster has sufficent spellpower make 
       %   it the target.  Get percent in the target spell.  If not there or fail check bail and print failure.
@@ -175,26 +172,13 @@ messages:
          if StringContain(string,sRoomName)
          {
             bFound = TRUE;
-            post(oRoom,@Teleport,#what=who);
-            
-            for i in Send(Send(who,@GetOwner),@GetHolderActive)
-            {
-               each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
-               if IsClass(each_obj,&User)
-               {
-                  Send(each_obj,@MsgSendUser,#message_rsc=Elusion_depart_to_destination,#parm1=Send(who,@GetName));
-               }
-            }
+            Post(self,@CastSpell,#who=who,#iSpellPower=99,#oDestRoom=oRoom);
             
             break;
          }
       }
 
-      if bFound
-      { 
-         send(who,@MsgSendUser,#message_rsc=Elusion_success); 
-      }
-      else
+      if NOT bFound
       {
          send(who,@MsgSendUser,#message_rsc=Elusion_fail);
       }
@@ -281,14 +265,33 @@ messages:
    {
       send(who,@MsgSendUser,#message_rsc=Elusion_No_Location_Given);        
              
+      return FALSE;
+   }
+   
+   DoTeleport(who=$,oDestRoom=$)
+   {
+      local i, each_obj;
+
+      if oDestRoom <> $
+         AND who <> $
+         AND Send(who,@GetOwner) <> $
+      {
+         for i in Send(Send(who,@GetOwner),@GetHolderActive)
+         {
+            each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&User)
+               AND each_obj <> who
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=Elusion_depart_to_destination,#parm1=Send(who,@GetName));
+            }
+         }
+
+         Send(who,@MsgSendUser,#message_rsc=Elusion_success);
+         Post(oDestRoom,@Teleport,#what=who);
+      }
+
       return;
    }
-
-   SpellBannedInArena()
-   {
-      return TRUE;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

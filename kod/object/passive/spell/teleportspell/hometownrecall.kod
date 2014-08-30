@@ -1,0 +1,122 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HometownRecall is TeleportationSpell
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   HometownRecall_name_rsc = "hometown recall"
+   HometownRecall_icon_rsc = iblink.bgf
+   HometownRecall_desc_rsc = \
+      "Focuses all your will on returning to your hometown. Ability determines how fast you recall. "
+      "Casting at your hometown will return you to whence you came if the ability is used recently enough, "
+      "and without moving far."
+      "Requires nothing but willpower to cast."
+
+   HometownRecall_Start = "You begin focusing teleportation magics."
+   HometownRecall_Success = "You move through space."
+   HometownRecall_Already_Cast = "You are already attempting to teleport."
+   HometownRecall_No_Region = "Your hometown seems to be too far away to reach by magical means."
+   
+   HometownRecall_depart_to_destination = "%s vanishes into pale white light."
+
+classvars:
+
+   vrName = HometownRecall_name_rsc
+   vrIcon = HometownRecall_icon_rsc
+   vrDesc = HometownRecall_desc_rsc
+
+   Teleport_Start_Rsc = HometownRecall_Start
+   Teleport_Already_Cast_Rsc = HometownRecall_Already_Cast
+
+   viSpell_num = SID_HOMETOWN_RECALL
+   viSchool = SS_KRAANAN
+   viSpell_level = 1
+   viMana = 16
+
+   viChance_To_Increase = 10
+   viMeditate_ratio = 30
+
+   vbInstantInSafeZones = FALSE
+
+properties:
+
+messages:
+
+   DoTeleport(who = $)
+   {
+      local i, each_obj, oCurrentRoom, oTargetRoom;
+
+      send(who,@MsgSendUser,#message_rsc=HometownRecall_Success);
+            
+      for i in Send(Send(who,@GetOwner),@GetHolderActive)
+      {
+         each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+            AND each_obj <> who
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=HometownRecall_depart_to_destination,#parm1=Send(who,@GetName));
+         }
+      }
+      
+      if Send(who,@HasHometownRecallSavedFightingSpot)
+      {
+         Send(who,@HometownRecallSendPlayerToBoundLocation);
+         Send(who,@ClearHometownRecallSavedFightingSpot);
+         Send(who,@ClearHometownRecallTimer);
+         return;
+      }
+
+      Send(who,@HometownRecallBindPlayerToCurrentLocation);
+      Send(who,@StartHometownRecallTimer);
+
+      oCurrentRoom = send(who,@GetOwner);
+
+      if oCurrentRoom <> $
+      {
+
+         % Teleport to Ko'catan Inn if we're in Kocatan, or at the Pool of Vigor.
+         if send(oCurrentRoom,@GetRegion) = RID_KOCATAN
+            OR send(oCurrentRoom,@GetRoomNum) = RID_ORC_CAVE5_EXT
+         {
+            oTargetRoom = send(SYS,@FindRoomByNum,#num=RID_KOC_INN);
+            post(oTargetRoom,@Teleport,#what=who);
+         
+            return;
+         }
+
+         % If we're in the orc caves, teleport to the Pool of Vigor.
+         % Except: actually being in the Pool of Vigor is handled above.
+         if send(oCurrentRoom,@GetRegion) = RID_ORC_CAVE1
+         {
+            oTargetRoom = send(SYS,@FindRoomByNum,#num=RID_ORC_CAVE5_EXT);
+            post(oTargetRoom,@Teleport,#what=who);
+         
+            return;
+         }
+      }
+
+      % Default: Go to our home room.
+      post(who,@AdminGoToSafety);
+
+      return;
+   }
+
+   GetPotionClass()
+   {
+      return &HometownRecallPotion;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

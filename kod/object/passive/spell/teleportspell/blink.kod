@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Blink is Spell
+Blink is TeleportationSpell
 
 constants:
    include blakston.khd
@@ -22,6 +22,9 @@ resources:
 	 "Requires nothing but a will to move."
 
    blink_spell_intro = "Riija Level 1: The Trickster's most basic spell teleports you to the local place of power."
+   
+   Blink_Start = "You begin focusing your mind on motion."
+   Blink_Already_Cast = "You can't blink, as you are already attempting to teleport."
 
 classvars:
 
@@ -29,7 +32,8 @@ classvars:
    vrIcon = blink_icon_rsc
    vrDesc = blink_desc_rsc
 
-   viCast_time = 10000
+   Teleport_Start_Rsc = Blink_Start
+   Teleport_Already_Cast_Rsc = Blink_Already_Cast
 
    vrSpell_intro = blink_spell_intro
 
@@ -40,28 +44,24 @@ classvars:
    viSpellExertion = 10
    viChance_To_Increase = 15
    viMeditate_ratio = 20
+   
+   vbIsCombatRestricted = FALSE
+   vbRestrictedInSomeAreas = FALSE
 
 properties:
 
 messages:
 
-   ResetReagents()
-   {
-      plReagents = $;
-
-      return;
-   }
-
-   GetNumSpellTargets()
-   {
-      return 0;
-   }
-
-   CastSpell(who = $, lTargets = $)
+   DoTeleport(who=$)
    {
       local owner, oRoom;
 
       owner = Send(who,@GetOwner);
+      
+      if owner = $
+      {
+         return;
+      }
 
       if send(owner,@GetRoomNum) = RID_KOC_HALL_OF_HEROES
       {
@@ -70,7 +70,7 @@ messages:
          {
             post(oRoom,@Teleport,#what=who);
 
-            propagate;
+            return;
          }
       }
 
@@ -81,19 +81,13 @@ messages:
          {
             post(oRoom,@teleport,#what=who);
 
-            propagate;
+            return;
          }
       }
 
       send(owner,@Teleport,#what=who);  
 
-      propagate;
-   }
-
-   SuccessChance(who=$)
-   "Since Blink is a bug fix, always have it succeed."
-   {
-      return TRUE;
+      return;
    }
 
    CanForget()
@@ -101,7 +95,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

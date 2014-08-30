@@ -87,8 +87,13 @@ properties:
    % hit-and-run.  If 0, there's no restriction on when the spell can be cast.
    piTeleportAttackDelaySec = 2 * 60
 
-   % Rescue always takes at least this long to cast
+   % Teleports will never be faster than this duration in seconds.
+   % Times may be up to twice as slow at zero spellpower.
    piRescueBaseDelaySec = 15
+   piGuildHallRecallBaseDelaySec = 30
+   piHometownRecallBaseDelaySec = 60
+   piElusionBaseDelaySec = 10
+   piDeathRiftBaseDelaySec = 30
 
    % Time in milliseconds that ghosts will last before taking a penalty
    piLogoffPenaltyGhostTime = 480 * 1000
@@ -332,9 +337,34 @@ messages:
       return piTeleportAttackDelaySec;
    }
 
-   RescueBaseDelaySec()
+   GetTeleportBaseDelaySec(what=$)
    {
-      return piRescueBaseDelaySec;
+      if IsClass(what,&Rescue)
+      {
+         return piRescueBaseDelaySec;
+      }
+      
+      if IsClass(what,&GuildHallRecall)
+      {
+         return piGuildHallRecallBaseDelaySec;
+      }
+      
+      if IsClass(what,&HometownRecall)
+      {
+         return piHometownRecallBaseDelaySec;
+      }
+      
+      if isClass(what,&Elusion)
+      {
+         return piElusionBaseDelaySec;
+      }
+      
+      if isClass(what,&DeathRift)
+      {
+         return piDeathRiftBaseDelaySec;
+      }
+
+      return 10;
    }
 
    DisplaySpellData()

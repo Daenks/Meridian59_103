@@ -175,10 +175,12 @@ resources:
       "~IYour liege has no use for one such as you, lacking in prowess or "
       "devotion.  Your name has been stricken from the roll of membership.~n"
 
-   player_cancel_rescue = \
+   player_cancel_teleport = \
       "~IYour aggression halts your attempt to escape from the current situation."
-   player_cancel_rescue_phase = \
-      "~IThe protective magics that might have rescued you instead snap and fade as you phase out of existence."
+   player_cancel_teleport_phase = \
+      "~IThe motive magics that might have teleported you instead snap and fade as you phase out of existence."
+   teleportation_gone_too_far_fail = \
+      "~IAs you travel away from your own teleportation magics, you feel them snap and fade."
 
    player_improved = "~I~BYou have improved in the art of %s."
    player_improved_wav_rsc = imp.wav
@@ -746,6 +748,8 @@ resources:
    phase_fatigue_cleared = "This area of peace lifts your phase fatigue."
    phased_player_description = "This is the ghosted body of %q, whose consciousness has travelled to "
                                "another plane of existence."
+                               
+   Hometown_Bind_Timed_Out = "~IYou lose your grasp on the last place you hometown recalled from."
    
 classvars:
 
@@ -990,8 +994,10 @@ properties:
    % This keeps the duration of our Second Wind skill's "downtime"
    ptSecondWind = $
 
-   % Measures how long we have to wait before we're rescued.
-   ptRescue = $
+   % Measures how long we have to wait before we teleport, and by which manner.
+   ptTeleportationTimer = $
+   poTeleportationSpell = $
+   poTeleportationDestRoom = $
 
    % piTimeAttackedPlayer records the last time we attacked a player.
    %  This is used in conjunction with the constant ATTACKED_PLAYER_WAIT
@@ -1013,6 +1019,17 @@ properties:
    piBound_fine_row = 0
    piBound_fine_col = 0
    piBound_angle = ANGLE_SOUTH
+   
+   % Bound location for Hometown recall
+   piHometownRecallBound_Room = $
+   piHometownRecallBound_row = 0
+   piHometownRecallBound_col = 0
+   piHometownRecallBound_fine_row = 0
+   piHometownRecallBound_fine_col = 0
+   piHometownRecallBound_angle = 0
+   
+   ptHometownRecallTimer = $
+   piHometownGracePeriodTime = 0
    
    % Is the player currently using a Death Rift spell?
    pbDeath_rift = FALSE
@@ -1097,7 +1114,7 @@ messages:
          piCrystalizeManaSurging = FALSE;
       }
 
-      Send(self,@CancelRescue);
+      Send(self,@CancelTeleportation);
 
       if ptAttackTimer <> $
       {
@@ -1506,62 +1523,6 @@ messages:
       return FALSE;
    }
 
-   StartRescueTimer(time=5000)
-   "Starts a timer which will rescue the player after time ms."
-   {
-      if ptRescue <> $
-      {
-         return FALSE;
-      }
-
-      ptRescue = CreateTimer(self,@EndRescueTimer,time);
-
-      return TRUE;
-   }
-
-   EndRescueTimer()
-   {
-      ptRescue = $;
-      Send(self,@EndRescue);
-
-      return;
-   }
-
-   EndRescue()
-   "Deletes rescue timer if it exists and does the rescue operation."
-   {
-      Send(self,@CancelRescue);
-      
-      if poOwner <> $
-         AND Send(poOwner,@GetRoomNum) <> RID_OUTOFGRACE
-      {
-         Send(Send(SYS,@FindSpellByNum,#num=SID_RESCUE),@DoRescue,#who=self);
-      }
-
-      return;
-   }
-   
-   CancelRescue()
-   "Cancels the rescue timer if it exists and does not execute the rescue operation."
-   {
-      if ptRescue <> $
-      {
-         DeleteTimer(ptRescue);
-         ptRescue = $;
-      }
-      return;
-   }
-
-   CanRescue()
-   {
-      if ptRescue <> $
-      {
-         return FALSE;
-      }
-
-      return TRUE;
-   }
-
    TryDeflect(what = $,caster=$)
    {
       local oDeflect;
@@ -1616,6 +1577,12 @@ messages:
             Send(self,@MsgSendUser,#message_rsc=phase_fatigue_cleared);
             Send(self,@RefreshPhaseTimeToBase);
          }
+      }
+      
+      if Send(self,@IsTeleporting)
+      {
+         Send(self,@MsgSendUser,#message_rsc=teleportation_gone_too_far_fail);
+         Post(self,@CancelTeleportation);
       }
 
       return;
@@ -2137,7 +2104,7 @@ messages:
          ptMana = $;
       }
 
-      Send(self,@CancelRescue);
+      Send(self,@CancelTeleportation);
 
       % Tell others that we're leaving
       oRoom = Send(self, @GetOwner);
@@ -4010,13 +3977,12 @@ messages:
          return FALSE;
       }
 
-      % Stop any rescue attempts if the user makes an attack.
-      if ptRescue <> $
+      % Stop any teleport attempts if the user makes an attack.
+      if Send(self,@IsTeleporting)
          AND actual = TRUE
       {
-         Send(self,@MsgSendUser,#message_rsc=player_cancel_rescue);
-         DeleteTimer(ptRescue);
-         ptRescue = $;
+         Send(self,@MsgSendUser,#message_rsc=player_cancel_teleport);
+         Send(self,@CancelTeleportation);
       }
 
       return TRUE;
@@ -8475,8 +8441,8 @@ messages:
          plApparitionList = $;
       }
 
-      % Stop any rescue attempts that were going on.
-      Send(self,@CancelRescue);
+      % Stop any teleport attempts that were going on.
+      Send(self,@CancelTeleportation);
       
       piLastDeathTime = getTime();
 
@@ -13645,12 +13611,11 @@ messages:
       {
          ptPhaseTimer = CreateTimer(self,@PhaseTimerEnd,piRemainingPhaseTime);
 
-         % Stop any rescue attempts if the user phases out.
-         if ptRescue <> $
+         % Stop any teleport attempts if the user phases out.
+         if Send(self,@IsTeleporting)
          {
-            Send(self,@MsgSendUser,#message_rsc=player_cancel_rescue_phase);
-            DeleteTimer(ptRescue);
-            ptRescue = $;
+            Send(self,@MsgSendUser,#message_rsc=player_cancel_teleport_phase);
+            Send(self,@CancelTeleportation);
          }
       }
       
@@ -13798,6 +13763,245 @@ messages:
    {
       pbReagentBagAuto = value;
       return;
+   }
+   
+   StartTeleportationTimer(iTime=10000,oTeleportationSpell=$,oDestRoom=$)
+   {
+      if ptTeleportationTimer <> $
+      {
+         DeleteTimer(ptTeleportationTimer);
+         ptTeleportationTimer = $;
+      }
+
+      ptTeleportationTimer = CreateTimer(self,@EndTeleportationTimer,iTime);
+      poTeleportationSpell = oTeleportationSpell;
+      poTeleportationDestRoom = oDestRoom;
+
+      return;
+   }
+   
+   IsTeleporting()
+   {
+      if ptTeleportationTimer <> $
+      {
+         return TRUE;
+      }
+      return FALSE;
+   }
+   
+   CancelTeleportation()
+   {
+      if ptTeleportationTimer <> $
+      {
+         DeleteTimer(ptTeleportationTimer);
+         ptTeleportationTimer = $;
+         poTeleportationSpell = $;
+         poTeleportationDestRoom = $;
+      }
+
+      return;
+   }
+   
+   EndTeleportationTimer(timer=$)
+   {
+      ptTeleportationTimer = $;
+      if poTeleportationSpell <> $
+      {
+         Send(poTeleportationSpell,@DoTeleport,#who=self,#oDestRoom=poTeleportationDestRoom);
+         poTeleportationSpell = $;
+         poTeleportationDestRoom = $;
+      }
+
+      return;
+   }
+   
+   ClearHometownRecallSavedFightingSpot()
+   {
+      if piHometownRecallBound_Room <> $
+      {
+         piHometownRecallBound_Room = $;
+         piHometownRecallBound_row = 0;
+         piHometownRecallBound_col = 0;
+         piHometownRecallBound_fine_row = 0;
+         piHometownRecallBound_fine_col = 0;
+         piHometownRecallBound_angle = 0;
+      }
+
+      return;
+   }
+   
+   HasHometownRecallSavedFightingSpot()
+   {
+      if piHometownRecallBound_Room <> $
+      {
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+   
+   HometownRecallBindPlayerToCurrentLocation()
+   "Saves the player's current location as a special teleport destination."
+   {
+      local poOwner;
+      
+      poOwner = Send(self,@GetOwner);
+      
+      if poOwner = $
+      {
+         return;
+      }
+
+      piHometownRecallBound_Room = Send(poOwner,@GetRoomNum);
+      piHometownRecallBound_row = Send(self,@GetRow);
+      piHometownRecallBound_col = Send(self,@GetCol);
+      piHometownRecallBound_fine_row = Send(self,@GetFineRow);
+      piHometownRecallBound_fine_col = Send(self,@GetFineCol);
+      piHometownRecallBound_angle = Send(self,@GetAngle);
+
+      return;
+   }
+
+   HometownRecallSendPlayerToBoundLocation()
+   "Sends the player to their saved teleport destination."
+   {
+      local poOwner;
+      
+      poOwner = Send(self,@GetOwner);
+      
+      if poOwner = $
+         OR piHometownRecallBound_Room = $
+         OR NOT Send(self,@IsLoggedOn)
+      {
+         return;
+      }
+
+      Send(SYS,@UtilGoNearSquare,#what=self,
+           #where=Send(SYS,@FindRoomByNum,#num=piHometownRecallBound_Room),
+           #new_row=piHometownRecallBound_row,#new_col=piHometownRecallBound_col,
+           #fine_row=piHometownRecallBound_fine_row,#fine_col=piHometownRecallBound_fine_col,
+           #new_angle=piHometownRecallBound_angle, #max_distance=3);
+      
+      return;
+   }
+   
+   StartHometownRecallTimer(overrideTime=0)
+   {
+      if ptHometownRecallTimer = $
+      {
+         if overrideTime = 0
+         {
+            ptHometownRecallTimer = CreateTimer(self,@EndHometownRecallGracePeriod,300000);
+         }
+         else
+         {
+            ptHometownRecallTimer = CreateTimer(self,@EndHometownRecallGracePeriod,overrideTime);
+         }
+      }
+
+      return;
+   }
+   
+   ClearHometownRecallTimer()
+   {
+      if ptHometownRecallTimer <> $
+      {
+         DeleteTimer(ptHometownRecallTimer);
+         ptHometownRecallTimer = $;
+      }
+
+      return;
+   }
+   
+   FreezeHometownRecallTimer()
+   {
+      if ptHometownRecallTimer <> $
+      {
+         piHometownGracePeriodTime = GetTimeRemaining(ptHometownRecallTimer);
+         DeleteTimer(ptHometownRecallTimer);
+         ptHometownRecallTimer = $;
+      }
+
+      return;
+   }
+   
+   ResumeHometownRecallTimer()
+   {
+      if ptHometownRecallTimer = $
+         AND piHometownGracePeriodTime > 0
+      {
+         ptHometownRecallTimer = CreateTimer(self,@EndHometownRecallGracePeriod,piHometownGracePeriodTime);
+         piHometownGracePeriodTime = 0;
+      }
+      return;
+   }
+   
+   EndHometownRecallGracePeriod(timer=$)
+   {
+      % Don't nab the destination away from players that are casting it
+      if Send(self,@IsTeleporting)
+      {
+         Send(self,@ClearHometownRecallTimer);
+         Send(self,@StartHometownRecallTimer,#overrideTime=10000);
+         return;
+      }
+
+      ptHometownRecallTimer = $;
+      Send(self,@MsgSendUser,#message_rsc=Hometown_Bind_Timed_Out);
+      Send(self,@ClearHometownRecallSavedFightingSpot);
+      return;
+   }
+   
+   PlayerEnemiesInYellRange()
+   "Returns a list of player enemies in this room and adjacent rooms the player can attack."
+   {
+      local iRID, oRoom, oEachRoom, i, oEachObj, lEnemies;
+
+      lEnemies = $;
+      
+      oRoom = Send(self,@GetOwner);
+      if oRoom = $
+      {
+         return lEnemies;
+      }
+
+      for i in Send(oRoom,@GetHolderActive)
+      {
+         oEachObj = Send(oRoom,@HolderExtractObject,#data=i);
+
+         if IsClass(oEachObj,&User)
+            AND oEachObj <> self
+            AND NOT IsClass(oEachObj,&DM)
+            AND NOT Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+            AND Send(self,@AllowPlayerAttack,#victim=oEachObj,#report=FALSE,#actual=FALSE)
+         {
+            lEnemies = Cons(oEachObj,lEnemies);
+         }
+      }
+
+      for iRID in Send(oRoom,@GetYellZone)
+      {
+         oEachRoom = Send(SYS,@FindRoomByNum,#num=iRID);
+         if oEachRoom <> $
+            AND NOT IsClass(oEachRoom,&GuildHall)
+         {
+            for i in Send(oEachRoom,@GetHolderActive)
+            {
+               oEachObj = Send(oEachRoom,@HolderExtractObject,#data=i);
+               
+               if IsClass(oEachObj,&User)
+                  AND oEachObj <> self
+                  AND NOT IsClass(oEachObj,&DM)
+                  AND NOT Send(oEachRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+                  AND Send(self,@AllowPlayerAttack,#victim=oEachObj,#report=FALSE,#actual=FALSE)
+               {
+                  lEnemies = Cons(oEachObj,lEnemies);
+               }
+            }
+         }
+      }
+      
+      return lEnemies;
    }
 
 end

@@ -1,0 +1,121 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GuildHallRecall is TeleportationSpell
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GuildHallRecall_name_rsc = "guildhall recall"
+   GuildHallRecall_icon_rsc = ielusion.bgf
+   GuildHallRecall_desc_rsc = \
+      "Calls upon Kraanan to transport you to your guild's hall.  Ability determines how fast you recall.  "
+      "Requires orc teeth to cast."
+
+   GuildHallRecall_Start = "You start your recall preparations."
+   GuildHallRecall_Success = "You feel your guild hall reach out and pull you through space."
+   GuildHallRecall_Already_Cast = "You are already attempting to teleport."
+   GuildHallRecall_No_GuildHall = "You have no guild hall to call upon."
+   GuildHallRecall_No_Region = "Your guild hall seems to be too far away to reach by magical means."
+   
+   GuildHallRecall_depart_to_destination = "%s vanishes into shimmering blue light."
+
+classvars:
+
+   vrName = GuildHallRecall_name_rsc
+   vrIcon = GuildHallRecall_icon_rsc
+   vrDesc = GuildHallRecall_desc_rsc
+
+   Teleport_Start_Rsc = GuildHallRecall_Start
+   Teleport_Already_Cast_Rsc = GuildHallRecall_Already_Cast
+
+   viSpell_num = SID_GUILDHALL_RECALL
+   viSchool = SS_KRAANAN
+   viSpell_level = 2
+   viMana = 16
+
+   viChance_To_Increase = 10
+   viMeditate_ratio = 30
+
+   vbInstantInSafeZones = FALSE
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+   DoTeleport(who = $)
+   {
+      local i, each_obj, oCurrentRoom, oTargetRoom, oGuild;
+      
+      if Send(who,@GetGuild) = $
+         OR Send(Send(who,@GetGuild),@GetGuildHall) = $
+      {
+         send(who,@MsgSendUser,#message_rsc=GuildHallRecall_No_GuildHall);
+         return;
+      }
+
+      send(who,@MsgSendUser,#message_rsc=GuildHallRecall_Success);
+
+      oCurrentRoom = send(who,@GetOwner);
+
+      if oCurrentRoom <> $
+      {
+         % Are they guilded with a guild hall?
+         oGuild = send(who,@GetGuild);
+         if oGuild <> $
+         {
+            oTargetRoom = send(oGuild,@GetGuildHall);
+
+            % If we have a guild hall, and not already in the guild hall,
+            %  and we're in the same region as the hall, go there.
+            if oTargetRoom <> $
+               AND oTargetRoom <> oCurrentRoom
+               AND send(oTargetRoom,@GetRegion) = send(oCurrentRoom,@GetRegion)
+            {
+               post(oTargetRoom,@Teleport,#what=who);
+            
+               for i in Send(Send(who,@GetOwner),@GetHolderActive)
+               {
+                  each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+                  if IsClass(each_obj,&User)
+                     AND each_obj <> who
+                  {
+                     Send(each_obj,@MsgSendUser,#message_rsc=GuildHallRecall_depart_to_destination,#parm1=Send(who,@GetName));
+                  }
+               }
+
+               return;
+            }
+         }
+      }
+
+      send(who,@MsgSendUser,#message_rsc=GuildHallRecall_No_Region);
+
+      return;
+   }
+
+   GetPotionClass()
+   {
+      return &GuildhallRecallPotion;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

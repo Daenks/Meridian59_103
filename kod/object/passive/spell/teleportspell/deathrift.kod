@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DeathRift is Spell
+DeathRift is TeleportationSpell
 
 constants:
 
@@ -33,26 +33,34 @@ resources:
    DeathRift_travel = "A vast passage of flames opens, and you find yourself pulled to the Underworld!"
    DeathRift_travel_notify = "A fiery portal flares open briefly, dragging %s to the Underworld!"
    DeathRift_travel_notify_with_dest = "A fiery portal flares open briefly, dragging %s through the Underworld and toward %s!"
-   DeathRift_generic_fail = "The evil pact's magic fails. Something seems amiss."
    DeathRift_warning = "~BYou sense a nearby connection forming between dimensions!"
+   
+   Death_Rift_Start = "You begin summoning the flames of the Underworld..."
+   Death_Rift_Already_Cast = "You can't summon further energies, as you are already attempting to teleport."
    
 classvars:
 
    vrName = DeathRift_name_rsc
    vrIcon = DeathRift_icon_rsc
    vrDesc = DeathRift_desc_rsc
+
+   Teleport_Start_Rsc = Death_Rift_Start
+   Teleport_Already_Cast_Rsc = Death_Rift_Already_Cast
    
    viSpell_num = SID_DEATH_RIFT
    viSchool = SS_QOR
    viSpell_level = 6
    viMana = 20
    viSpellExertion = 50
-   viCast_time = 60000
 
    viChance_To_Increase = 10
    viMeditate_ratio = 100
 
    vrSucceed_wav = DeathRift_sound
+   viFlash = FLASH_BAD
+   
+   vbIsCombatRestricted = FALSE
+   vbInstantInSafeZones = FALSE
 
 properties:
 
@@ -70,54 +78,42 @@ messages:
    {
       local oRoom;
 
-      if who = $
-      {
-         return false;
-      }
-      
       if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
          Send(who,@MsgSendUser,#message_rsc = DeathRift_no_angeled);
-         return false;
-      }
-      
-      oRoom = Send(who,@GetOwner);
-      
-      if oRoom = $
-         OR NOT Send(oRoom,@CanHavePlayerPortal)
-         OR Send(oRoom, @GetRegion) = RID_NEWB_BASE
-         OR Send(oRoom, @GetRegion) = RID_GUEST_BASE
-      {
-         Send(who,@MsgSendUser,#message_rsc = DeathRift_generic_fail);
-         return false;
+         return FALSE;
       }
       
       propagate;
    }
 
-   GetTranceTime(iSpellpower=0,who=$)
+   CastSpell(who=$)
    {
-      return bound(viCast_time-(iSpellpower*500),10000,60000);
-   }
-
-   GetNumSpellTargets()
-   {
-      return 0;
-   }
-
-   CastSpell(who = $, lTargets = $)
-   {
-      local poOwner, oTargetRoom, i, each_active;
-
-      poOwner = Send(who,@GetOwner);
+      local oRoom;
       
-      if poOwner = $
+      oRoom = Send(who,@GetOwner);
+      
+      if oRoom <> $
+         AND NOT (Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+                  AND Send(oRoom,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF))
       {
+         Send(who,@MsgSendUser,#message_rsc=DeathRift_bind);
+         Send(who,@BindPlayerToCurrentLocation);
          return;
       }
-      
-      if Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
-         AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
+   
+      propagate;
+   }
+
+   DoTeleport(who = $, lTargets = $)
+   {
+      local oRoom, oTargetRoom, i, each_active;
+
+      oRoom = Send(who,@GetOwner);
+
+      if oRoom <> $
+         AND Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+         AND Send(oRoom,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
       {
          Send(who,@MsgSendUser,#message_rsc=DeathRift_travel);
          
@@ -136,9 +132,9 @@ messages:
             }
          }
          
-         for i in Send(poOwner,@GetHolderActive)
+         for i in Send(oRoom,@GetHolderActive)
          {
-            each_active = Send(poOwner,@HolderExtractObject,#data=i);
+            each_active = Send(oRoom,@HolderExtractObject,#data=i);
             If IsClass(each_active,&User)
                AND each_active <> who
             {
@@ -159,25 +155,9 @@ messages:
          Post(who,@SetDeathRiftProtection,#value=TRUE);
          Post(who,@StartDeathRiftTimer);
       }
-      else
-      {
-         Send(who,@MsgSendUser,#message_rsc=DeathRift_bind);
-         Send(who,@BindPlayerToCurrentLocation);
-      }
 
-      propagate;
+      return;
    }
-
-   SuccessChance(who=$)
-   {
-      return true;
-   }
-
-   SpellBannedInArena()
-   {
-      return true;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

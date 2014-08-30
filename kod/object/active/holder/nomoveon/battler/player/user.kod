@@ -715,6 +715,8 @@ messages:
          Send(self,@SysMsgSendUser,#message_rsc=user_logon_delay);
          ptLogonDelayTimer = CreateTimer(self,@LogonHoldOff,piLogonDelay);
       }
+      
+      Send(self,@ResumeHometownRecallTimer);
 
       return;
    }
@@ -796,6 +798,8 @@ messages:
 
       % Have to put here so room enchantments are removed first.
       Send(self,@FreezeAllEnchantments);
+      
+      Send(self,@FreezeHometownRecallTimer);
 
       Send(SYS,@SystemUserLogoff,#what=self);
 

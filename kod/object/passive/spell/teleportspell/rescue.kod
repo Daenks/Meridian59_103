@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Rescue is Spell
+Rescue is TeleportationSpell
 
 constants:
 
@@ -25,7 +25,7 @@ resources:
 
    Rescue_Start = "You start your rescue preparations."
    Rescue_Success = "You feel a holy force rescue you from your current situation."
-   Rescue_Already_Cast = "You are already being rescued."
+   Rescue_Already_Cast = "Further magics will not come to your aid when you are already attempting to teleport."
    Rescue_Token_Cancel = "You cannot rescue while holding a token."
    
    Rescue_depart_to_destination = "%s vanishes in a burst of protective light!"
@@ -37,6 +37,9 @@ classvars:
    vrName = rescue_name_rsc
    vrIcon = rescue_icon_rsc
    vrDesc = rescue_desc_rsc
+
+   Teleport_Start_Rsc = Rescue_Start
+   Teleport_Already_Cast_Rsc = Rescue_Already_Cast
 
    viSpell_num = SID_RESCUE
    viSchool = SS_SHALILLE
@@ -61,87 +64,26 @@ messages:
       return;
    }
 
-   GetNumSpellTargets()
+   DoTeleport(who = $)
    {
-      return 0;
-   }
-
-   CanPayCosts(who = $, lTargets = $)
-   {
-      % Can't cast just after attacking someone
-      if Send(who, @GetLastPlayerAttackTime) + 
-         Send(Send(SYS, @GetSettings), @TeleportAttackDelaySec) >
-         GetTime()
-      {
-         Send(who, @MsgSendUser, #message_rsc = spell_too_soon_since_attacking);
-         return FALSE;
-      }
-      
-      if Send(who,@FindHolding,#class=&Token)
-      {
-        send(who,@MsgSendUser,#message_rsc=Rescue_Token_Cancel);
-        
-        return FALSE;
-      }
-
-      if NOT send(who,@CanRescue)
-      {
-         send(who,@MsgSendUser,#message_rsc=Rescue_Already_Cast);
-
-         return FALSE;
-      }
-
-      propagate;
-   }
-
-   CastSpell(who = $, iSpellPower = 0)
-   {
-      local iDelay;
-
-      % Start with the base time.  Reduce time by spellpower.
-      iDelay = 1000 * Send(Send(SYS, @GetSettings), @RescueBaseDelaySec);
-      iDelay = iDelay - (iSpellPower * iDelay) / 100 / 4;
-
-      % Add a little delay in sometimes.
-      if random(1,2) = 1
-      {
-         iDelay = iDelay + random(5000, 10000);
-      }
-
-      send(who,@StartRescueTimer,#time=iDelay);
-      send(who,@MsgSendUser,#message_rsc=Rescue_Start);
-
-      propagate;
-   }
-
-   DoRescue(who = $)
-   {
-      local i, each_obj, oCurrentRoom, oTargetRoom, oGuild;
+      local i, each_obj, oCurrentRoom, oTargetRoom;
 
       send(who,@MsgSendUser,#message_rsc=Rescue_Success);
+            
+      for i in Send(Send(who,@GetOwner),@GetHolderActive)
+      {
+         each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+            AND each_obj <> who
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=Rescue_depart_to_destination,#parm1=Send(who,@GetName));
+         }
+      }
 
       oCurrentRoom = send(who,@GetOwner);
 
       if oCurrentRoom <> $
       {
-         % Are they guilded with a guild hall?
-         oGuild = send(who,@GetGuild);
-         if oGuild <> $
-         {
-            oTargetRoom = send(oGuild,@GetGuildHall);
-
-            % If we have a guild hall, and not already in the guild hall,
-            %  and we're in the same region as the hall, go there.
-            if oTargetRoom <> $
-               AND oTargetRoom <> oCurrentRoom
-               AND send(oTargetRoom,@GetRegion) = send(oCurrentRoom,@GetRegion)
-            {
-               post(oTargetRoom,@Teleport,#what=who);
-
-               return;
-            }
-         }
-
          % Teleport to Ko'catan Inn if we're in Kocatan, or at the Pool of Vigor.
          if send(oCurrentRoom,@GetRegion) = RID_KOCATAN
             OR send(oCurrentRoom,@GetRoomNum) = RID_ORC_CAVE5_EXT
@@ -165,29 +107,14 @@ messages:
 
       % Default: Go to our home room.
       post(who,@AdminGoToSafety);
-            
-      for i in Send(Send(who,@GetOwner),@GetHolderActive)
-      {
-         each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
-         if IsClass(each_obj,&User)
-         {
-            Send(each_obj,@MsgSendUser,#message_rsc=Rescue_depart_to_destination,#parm1=Send(who,@GetName));
-         }
-      }
 
       return;
-   }
-
-   SpellBannedInArena()
-   {
-      return TRUE;
    }
 
    GetPotionClass()
    {
       return &RescuePotion;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
