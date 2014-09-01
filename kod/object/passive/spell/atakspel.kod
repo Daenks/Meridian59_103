@@ -198,10 +198,11 @@ messages:
       }
 
       % A spell (eg. earthquake) might harm the caster also. If so, use this function.
+      % Does half damage to caster.
       if vbSelfHarming
          AND IsClass(who,&Player)
       {
-         Send(Self,@HurtCaster,#who=who,#iDamage=iDamage);
+         Send(Self,@HurtCaster,#who=who,#iDamage=(iDamage/2);
       }
 
       % After figuring damage, do an AssessDamage.  This will handle the necessary
