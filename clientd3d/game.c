@@ -10,10 +10,15 @@
  */
 
 #include "client.h"
+#include "client.h"
 
 player_info player;
 room_type current_room;
 BOOL dataValid = FALSE;
+
+// si: currently selected group (invent,spells,skills||stats)
+// 5 == STATS_INVENTORY 
+BYTE group = 5;
 
 /* This flag is True before we get the first player info message from the server,
  * and when we're not in the game.  We use it to keep track of entering the game,
@@ -690,4 +695,14 @@ int ComputeObjectDistance(room_contents_node *r1, room_contents_node *r2)
 player_info *GetPlayerInfo(void)
 {
    return &player;
+}
+
+void SetCurrentGroup(BYTE newGroup) 
+{
+	group = newGroup;
+}
+
+BYTE GetCurrentGroup() 
+{
+	return group;
 }
