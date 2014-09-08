@@ -131,9 +131,9 @@ messages:
       return 3000;
    }
    
-   PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
+   PeriodicEffect(oBattler=$,iPower=0,iRange=0,source=$)
    {
-      local oBattler, bExhaustedMultiple;
+      local bExhaustedMultiple;
       
       % Sandstorm applies 1-4 slashing damage from the source of the spell.
       % It also drains 1-4 vigor. Both values are based on spellpower, and are not random.
@@ -142,38 +142,33 @@ messages:
 
       bExhaustedMultiple = 1;
       
-      for oBattler in lEnchanted
+      if IsClass(Send(oBattler,@GetOwner),&GuildHall)
+         AND NOT Send(Send(oBattler,@GetOwner),@InFoyer,#who=oBattler)
       {
-         if IsClass(Send(oBattler,@GetOwner),&GuildHall)
-            AND NOT Send(Send(oBattler,@GetOwner),@InFoyer,#who=oBattler)
-         {
-            continue;
-         }
-         
-         if IsClass(oBattler,&User)
-         {
-            if Send(oBattler,@GetVigor) > 9
-            {
-               Send(oBattler,@AddExertion,#amount=((iPower+1)/25)*10000);
-            }
-            else
-            {
-               bExhaustedMultiple = 3;
-            }
-
-            if Send(oBattler,@AssessDamage,#what=source,#report=FALSE,#damage=(((iPower+1)/25)*bExhaustedMultiple),#atype=ATCK_WEAP_SLASH) = $
-            {
-               If IsClass(source,&Battler)
-               {
-                  Send(source,@KilledSomething,#what=oBattler);
-               }
-               Send(oBattler,@Killed,#what=source);
-            }
-         }
-         
-         bExhaustedMultiple = 1;
+         return;
       }
-      
+
+      if IsClass(oBattler,&User)
+      {
+         if Send(oBattler,@GetVigor) > 9
+         {
+            Send(oBattler,@AddExertion,#amount=((iPower+1)/25)*10000);
+         }
+         else
+         {
+            bExhaustedMultiple = 3;
+         }
+
+         if Send(oBattler,@AssessDamage,#what=source,#report=FALSE,#damage=(((iPower+1)/25)*bExhaustedMultiple),#atype=ATCK_WEAP_SLASH) = $
+         {
+            If IsClass(source,&Battler)
+            {
+               Send(source,@KilledSomething,#what=oBattler);
+            }
+  %          Send(oBattler,@Killed,#what=source);
+         }
+      }
+
       return;
    }
 

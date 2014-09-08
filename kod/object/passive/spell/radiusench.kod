@@ -149,6 +149,7 @@ messages:
          for i in plCurrentEnchantments
          {
             if Nth(i,8) = oRoom
+               AND Send(who,@IsAffectedByRadiusEnchantment,#what=self)
             {
                if IsClass(who,&User)
                {
@@ -267,7 +268,7 @@ messages:
    RecalculateActiveEnchantments()
    {
       local i, source, iDrain, iPeriodic, lEnchanted, iPower, iRange, iDuration,
-      iDistance, oObject, oRoom, oActive, oPassive, oCrystalizeMana, iCrystalizeManaAbility;
+      iDistance, oObject, oRoom, oActive, oPassive, oCrystalizeMana, iCrystalizeManaAbility, oPeriodicTarget;
 
       if ptRecalculationTimer <> $
       {
@@ -356,11 +357,29 @@ messages:
             }
          }
 
+         % Refresh information for targets
+         for oObject in lEnchanted
+         {
+            Send(oObject,@AddRadiusEnchantment,#what=self,#iPower=iPower,#source=source);
+         }
+
          % Perform periodic effects
+         % This is especially complicated because we want players to see active spells in the arena while watching
+         % But the spells should not do periodic effects on them (damage, healing, etc).
+         % Non-periodic effects don't generally matter because watchers cannot cast, fight, or use items
          if viPeriodicEffect
             AND iPeriodic > Send(self,@CalculatePeriodicEffectTime,#iPower=iPower)
          {
-            Send(self,@PeriodicEffect,#lEnchanted=lEnchanted,#iPower=iPower,#iRange=iRange,#source=source);
+            for oPeriodicTarget in lEnchanted
+            {
+               if Send(oPeriodicTarget,@GetOwner) <> $
+                  AND IsClass(Send(oPeriodicTarget,@GetOwner),&Room)
+                  AND Send(Send(oPeriodicTarget,@GetOwner),@IsValidTarget,#who=oPeriodicTarget)
+               {
+                  Send(self,@PeriodicEffect,#oBattler=oPeriodicTarget,#iPower=iPower,#iRange=iRange,#source=source);
+               }
+            }
+
             iPeriodic = iPeriodic - Send(self,@CalculatePeriodicEffectTime,#iPower=iPower);
          }
 
@@ -441,7 +460,13 @@ messages:
       {
          return FALSE;
       }
-      
+
+      if Send(target,@GetOwner) <> $
+         AND Send(Send(target,@GetOwner),@IsArena)
+      {
+         return TRUE;
+      }
+
       If IsClass(target,&Player)
          AND Send(target,@IsPhasedOut)
       {
@@ -577,7 +602,7 @@ messages:
       return;
    }
    
-   PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
+   PeriodicEffect(oBattler=$,iPower=0,iRange=0,source=$)
    {
       return;
    }
@@ -612,7 +637,7 @@ messages:
 
       oRoom = Send(who,@GetOwner);
 
-      % Only cancel Persist spells if they are offensive & caster is entering a non-combat room
+      % Cancel Persist spells if they are offensive & caster is entering a non-combat room
       if viCasterPersist
          AND (event = EVENT_NEWOWNER
              OR event = EVENT_REQNEWOWNER)
@@ -620,6 +645,17 @@ messages:
          if oRoom <> $
             AND NOT (viAffectsEnemies
                      AND Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT))
+         {
+            return FALSE;
+         }
+      }
+
+      % Cancel Persist spells if the caster is entering the arena
+      if viCasterPersist
+         AND event = EVENT_NEWOWNER
+      {
+         if oRoom <> $
+            AND Send(oRoom,@IsArena)
          {
             return FALSE;
          }
@@ -699,7 +735,7 @@ messages:
 
       return;
    }
-   
+
    RemoveEnchantmentEffects()
    "Need to override spell.kod's thing, since we do this ourselves specially."
    {

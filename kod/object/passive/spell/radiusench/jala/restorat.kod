@@ -83,21 +83,18 @@ messages:
       return 100000 / (iPower+1);
    }
 
-   PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
+   PeriodicEffect(oBattler=$,iPower=0,iRange=0,source=$)
    {
-      local oUser, lState;
+      local lState;
       
-      for oUser in lEnchanted
+      if IsClass(oBattler,&User)
       {
-         if IsClass(oUser,&User)
+         lState = Send(oBattler,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Restorate);
+
+         if Nth(lState,3) = source
+            AND Nth(lState,2) = iPower
          {
-            lState = Send(oUser,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Restorate);
-            
-            if Nth(lState,3) = source
-               AND Nth(lState,2) = iPower
-            {
-               Send(oUser,@GainHealthNormal,#amount=1);
-            }
+            Send(oBattler,@GainHealthNormal,#amount=1);
          }
       }
       

@@ -3264,7 +3264,7 @@ messages:
    "Used for Arenas to see if something is a valid target.  Non-arenas just "
    "return FALSE."
    {
-      return FALSE;
+      return TRUE;
    }
 
    GetWatcher()
