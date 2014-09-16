@@ -197,6 +197,8 @@ resources:
    player_assgame_soon = \
       "~kRoq tells you, \"~IA new Assassin's Circle shall be initiated "
       "shortly.\""
+   murderer_no_enter = \
+      "You have just committed a murder, you may not enter a safe haven yet!"
 
    player_tougher_wav_rsc = tougher.wav
    player_missed_something_wave_rsc = swordmis.wav
@@ -993,6 +995,7 @@ properties:
    ptBondedItemReport = $
 
    piLastDeathTime = 0
+   piLastKillTime = 0
 
    % This keeps the duration of our Second Wind skill's "downtime"
    ptSecondWind = $
@@ -5407,6 +5410,7 @@ messages:
                % Apply penalties for someone NOT holding a token
                if Send(what,@FindUsing,#class=&Token) = $
                {
+                  piLastKillTime = GetTime();
                   if Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
                   {
                      Send(self,@MsgSendUser,#message_rsc=player_killed_player);
@@ -12471,12 +12475,25 @@ messages:
 
          return FALSE;
       }
+
+      if (Send(oRoom,@GetPermanentFlags) & ROOM_NO_COMBAT)
+      AND ((Send(self,@GetLastKillTime)+ 360) > GetTime())
+      AND NOT Send(SYS,@GetChaosNight)
+      {
+         Send(self,@MsgSendUser,#message_rsc=murderer_no_enter);
+         return FALSE; 
+      }
       
       Send(self,@BreakTrance,#event=EVENT_REQNEWOWNER);
       
       return TRUE;
    }
 
+   GetLastKillTime()
+   {
+      return piLastKillTime;
+   }   
+   
    GivePlayerAllSpells(school = 0, level = -1, upto = TRUE, iability = 99,
                        override = FALSE)
    "Used only for testing."
@@ -13224,7 +13241,7 @@ messages:
       }
 
       time = GetTime();
-   
+      piLastKillTime = time;   
       piLastDeathTime = time;
       piGuildRejoinTimestamp = time;
       piLast_restart_time = time;
