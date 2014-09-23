@@ -59,6 +59,9 @@ properties:
    piTimeOfDeath = $
 
    pbResurrected = FALSE
+   
+   plCorpseContents = $
+   poPlayerKiller = $
 
 messages:
 
@@ -66,7 +69,7 @@ messages:
    Constructor(name = $,icon = $,playername = $,good = FALSE, mob=FALSE ,monstername = $,
                inKocatan = FALSE, assassinated = FALSE,drawfx = 0, BodyTranslation = 0,
                LegsTranslation = 0, PlayerBodyOverlay = $, Decomposes=TRUE,
-               DearlyDeparted = $)
+               DearlyDeparted = $, oPlayerKiller = $)
    {
       vrName = name;
       vrIcon = icon;
@@ -80,6 +83,12 @@ messages:
       piLegsTrans = LegsTranslation;      
       poDearlyDeparted = DearlyDeparted;
       piTimeOfDeath = GetTime();
+      poPlayerKiller = oPlayerKiller;
+      
+      if poDearlyDeparted <> $
+      {
+         Send(poDearlyDeparted,@SetCorpse,#corpse=self);
+      }
 
       if decomposes
       {
@@ -91,7 +100,7 @@ messages:
          else
          {
             % Make player corpses hang around longer.
-            ptDelete = CreateTimer(self,@DeleteTimerMessage,600000);	    
+            ptDelete = CreateTimer(self,@DeleteTimerMessage,600000*6);	    
             Send(Send(SYS,@Findroombynum,#num=RID_UNDERWORLD),@Newdeath,#what=self,#inKocatan=inKocatan);
          }
       }
@@ -130,6 +139,13 @@ messages:
 
    Delete()
    {
+      local i;
+      
+      if poDearlyDeparted <> $
+      {
+         Send(poDearlyDeparted,@SetCorpse);
+      }
+
       if ptDelete <> $
       {
          Send(Send(SYS,@FindRoomByNum,#num=RID_UNDERWORLD),@CorpseDecomposed,#what=self);
@@ -147,6 +163,12 @@ messages:
       {
          send(poOwner,@CorpseFading,#corpse=self);
       }
+      
+      for i in plCorpseContents
+      {
+         Send(i,@Delete);
+      }
+      plCorpseContents = $;
       
       propagate;
    }
@@ -237,6 +259,11 @@ messages:
       
       propagate;
    }
+   
+   GetPlayerKiller()
+   {
+      return poPlayerKiller;
+   }
 
    GetDearlyDeparted()
    {
@@ -260,6 +287,137 @@ messages:
    GetResurrected()
    {
       return pbResurrected;
+   }
+   
+   GetCorpseContents()
+   {
+      return plCorpseContents;
+   }
+
+   HolderExtractObject(data = $)
+   {
+      return data;
+   }
+
+   IsHolding(what = $)
+   {
+      local i,each_obj;
+
+      for i in plCorpseContents
+      {
+         if what = i
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+
+   GetBulk()
+   {
+      local i, iSum;
+
+      iSum = 0;
+      
+      for i in plCorpseContents
+      {
+         iSum = iSum + Send(i,@GetBulk);
+      }
+
+      return iSum;
+   }
+
+   GetWeight()
+   {
+      local i, iSum;
+
+      iSum = 0;
+
+      for i in plCorpseContents
+      {
+         iSum = iSum + Send(i,@GetWeight);
+      }
+
+      return iSum;
+   }
+
+   ReqTaker(what=$,taker=$)
+   {
+      if taker = poDearlyDeparted
+      {
+         return TRUE;
+      }
+
+      if poPlayerKiller <> $
+         AND taker <> poPlayerKiller
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   ReqNewHold(what = $, who = $)
+   {
+      return FALSE;
+   }
+
+   NewHold(what = $)
+   {
+      local i;
+
+      if IsClass(what,&NumberItem)
+      {
+         for i in plCorpseContents
+         {
+            if i <> what
+            {
+               if GetClass(what) = GetClass(i)
+               {
+                  % should only be one of these, so can quit loop if found
+                  Send(i,@AddNumber,#number=Send(what,@GetNumber));
+                  Send(what,@Delete);
+                  return;
+               }
+            }
+         }
+      }
+
+      Send(what,@NewOwner,#what=self);
+      plCorpseContents = Cons(what,plCorpseContents);
+      
+      return;
+   }
+   
+   ReqNewOwner(what=$)
+   {
+      propagate;
+   }
+
+   ReqLeaveHold(what = $)
+   {
+      return TRUE;
+   }
+
+   LeaveHold(what = $)
+   {
+      local i;
+      
+      for i in plCorpseContents
+      {
+         if i = what
+         {
+            plCorpseContents = DelListElem(plCorpseContents,i);
+         }
+      }
+
+      return;
+   }
+   
+   ChangeBulkAndWeight()
+   {
+      return;
    }
 
 

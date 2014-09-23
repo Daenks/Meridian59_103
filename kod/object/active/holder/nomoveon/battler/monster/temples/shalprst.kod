@@ -36,6 +36,9 @@ resources:
                                   "that is said to be able to hinder the spells that come from the darkness.  I am "
                                   "willing to teach it to those that are able to learn it."
    shalillepriestess_teach = "The benevolence of Shal'ille offers "
+   
+   shalillepriestess_summon = "I shall aid you in your time of weakness."
+   shalillepriestess_summoned = "A benevolent light gently sets your corpse at your feet!"
 
 classvars:
 
@@ -234,6 +237,30 @@ messages:
          send(self,@SetMood,#new_mood=piMood - 1 );
       }
       
+      propagate;
+   }
+   
+   SomeoneSaid(what=$,type=$,string=$)
+   {
+      local oCorpse;
+
+      if type = SAY_YELL OR NOT IsClass(what,&User)
+      {
+          propagate;
+      }
+
+      if StringContain(string,"summon")
+         AND what <> $
+         AND IsClass(what,&User)
+         AND Send(what,@GetCorpse) <> $
+      {
+         Send(poOwner,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+		        #string=shalillepriestess_summon);
+         oCorpse = Send(what,@GetCorpse);
+         Send(poOwner,@NewHold,#what=oCorpse,#new_row=Send(what,@GetRow),#new_col=Send(what,@GetCol));
+         Send(what,@MsgSendUser,#message_rsc=shalillepriestess_summoned);
+      }
+
       propagate;
    }
 

@@ -1043,6 +1043,9 @@ properties:
 
    % Put new reagents in your bag
    pbReagentBagAuto = TRUE
+   
+   % Track your last corpse
+   poCorpse = $
 
 messages:
 
@@ -8690,7 +8693,15 @@ messages:
       }
 
       % Create the corpse.
-      oBody = Send(self,@CreateCorpse);
+      if IsClass(what,&User)
+      {
+         oBody = Send(self,@CreateCorpse,#oPlayerKiller=what);
+      }
+      else
+      {
+         oBody = Send(self,@CreateCorpse);
+      }
+
       Send(oRoom,@NewHold,#what=oBody,#new_row=iRow,#new_col=iCol,#fine_row=16,#fine_col=16, #new_angle=iAngle);
 
       % Start losing stuff if applicable.
@@ -8726,20 +8737,15 @@ messages:
          {
             for i in lItems
             {
-               if Send(oRoom,@ReqNewHold,#what=i,#new_row=iRow,#new_col=iCol) 
-                  AND Send(oRoom,@ReqSomethingMoved,#what=i,#new_row=iRow,#new_col=iCol)
-                  AND Send(i,@DropOnDeath)
+               if oItemAtt <> $    
                {
-                  if oItemAtt <> $    
-                  {
-                     % We know this was a pk.  Only let PKillables pick up the loot.
-                     %  Put the appropriate item attribute on it.
-                     Send(oItemAtt,@AddToItem,#oItem=i,#timer_duration=PKPOINTER_TIME,
+                  % We know this was a pk.  Only let PKillables pick up the loot.
+                  %  Put the appropriate item attribute on it.
+                  Send(oItemAtt,@AddToItem,#oItem=i,#timer_duration=PKPOINTER_TIME,
                           #state1=self);
-                  }
+               }
                   
-                  Send(oRoom,@NewHold,#what=i,#new_row=iRow,#new_col=iCol,#merge=FALSE);
-               } 
+               Send(oBody,@NewHold,#what=i);
             }
          }
 
@@ -9015,7 +9021,7 @@ messages:
       return piDeathCost;
    }
 
-   CreateCorpse(Assassinated=FALSE)
+   CreateCorpse(Assassinated=FALSE, oPlayerKiller=$)
    {
       local inKocatan;
 
@@ -9051,6 +9057,7 @@ messages:
                           #PlayerBodyOverlay=player_dead_male_iconb_rsc,
                           #BodyTranslation=Send(self,@GetBodyTranslation),
                           #LegsTranslation=Send(self,@GetLegsTranslation),
+                          #oPlayerKiller=oPlayerKiller,
                           #inKocatan = inKocatan,#DearlyDeparted=self);
          }
          else
@@ -9064,6 +9071,7 @@ messages:
                           #PlayerBodyOverlay=player_dead_female_iconb_rsc,
                           #BodyTranslation=Send(self,@GetBodyTranslation),
                           #LegsTranslation=Send(self,@GetLegsTranslation),
+                          #oPlayerKiller=oPlayerKiller,
                           #inKocatan = inKocatan,#DearlyDeparted=self);
          }
       }
@@ -9076,6 +9084,7 @@ messages:
                        #good=(piKarma>0),#PlayerBodyOverlay=player_dead_male_iconb_rsc,
                        #BodyTranslation=Send(self,@GetDefaultShirtTranslation),
                        #LegsTranslation=Send(self,@GetDefaultPantsTranslation),
+                       #oPlayerKiller=oPlayerKiller,
                        #inKocatan = inKocatan,#DearlyDeparted=self);
       }
       % female, default colors
@@ -9084,6 +9093,7 @@ messages:
                     #good=(piKarma>0),#PlayerBodyOverlay=player_dead_female_iconb_rsc,
                     #BodyTranslation=Send(self,@GetDefaultShirtTranslation),
                     #LegsTranslation=Send(self,@GetDefaultPantsTranslation),
+                    #oPlayerKiller=oPlayerKiller,
                     #inKocatan = inKocatan,#DearlyDeparted=self);
    }
 
@@ -13863,6 +13873,17 @@ messages:
    {
       pbReagentBagAuto = value;
       return;
+   }
+   
+   SetCorpse(corpse=$)
+   {
+      poCorpse = corpse;
+      return;
+   }
+   
+   GetCorpse()
+   {
+      return poCorpse;
    }
 
 end
