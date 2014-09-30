@@ -305,6 +305,15 @@ messages:
       return iFlags;
    }
 
+   GetObjectIdentityFlags()
+   {
+      local iFlags;
+
+      iFlags = Send(poOriginal,@GetObjectIdentityFlags);
+
+      return iFlags;
+   }
+
    GetAttackRange()
    {
       local iWeapon;

@@ -328,6 +328,7 @@ void ExtractObject(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
+   Extract(ptr, &item->identityflags, 4);
    Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
 
    ExtractDLighting(ptr, &item->dLighting);
@@ -361,6 +362,7 @@ void ExtractObjectNoLight(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
+   Extract(ptr, &item->identityflags, 4);
    Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
 
    ExtractPaletteTranslation(ptr,&item->translation,&item->effect);
@@ -1142,6 +1144,7 @@ Bool HandlePlayers(char *ptr,long len)
       ChangeResource(obj->name_res, name);
 
       Extract(&ptr, &obj->flags, SIZE_VALUE);
+      Extract(&ptr, &obj->identityflags, SIZE_VALUE);
       len -= SIZE_VALUE;
 
       list = list_add_item(list, obj);
@@ -1172,6 +1175,7 @@ Bool HandleAddPlayer(char *ptr,long len)
    ChangeResource(obj->name_res, name);
    
    Extract(&ptr, &obj->flags, SIZE_VALUE);
+   Extract(&ptr, &obj->identityflags, SIZE_VALUE);
    len -= SIZE_VALUE;
 
    if (len != 0)

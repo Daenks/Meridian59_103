@@ -437,11 +437,10 @@ WORD GetItemListColor(HWND hwnd, int type, int flags)
 */
 COLORREF GetPlayerNameColor(int flags,char*name)
 {
-	if (GetDrawingEffect(flags) == OF_BLACK)
-		return NAME_COLOR_BLACK_FG;
-
-	switch (GetPlayerFlags(flags))
+	switch (flags)
 	{
+		case PF_SHADOW:
+			return NAME_COLOR_BLACK_FG;
 		case PF_DM:
 			return NAME_COLOR_DM_FG;
 		case PF_KILLER:
@@ -469,7 +468,7 @@ COLORREF GetPlayerNameColor(int flags,char*name)
 */
 COLORREF GetPlayerWhoNameColor(int flags,char*name)
 {
-    switch (GetPlayerFlags(flags))
+    switch (flags)
     {
         case PF_DM:
             return NAME_COLOR_DM_FG;

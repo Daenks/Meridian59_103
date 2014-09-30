@@ -77,6 +77,7 @@ classvars:
 
    viGender = GENDER_NEUTER
    viObject_flags = 0
+   viObjectIdentity_flags = 0
 
 properties:
 
@@ -735,6 +736,11 @@ messages:
    GetObjectFlags()
    {
       return viObject_flags;
+   }
+
+   GetObjectIdentityFlags()
+   {
+      return viObjectIdentity_flags;
    }
 
    GetGender()
