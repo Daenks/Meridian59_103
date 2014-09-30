@@ -228,7 +228,7 @@ enum {
    UC_STAND = 6,
    UC_SAFETY = 7,
    UC_SUICIDE = 8,
-
+   UC_TEMPSAFE = 9,
    UC_REQ_GUILDINFO = 10,
    UC_GUILDINFO = 11,
    UC_INVITE = 12,
@@ -365,6 +365,7 @@ enum {
 #define OF_ACTIVATABLE   0x00000800    // Set if object can be activated
 #define OF_APPLYABLE     0x00001000    // Set if object can be applied to another object
 #define OF_SAFETY        0x00002000    // Set if player has safety on (self only)
+#define OF_TEMPSAFE      0x00004000    // Set if player has temp safety on death on (self only)
 
 #define OF_FLICKERING    0x00020000    // For players or objects if holding a flickering light.
 #define OF_FLASHING      0x00040000    // For players or objects if flashing with light.

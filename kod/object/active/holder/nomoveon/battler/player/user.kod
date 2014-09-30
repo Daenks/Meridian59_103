@@ -8168,6 +8168,8 @@ messages:
    {
       local iFlags, iDrawFX;
 
+      iFlags = viObjectIdentity_flags;
+
       % This is where the flags for drawing the player name color and
       % any minimap colors or modifications are sent.
 

@@ -437,28 +437,25 @@ WORD GetItemListColor(HWND hwnd, int type, int flags)
 */
 COLORREF GetPlayerNameColor(int flags,char*name)
 {
-	switch (flags)
-	{
-		case PF_SHADOW:
-			return NAME_COLOR_BLACK_FG;
-		case PF_DM:
-			return NAME_COLOR_DM_FG;
-		case PF_KILLER:
-			return NAME_COLOR_KILLER_FG;
-		case PF_OUTLAW:
-			return NAME_COLOR_OUTLAW_FG;
-		case PF_CREATOR:
-			return NAME_COLOR_DAENKS_FG;
-		case PF_SUPER:
-			return NAME_COLOR_SUPER_FG;
-		case PF_MODERATOR:
-			return NAME_COLOR_MOD_FG;
-		case PF_EVENTCHAR:
-			return NAME_COLOR_EVENT_FG;
-            
-    default:
-			return NAME_COLOR_NORMAL_FG;
-	}
+	// Arranged in order of precedence
+	if (flags & PF_SHADOW)
+		return NAME_COLOR_BLACK_FG;
+	if (flags & PF_EVENTCHAR)
+		return NAME_COLOR_EVENT_FG;
+	if (flags & PF_CREATOR)
+		return NAME_COLOR_DAENKS_FG;
+	if (flags & PF_SUPER)
+		return NAME_COLOR_SUPER_FG;
+	if (flags & PF_DM)
+		return NAME_COLOR_DM_FG;
+	if (flags & PF_MODERATOR)
+		return NAME_COLOR_MOD_FG;
+	if (flags & PF_KILLER)
+		return NAME_COLOR_KILLER_FG;
+	if (flags & PF_OUTLAW)
+		return NAME_COLOR_OUTLAW_FG;
+
+	return NAME_COLOR_NORMAL_FG;
 }
 
 /****************************************************************************/
@@ -468,24 +465,10 @@ COLORREF GetPlayerNameColor(int flags,char*name)
 */
 COLORREF GetPlayerWhoNameColor(int flags,char*name)
 {
-    switch (flags)
-    {
-        case PF_DM:
-            return NAME_COLOR_DM_FG;
-        case PF_CREATOR:
-            return NAME_COLOR_DAENKS_FG;
-        case PF_SUPER:
-            return NAME_COLOR_SUPER_FG;
-        case PF_EVENTCHAR:
-            return NAME_COLOR_EVENT_FG;
-        case PF_KILLER:
-            return NAME_COLOR_KILLER_FG;
-        case PF_OUTLAW:
-            return NAME_COLOR_OUTLAW_FG;
-        case PF_MODERATOR:
-            return NAME_COLOR_MOD_FG;
+   // Remove the shadow flag if applicable, then call GetPlayerNameColor
+   // to determine the color to use.
+	if (flags & PF_SHADOW)
+		flags = (flags & ~PF_SHADOW);
 
-        default:
-            return NAME_COLOR_NORMAL_FG;
-    }
+	return GetPlayerNameColor(flags,name);
 }

@@ -328,8 +328,8 @@ void ExtractObject(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
-   Extract(ptr, &item->identityflags, 4);
    Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
+   Extract(ptr, &item->identityflags, 4);
 
    ExtractDLighting(ptr, &item->dLighting);
 
@@ -362,7 +362,6 @@ void ExtractObjectNoLight(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
-   Extract(ptr, &item->identityflags, 4);
    Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
 
    ExtractPaletteTranslation(ptr,&item->translation,&item->effect);
@@ -575,6 +574,7 @@ Bool HandleMessage(char *message, int len)
    }
 
    handled =  LookupMessage(message, len, table);
+   
    if (!handled)
       debug(("Got unknown message type %d from server\n", (int) (unsigned char) message[0]));
    return handled;
@@ -597,14 +597,14 @@ Bool LookupMessage(char *message, int len, HandlerTable table)
 
    ptr = message + SIZE_TYPE;
 
-   /* Look for message handler in table */
-   index = 0;
+	/* Look for message handler in table */
+	index = 0;
 	while (table[index].msg_type != 0)
 	{
 		if (table[index].msg_type == type)
 		{
 			if (table[index].handler != NULL)
-			{                           
+			{
 				/* Don't count type byte in length for handler */
 				success = (*table[index].handler)(ptr, len - SIZE_TYPE);
 				if (!success)
@@ -1145,7 +1145,7 @@ Bool HandlePlayers(char *ptr,long len)
 
       Extract(&ptr, &obj->flags, SIZE_VALUE);
       Extract(&ptr, &obj->identityflags, SIZE_VALUE);
-      len -= SIZE_VALUE;
+      len -= 2* SIZE_VALUE;
 
       list = list_add_item(list, obj);
    }
@@ -1176,7 +1176,7 @@ Bool HandleAddPlayer(char *ptr,long len)
    
    Extract(&ptr, &obj->flags, SIZE_VALUE);
    Extract(&ptr, &obj->identityflags, SIZE_VALUE);
-   len -= SIZE_VALUE;
+   len -= 2* SIZE_VALUE;
 
    if (len != 0)
    {
