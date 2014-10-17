@@ -423,6 +423,7 @@ messages:
       return iCastPower;
    }
 
+
    %%% Mana related stuff common to players and mobs.
 
    GetMaxMana()
@@ -527,10 +528,12 @@ messages:
       return;
    }
 
-   SimulateAttack(what=$,numAttack=1)
+   SimulateAttack(what=$,numAttack=1,iOffense=$,iDefense=$)
+   "Simulate 'numAttack' attacks from 'self' against 'what'. Can pass offense "
+   "and defense as iOffense and iDefense."
    {
       local iMiss, iHit, iHitDmg, iMin, iMax, use_weapon, stroke_id,
-            iChanceToHit, iDamage,iScalefactor, stroke_obj, iOffense, iDefense;
+            iChanceToHit, iDamage,iScalefactor, stroke_obj;
 
       iMiss = 0;
       iHit = 0;
@@ -564,8 +567,14 @@ messages:
       {
          % This is the generic checks and the calculation of chance
          % to hit and damage.
-         iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj);
-         iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj);
+         if iDefense = $
+         {
+            iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj);
+         }
+         if iOffense = $
+         {
+            iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj);
+         }
 
          iChanceToHit = (iOffense* EQUAL_CHANCE_HIT) / iDefense;
          iChanceToHit = bound(iChanceToHit,125,2000);
@@ -583,8 +592,9 @@ messages:
             }
 
             iDamage = Send(what,@SimulateDamage,#what=self,#damage=iDamage,
-               #atype=Send(self,@GetDamageType),#aspell=Send(self,@GetSpellType),
-               #scalefactor=iScalefactor);
+                           #atype=Send(self,@GetDamageType),
+                           #aspell=Send(self,@GetSpellType),
+                           #scalefactor=iScalefactor);
             iHitDmg = iHitDmg + iDamage;
             iHit = iHit + 1;
             if iDamage > iMax
