@@ -160,6 +160,7 @@ enum {
    BP_REMOVE_BG_OVERLAY     = 153,
    BP_CHANGE_BG_OVERLAY     = 154,
    BP_USERCOMMAND           = 155,
+   BP_STAT_CHANGE			= 156,
 
    BP_PASSWORD_OK           = 160,
    BP_PASSWORD_NOT_OK       = 161,
@@ -214,6 +215,7 @@ enum {
    BP_SECTOR_SCROLL         = 236,
    BP_SET_VIEW              = 237,
    BP_RESET_VIEW            = 238,
+   
 };
 
 // User commands (in BP_USERCOMMAND message)
