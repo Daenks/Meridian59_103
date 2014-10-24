@@ -8789,7 +8789,7 @@ messages:
       % TODO: don't load module if it is already loaded
 	  % TODO: this is not a proper packet, every odd argument is supposed to be
       %   something special like a descriptor or something
-	  % TODO: figure out how to handle invalid (DM boost) stats
+	  % TODO: figure out how to handle invalid (DM) stats
    
       Send(self,@UserLoadModule,#module=user_statchange_module);
 	  AddPacket(1,BP_STAT_CHANGE);
@@ -8812,13 +8812,31 @@ messages:
 	     return;
 	  }
    
-      % TODO: WARNING!  these stats must be validated or do not use this code!
 	  piMight = might;
+	  
+	  % TODO: Cannot allow changes to intellect unless the player is also forced
+	  %   to give up school levels if their new intellect would not allow that
+	  %   many spell levels
 	  piIntellect = intellect;
+	  
+	  % A change in stamina results in a reduction in hitpoints if the
+	  %   player's hitpoints will be > 100 + new Stamina
+	  if (piHealth > 100 + stamina)
+	  {
+		  piBase_Max_health = 100 + stamina
+	  }
+ 
 	  piStamina = stamina;
+	  
 	  piAgility = agility;
+	  
+	  % TODO: recalculate mana pool based on nodes and mysticism
 	  piMysticism = mysticism;
+	  
 	  piAim = aim;
+	  
+	  % TODO: Unload stats.dll module.
+	  
       return;
    }
    
