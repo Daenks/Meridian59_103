@@ -38,8 +38,8 @@
 #define IDC_CHAR_GRAPH4                 1024
 #define IDC_CHAR_GRAPH5                 1025
 #define IDC_CHAR_GRAPH6                 1026
-#define IDC_CHAR_GRAPH7                 1027
-#define IDC_POINTSLEFT                  1028
+#define IDC_POINTSLEFT                  1027
+#define IDC_CHAR_GRAPH7                 1028
 #define IDC_CHAR_GRAPH8                 1029
 #define IDC_CHAR_GRAPH9                 1030
 #define IDC_CHAR_GRAPH10                1031

@@ -8823,7 +8823,7 @@ messages:
 	  %   player's hitpoints will be > 100 + new Stamina
 	  if (piHealth > 100 + stamina)
 	  {
-		  piBase_Max_health = 100 + stamina
+		  piBase_Max_health = 100 + stamina;
 	  }
  
 	  piStamina = stamina;
@@ -8836,6 +8836,8 @@ messages:
 	  piAim = aim;
 	  
 	  % TODO: Unload stats.dll module.
+	  
+	  send(self, @InvalidateData);
 	  
       return;
    }

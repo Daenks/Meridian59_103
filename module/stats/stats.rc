@@ -142,7 +142,7 @@ BEGIN
     LTEXT           "is more skilled in certain fighting and defensive arts.",IDC_STATIC,149,88,162,8
     LTEXT           "magical energy. Used for Faren, Shal'ille, and Qor.",IDC_STATIC,149,107,158,8
     LTEXT           "high skill with ranged weapons.",IDC_STATIC,149,127,99,8
-    CONTROL         "Shal",IDC_CHAR_GRAPH7,"BlakGraph",WS_TABSTOP | 0xb,57,182,79,14
+    CONTROL         "",IDC_CHAR_GRAPH7,"BlakGraph",WS_TABSTOP | 0xb,57,182,79,14
     CONTROL         "",IDC_CHAR_GRAPH8,"BlakGraph",WS_TABSTOP | 0xb,57,201,79,14
     CONTROL         "",IDC_CHAR_GRAPH9,"BlakGraph",WS_TABSTOP | 0xb,57,222,79,14
     CONTROL         "",IDC_CHAR_GRAPH10,"BlakGraph",WS_TABSTOP | 0xb,208,183,79,14

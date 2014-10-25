@@ -32,6 +32,7 @@ void GoToGame(ID character);
 void AbortCharDialogs(void);
 
 #define NUM_CHAR_STATS 6
+#define NUM_CHAR_SCHOOLS 6
 
 #define STAT_POINTS_INITIAL    50   // Initial # of available stat points
 
