@@ -69,20 +69,17 @@ BOOL CALLBACK CharStatsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
          break;
 
 	  case PSN_APPLY:
-	     debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
+	     //debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
   	     VerifySettings();
 	     // Don't quit dialog until we hear result from server
 	     //SetWindowLong(hDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
 	     break;
 	  case IDCANCEL:
-		  debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
+		  debug(("CharStatsDialogProc() ID_CANCEL\n" ));
 		  break;
       }
       return TRUE;
 	  
-	  
-	  //case IDC_OK:
-      
    case GRPHN_POSCHANGING:
       CharStatsGraphChanging(hDlg, wParam, lParam);
       break;
@@ -109,9 +106,6 @@ void CharStatsInit(HWND hDlg)
    HWND hGraph;
 
    controls_created = False;
-   
-   // dont set this again, it is done above and whacks the server data
-   //stat_points = STAT_POINTS_INITIAL;
    
    // Initialize graph controls
    for (i=0; i < NUM_CHAR_STATS; i++)
