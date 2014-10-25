@@ -12772,13 +12772,30 @@ messages:
 
       for i in plSpells
       {
-         if All OR Send(Send(SYS,@FindSpellByNum,#num=i),@GetSchool) = school
+		 if All OR Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetSchool) = school
          {
             Send(self,@RemoveSpell,#num=Send(self,@DecodeSpellNum,#compound=i));
          }
       }
 
       return;
+   }
+   
+   StripSpellsOfSchoolByLevel(school = 0, level = 0)
+   {
+      local i;
+   
+      for i in plSpells
+      {
+         if Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetSchool) = school
+		   AND Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetLevel) = level
+         {
+            Send(self,@RemoveSpell,#num=Send(self,@DecodeSpellNum,#compound=i));
+         }
+      }
+
+      return;
+   
    }
 
    IsWizard()
