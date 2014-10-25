@@ -6,8 +6,8 @@
 //
 // Meridian is a registered trademark.
 /*
- * charmain.c:  DLL that allows user to select a character and modify it.
- *   This DLL is invoked every time the user enters the game.
+ * stats.c:  DLL that allows user to modify their stats.
+ *   This DLL is invoked by the server when needed.
  */
 
 #include "client.h"
@@ -30,15 +30,10 @@ static handler_struct handler_table[] = {
 { 0, NULL},
 };
 
+// TODO: rework these messages
 // Client message table
 client_message msg_table[] = {
-{ BP_SEND_CHARACTERS,      { PARAM_END }, },
-{ BP_USE_CHARACTER,        { PARAM_ID, PARAM_END }, },
-{ BP_NEW_CHARINFO,         { PARAM_ID, PARAM_STRING, PARAM_STRING, PARAM_BYTE, PARAM_INT_ARRAY, 
-			     PARAM_BYTE, PARAM_BYTE,
-			     PARAM_INT_ARRAY, PARAM_ID_LIST, PARAM_ID_LIST, PARAM_END }, },
-{ BP_SEND_CHARINFO,        { PARAM_END }, },
-{ BP_AD_SELECTED,          { PARAM_BYTE, PARAM_END }, },
+{ BP_CHANGED_STATS,      { PARAM_BYTE,  PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_END }, },
 { 0,                       { PARAM_END }, },
 };
 
@@ -67,7 +62,7 @@ void WINAPI GetModuleInfo(ModuleInfo *info, ClientInfo *client_info)
 
    exiting = False;
    // Ask server for characters to pick from
-   RequestCharacters();
+   //RequestCharacters();
 }
 
 /* event handlers */
@@ -100,9 +95,12 @@ Bool HandleStatChangeRequest(char *ptr, long len)
 	Extract(&ptr, &mysticism, 1);
 	Extract(&ptr, &aim, 1);
 	
+	// TODO: data type mismatch
 	int myStats[] = {might, intellect, stamina, agility, mysticism, aim};
 
-    debug(("HandleStatChangeRequest() call. Server sent might=%i, int=%i, stam=%i, agi=%i, myst=%i, aim=%i\n", might, intellect, stamina, agility, mysticism, aim));
+    debug(("HandleStatChangeRequest() call. Server sent might=%i, int=%i, \
+			stam=%i, agi=%i, myst=%i, aim=%i\n", might, intellect, stamina,
+			agility, mysticism, aim));
 	MakeChar(myStats);
 	
     return true;

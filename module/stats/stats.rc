@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "charrc.h"
+#include "statsrc.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ IDD_CHARSTATS DIALOGEX 0, 0, 316, 232
 STYLE DS_SETFONT | DS_3DLOOK | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Set your character's statistics.",IDC_STATIC,37,6,94,8
+    LTEXT           "Change your character's statistics.",IDC_STATIC,37,6,110,8
     LTEXT           "Might",IDC_STATIC,20,26,18,8
     CONTROL         "",IDC_CHAR_GRAPH1,"BlakGraph",WS_TABSTOP | 0xb,42,24,102,14
     LTEXT           "Intellect",IDC_STATIC,12,44,26,8
@@ -172,7 +172,7 @@ END
 
 1 TEXTINCLUDE 
 BEGIN
-    "charrc.h\0"
+    "statsrc.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -214,7 +214,7 @@ BEGIN
     IDS_CHARSKILLS          "Skills"
     IDS_CHARAPPEARANCE      "Appearance"
     IDS_CHARSTATS           "Statistics"
-    IDS_DIALOGTITLE         "Customize your character"
+    IDS_DIALOGTITLE         "Adjust your character"
     IDS_NEWCHARACTER        "<New character>"
 END
 

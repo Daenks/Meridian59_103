@@ -67,8 +67,21 @@ BOOL CALLBACK CharStatsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
       case PSN_SETACTIVE:
          SendMessage(hPoints, GRPH_POSSET, 0, stat_points);
          break;
+
+	  case PSN_APPLY:
+	     debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
+  	     VerifySettings();
+	     // Don't quit dialog until we hear result from server
+	     //SetWindowLong(hDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
+	     break;
+	  case IDCANCEL:
+		  debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
+		  break;
       }
-      return TRUE;      
+      return TRUE;
+	  
+	  
+	  //case IDC_OK:
       
    case GRPHN_POSCHANGING:
       CharStatsGraphChanging(hDlg, wParam, lParam);

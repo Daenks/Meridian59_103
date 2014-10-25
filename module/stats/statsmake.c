@@ -12,9 +12,9 @@
 #include "client.h"
 #include "stats.h"
 
-CharAppearance *ap;     // Current appearance settings and choices
-list_type spells;       // List of available spells
-list_type skills;       // List of available skills
+//CharAppearance *ap;     // Current appearance settings and choices
+//list_type spells;       // List of available spells
+//list_type skills;       // List of available skills
 
 // Info for each tab of tabbed dialog
 typedef struct {
@@ -127,8 +127,9 @@ Bool VerifySettings(void)
    //char name[MAX_CHARNAME], *new_name, desc[MAX_DESCRIPTION];
    //char *new_name, desc[MAX_DESCRIPTION];
    
-   
-   int stats[NUM_CHAR_STATS];//, parts[NUM_FACE_OVERLAYS + 1];
+   int stats[NUM_CHAR_STATS] = {0,0,0,0,0,0};
+   //int stats[NUM_CHAR_STATS], parts[NUM_FACE_OVERLAYS + 1];
+	
    //list_type l, spells_send, skills_send;
    //list_type spells_send, skills_send;
    //BYTE gender;
@@ -159,6 +160,7 @@ Bool VerifySettings(void)
 
    // Fill in stat values
    CharStatsGetChoices(stats);
+   debug(("CharStatsGetChoices() returned {%i,%i,%i,%i,%i,%i}\n", stats[0], stats[1], stats[2], stats[3], stats[4], stats[5] ));
 
    // Build up list of chosen spells and skills
    //spells_send = NULL;
@@ -183,8 +185,11 @@ Bool VerifySettings(void)
    //	 	   ap->face_translations[ap->facet_choice],
    //		   NUM_CHAR_STATS, stats, spells_send, skills_send);
    
-   SendNewCharInfo(NUM_CHAR_STATS, stats);
-
+   debug(("before call"));
+   //SendNewCharInfo(NUM_CHAR_STATS, stats);
+   //SendNewCharInfo(6, stats);
+   SendNewCharInfo(stats[0], stats[1], stats[2], stats[3], stats[4], stats[5] );
+   debug(("after call"));
    //list_delete(spells_send);
    //list_delete(skills_send);
 
@@ -205,9 +210,10 @@ int CALLBACK MakeCharSheetInit(HWND hDlg, UINT uMsg, LPARAM lParam)
    SetWindowLong(hDlg, GWL_EXSTYLE, style & (~WS_EX_CONTEXTHELP));
 
    hMakeCharDialog = hDlg;
+
    hTab = PropSheet_GetTabControl(hDlg);
 
-   spell_points = SPELL_POINTS_INITIAL;
+//   spell_points = SPELL_POINTS_INITIAL;
 
    //CharFaceInit();
    return 0;
@@ -226,6 +232,9 @@ void CharTabPageCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
    case IDC_NEXT_PAGE:
       PropSheet_SetCurSel(hMakeCharDialog, 0, TabCtrl_GetCurSel(hTab) + 1);
       return;
+
+   case IDC_OK:
+	   return;
    }
 }
 /********************************************************************/
