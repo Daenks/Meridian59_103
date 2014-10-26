@@ -51,13 +51,13 @@ static int  CALLBACK MakeCharSheetInit(HWND hDlg, UINT uMsg, LPARAM lParam);
 /*
  * MakeChar:  Bring up character creation dialog.
  */
-void MakeChar(int *stats_in)
+void MakeChar(int *stats_in, int *levels_in)
 {
    int i;
    PROPSHEETHEADER psh;
    PROPSHEETPAGE psp[NUM_TAB_PAGES];
 
-   initStatsFromServer(stats_in);
+   initStatsFromServer(stats_in, levels_in);
 
    // Prepare property sheet header
    psh.dwSize = sizeof(PROPSHEETHEADER);

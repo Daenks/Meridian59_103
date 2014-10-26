@@ -41,12 +41,13 @@ typedef struct {
 } School;
 
 static School schools[] = {
-{ 0,   6,   0,   0,   1,   NULL },       // Shal'ille
+{ 0,   6,   4,   4,   1,   NULL },       // Shal'ille
 { 0,   6,   3,   3,   1,   NULL },       // Qor
 { 0,   6,   6,   6,   1,   NULL },       // Kraanan
 { 0,   6,   4,   4,   1,   NULL },       // Faren
-{ 0,   6,   0,   0,   1,   NULL },       // Riija
-{ 0,   6,   0,   0,   1,   NULL },       // Weaponcraft
+{ 0,   6,   5,   5,   1,   NULL },       // Riija
+{ 0,   6,   2,   2,   1,   NULL },       // Jala
+{ 0,   6,   4,   4,   1,   NULL },       // Weaponcraft
 };
 
 static int suggested_stats[][NUM_STATS] = {
@@ -108,17 +109,23 @@ BOOL CALLBACK CharStatsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
    return FALSE;
 }
 /********************************************************************/
-void initStatsFromServer(int *buf)
+void initStatsFromServer(int *stats_in, int *levels_in)
 {
    int i;
    int sum = 0;
    
    for (i=0; i < NUM_CHAR_STATS; i++)
    {
-      stats[i].val = buf[i];
-	  sum = sum + buf[i];
+      stats[i].val = stats_in[i];
+	  sum = sum + stats_in[i];
    }
    stat_points = 200 - sum;
+   
+   for (i = 0; i < NUM_CHAR_SCHOOLS; i++)
+   {
+      schools[i].val = levels_in[i];
+	  schools[i].start = levels_in[i];
+   }
 }
 /********************************************************************/
 void CharStatsInit(HWND hDlg)

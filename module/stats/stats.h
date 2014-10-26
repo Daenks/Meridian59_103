@@ -32,12 +32,12 @@ void GoToGame(ID character);
 void AbortCharDialogs(void);
 
 #define NUM_CHAR_STATS 6
-#define NUM_CHAR_SCHOOLS 6
+#define NUM_CHAR_SCHOOLS 7
 
 #define STAT_POINTS_INITIAL    50   // Initial # of available stat points
 
-void MakeChar(int *stats_in);
-void initStatsFromServer(int *buf);
+void MakeChar(int *stats_in, int *levels_in);
+void initStatsFromServer(int *stats_in, int *levels_in);
 
 void CharTabPageCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify);
 Bool VerifySettings(void);

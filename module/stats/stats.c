@@ -83,6 +83,7 @@ Bool WINAPI EventServerMessage(char *message, long len)
 Bool HandleStatChangeRequest(char *ptr, long len)
 {
     BYTE might, intellect, stamina, agility, mysticism, aim = 0;
+	BYTE shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level;
 	
 	Extract(&ptr, &might, 1);	
 	Extract(&ptr, &intellect, 1);
@@ -90,14 +91,23 @@ Bool HandleStatChangeRequest(char *ptr, long len)
 	Extract(&ptr, &agility, 1);
 	Extract(&ptr, &mysticism, 1);
 	Extract(&ptr, &aim, 1);
+	Extract(&ptr, &shalille_level, 1);
+	Extract(&ptr, &qor_level, 1);
+	Extract(&ptr, &kraanan_level, 1);
+	Extract(&ptr, &faren_level, 1);
+	Extract(&ptr, &riija_level, 1);
+	Extract(&ptr, &jala_level, 1);
 	
-	// TODO: data type mismatch
 	int myStats[] = {might, intellect, stamina, agility, mysticism, aim};
+	int myLevels[] = {shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level};
 
     debug(("HandleStatChangeRequest() call. Server sent might=%i, int=%i, \
-			stam=%i, agi=%i, myst=%i, aim=%i\n", might, intellect, stamina,
-			agility, mysticism, aim));
-	MakeChar(myStats);
+			stam=%i, agi=%i, myst=%i, aim=%i shal=%i, qor=%i, kran=%i, \
+			faren=%i, riija=%i, jala=%i\n", might, intellect, stamina,
+			agility, mysticism, aim, shalille_level, qor_level, kraanan_level,
+			faren_level, riija_level, jala_level));
+			
+	MakeChar(myStats, myLevels);
 	
     return true;
 }

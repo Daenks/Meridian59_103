@@ -12768,27 +12768,47 @@ messages:
 
    StripSpellsOfSchool(school = 0, All = FALSE)
    {
-      local i;
+      local i, j, k;
 
-      for i in plSpells
-      {
-		 if All OR Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetSchool) = school
-         {
-            Send(self,@RemoveSpell,#num=Send(self,@DecodeSpellNum,#compound=i));
-         }
-      }
+	  if (ALL)
+	  {
+	      j = 1;
+		  while (j < NUM_SCHOOLS)
+		  {
+		     k = 1;
+			 while (k < NUM_SPELL_LEVELS)
+			 {
+			    Send(self, @StripSpellsOfSchoolByLevel, #school=j, #level=k);
+				k = k +1;
+			 }
+			 j = j + 1;
+		  }
+	  }
+	  else
+	  {
+	      k=1;
+		  while (k < NUM_SPELL_LEVELS)
+		  {
+		      Send(self, @StripSpellsOfSchoolByLevel, #school=school, #level=k);
+			  k = k + 1;
+		  }
+	  }
 
       return;
    }
    
    StripSpellsOfSchoolByLevel(school = 0, level = 0)
    {
-      local i;
+      local i, oSpell, iSchool, iLevel, canForget;
    
       for i in plSpells
       {
-         if Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetSchool) = school
-		   AND Send(Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i)),@GetLevel) = level
+	     oSpell = Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i));
+	     iSchool = Send(oSpell,@GetSchool);
+	     iLevel = Send(oSpell,@GetLevel);
+		 canForget = Send(oSpell,@CanForget);
+	  
+         if (iSchool = school) AND (iLevel = level) AND canForget
          {
             Send(self,@RemoveSpell,#num=Send(self,@DecodeSpellNum,#compound=i));
          }

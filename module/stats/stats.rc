@@ -153,8 +153,10 @@ BEGIN
     LTEXT           "Kraanan",IDC_STATIC,21,225,28,8
     LTEXT           "Faren",IDC_STATIC,154,185,19,8
     LTEXT           "Riija",IDC_STATIC,154,204,14,8
-    LTEXT           "Weaponcraft",IDC_STATIC,154,225,42,8
-    GROUPBOX        "Schools",IDC_STATIC,16,166,286,82
+    LTEXT           "Jala",IDC_STATIC,154,225,42,8
+    GROUPBOX        "Schools",IDC_STATIC,16,166,286,100
+    CONTROL         "",IDC_CHAR_GRAPH13,"BlakGraph",WS_TABSTOP | 0xb,208,244,79,14
+    LTEXT           "Weaponcraft",IDC_STATIC,154,248,42,8
 END
 
 
@@ -171,7 +173,6 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 311
         TOPMARGIN, 7
-        BOTTOMMARGIN, 268
     END
 END
 #endif    // APSTUDIO_INVOKED

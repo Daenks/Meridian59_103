@@ -2047,6 +2047,9 @@
    SPELL_INDEFINITE_DURATION = 0
 
    % Spell Schools
+   NUM_SCHOOLS = 7
+   NUM_SPELL_LEVELS = 6
+   
    % School is set to this if this spell is not castable on a pk-free server.
    SS_INACCESSIBLE = -1
 
