@@ -1323,6 +1323,103 @@ messages:
       return TRUE;
    }
 
+   SimulateCast(numCasts=1,who=$,iSpellpower=$,oTarget=$)
+   "Simulates the casting of a spell from 'who', at spellpower 'iSpellPower', "
+   "on 'oTarget'. Casts the spell 'numCasts' times."
+   {
+      local iFizzle, iNum, iStat, iSuccess, iSuccessDec, iSuccessPerc, oRoom,
+            lJalaInfo, oJalaSpell, lJalaState, iDistance, i;
+
+      if who = $ OR oTarget = $
+      {
+         Debug("Bad parameters sent to SimulateCast.");
+
+         return FALSE;
+      }
+
+      oRoom = Send(who,@GetOwner);
+      if oRoom = $
+      {
+         Debug("Caster needs to be logged on to use SimulateCast!");
+
+         return FALSE;
+      }
+
+      if NOT Send(oTarget,@IsLoggedOn)
+      {
+         Debug("Target needs to be logged on to use SimulateCast!");
+
+         return FALSE;
+      }
+
+      if iSpellpower = $
+      {
+         iSpellPower = Send(self,@GetSpellpower,#who=who);
+      }
+
+      iSuccess = 0;
+      iFizzle = 0;
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      iNum = ((100-iStat)*iSpellpower/100) + iStat;
+
+      if Send(who,@IsAffectedByRadiusEnchantment,#byClass=&HinderSpell)
+      {
+         for i in Send(who,@GetRadiusEnchantments)
+         {
+            iNum = Send(Nth(i,1),@GetAlteredChance,#chance=iNum,
+                        #what=self,#lRadiusState=i);
+         }
+      }
+
+      iNum = Bound(iNum,5,99);
+
+      if NOT Send(oRoom,@LineOfSight,#obj1=who,#obj2=oTarget)
+      {
+         iDistance = Send(who,@SquaredDistanceTo,#what=oTarget);
+         iDistance = iDistance / 4;
+         if iDistance > iNum / 2
+         {
+            iNum = iNum / 2;
+         }
+         else
+         {
+            if iDistance < iNum / 2
+            {
+               iNum = iNum - iDistance;
+            }
+         }
+      }
+
+      % At this point SuccessChance just rolls iNum vs. random 1-100.
+      while numCasts > 0
+      {
+         if Random(1,100) > iNum
+         {
+            % This is a spell fail. Record the fizzle.
+            iFizzle = iFizzle + 1;
+         }
+         else
+         {
+            % We cast! Record it.
+            iSuccess = iSuccess + 1;
+         }
+         numCasts = numCasts - 1;
+      }
+
+      % Successful cast percent.
+      iSuccessPerc = iSuccess*100/(iSuccess+iFizzle);
+      % Two decimal places.
+      iSuccessDec = iSuccess*10000/(iSuccess+iFizzle) MOD 100;
+      GodLog("Number of casts is ",iSuccess+iFizzle,". Caster ",
+            Send(who,@GetTrueName)," had ",iSpellPower," spellpower. ",
+            Send(self,@GetName),"cast successfully on ",
+            Send(oTarget,@GetTrueName)," ",iSuccessPerc,".",iSuccessDec,
+            " percent of the time. ",iSuccess," successes and ",
+            iFizzle," fizzles.");
+
+      return;
+   }
+
    PayCosts(who=$,iSpellpower=0,lTargets=$)
    "Check for failed spell here.  A failed spell costs half the mana cost, "
    "half the exertion, and no reagents."
