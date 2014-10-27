@@ -5804,7 +5804,7 @@ messages:
 
    DoHitMessageSound(what = $,damage = 0,stroke_obj = $)
    {
-      local iRoll,rSound;
+      local iRoll,rSound, hitSound, targetSound;
 
       if (stroke_obj = $)
       {
@@ -5819,6 +5819,24 @@ messages:
          {
             Send(poOwner,@SomethingWaveRoom,#what=what,
                   #wave_rsc=Send(what,@GetOuchSound));
+         }
+
+         return;
+      }
+
+      if IsClass(stroke_obj,&Fire)
+      {
+         hitSound = Send(stroke_obj,@GetHitSound);
+         targetSound = Send(stroke_obj,@GetTargetHitSound);
+
+         % Attacker hears this
+         Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=hitSound);
+         if IsClass(what,&Player)
+         {
+            % victim hears these
+            Send(poOwner,@SomethingWaveRoom,#what=what,#wave_rsc=targetSound);
+            Send(poOwner,@SomethingWaveRoom,#what=what,
+            #wave_rsc=Send(what,@GetOuchSound));
          }
 
          return;

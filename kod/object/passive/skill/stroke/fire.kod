@@ -29,6 +29,9 @@ resources:
    fire_new_ammo = "You reach for your %s, and nock one back for a shot."
    fire_skill_intro = "Weaponcraft Lv. 4: Key to mastering any type of missile weapon."
    fire_no_ammo = "You have no ammunition for this weapon ready!"
+   
+   fire_hit_sound = patk.wav
+   fire_target_hears = arrow_hit.wav
 
 classvars:
 
@@ -189,6 +192,16 @@ messages:
    IsRangedAttack()
    {
       return TRUE;
+   }
+   
+   GetHitSound()
+   {
+      return fire_hit_sound;
+   }
+   
+   GetTargetHitSound()
+   {
+       return fire_target_hears;
    }
 
 end
