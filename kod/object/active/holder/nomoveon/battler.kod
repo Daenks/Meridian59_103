@@ -423,7 +423,6 @@ messages:
       return iCastPower;
    }
 
-
    %%% Mana related stuff common to players and mobs.
 
    GetMaxMana()
@@ -528,12 +527,12 @@ messages:
       return;
    }
 
-   SimulateAttack(what=$,numAttack=1,iOffense=$,iDefense=$)
-   "Simulate 'numAttack' attacks from 'self' against 'what'. Can pass offense "
+   SimulateAttack(what=$,numAttacks=1,iOffense=$,iDefense=$)
+   "Simulate 'numAttacks' attacks from 'self' against 'what'. Can pass offense "
    "and defense as iOffense and iDefense."
    {
       local iMiss, iHit, iHitDmg, iMin, iMax, use_weapon, stroke_id,
-            iChanceToHit, iDamage,iScalefactor, stroke_obj;
+            iChanceToHit, iDamage,iScalefactor, stroke_obj, iFracDmg;
 
       iMiss = 0;
       iHit = 0;
@@ -563,22 +562,23 @@ messages:
          stroke_obj = use_weapon;
       }
 
-      while numAttack > 0
+      % This is the generic checks and the calculation of chance
+      % to hit and damage.
+      if iDefense = $
       {
-         % This is the generic checks and the calculation of chance
-         % to hit and damage.
-         if iDefense = $
-         {
-            iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj);
-         }
-         if iOffense = $
-         {
-            iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj);
-         }
+         iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj);
+      }
+      if iOffense = $
+      {
+         iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj);
+      }
 
-         iChanceToHit = (iOffense* EQUAL_CHANCE_HIT) / iDefense;
-         iChanceToHit = bound(iChanceToHit,125,2000);
-         if iChanceToHit >= random(1,1000)
+      iChanceToHit = (iOffense* EQUAL_CHANCE_HIT) / iDefense;
+      iChanceToHit = Bound(iChanceToHit,125,2000);
+
+      while numAttacks > 0
+      {
+         if iChanceToHit >= Random(1,1000)
          {
             % We hit!
             iDamage = Send(self,@GetDamage,#what=what,#stroke_obj=stroke_obj);
@@ -611,11 +611,12 @@ messages:
             % Miss. Log it.
             iMiss = iMiss + 1;
          }
-         numAttack = numAttack - 1;
+         numAttacks = numAttacks - 1;
       }
 
-      Debug("Number of attacks is ",iHit+iMiss," and average damage is ",
-            iHitDmg/(iHit+iMiss),". Max damage was ",iMax," and min damage ",
+      iFracDmg = (iHitDmg * 10 * (iHit)) MOD 10;
+      GodLog("Number of attacks is ",iHit+iMiss," and average damage per swing is ",
+            iHitDmg/(iHit+iMiss),".",iFracDmg,". Max damage was ",iMax," and min damage ",
             iMin,". ",Send(what,@GetTrueName)," had ",iDefense," defense and ",
             Send(self,@GetTrueName)," had ",iOffense," offense. Hit percentage",
             " was ",(iHit*100)/(iHit+iMiss)," percent.");
