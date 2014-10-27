@@ -2465,6 +2465,14 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_MARION,#class=&OldMarion);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_NORTH,#class=&OldBarloqueNorth);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_SOUTH,#class=&OldBarloqueSouth);
+      
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERT1,#class=&BlackDesert1);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERTA,#class=&BlackDesertA);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERTB,#class=&BlackDesertB);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERTC,#class=&BlackDesertC);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERTD,#class=&BlackDesertD);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERT_WAYLAY_OASIS,#class=&BlackDesertWaylayOasis);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERT_SANDSTORM,#class=&BlackDesertSandstorm);
 
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.

@@ -1,0 +1,74 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BlackDesertWaylayOasis is ObjectRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_BlackDesertWaylayOasis = blackdesertwaylayoasis7.roo
+   room_name_BlackDesertWaylayOasis = "Waylay Oasis"
+   BlackDesertWaylayOasis_music = walk5.mp3
+
+classvars:
+
+   vrName = room_name_BlackDesertWaylayOasis
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_BADLANDS
+
+properties:
+
+   prRoom = room_BlackDesertWaylayOasis
+   prMusic = BlackDesertWaylayOasis_music
+   piRoom_num = RID_BLACK_DESERT_WAYLAY_OASIS
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 8
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   piGen_time = 45000
+   piGen_percent = 80
+
+   piInit_count_min = 5
+   piInit_count_max = 10
+
+   piMonster_count_max = 16
+
+messages:
+
+   Constructed()
+   {
+      propagate;
+   }
+
+   CreateObjectGeneration()
+   {
+
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([LEAVE_WEST, RID_BLACK_DESERT_SANDSTORM, 5, 5, ROTATE_NONE], plEdge_exits);
+      plEdge_Exits = Cons([LEAVE_EAST, RID_BLACK_DESERT_SANDSTORM, 5, 5, ROTATE_NONE], plEdge_exits);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
