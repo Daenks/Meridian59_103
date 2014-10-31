@@ -8782,7 +8782,7 @@ messages:
       return;
    }
 
-   % designed this just like GetSkillLevels in case a skill school is added
+   % designed this just like GetSpellScoolLevels in case a skill school is added
    % later and this needs to be extended
    GetSkillSchoolLevels()
    {
