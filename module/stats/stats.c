@@ -22,14 +22,14 @@ static Bool HandleStatChangeRequest(char *ptr, long len);
 
 // Server message handler table
 static handler_struct handler_table[] = {
-{ BP_STAT_CHANGE,        HandleStatChangeRequest },
+{ BP_REQ_STAT_CHANGE,        HandleStatChangeRequest },
 { 0, NULL},
 };
 
 // TODO: rework these messages
 // Client message table
 client_message msg_table[] = {
-{ BP_CHANGED_STATS,      { PARAM_BYTE,  PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_END }, },
+{ BP_CHANGED_STATS,      { PARAM_BYTE, PARAM_BYTE,  PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE,  PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_BYTE, PARAM_END }, },
 { 0,                       { PARAM_END }, },
 };
 

@@ -220,6 +220,17 @@ void CharStatsGetChoices(int *buf)
 }
 /********************************************************************/
 /*
+ * CharSchoolsGetChoices:  Fill in stats with currently selected school levels.
+ */
+void CharSchoolsGetChoices(int *buf)
+{
+   int i;
+   
+   for (i=0; i < NUM_CHAR_SCHOOLS; i++)
+      buf[i] = schools[i].val;
+}
+/********************************************************************/
+/*
  * CharStatsGetPoints:  Return # of stat points remaining
  */
 int CharStatsGetPoints(void)
