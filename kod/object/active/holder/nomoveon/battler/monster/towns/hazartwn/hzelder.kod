@@ -57,7 +57,7 @@ resources:
    potion_shalille = "Shal'ille"
    
    stat_window_trigger = "I would like to change my attributes"
-   HzEl_stats_speech = "Beware, there should be some sort of ominous warning here."
+   elder_stats_speech = "Beware, there should be some sort of ominous warning here."
 
 classvars:
 
@@ -86,7 +86,7 @@ messages:
    {
       if StringEqual(string,stat_window_trigger)
 	  {
-	      Post(poOwner,@someoneSaid,#what=self,#string=HzEl_stats_speech,
+	      Post(poOwner,@someoneSaid,#what=self,#string=elder_stats_speech,
           #type=SAY_RESOURCE);
 	      Send(what, @SendStatChange);
 	  }

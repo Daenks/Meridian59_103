@@ -36,6 +36,7 @@ resources:
       "to an old man like me.~n~k\""
 
 	stat_window_trigger = "I would like to change my attributes"
+   elder_stats_speech = "Beware, there should be some sort of ominous warning here."
 
 classvars:
 
@@ -62,7 +63,7 @@ messages:
    {
       if StringEqual(string,stat_window_trigger)
 	  {
-	      Post(poOwner,@someoneSaid,#what=self,#string=HzEl_stats_speech,
+	      Post(poOwner,@someoneSaid,#what=self,#string=elder_stats_speech,
           #type=SAY_RESOURCE);
 	      Send(what, @SendStatChange);
 	  }

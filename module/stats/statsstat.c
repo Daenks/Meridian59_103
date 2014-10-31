@@ -41,13 +41,13 @@ typedef struct {
 } School;
 
 static School schools[] = {
-{ 0,   6,   4,   4,   1,   NULL },       // Shal'ille
-{ 0,   6,   3,   3,   1,   NULL },       // Qor
-{ 0,   6,   6,   6,   1,   NULL },       // Kraanan
-{ 0,   6,   4,   4,   1,   NULL },       // Faren
-{ 0,   6,   5,   5,   1,   NULL },       // Riija
-{ 0,   6,   2,   2,   1,   NULL },       // Jala
-{ 0,   6,   4,   4,   1,   NULL },       // Weaponcraft
+{ 0,   6,   0,   0,   1,   NULL },       // Shal'ille
+{ 0,   6,   0,   0,   1,   NULL },       // Qor
+{ 0,   6,   0,   0,   1,   NULL },       // Kraanan
+{ 0,   6,   0,   0,   1,   NULL },       // Faren
+{ 0,   6,   0,   0,   1,   NULL },       // Riija
+{ 0,   6,   0,   0,   1,   NULL },       // Jala
+{ 0,   6,   0,   0,   1,   NULL },       // Weaponcraft
 };
 
 static int suggested_stats[][NUM_STATS] = {
@@ -88,20 +88,20 @@ BOOL CALLBACK CharStatsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM
          SendMessage(hPoints, GRPH_POSSET, 0, stat_points);
          break;
 
-	  case PSN_APPLY:
-	     //debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
-  	     VerifySettings();
-	     // Don't quit dialog until we hear result from server
-	     //SetWindowLong(hDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
-	     break;
-		 
-	  // TODO: This does nothing
-	  case IDCANCEL:
-		  debug(("CharStatsDialogProc() ID_CANCEL\n" ));
-		  break;
+      case PSN_APPLY:
+         //debug(("CharStatsDialogProc() PSN_APPLY call.\n" ));
+         VerifySettings();
+         // Don't quit dialog until we hear result from server
+         //SetWindowLong(hDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
+         break;
+
+      // TODO: This does nothing
+      case IDCANCEL:
+         debug(("CharStatsDialogProc() ID_CANCEL\n" ));
+         break;
       }
       return TRUE;
-	  
+
    case GRPHN_POSCHANGING:
       CharStatsGraphChanging(hDlg, wParam, lParam);
       break;
@@ -117,14 +117,14 @@ void initStatsFromServer(int *stats_in, int *levels_in)
    for (i=0; i < NUM_CHAR_STATS; i++)
    {
       stats[i].val = stats_in[i];
-	  sum = sum + stats_in[i];
+      sum = sum + stats_in[i];
    }
    stat_points = 200 - sum;
    
    for (i = 0; i < NUM_CHAR_SCHOOLS; i++)
    {
       schools[i].val = levels_in[i];
-	  schools[i].start = levels_in[i];
+      schools[i].start = levels_in[i];
    }
 }
 /********************************************************************/
@@ -162,11 +162,11 @@ void CharStatsInit(HWND hDlg)
    SendMessage(hPoints, GRPH_RANGESET, 0, STAT_POINTS_INITIAL);
    
    // initialize school graph controls
-   for (i=0; i < NUM_CHAR_SCHOOLS; i++)
+   for (i=0; i < NUM_CHAR_SCHOOLS; ++i)
    {
       hGraph = GetDlgItem(hDlg, IDC_CHAR_GRAPH7 + i);
-	  
-	  lpfnDefGraphProc = (WNDPROC) GetWindowLong(hGraph, GWL_WNDPROC);
+
+      lpfnDefGraphProc = (WNDPROC) GetWindowLong(hGraph, GWL_WNDPROC);
       
       SendMessage(hGraph, GRPH_COLORSET, GRAPHCOLOR_BAR, GetColor(COLOR_BAR1));
       SendMessage(hGraph, GRPH_COLORSET, GRAPHCOLOR_BKGND, GetColor(COLOR_BAR3));
@@ -272,58 +272,58 @@ long CALLBACK StatGraphProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       s = CharFindControl(hwnd);
       if (s != NULL)
       {
-		  cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
-		  
-		  new_pos = lParam;
-		  cost = s->cost * (new_pos - cur_pos);
-		  
-		  if (cost > stat_points)
-		  {
-			 // Set value to greatest we can afford
-			 if (cost == 0)
-				return 0;
-			 
-			 lParam = cur_pos + stat_points / s->cost;
-			 if (lParam == cur_pos)
-				return 0;
-		  }
-	  }
-	  else
-	  {
-	     // not a stat graph, see if it is a school graph
-		 sc = CharFindSchoolControl(hwnd);
-		 if (sc != NULL)
-		 {
-		    //cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
-		  
-		    //new_pos = lParam;
-		    //cost = sc->cost * (new_pos - cur_pos);
-		  
-		    // we aren't in the business of giving away school levels
-			// do not increase school level past the original level
-			if (lParam > sc->start)
-			{
-			   lParam = sc->start;
-			}
-			
-			// if (cost > stat_points)
-		    // {
-			   // // Set value to greatest we can afford
-			   // if (cost == 0)
-				  // return 0;
-			 
-			   // lParam = cur_pos + stat_points / s->cost;
-			   // if (lParam == cur_pos)
-				  // return 0;
-		    // }
-		 }
-		 else
-		 {
-		    // not a spell or school graph, we should not get here.
-	        debug(("Couldn't find graph control in list!\n"));
+         cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
+
+         new_pos = lParam;
+         cost = s->cost * (new_pos - cur_pos);
+
+         if (cost > stat_points)
+         {
+            // Set value to greatest we can afford
+            if (cost == 0)
+               return 0;
+
+            lParam = cur_pos + stat_points / s->cost;
+            if (lParam == cur_pos)
+               return 0;
+         }
+      }
+      else
+      {
+         // not a stat graph, see if it is a school graph
+         sc = CharFindSchoolControl(hwnd);
+         if (sc != NULL)
+         {
+            //cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
+
+            //new_pos = lParam;
+            //cost = sc->cost * (new_pos - cur_pos);
+
+            // we aren't in the business of giving away school levels
+            // do not increase school level past the original level
+            if (lParam > sc->start)
+            {
+               lParam = sc->start;
+            }
+
+            // if (cost > stat_points)
+            // {
+               // // Set value to greatest we can afford
+               // if (cost == 0)
+               // return 0;
+
+               // lParam = cur_pos + stat_points / s->cost;
+               // if (lParam == cur_pos)
+               // return 0;
+            // }
+         }
+         else
+         {
+            // not a spell or school graph, we should not get here.
+            debug(("Couldn't find graph control in list!\n"));
             return 0L;
-		 }
-	  }
+         }
+      }
    }
    
    return CallWindowProc(lpfnDefGraphProc, hwnd, msg, wParam, lParam);

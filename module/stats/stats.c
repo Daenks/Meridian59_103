@@ -82,34 +82,36 @@ Bool WINAPI EventServerMessage(char *message, long len)
 /********************************************************************/
 Bool HandleStatChangeRequest(char *ptr, long len)
 {
-    BYTE might, intellect, stamina, agility, mysticism, aim = 0;
-	BYTE shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level;
-	
-	Extract(&ptr, &might, 1);	
-	Extract(&ptr, &intellect, 1);
-	Extract(&ptr, &stamina, 1);
-	Extract(&ptr, &agility, 1);
-	Extract(&ptr, &mysticism, 1);
-	Extract(&ptr, &aim, 1);
-	Extract(&ptr, &shalille_level, 1);
-	Extract(&ptr, &qor_level, 1);
-	Extract(&ptr, &kraanan_level, 1);
-	Extract(&ptr, &faren_level, 1);
-	Extract(&ptr, &riija_level, 1);
-	Extract(&ptr, &jala_level, 1);
-	
-	int myStats[] = {might, intellect, stamina, agility, mysticism, aim};
-	int myLevels[] = {shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level};
+   BYTE might, intellect, stamina, agility, mysticism, aim = 0;
+   BYTE shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level;
+   BYTE weaponcraft_level;
 
-    debug(("HandleStatChangeRequest() call. Server sent might=%i, int=%i, \
-			stam=%i, agi=%i, myst=%i, aim=%i shal=%i, qor=%i, kran=%i, \
-			faren=%i, riija=%i, jala=%i\n", might, intellect, stamina,
-			agility, mysticism, aim, shalille_level, qor_level, kraanan_level,
-			faren_level, riija_level, jala_level));
-			
-	MakeChar(myStats, myLevels);
-	
-    return true;
+   Extract(&ptr, &might, 1);	
+   Extract(&ptr, &intellect, 1);
+   Extract(&ptr, &stamina, 1);
+   Extract(&ptr, &agility, 1);
+   Extract(&ptr, &mysticism, 1);
+   Extract(&ptr, &aim, 1);
+   Extract(&ptr, &shalille_level, 1);
+   Extract(&ptr, &qor_level, 1);
+   Extract(&ptr, &kraanan_level, 1);
+   Extract(&ptr, &faren_level, 1);
+   Extract(&ptr, &riija_level, 1);
+   Extract(&ptr, &jala_level, 1);
+   Extract(&ptr, &weaponcraft_level, 1);
+
+   int myStats[] = {might, intellect, stamina, agility, mysticism, aim};
+   int myLevels[] = {shalille_level, qor_level, kraanan_level, faren_level, riija_level, jala_level, weaponcraft_level};
+
+   debug(("HandleStatChangeRequest() call. Server sent might=%i, int=%i, \
+         stam=%i, agi=%i, myst=%i, aim=%i shal=%i, qor=%i, kran=%i, \
+         faren=%i, riija=%i, jala=%i, wc=%i\n", might, intellect, stamina,
+         agility, mysticism, aim, shalille_level, qor_level, kraanan_level,
+         faren_level, riija_level, jala_level, weaponcraft_level));
+
+   MakeChar(myStats, myLevels);
+
+   return true;
 }
 /****************************************************************************/
 Bool WINAPI EventStateChanged(int old_state, int new_state)
