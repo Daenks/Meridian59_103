@@ -595,7 +595,7 @@ void GamePlaySound(ID sound_rsc, ID source_obj, BYTE flags, WORD y, WORD x, WORD
    if( maxvolume > MAX_VOLUME )
       maxvolume = MAX_VOLUME;
 
-	//debug(("Play sound at (%i,%i)\n",x,y));
+	debug(("Play sound at (%i,%i)\n",x,y));
 
    if (source_obj != 0)
    {
@@ -622,13 +622,13 @@ void GamePlaySound(ID sound_rsc, ID source_obj, BYTE flags, WORD y, WORD x, WORD
       volume = 0;
       if( p == NULL )	// this case is hit after a savegame
       {
-         //debug(( "player: (%i,%i)\n",player.x >> LOG_FINENESS,player.y >> LOG_FINENESS ));
+         debug(( "player: (%i,%i)\n",player.x >> LOG_FINENESS,player.y >> LOG_FINENESS ));
          dx = ( player.x >> LOG_FINENESS ) - x;
          dy = ( player.y >> LOG_FINENESS ) - y;
       }
       else	// this case is hit when moving from room to room
       {
-         //debug(( "motion: (%i,%i)\n",p->motion.x >> LOG_FINENESS,p->motion.y >> LOG_FINENESS ));
+         debug(( "motion: (%i,%i)\n",p->motion.x >> LOG_FINENESS,p->motion.y >> LOG_FINENESS ));
          dx = ( p->motion.x >> LOG_FINENESS ) - x;
          dy = ( p->motion.y >> LOG_FINENESS ) - y;
       }
@@ -638,14 +638,14 @@ void GamePlaySound(ID sound_rsc, ID source_obj, BYTE flags, WORD y, WORD x, WORD
       {
          volume = maxvolume - (distance * maxvolume / cutoff) ;
       }
-      //debug(("Distance = %i\n",distance));
-      //debug(("Setting volume to %i.\n",volume));
+      debug(("Distance = %i\n",distance));
+      debug(("Setting volume to %i.\n",volume));
    }
    else
    {
       volume = maxvolume;
    }
-   
+   debug(("PlayWaveRSC rsc=%i volume=%i row=%i col=%i cutoff=%i maxvolumne=%i",sound_rsc, volume, src_row, src_col, cutoff, maxvolume));
    PlayWaveRsc(sound_rsc, volume, flags, src_row, src_col, cutoff, maxvolume);
 }
 /************************************************************************/

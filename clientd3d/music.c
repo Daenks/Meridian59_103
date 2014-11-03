@@ -18,6 +18,7 @@
 #include "client.h"
 
 static char music_dir[] = "resource";   /* Directory for sound files */
+char filename[MAX_PATH];
 
 static Bool has_midi = False;    /* Can system play MIDI files? */
 
@@ -134,7 +135,8 @@ DWORD OpenMidiFile(LPSTR lpszMIDIFileName)
 {
    DWORD dwReturn;
    MCI_OPEN_PARMS mciOpenParms;
-   char current_dir[MAX_PATH], filename[MAX_PATH];
+   //char current_dir[MAX_PATH], filename[MAX_PATH];
+   char current_dir[MAX_PATH];
 
    // Seems not to work in Windows 95 sometimes without full pathname
    if (!GetWorkingDirectory(current_dir, MAX_PATH))
@@ -242,6 +244,7 @@ DWORD PlayMidiFile(HWND hWndNotify, char *fname)
       }
       
       debug(("Playing MIDI file, element = %d\n", midi_element));
+      ResetMusicVolume();
       playing_midi = True;
       return 0;
    }
@@ -352,6 +355,7 @@ DWORD PlayMusicFile(HWND hWndNotify, char *fname)
    }
 
    debug(("Playing music file, element = %d\n", midi_element));
+   ResetMusicVolume();
    playing_music = True;
    return 0;
 #endif
@@ -656,6 +660,8 @@ void ResetMusicVolume()
 {
    if (!has_midi)
       return;
+      
+   char command[MAX_PATH];
 
 #ifdef M59_MSS
    // Set volume
@@ -665,6 +671,7 @@ void ResetMusicVolume()
    if (hseqBackground != NULL)
       AIL_set_sample_volume_levels(hseqBackground, vol, vol );
 #else
-   // TODO: Implement via MCI
+   sprintf(command, "setaudio %s volume to %i", filename, config.music_volume * 10);
+   mciSendString(command,NULL,0,NULL);
 #endif
 }
