@@ -2046,6 +2046,10 @@
    % Used for when the spell has an infinite duration
    SPELL_INDEFINITE_DURATION = 0
 
+   % Skill Schools
+   NUM_SKILL_SCHOOLS=1
+   NUM_SKILL_SCHOOL_LEVELS = 6
+   
    % Spell Schools
    NUM_SCHOOLS = 7
    NUM_SPELL_LEVELS = 6

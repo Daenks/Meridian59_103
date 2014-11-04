@@ -12799,25 +12799,43 @@ messages:
    
    StripSpellsOfSchoolByLevel(school = 0, level = 0)
    {
-      local i, oSpell, iSchool, iLevel, canForget;
+      local i, oSpell, iSchool, iLevel, iCanForget;
    
       for i in plSpells
       {
-         oSpell = Send(0,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i));
+         oSpell = Send(SYS,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,#compound=i));
          iSchool = Send(oSpell,@GetSchool);
          iLevel = Send(oSpell,@GetLevel);
-         canForget = Send(oSpell,@CanForget);
+         iCanForget = Send(oSpell,@CanForget);
 
-         if (iSchool = school) AND (iLevel = level) AND canForget
+         if (iSchool = school) AND (iLevel = level) AND iCanForget
          {
             Send(self,@RemoveSpell,#num=Send(self,@DecodeSpellNum,#compound=i));
+            debug("Removing Spell",Send(self,@DecodeSpellNum,#compound=i));
          }
       }
-
       return;
-   
    }
 
+   StripSkillsOfSchoolByLevel(school = 0, level = 0)
+   {
+      local i, oSkill, iSchool, iLevel;
+      debug("MARK");
+      for i in plSkills
+      {
+         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@DecodeSkillNum,#compound=i));
+         iSchool = Send(oSkill,@GetSchool);
+         iLevel = Send(oSkill,@GetLevel);
+         debug(ischool,school,iLevel,level);
+         if (iSchool = school) AND (iLevel = level)
+         {
+            Send(self,@RemoveSkill,#num=Send(self,@DecodeSkillNum,#compound=i));
+            debug("Removing Skill",Send(self,@DecodeSkillNum,#compound=i));
+         }
+      }
+      return;
+   }
+   
    IsWizard()
    {
       if Length(plSpells) > 50

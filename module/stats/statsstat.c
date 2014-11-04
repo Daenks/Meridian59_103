@@ -190,22 +190,39 @@ void CharStatsInit(HWND hDlg)
 void CharStatsGraphChanging(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
    Stat *s;
+   School *sc;
    int index, cost;
 
    /* Update points graph */
-   s = CharFindControl((HWND) wParam);
-   if (s == NULL || (HWND) wParam == hPoints)
-      return;
-   
-   index = SendMessage((HWND) wParam, GRPH_POSGET, 0, 0);  // Get old value
-   cost = s->cost * (lParam - index);
-   
-   s->val = lParam;
-   
-   // Don't change points when controls are being created
-   if (controls_created)
-      stat_points -= cost;
-   SendMessage(hPoints, GRPH_POSSET, 0, stat_points);
+   if ((HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH7) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH8) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH9) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH10) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH11) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH12) ||
+       (HWND) wParam == GetDlgItem(hDlg, IDC_CHAR_GRAPH13))
+   {
+      sc = CharFindSchoolControl((HWND) wParam);
+      if (sc == NULL)
+         return;
+      sc->val = lParam;
+   }
+   else
+   {
+      s = CharFindControl((HWND) wParam);
+      if (s == NULL || (HWND) wParam == hPoints)
+         return;
+         
+      index = SendMessage((HWND) wParam, GRPH_POSGET, 0, 0);  // Get old value
+      cost = s->cost * (lParam - index);
+      
+      s->val = lParam;
+      
+         // Don't change points when controls are being created
+      if (controls_created)
+         stat_points -= cost;
+      SendMessage(hPoints, GRPH_POSSET, 0, stat_points);
+   }
 }
 /********************************************************************/
 /*
@@ -303,19 +320,21 @@ long CALLBACK StatGraphProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       {
          // not a stat graph, see if it is a school graph
          sc = CharFindSchoolControl(hwnd);
+         
          if (sc != NULL)
          {
-            //cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
-
-            //new_pos = lParam;
-            //cost = sc->cost * (new_pos - cur_pos);
-
             // we aren't in the business of giving away school levels
             // do not increase school level past the original level
             if (lParam > sc->start)
             {
                lParam = sc->start;
             }
+            else
+            {
+               cur_pos = SendMessage(hwnd, GRPH_POSGET, 0, 0);
+
+            //new_pos = lParam;
+            //cost = sc->cost * (new_pos - cur_pos);
 
             // if (cost > stat_points)
             // {
@@ -326,7 +345,8 @@ long CALLBACK StatGraphProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                // lParam = cur_pos + stat_points / s->cost;
                // if (lParam == cur_pos)
                // return 0;
-            // }
+               // }
+            }
          }
          else
          {

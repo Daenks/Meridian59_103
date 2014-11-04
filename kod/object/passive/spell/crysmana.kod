@@ -196,7 +196,7 @@ messages:
 
    CanForget()
    {
-      return FALSE;
+      return TRUE;
    }
 
 end
