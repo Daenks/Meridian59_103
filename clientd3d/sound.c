@@ -334,7 +334,8 @@ UINT PlayWaveFile(HWND hwnd, char *fname, int volume, BYTE flags, int src_row, i
    LPMIXWAVE lpWave;
    UINT retval;
    
-   lpWave = WaveMixOpenWave(hMixSession, fname, hInst, WMIX_FILE, volume);
+   //lpWave = WaveMixOpenWave(hMixSession, fname, hInst, WMIX_FILE, volume);
+   lpWave = WaveMixOpenWave(hMixSession, fname, hInst, WMIX_FILE);
    if (lpWave == NULL)
    {
       debug(("Error opening wave file %s\n", fname));
