@@ -111,7 +111,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_CHARSTATS DIALOGEX 0, 0, 316, 275
+IDD_CHARSTATS DIALOGEX 0, 0, 316, 291
 STYLE DS_SETFONT | DS_3DLOOK | WS_CHILD
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -142,21 +142,22 @@ BEGIN
     LTEXT           "is more skilled in certain fighting and defensive arts.",IDC_STATIC,149,88,162,8
     LTEXT           "magical energy. Used for Faren, Shal'ille, and Qor.",IDC_STATIC,149,107,158,8
     LTEXT           "high skill with ranged weapons.",IDC_STATIC,149,127,99,8
-    GROUPBOX        "Schools",IDC_STATIC,16,166,286,100
-    CONTROL         "",IDC_CHAR_GRAPH7,"BlakGraph",WS_TABSTOP | 0xb,57,182,79,14
-    CONTROL         "",IDC_CHAR_GRAPH8,"BlakGraph",WS_TABSTOP | 0xb,57,201,79,14
-    CONTROL         "",IDC_CHAR_GRAPH9,"BlakGraph",WS_TABSTOP | 0xb,57,222,79,14
-    CONTROL         "",IDC_CHAR_GRAPH10,"BlakGraph",WS_TABSTOP | 0xb,208,183,79,14
-    CONTROL         "",IDC_CHAR_GRAPH11,"BlakGraph",WS_TABSTOP | 0xb,208,202,79,14
-    CONTROL         "",IDC_CHAR_GRAPH12,"BlakGraph",WS_TABSTOP | 0xb,208,223,79,14
-    CONTROL         "",IDC_CHAR_GRAPH13,"BlakGraph",WS_TABSTOP | 0xb,208,244,79,14
-    LTEXT           "Shal'ille",IDC_STATIC,21,185,24,8
-    LTEXT           "Qor",IDC_STATIC,21,204,12,8
-    LTEXT           "Kraanan",IDC_STATIC,21,225,28,8
-    LTEXT           "Faren",IDC_STATIC,154,185,19,8
-    LTEXT           "Riija",IDC_STATIC,154,204,14,8
-    LTEXT           "Jala",IDC_STATIC,154,225,42,8
-    LTEXT           "Weaponcraft",IDC_STATIC,154,248,42,8
+    GROUPBOX        "Schools",IDC_STATIC,16,186,286,100
+    CONTROL         "",IDC_CHAR_GRAPH7,"BlakGraph",WS_TABSTOP | 0xb,57,202,79,14
+    CONTROL         "",IDC_CHAR_GRAPH8,"BlakGraph",WS_TABSTOP | 0xb,57,223,79,14
+    CONTROL         "",IDC_CHAR_GRAPH9,"BlakGraph",WS_TABSTOP | 0xb,57,242,79,14
+    CONTROL         "",IDC_CHAR_GRAPH10,"BlakGraph",WS_TABSTOP | 0xb,208,202,79,14
+    CONTROL         "",IDC_CHAR_GRAPH11,"BlakGraph",WS_TABSTOP | 0xb,208,223,79,14
+    CONTROL         "",IDC_CHAR_GRAPH12,"BlakGraph",WS_TABSTOP | 0xb,208,242,79,14
+    CONTROL         "",IDC_CHAR_GRAPH13,"BlakGraph",WS_TABSTOP | 0xb,208,263,79,14
+    LTEXT           "Shal'ille",IDC_STATIC,21,205,24,8
+    LTEXT           "Qor",IDC_STATIC,21,224,12,8
+    LTEXT           "Kraanan",IDC_STATIC,21,245,28,8
+    LTEXT           "Faren",IDC_STATIC,154,205,19,8
+    LTEXT           "Riija",IDC_STATIC,154,224,14,8
+    LTEXT           "Jala",IDC_STATIC,154,245,42,8
+    LTEXT           "Weaponcraft",IDC_STATIC,154,268,42,8
+    LTEXT           "NOTE: To reduce intellect, you may have to forfeit school levels below.",IDC_STATIC,44,170,224,8
 END
 
 
@@ -173,6 +174,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 311
         TOPMARGIN, 7
+        BOTTOMMARGIN, 275
     END
 END
 #endif    // APSTUDIO_INVOKED
