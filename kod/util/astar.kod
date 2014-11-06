@@ -1,0 +1,105 @@
+Astar
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+plAstarPaths = $
+pbEnabled = 1
+
+messages:
+
+Constructor()
+{
+	plAstarPaths = [ ];
+	return; 
+}
+
+Recreate()
+{
+	local i;
+	%%for debugging, create a path if we dont have one
+	if length(plAstarPaths) = 0
+	{
+		Send(self,@CreatePath);
+	}
+	else
+	{
+		for i in plAstarPaths
+		{
+			Send(i,@Recreate);
+		}
+	}
+	return;
+}
+
+CreatePath(oFrom = $, oTo  = $, oTestRoom = $)
+{
+	local oRoom, oPath, temp;
+	
+	if oFrom = $ OR oTo = $
+	{
+		%% for debugging only, if no parameters, make some!
+		%Newb1 = 1011, get the room
+		if oTestRoom <> $
+		{
+			oRoom = oTestRoom;
+		}
+		else
+		{
+			oRoom = Send(SYS,@FindRoomByNum,#num=1011); 
+		}
+		%get plActive to see if we have 2 active objects
+		temp = Send(oRoom,@GetplActive);
+		if (Length(temp) > 1)
+		{
+			%if we have 2+, take the first two, assume them as start and end points
+			oFrom = First(First(temp));
+			oTo = First(Nth(temp,2));
+		}
+		else
+		{
+			Debug("Don't have two active objects, creating some");
+			oFrom = Create(&PlateArmor);
+			Send(SYS,@PutInRoom,#what=oFrom,#rid=Send(oRoom,@GetRoomNum),#row=7,#col=3); %%DEBUG
+			oTo = Create(&PlateArmor);
+			Send(SYS,@PutInRoom,#what=oTo,#rid=Send(oRoom,@GetRoomNum),#row=8,#col=9); %%DEBUG
+		}
+	}
+
+	%create the path object, which will call the C Code to calculate our path. Add the object to the list so we can clean up later.
+	oPath = Create(&AstarPath,#oFrom=oFrom,#oTo=oTo);
+	plAstarPaths = Cons(oPath,plAstarPaths);
+	
+	return oPath;
+}
+
+RemovePath(oPath = $)
+{
+	if oPath <> $
+	{
+		Send(oPath,@Delete);
+		DelListElem(plAstarPaths,oPath);
+	}
+	return;
+}
+
+Delete()
+{
+	plAstarPaths = $;
+	return; 
+}
+
+Enabled()
+{
+	return pbEnabled;
+}
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

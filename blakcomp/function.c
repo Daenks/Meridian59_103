@@ -88,6 +88,7 @@ function_type Functions[] = {
 {"MinigameNumberToString", MINIGAMENUMBERTOSTRING,     AEXPRESSION,   AEXPRESSION,   ANONE},
 {"MinigameStringToNumber", MINIGAMESTRINGTONUMBER,     AEXPRESSION,   ANONE},
 {"RecordStat",		RECORDSTAT,		 AEXPRESSIONS,	ANONE},
+{"CreateAstarPath",		CREATEPATH,		 AEXPRESSION,   AEXPRESSION,   AEXPRESSION,   AEXPRESSION,   AEXPRESSION,    ANONE},
    };
 
 int numfuncs = (sizeof(Functions)/sizeof(function_type));

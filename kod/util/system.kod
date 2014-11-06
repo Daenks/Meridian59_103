@@ -332,6 +332,7 @@ properties:
    poTerritoryGame = $
    poNodeAttack = $
    poRentableRoomMaintenance = $
+   poAstarEngine = $
    
    % Singleton object that keeps track of various game statistics
    poStatistics = $
@@ -473,6 +474,7 @@ messages:
       Send(self,@RecreateAllRooms);
       % Creates the Faction games
       Send(self,@RecreateParliament);
+	  Send(self,@RecreateAstar);
 
       Send(self,@RecreateAssassinGame);
       Send(self,@RecreateQuestEngine);
@@ -575,6 +577,7 @@ messages:
       Send(self,@RecreateLibrary);
       Send(self,@RecreateAllRooms);
       Send(self,@RecreateAssassinGame);
+	  Send(self,@RecreateAstar);
       % The following two lines are handled in Parliament
       % Send(self,@RecreateTerritoryGame);
       % Send(self,@RecreateTokenGame);
@@ -4080,6 +4083,27 @@ messages:
    GetLibrary()
    {
       return poLibrary;
+   }
+   
+   GetAstar()
+   {
+		return poAstarEngine;
+   }
+   
+   RecreateAstar()
+   "Admin supported\n"
+   "Recreates the AStarEngine."
+   {
+      if poAstarEngine <> $
+      {
+         Send(poAstarEngine,@Recreate);
+      }
+      else
+      {
+         poAstarEngine = Create(&Astar);
+      }
+
+      return TRUE;
    }
 
    RecreateLibrary()

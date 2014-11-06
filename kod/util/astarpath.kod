@@ -1,0 +1,129 @@
+AstarPath
+
+constants:
+	include blakston.khd
+resources:
+
+classvars:
+
+vbDebugItems = FALSE
+
+properties:
+
+plPath = $
+
+%Room we are moving within
+poRoom = $
+
+piStartRow = 0
+piStartCol = 0
+
+piEndRow = 0
+piEndCol = 0
+
+poFrom = $
+poTo = $
+
+plDebugItems = $
+
+messages:
+
+Constructor(oFrom = $, oTo = $)
+{	
+	Debug("Constructor():oTo",oTo);
+	poFrom = oFrom;
+	poTo = oTo;
+	plPath = [];
+	
+	poRoom = Send(oFrom,@GetOwner);
+	piStartRow = Send(oFrom,@GetRow);
+	piStartCol = Send(oFrom,@GetCol);
+	piEndRow = Send(oTo,@GetRow);
+	piEndCol = Send(oTo,@GetCol);
+	
+	if vbDebugItems
+	{
+		Send(self,@RemoveDebugItems);
+	}
+	plPath = CreateAstarPath(piStartRow,piStartCol,piEndRow,piEndCol,Send(poRoom,@GetRoomData));
+
+	return;
+}
+
+Recreate()
+{
+	return;
+}
+
+%Checks if Destination has changed before calculating the next step, if so, starts over.
+%Used for Monster movement
+CalculateStep(oTarget = $)
+{
+	local i; 
+	%check if we changed targets (monsters may have a new enemy, or the ally they are seeking
+	%may have been slain, etc.
+	if oTarget <> poTo
+	{
+		poTo = oTarget;
+		Debug("Re-Creating Path: Target Changed:",oTarget);
+		Send(self,@Constructor,#oFrom=poFrom,#oTo=poTo);
+	}
+	%check if the target changed position since our last move
+	%TODO:should we change this to make it less sensitive to target movement to allow less repeat-pathfinding?
+	if Send(oTarget,@GetRow) <> piEndRow or Send(oTarget,@GetCol) <> piEndCol
+	{
+		Debug("Re-Creating Path: Target Moved");
+		Send(self,@Constructor,#oFrom=poFrom,#oTo=poTo);
+	}
+	
+	%get the last item of the plPath list, or our first move
+	if plPath <> $
+	{
+		i = First(plPath);
+		%remove that node from the list
+		plPath = DelListElem(plPath,i);
+	}
+	else %path not viable, or some other reason to move with the old system
+	{
+		i = $;
+	}
+	if vbDebugItems AND plPath <> $
+	{
+		Send(self,@CreateDebugItems);
+	}
+	
+	return i;
+}
+
+CreateDebugItems()
+{
+	local oDebugItem, i;
+	Debug("plPath:",plPath);
+	for i in plPath
+	{	
+		oDebugItem = Create(&Apple);
+		plDebugItems = Cons(oDebugItem,plDebugItems);
+		Send(SYS,@PutInRoom,#what=oDebugItem,#rid=Send(poRoom,@GetRoomNum),#row=Nth(i,1),#col=Nth(i,2));
+	}
+	return;
+}
+
+RemoveDebugItems()
+{
+	local i;
+	for i in plDebugItems
+	{
+		Send(i,@Delete);
+	}
+	plDebugItems = $;
+	return;
+}
+
+Delete()
+{
+	return;
+}
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

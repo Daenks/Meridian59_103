@@ -2622,3 +2622,47 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 
 	return NIL;
 }
+
+int C_CreatePath(int object_id,local_var_type *local_vars,
+				int num_normal_parms,parm_node normal_parm_array[],
+				int num_name_parms,parm_node name_parm_array[])
+{
+	val_type startrow,startcol,endrow,endcol,roomid;
+	
+	startrow = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+		normal_parm_array[0].value);
+	if (startrow.v.tag != TAG_INT)
+	{
+		bprintf("C_CreatePath passed non-int for startrow %i,%i\n",startrow.v.tag,startrow.v.data);
+		return NIL;
+	}
+	startcol = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
+		normal_parm_array[1].value);
+	if (startcol.v.tag != TAG_INT)
+	{
+		bprintf("C_CreatePath passed non-int for startcol %i,%i\n",startcol.v.tag,startcol.v.data);
+		return NIL;
+	}
+	endrow = RetrieveValue(object_id,local_vars,normal_parm_array[2].type,
+		normal_parm_array[2].value);
+	if (endrow.v.tag != TAG_INT)
+	{
+		bprintf("C_CreatePath passed non-int for endrow %i,%i\n",endrow.v.tag,endrow.v.data);
+		return NIL;
+	}
+	endcol = RetrieveValue(object_id,local_vars,normal_parm_array[3].type,
+		normal_parm_array[3].value);
+	if (endcol.v.tag != TAG_INT)
+	{
+		bprintf("C_CreatePath passed non-int for endcol %i,%i\n",endcol.v.tag,endcol.v.data);
+		return NIL;
+	}
+	roomid = RetrieveValue(object_id,local_vars,normal_parm_array[4].type,
+		normal_parm_array[4].value);
+	if (roomid.v.tag != TAG_ROOM_DATA)
+	{
+		bprintf("C_CreatePath passed non-room_data for roomid %i,%i\n",roomid.v.tag,roomid.v.data);
+		return NIL;
+	}
+	return CreatePath(startrow.v.data,startcol.v.data,endrow.v.data,endcol.v.data,roomid.v.data);
+}
