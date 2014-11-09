@@ -98,6 +98,8 @@ Bool VerifySettings(void)
    // Fill in stat values
    CharStatsGetChoices(stats);
    CharSchoolsGetChoices(schools);
+   debug(("CharStatsGetChoices() returned {%i,%i,%i,%i,%i,%i}\n", stats[0], stats[1], stats[2], stats[3], stats[4], stats[5] ));
+   debug(("CharSchoolsGetChoices() returned {%i,%i,%i,%i,%i,%i,%i}\n",schools[0], schools[1], schools[2], schools[3], schools[4], schools[5], schools[6] ));
    SendNewCharInfo(stats[0], stats[1], stats[2], stats[3], stats[4], stats[5],
                    schools[0], schools[1], schools[2], schools[3], schools[4],
                    schools[5], schools[6] );

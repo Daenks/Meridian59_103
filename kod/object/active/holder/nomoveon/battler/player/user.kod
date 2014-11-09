@@ -8984,7 +8984,7 @@ messages:
       i=1;
       while (i <= NUM_SKILL_SCHOOLS)
       {
-         totalLevels = totalLevels + Nth(lSkillLevels,i);
+         totalLevels = totalLevels + Nth(lSkillLevels_new,i);
          if (Nth(lSkillLevels_new,i) > Nth(lSkillLevels,1))
          {
             debug("School Not Increased Check: FAIL!");
@@ -9002,6 +9002,7 @@ messages:
                AND (((totalLevels - 12) * 5) > intellect))
       {
          debug("Int Check: FAIL!");
+         debug(totalLevels,intellect);
          return FALSE;
       }
       
