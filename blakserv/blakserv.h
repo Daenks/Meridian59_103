@@ -296,6 +296,7 @@ char * GetLastErrorStr();
 #include "maintenance.h"
 #include "block.h"
 #include "database.h"
+#include "astar.h"
 
 #endif
 

@@ -1097,6 +1097,16 @@ messages:
    {
       return FALSE;
    }
+   
+	GetRoomData()
+	{
+		return prmRoom;
+	}
+   
+	CanMoveInRoomProxy(iStartRow = 0,iStartCol = 0,iEndRow = 0,iEndCol = 0)
+	{
+		return CanMoveInRoom(prmRoom, iStartRow, iStartCol, iEndRow, iEndCol);
+	}
 
    GetRoomSecurity()
    {
@@ -2279,6 +2289,8 @@ messages:
 
       return TRUE;
    }
+   
+   
 
    SomethingMoved(what = $, new_row = $, new_col = $, fine_row = FINENESS/2,
                   fine_col = FINENESS/2, cause = CAUSE_UNKNOWN, speed = 0,

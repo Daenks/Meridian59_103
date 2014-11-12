@@ -1,0 +1,140 @@
+AstarPath
+
+constants:
+	include blakston.khd
+resources:
+
+classvars:
+
+vbDebugItems = FALSE
+
+properties:
+
+plPath = $
+
+%Room we are moving within
+poRoom = $
+
+piStartRow = 0
+piStartCol = 0
+
+piEndRow = 0
+piEndCol = 0
+
+poFrom = $
+poTo = $
+
+plDebugItems = $
+
+messages:
+
+Constructor(oFrom = $, oTo = $)
+{	
+	poFrom = oFrom;
+	poTo = oTo;
+	plPath = [];
+	
+	poRoom = Send(oFrom,@GetOwner);
+	piStartRow = Send(oFrom,@GetRow);
+	piStartCol = Send(oFrom,@GetCol);
+	piEndRow = Send(oTo,@GetRow);
+	piEndCol = Send(oTo,@GetCol);
+	
+	if vbDebugItems AND plDebugItems <> $
+	{
+		Send(self,@RemoveDebugItems);
+	}
+	plPath = CreateAstarPath(piStartRow,piStartCol,piEndRow,piEndCol,Send(poRoom,@GetRoomData));
+	if vbDebugItems
+	{
+		Send(self,@CreateDebugItems);
+	}
+
+	return;
+}
+
+Recreate()
+{
+	return;
+}
+
+TargetMoved(row = $, col = $)
+"sent when we need to recalculate our path due to moving targets"
+{
+	plPath = [];
+	piStartRow = Send(poFrom,@GetRow);
+	piStartCol = Send(poFrom,@GetCol);
+	piEndRow = row;
+	piEndCol = col;
+	if vbDebugItems AND plDebugItems <> $
+	{
+		Send(self,@RemoveDebugItems);
+	}
+	plPath = CreateAstarPath(piStartRow,piStartCol,piEndRow,piEndCol,Send(poRoom,@GetRoomData));
+	if vbDebugItems
+	{
+		Send(self,@CreateDebugItems);
+	}
+	return;
+}
+
+CalculateStep(oTarget = $)
+"Returns the next step on the monster's path"
+{
+	local i; 
+	
+	%get the last item of the plPath list, or our first move
+	if plPath <> $
+	{
+		i = First(plPath);
+		%remove that node from the list
+		plPath = DelListElem(plPath,i);
+		return i;
+	}
+	else %path not viable, or some other reason to move with the old system
+	{
+		return $;
+	}
+	
+	return $;
+}
+
+CreateDebugItems()
+"creates a line of apples showing the final path"
+{
+	local oDebugItem, i;
+	Debug("plPath:",plPath);
+	for i in plPath
+	{	
+		oDebugItem = Create(&Apple);
+		plDebugItems = Cons(oDebugItem,plDebugItems);
+		Send(SYS,@PutInRoom,#what=oDebugItem,#rid=Send(poRoom,@GetRoomNum),#row=Nth(i,1),#col=Nth(i,2));
+	}
+	return;
+}
+
+RemoveDebugItems()
+"removes debug apples"
+{
+	local i;
+	for i in plDebugItems
+	{
+		Send(i,@Delete);
+	}
+	plDebugItems = $;
+	return;
+}
+
+GetTarget()
+{
+	return poTo;
+}
+
+Delete()
+{
+	return;
+}
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

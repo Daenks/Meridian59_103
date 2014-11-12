@@ -312,6 +312,8 @@ properties:
    poCustomer = $
 
    poBrain = $
+   
+   poAstarPath = $
 
    %%% The Monster State Meta-Object
 
@@ -983,6 +985,13 @@ messages:
       {
          piState = (piState & VSTATE_VALIDITY_MASK);
       }
+	  if poAstarPath <> $ AND Send(Send(sys,@GetAstar),@Enabled)
+	  {
+		if what = Send(poAstarPath,@GetTarget)
+		{
+			Send(poAstarPath,@TargetMoved,#row=new_row,#col=new_col);
+		}
+	  }
 
       Send(poBrain,@SomethingMoved,#mob=self,#state=piState,
            #what=what,#new_row=new_row,#new_col=new_col);
@@ -2159,10 +2168,12 @@ messages:
 
       return FALSE;
    }
-
+   
    MoveTowards(oTarget = $, face_target=FALSE, face_away=FALSE,
                to_master=FALSE)
    {
+      local lAstarTarget;
+	  
       if oTarget = $ 
       { 
          Debug("Bad info passed to MoveTowards!");
@@ -2173,8 +2184,30 @@ messages:
       { 
          return FALSE; 
       }
-
-      return Send(self,@MoveInDirection,#row_diff=Send(oTarget,@GetRow)-piRow,
+	  
+	  if Send(Send(sys,@GetAstar),@Enabled)
+	  {
+		
+		if poAstarPath = $
+		{
+			poAstarPath = Send(Send(sys,@GetAstar),@CreatePath,#oFrom=self,#oTo=oTarget);
+		}
+		
+		%Get our next step as the MoveInDirection target
+		lAstarTarget = Send(poAstarPath,@CalculateStep,#oTarget=oTarget);
+		
+		
+		if lAstarTarget <> $
+		{
+			return Send(self,@MoveInDirection,#row_diff=Nth(lAstarTarget,1)-piRow,
+                  #col_diff=Nth(lAstarTarget,2)-piCol,
+                  #face_target=face_target,#face_away=face_away,
+                  #to_master=to_master);
+		}
+				  
+	  }
+	  % use old movement when astar disabled or when astar cannot provide a path or when moving around while standing next to an enemy
+	  return Send(self,@MoveInDirection,#row_diff=Send(oTarget,@GetRow)-piRow,
                   #col_diff=Send(oTarget,@GetCol)-piCol,
                   #face_target=face_target,#face_away=face_away,
                   #to_master=to_master);
@@ -6115,6 +6148,11 @@ messages:
       {
          Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=vrSound_aware);
       }
+	  
+	  if poAstarPath <> $ AND Send(Send(sys,@GetAstar),@Enabled)
+	  {
+		Send(poAstarPath,@Constructor,#oFrom=self,#oTo=what);
+	  }
 
       return;
    }
