@@ -1,0 +1,173 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+EscapedConvict is User
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+   % Amount of shillings to distribute to EACH ATTACKER.
+   viMoneyAmount = 20000
+
+properties:
+
+   % Enable Convict Pick Pocket ability.
+   pbPickPocket = FALSE
+
+   % Queue of most recent attackers.
+   plAttackers = $
+   % Number of attackers to keep in queue.
+   piAttackers = 15
+   
+   % List of treasure items
+   plTreasure = $
+   
+   % List of list of numbered treasure items and value
+
+   pbDebug = FALSE
+
+messages:
+
+   % Handles damage done to player
+   AssessDamage(what=$,damage=$,atype=0,aspell=0,stroke_obj=$,bonus=0,
+               scalefactor=1000,report=TRUE,report_resistance=TRUE,
+               absolute=FALSE)
+   {
+      local atcker;
+
+      if what <> $
+         AND IsClass(what,&Player)
+      {
+         % List already contains this player - move to top.
+         if plAttackers <> $
+            AND (FindListElem(plAttackers,what) > 0)
+         {
+            % Don't do this if they're already at the top
+            if NOT (First(plAttackers) = what)
+            {
+               plAttackers = DelListElem(plAttackers,what);
+               plAttackers = Cons(what,plAttackers);
+            }
+         }
+         else
+         {
+            % Debug("Player not in list");
+            % Player not already in list, check size and delete if needed.
+            if (Length(plAttackers) < piAttackers)
+            {
+               plAttackers = Cons(what,plAttackers);
+            }
+            else
+            {
+               plAttackers =
+                     DelListElem(plAttackers,Nth(plAttackers,piAttackers));
+               plAttackers = Cons(what,plAttackers);
+            }
+         }
+      }
+
+      if pbDebug
+      {
+         for atcker in plAttackers
+         {
+            Debug("plAttackers: ",atcker);
+         }
+      }
+
+      propagate;
+   }
+
+   Killed(what = $)
+   {
+      local oAttacker,lTreasure,oTreasure,lInventoryContents;
+
+      lInventoryContents = [plActive,plPassive];
+      
+      % Autogive loot to all players in plAttackers that are present
+      for oAttacker in plAttackers
+      {
+         if Send(self,@GetOwner) = Send(oAttacker,@GetOwner)
+         {
+            for lTreasure in lInventoryContents
+            {
+               if pbDebug
+               {
+                  Debug("treasure list",lTreasure);
+               }
+               %Send(oAttacker,@NewHold,#what=lTreasure);
+               for oTreasure in lTreasure
+               {
+                  if pbDebug
+                  {
+                     Debug("treasure object",Send(oTreasure,@GetName));
+                  }
+                  if Send(oTreasure,@DropOnDeath)
+                  {
+                     % Numbered item, include value in creation
+                     if isclass(oTreasure,&NumberItem)
+                     {
+                        Send(oAttacker,@NewHold,
+                           #what=create(GetClass(oTreasure),
+                           #number=Send(oTreasure,@GetNumber)));
+                     }
+                     else
+                     {
+                        Send(oAttacker,@NewHold,
+                           #what=create(GetClass(oTreasure)));
+                     }
+                  }
+               }
+            }
+         }
+      }
+      
+      for lTreasure in lInventoryContents
+      {
+         for oTreasure in lTreasure
+         {
+            if Send(oTreasure,@DropOnDeath)
+            {
+               Send(oTreasure,@Delete);
+            }
+         }
+      }
+      for oTreasure in plActive
+      {
+         if Send(oTreasure,@DropOnDeath)
+            {
+               Send(oTreasure,@Delete);
+            }
+      }
+      for oTreasure in plPassive
+      {
+         if Send(oTreasure,@DropOnDeath)
+            {
+               Send(oTreasure,@Delete);
+            }
+      }
+
+      % Delete all elements in plAttackers.
+      for oAttacker in plAttackers
+      {
+         plAttackers = DelListElem(plAttackers,oAttacker);
+      }
+
+      plAttackers = $;
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
