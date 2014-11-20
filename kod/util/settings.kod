@@ -193,6 +193,9 @@ properties:
 
    % Turns damage scaling for chance to hit greater than 100 percent on or off
    piDamageScaling = FALSE
+   
+   % Set map where players start in.
+   piInitialRoomID = RID_NEWB1
 
 messages:
 
@@ -478,6 +481,11 @@ GetPardonIndulgenceCost()
    GetDamageScaling()
    {
       return piDamageScaling;
+   }
+   
+   GetInitialRoomID()
+   {
+	  return piInitialRoomID;
    }
 
 end
