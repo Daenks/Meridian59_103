@@ -22,7 +22,7 @@ resources:
    createweapon_name_rsc = "create weapon"
    createweapon_icon_rsc = icremace.bgf
    createweapon_desc_rsc = \
-      "Materializes a weapon. Requires nothing but a violent will."
+      "Materializes a weapon. Requires two edible mushrooms."
 
    createweapon_spell_intro = \
       "Kraanan Lv. 1: Creates a variety of weapons for use in "
@@ -55,6 +55,7 @@ messages:
    ResetReagents()
    {
       plReagents = $;
+      plReagents = Cons([&Snack,2],plReagents);
 
       return;
    }
