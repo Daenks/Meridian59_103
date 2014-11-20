@@ -7781,8 +7781,9 @@ messages:
 
    SetInitialHomeroom()
    {
-      piHomeroom = RID_NEWB1;
-      
+      % Get initial Homeroom based on system settings.
+	   piHomeroom = Send(Send(SYS, @GetSettings), @GetInitialRoomID);
+	  
       return;
    }
    
@@ -8005,14 +8006,15 @@ messages:
    TeleportToInitialLocation()
    "Assertion:  you are NOT logged on"
    {
-      local oRoom;
+      local iInitialRoomID, oRoom;
 
-      oRoom = Send(SYS,@FindRoomByNum,#num=Send(self,@GetInitialRoomID));
+      iInitialRoomID = Send(Send(SYS, @GetSettings), @GetInitialRoomID);
+      oRoom = Send(SYS,@FindRoomByNum,#num=iInitialRoomID);
 
       if oRoom = $
       {
          Debug("There is no initial room!");
-
+         
          return;
       }
 
@@ -8028,13 +8030,8 @@ messages:
       {
          piSave_angle = ANGLE_SOUTH;
       }
-
+      
       return;
-   }
-
-   GetInitialRoomID()
-   {
-      return RID_NEWB1;
    }
 
    TeleportTo(RID = RID_TOS,foyer=TRUE,bAdminPort=TRUE)
