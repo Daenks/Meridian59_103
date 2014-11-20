@@ -4922,6 +4922,7 @@ messages:
       plItemTemplates = cons(create(&KnightShield),plItemTemplates);
       plItemTemplates = cons(create(&OrcShield),plItemTemplates);
       plItemTemplates = cons(create(&GuildShield),plItemTemplates);
+      plItemTemplates = cons(create(&WoodenShield),plItemTemplates);
 
       plItemTemplates = cons(create(&Flask),plItemTemplates);
       plItemTemplates = cons(create(&Chess),plItemTemplates);
