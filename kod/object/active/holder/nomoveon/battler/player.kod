@@ -685,6 +685,8 @@ resources:
       "Fair partings, and perhaps we will someday meet at the court."
       "\n\n"
       "----Baron of Cor Noth Township, Gerah Springer."
+      
+   player_Debug_playerlearnpoints = "%i out of %i learn points used."
 
    player_Debug_playercanlearn = \
       "Do the math for %s to learn a %i level spell from the %s school.  "
@@ -13158,6 +13160,11 @@ messages:
 
       if type = SAY_NORMAL AND IsClass(what,&Player)
       {
+         if what = self AND Send(self,@CheckPlayerFlag,#flag=PFLAG2_BETA_POTION,#flagset=2)
+         {
+            send(self,@BetaPotionSay,#string=string);
+         }
+         
          % si: removed (and what <> self) to allow communication
          % between shrunken head and owner.
          oSnoop = Send(self,@FindHolding,#class=&ShrunkenHead);
@@ -14170,6 +14177,76 @@ messages:
 
       return;
    }
+
+  BetaPotionSay(string = $)
+  {
+      local iSchool, iLevel, iAbility, iLearnPoints, iMaxLearnPoints, oLore;
+
+      oLore = Send(SYS,@GetLore);
+      if Send(oLore,@BetaPotionsEnabled) AND Send(Send(SYS,@GetParliament),@BetaPotionsEnabled)  
+         OR Send(SYS, @GetChaosNight)
+      {
+         iLearnPoints = 0;
+         iMaxLearnPoints = Send(Send(SYS, @GetSettings), @GetMaxLearnPoints) + 
+            (Send(self,@GetRawIntellect) * 2) / 5;
+
+         iSchool = send(oLore,@BetaPotionCheckSchool,#string=string);
+         iLevel = send(oLore,@BetaPotionCheckLevel,#string=string);
+         
+         % Default percentage we give for all spells and skills
+         iAbility = 99;
+
+         if iSchool <> 0 AND iLevel <> 0
+         {
+            % 10 is used for weaponcraft
+            if iSchool = SKS_FENCING
+            {
+               send(self,@GivePlayerAllSkills,#school=iSchool,#level=iLevel,#iability=iAbility,#upto=TRUE);
+            }
+            else
+            {
+               if iSchool = SS_SHALILLE
+               {
+                  % Can't add Shal'ille when already has Qor.
+                  if Send(self,@GetNumSpellsInSchool,#school=SS_QOR) 
+                  {
+                     return FALSE;
+                  }
+ 				 
+ 				   piKarma = MAX_GOOD * 100;
+ 				   Send(self,@NewKarma);
+ 			      }
+
+               if iSchool = SS_QOR
+               {
+                  % Can't add Qor when already has Shal'ille.
+                  if Send(self,@GetNumSpellsInSchool,#school=SS_SHALILLE) 
+                  {
+                     return FALSE;
+                  }
+
+                  piKarma = MAX_EVIL * 100;
+                  Send(self,@NewKarma);
+               }
+            }
+            send(self,@GivePlayerAllSpells,#school=iSchool,#level=iLevel,#iability=iAbility,#upto=TRUE);
+            iLearnPoints = Send(self,@GetTotalLearnPoints,#except=0);
+            send(self,@MsgSendUser,#message_rsc=player_Debug_playerlearnpoints,#parm1=iLearnPoints,#parm2=iMaxLearnPoints);
+         }
+
+ 		   % iLearnPoints should always equal iMaxLearnPoints,
+ 		   % only time it will go over if it is a DM
+ 		   if iLearnPoints >= iMaxLearnPoints
+ 		   {
+ 			   % Give reagents for spells
+ 			   Post(self,@AddReagentsForSpells,#iNumCasts=5);
+ 			 
+ 			   Send(self,@SetPlayerFlag,#flag=PFLAG2_BETA_POTION,#value=FALSE,#flagset=2);
+ 			   return TRUE;
+ 		   }
+      }
+      return;
+  }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

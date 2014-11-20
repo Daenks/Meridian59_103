@@ -29,14 +29,14 @@ resources:
        "The size of the boost is directly related to how much time your "
        "character has spent online.  Thus, beta testers who have devoted "
        "more to the game have been rewarded greater.  "
-       "It will also give you all the spells up to level "
-   BetaPotion_Append4_rsc = " in the "
-   BetaPotion_Append5_rsc = " school of magic, limited by your Intellect.\n\n"
+       "Once you drink the potion, you can also select your schools of magic"
+       "by saying the name of the schools and the levels you wish to receive. "
+       "Limited by your Intellect you will only receive a certain amount of "
+       "points before the potion effect wears off.\n\n"
        "If you lose the potion in any way, shape or form (including if you give "
        "it to a friend and s/he quaffs it, or you step through the portal in "
        "Raza, or your little sister suicides your character just to spite you), "
-       "or you didn't get a potion in the school you wanted and threw it away, "
-       "you will NOT get another potion.  So don't ask.\n\n"
+       "or you just threw it away, you will NOT get another potion.  So don't ask.\n\n"
          
    BetaPotion_gulp_sound = drkptn.wav
 
@@ -45,6 +45,11 @@ resources:
    BetaPotion_bad_drink = \
       "You choke down the foul-tasting contents of the vial, realizing almost "
       "immediately that this was a pretty bad idea. Time has caused it to sour."
+      
+   BetaPotion_select_schools = \
+      "Add your schools until you are out of points. Say one of the following:\n"
+      "~B\"[SHAL'ILLE, QOR, KRAANAN, FAREN, RIIJA, JALA, WEAPONCRAFT]\"~n "
+      "followed by ~B\"LEVEL [ONE, TWO, THREE, FOUR, FIVE, SIX]\""
 
 classvars:
    
@@ -68,18 +73,14 @@ properties:
    piGoBadTime = 0
    piItem_flags = PT_GRAY_TO_RED
 
-   piSchool = 0
-   piLevel = 0
    piHealth = 0
    piHealthCap = 100
    pbGiveHealth = FALSE
 
 messages:
 
-   Constructor(school=SS_FAREN, level = 0, health = 0, giveHealth = FALSE, healthCap = 100)
+   Constructor(health = 0, giveHealth = FALSE, healthCap = 100)
    {
-      piSchool = school;
-      piLevel = level;
       piHealth = health;
       piHealthCap = healthCap;
       pbGiveHealth = giveHealth;
@@ -105,22 +106,6 @@ messages:
       AppendTempString(BetaPotion_Append2_rsc);
       AppendTempString(piHealthCap);
       AppendTempString(BetaPotion_Append3_rsc);
-      AppendTempString(piLevel);
-      AppendTempString(BetaPotion_Append4_rsc);
-      
-      if piSchool >= SKS_FENCING
-      {
-         % Any skill will do.
-         oSpellOrSkill = Send(SYS,@FindSkillByNum,#num=SKID_PUNCH); 
-      }
-      else
-      {
-         % Any spell will do.
-         oSpellOrSkill = Send(SYS,@FindSpellByNum,#num=SID_BONK); 
-      }
-      
-      AppendTempString(Send(oSpellOrSkill,@GetSchoolStr,#iSchool=piSchool));
-      AppendTempString(BetaPotion_Append5_rsc);
       
       return;
    }
@@ -130,7 +115,8 @@ messages:
       local HealthBoost, iBaseMaxHealth;
 
       if Send(Send(SYS,@GetLore),@BetaPotionsEnabled)
-         AND Send(Send(SYS,@GetParliament),@BetaPotionsEnabled)
+         AND Send(Send(SYS,@GetParliament),@BetaPotionsEnabled) 
+         OR Send(SYS, @GetChaosNight)
       {
          iBaseMaxHealth = Send(apply_on,@GetBaseMaxHealth);
          Send(apply_on,@MsgSendUser,#message_rsc=BetaPotion_worked);
@@ -150,19 +136,9 @@ messages:
             }
          }
          
-         if piLevel <> 0
-         {
-            if piSchool >= SKS_FENCING
-            {
-               Send(apply_on,@GivePlayerAllSkills,#school=piSchool,#level=piLevel,
-                    #iAbility=piHealth,#upto=TRUE);
-            }
-            else
-            {
-               Send(apply_on,@GivePlayerAllSpells,#school=piSchool,#level=piLevel,
-                    #iAbility=piHealth,#upto=TRUE);
-            }
-         }
+      Send(apply_on,@MsgSendUser,#message_rsc=BetaPotion_select_schools);
+      Post(apply_on,@SetPlayerFlag,#flag=PFLAG2_BETA_POTION,#value=TRUE,#flagset=2);
+
       }
       
       return;

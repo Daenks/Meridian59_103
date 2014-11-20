@@ -732,6 +732,101 @@ messages:
       return;
    }
 
+    BetaPotionCheckSchool(string = $)
+    "Check if player says the name of a school."
+    {
+ 	  local school;
+ 	  
+ 	  school = 0;
+ 	  
+ 	  if StringContain(string,"Shal'ille")
+ 	  {
+ 		 school = SS_SHALILLE;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Qor")
+ 	  {
+ 		 school = SS_QOR;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Kraanan")
+ 	  {
+ 		 school = SS_KRAANAN;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Faren")
+ 	  {
+ 		 school = SS_FAREN;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Riija")
+ 	  {
+ 		 school = SS_RIIJA;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Jala")
+ 	  {
+ 		 school = SS_JALA;
+ 	  }
+ 	  
+ 	  if StringContain(string,"Weaponcraft")
+ 	  {
+ 		 % We use 10 to indicate skills.
+ 		 school = SKS_FENCING;
+ 	  }
+ 	  
+ 	  return school;
+    }
+
+    BetaPotionCheckLevel(string = $)
+    "Check if player also says the level."
+    {
+ 	  local level;
+     
+     level = 0;
+ 	  
+ 	  if StringContain(string,"one") OR
+ 	     StringContain(string,"1")
+ 	  {
+ 		 level = 1;
+ 	  }
+ 	  
+ 	  if StringContain(string,"two") OR
+ 		 StringContain(string,"2")
+ 	  {
+ 		 level = 2;
+ 	  }
+ 	  
+ 	  if StringContain(string,"three") OR
+ 		 StringContain(string,"3")
+ 	  {
+ 		 level = 3;
+ 	  }
+ 	  
+ 	  if StringContain(string,"four") OR
+ 		 StringContain(string,"4")
+ 	  {
+ 		 level = 4;
+ 	  }
+ 	  
+ 	  if StringContain(string,"five") OR
+ 		 StringContain(string,"5")
+ 	  {
+ 		 level = 5;
+ 	  }
+ 	  
+ 	  if StringContain(string,"six") OR
+ 		 StringContain(string,"6")
+ 	  {
+ 		 level = 6;
+ 	  }
+ 	  
+ 	  return level;
+    }
+    
+    %
+    % End of Beta Potion Code
+    %
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

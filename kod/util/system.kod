@@ -6433,12 +6433,9 @@ messages:
       return;
    }
 
-   DistributeBetaPotions(giveHealth=TRUE, maxHP=150, HealthCap=150,
-                         giveSpells=TRUE, maxLevel=6,
-                         MaxPotionsPerPlayer=5, deadwood=0, allMax=FALSE)
+   DistributeBetaPotions(giveHealth=TRUE, maxHP=150, HealthCap=150, deadwood=0, allMax=TRUE)
    {
-      local i, temp, lFinal, iCount, iPosition, iCutoff, iNumPotions,
-            iSchool, iLevel, iHP;
+      local i, lFinal, iCount, iPosition, iCutoff, iHP;
 
       % We want to give players potions based on the amount of logged on
       %  time they've logged.  So let's sort em.
@@ -6456,9 +6453,6 @@ messages:
 
       iCount = 1;
       iHP = maxHP / 8;
-      iSchool = 0;
-      iLevel = 0;
-      iNumPotions = 1;
 
       for i in lFinal
       {
@@ -6476,48 +6470,36 @@ messages:
          {
             % If we're all max, give out max potions, but only one.
             iHP = maxHP;
-            iLevel = maxLevel;
-            iNumPotions = 1;
          }
          else
          {
             if iPosition > (100 - iCutoff)
             {
                iHP = maxHP;
-               iLevel = maxLevel;
-               iNumPotions = MaxPotionsPerPlayer;
             }
             else
             {
                if iPosition > (100 - (2 * iCutoff))
                {
                   iHP = (maxHP*4/5);
-                  iLevel = bound(maxLevel-1,1,$);
-                  iNumPotions = bound(MaxPotionsPerPlayer-1,1,$);
                }
                else
                {
                   if iPosition > (100 - (3 * iCutoff))
                   {
                      iHP = (maxHP*3/5);
-                     iLevel = bound(maxLevel-1,1,$);
-                     iNumPotions = bound(MaxPotionsPerPlayer-2,1,$);
                   }
                   else
                   {
                      if iPosition > (100 - (4 * iCutoff))
                      {
                         iHP = (maxHP*2/5);
-                        iLevel = bound(maxLevel-2,1,$);
-                        iNumPotions = bound(MaxPotionsPerPlayer-3,1,$);
                      }
                      else
                      {
                         if iPosition > deadwood
                         {
                            iHP = (maxHP*1/5);
-                           iLevel = bound(maxLevel-2,1,$);
-                           iNumPotions = bound(MaxPotionsPerPlayer-4,1,$);
                         }
                         else
                         {
@@ -6532,32 +6514,19 @@ messages:
             iCount = iCount + 1;
          }
 
-         temp = [ SS_QOR,SS_RIIJA,SS_KRAANAN,SS_SHALILLE,SS_FAREN,SS_JALA,SKS_FENCING ];
-
          if iHP = 0
          {
             Debug(Send(i,@GetTrueName),"Was deemed unworthy of boosting.");
          }
          else
          {
-            if NOT giveSpells
-            {
-               iLevel = 0;
-            }
 
             if NOT giveHealth
             {
                iHP = 0;
             }
 
-            while iNumPotions > 0 AND temp <> $
-            {
-               iSchool = Nth(temp,random(1,length(temp)));
-               temp = DelListElem(temp,iSchool);
-               Send(i,@Newhold,#what=Create(&BetaPotion,#health=iHP,#school=iSchool,
-                    #level=iLevel,#giveHealth=giveHealth,#healthCap=healthCap));
-               iNumPotions = iNumPotions - 1;
-            }
+            Send(i,@Newhold,#what=Create(&BetaPotion,#health=iHP,#giveHealth=giveHealth,#healthCap=healthCap));
          }
       }
 
