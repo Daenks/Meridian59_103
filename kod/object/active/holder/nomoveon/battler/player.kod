@@ -3080,8 +3080,6 @@ messages:
          Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
       }
 
-      Post(self,@DrawResistances);
-
       return;
    }
 
@@ -3809,7 +3807,6 @@ messages:
       }
 
       Send(self,@ResetPlayerFlagList);
-      Post(self,@DrawResistances);
 
       return TRUE;
    }
@@ -3866,7 +3863,6 @@ messages:
                Send(what,@NewUnused,#what=self);
             }
 
-            Post(self,@DrawResistances);
             return TRUE;
          }
       }
