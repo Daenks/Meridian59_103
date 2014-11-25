@@ -140,7 +140,7 @@ resources:
    user_stat_defense = "Defense"
    user_stat_armor = "Armor"
    user_stat_stomach = "Stomach"
-   user_stat_training = "Training"
+   user_stat_training = "Training Bonus"
    user_stat_hpgainchance = exp.bgf
    
    user_shal_power = "Shal'ille"
@@ -2662,7 +2662,7 @@ messages:
          Send(self,@SendStatHealth);
          Send(self,@SendStatMana);
          Send(self,@SendStatVigor);
-		 Send(self,@SendStatHPChance);
+         Send(self,@SendStatHPChance);
          SendPacket(poSession);
          
          return;
@@ -2679,12 +2679,12 @@ messages:
          Send(self,@SendStatMysticism);
          Send(self,@SendStatAim);
          Send(self,@SendStatKarma);
-         Send(self,@SendStatTraining);
-         Send(self,@SendStatCapacity);
          Send(self,@SendStatOffense);
          Send(self,@SendStatDefense);
-         Send(self,@SendStatArmor);
          Send(self,@SendStatStomach);
+         Send(self,@SendStatArmor);
+         Send(self,@SendStatCapacity);
+         Send(self,@SendStatTraining);
 
          SendPacket(poSession);
          
