@@ -1,0 +1,92 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+PurgeResistanceAmulet is Necklace
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   PurgeResistanceAmulet_name_rsc = "Amulet of Spirit"
+   PurgeResistanceAmulet_icon_rsc = shcharm.bgf
+   PurgeResistanceAmulet_desc_rsc = \
+      "This amulet seems to empower your soul, so that you may better bond with magics cast on your body."
+
+   PurgeResistanceAmulet_used_rsc = \
+      "As you put the amulet on, you feel your magical enchantments cling tighter to your soul."
+      
+   PurgeResistanceAmulet_resisting_rsc = "The enchantments around %s resist being purged!"
+
+classvars:
+
+   viIndefinite = ARTICLE_AN
+
+   vrName = ResistanceAmulet_name_rsc
+   vrIcon = ResistanceAmulet_icon_rsc
+   vrDesc = ResistanceAmulet_desc_rsc
+
+   use_string = PurgeResistanceAmulet_used_rsc
+   
+   viValue_average = 2000
+
+   viBulk = 100
+   viWeight = 100
+
+properties:
+
+messages:
+
+   SendInventoryAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+   
+   DoResistance(who=$,what=$,oSpell=$,duration=0,chance=0)
+   {
+      if oSpell <> $
+         AND IsClass(oSpell,&Purge)
+      {
+         chance = chance / 2;
+         
+         if what <> $
+            AND who <> $
+            AND IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=PurgeResistanceAmulet_resisting_rsc,#parm1=Send(who,@GetName));
+         }
+
+         return chance;
+      }
+             
+      return chance;
+   }
+   
+   GetType()
+   {
+      return SID_PURGE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+

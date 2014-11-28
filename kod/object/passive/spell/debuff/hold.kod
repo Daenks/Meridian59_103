@@ -120,18 +120,27 @@ messages:
       oTarget = First(lTargets);
       iDuration = Send(self,@GetDuration,#ispellPower=iSpellPower);
 
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
-
-      % Check if the target has free action
-      if Send(oTarget,@IsEnchanted,#what=oSpell)
+      if IsClass(oTarget,&Player)
+         AND Send(oTarget,@GetResistanceAmulet) <> $
+         AND Send(Send(oTarget,@GetResistanceAmulet),@GetType) = SID_HOLD
       {
-         iDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=who,
-                          #oTarget=oTarget,#iDuration=iDuration);
-         if iDuration = $
-         {
-            % Resisted completely
+         iDuration = Send(Send(oTarget,@GetResistanceAmulet),@DoResistance,#who=what,#what=oTarget,#oSpell=self,#duration=iDuration);
+      }
+      else
+      {
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_FREE_ACTION);
 
-            propagate;
+         % Check if the target has free action
+         if Send(oTarget,@IsEnchanted,#what=oSpell)
+         {
+            iDuration = Send(oSpell,@DoFreeAction,#oHoldCaster=who,
+                             #oTarget=oTarget,#iDuration=iDuration);
+            if iDuration = $
+            {
+               % Resisted completely
+
+               propagate;
+            }
          }
       }
 

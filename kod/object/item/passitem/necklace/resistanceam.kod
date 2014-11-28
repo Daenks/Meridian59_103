@@ -1,0 +1,134 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ResistanceAmulet is Necklace
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ResistanceAmulet_name_rsc = "Amulet of Sight"
+   ResistanceAmulet_icon_rsc = qrcharm.bgf
+   ResistanceAmulet_desc_rsc = \
+      "This amulet seems to empower your senses."
+
+   ResistanceAmulet_used_rsc = \
+      "As you put the amulet on, light seems to radiate around your eyes."
+
+   ResistanceAmulet_cannot_equip_here_rsc = "It doesn't seem safe to try to bond with the amulet out here."
+   ResistanceAmulet_cannot_switch_here_rsc = "The amulet clings to your neck, and your soul. You must return to a place of safety to remove it."
+   
+   ResistanceAmulet_resisting_rsc = "The amulet worn by %s partially resists your spell!"
+
+classvars:
+
+   viIndefinite = ARTICLE_AN
+
+   vrName = ResistanceAmulet_name_rsc
+   vrIcon = ResistanceAmulet_icon_rsc
+   vrDesc = ResistanceAmulet_desc_rsc
+
+   use_string = ResistanceAmulet_used_rsc
+
+   viValue_average = 2000
+
+   viBulk = 100
+   viWeight = 100
+
+properties:
+
+messages:
+
+   NewUsed(what = $)
+   "When the amulet is put on, the wearer's light goes down and defense is worse"
+   {
+      send(poOwner,@MsgSendUser,#message_rsc=use_string);
+
+      propagate;
+   }
+   
+   ReqUse()
+   {
+      if poOwner <> $
+         AND Send(poOwner,@GetOwner) <> $
+         AND IsClass(Send(poOwner,@GetOwner),&Room)
+         AND Send(Send(poOwner,@GetOwner),@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+      {
+         return TRUE;
+      }
+      
+      send(poOwner,@MsgSendUser,#message_rsc=ResistanceAmulet_cannot_equip_here_rsc);
+      
+      return FALSE;
+   }
+
+   ReqUnuse()
+   {
+      if poOwner <> $
+         AND Send(poOwner,@GetOwner) <> $
+         AND IsClass(Send(poOwner,@GetOwner),&Room)
+         AND Send(Send(poOwner,@GetOwner),@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+      {
+         return TRUE;
+      }
+      
+      send(poOwner,@MsgSendUser,#message_rsc=ResistanceAmulet_cannot_switch_here_rsc);
+      
+      return FALSE;
+   }
+
+   SendInventoryAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+   
+   DoResistance(who=$,what=$,oSpell=$,duration=0,chance=0)
+   {
+      if oSpell <> $
+         AND (IsClass(oSpell,&Blind)
+             OR IsClass(oSpell,&Dazzle))
+      {
+         duration = duration / 2;
+         
+         if what <> $
+            AND who <> $
+            AND IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=ResistanceAmulet_resisting_rsc,#parm1=Send(who,@GetName));
+         }
+
+         return duration;
+      }
+             
+      return duration;
+   }
+   
+   GetType()
+   {
+      return SID_BLIND;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+

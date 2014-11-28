@@ -29,7 +29,8 @@ messages:
    constructed()
    {
       plTreasure = [ [ &OrcTooth, 42 ],
-                     [ &Scimitar, 12 ],
+                     [ &PurgeResistanceAmulet, 6 ],
+                     [ &Scimitar, 6 ],
                      [ &Arrow, 12 ],
                      [ &NeruditeArmor, 9],
                      [ &NeruditeSword, 9],

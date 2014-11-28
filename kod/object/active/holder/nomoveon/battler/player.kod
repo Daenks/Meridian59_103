@@ -14191,6 +14191,21 @@ messages:
 
       return;
    }
+   
+   GetResistanceAmulet()
+   {
+      local i;
+ 
+      for i in plUsing
+      {
+         if IsClass(i,&ResistanceAmulet)
+         {
+            return i; 
+         }
+      }
+
+      return $;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

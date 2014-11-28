@@ -144,16 +144,25 @@ messages:
       local oSpell, iDuration;
 
       iDuration = iDurationSecs;
-      
-      oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
-      if Send(oTarget,@IsEnchanted,#what=oSpell)
+
+      if IsClass(oTarget,&Player)
+         AND Send(oTarget,@GetResistanceAmulet) <> $
+         AND Send(Send(oTarget,@GetResistanceAmulet),@GetType) = SID_BLIND
       {
-         iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
-                          #iDuration=iDuration);
-         if iDuration = $
+         iDuration = Send(Send(oTarget,@GetResistanceAmulet),@DoResistance,#who=what,#what=oTarget,#oSpell=self,#duration=iDuration);
+      }
+      else
+      {
+         oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
+         if Send(oTarget,@IsEnchanted,#what=oSpell)
          {
-            % Resisted completely.
-            return;
+            iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
+                              #iDuration=iDuration,#iFactor=2);
+            if iDuration = $
+            {
+               % Resisted completely.
+               return;
+            }
          }
       }
 

@@ -5181,6 +5181,10 @@ messages:
       plItemTemplates = cons(create(&WandSplitter),plItemTemplates);
       plItemTemplates = cons(create(&ScrollSplitter),plItemTemplates);
       
+      plItemTemplates = cons(create(&ResistanceAmulet),plItemTemplates);
+      plItemTemplates = cons(create(&PurgeResistanceAmulet),plItemTemplates);
+      plItemTemplates = cons(create(&HoldResistanceAmulet),plItemTemplates);
+      
       return;
    }
 
