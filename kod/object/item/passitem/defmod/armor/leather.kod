@@ -47,7 +47,7 @@ classvars:
    vrIcon_female = Leatherarmor_female_icon_rsc
 
    viDefense_base = 50
-   viDamage_base = 0
+   viDamage_base = 1
 
 properties:
 
@@ -60,7 +60,7 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_ALL,10] ];
+      return [ [-ATCK_SPELL_ALL,5] ];
    }
 
    GetHeatDamage()

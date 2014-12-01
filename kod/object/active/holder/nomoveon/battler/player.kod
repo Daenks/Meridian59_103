@@ -5144,7 +5144,7 @@ messages:
             scalefactor=1000,report=TRUE,report_resistance=TRUE,absolute=FALSE)
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
-            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken;
+            iDuration, oSpell, iLimit, origdamage, oWeapon, shrunken;
 
       origdamage = damage;
       color_rsc = player_hit_color_none;
@@ -5159,15 +5159,6 @@ messages:
 
       if NOT absolute
       {
-         % Armor of Gort has a special effect that must go first
-         oGort = Send(SYS,@FindSpellByNum,#Num=SID_ARMOR_OF_GORT);
-         if Send(self,@IsEnchanted,#what=oGort)
-         {
-            damage = Send(oGort,@PriorityModifyDefenseDamage,#who=self,
-                           #what=what,#damage=damage,
-                           #atype=atype,#aspell=aspell);
-         }
-         
          for i in plDefense_modifiers
          {
             damage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,
@@ -14061,7 +14052,7 @@ messages:
 
          if IsClass(d,&ArmorOfGort)
          {
-            iArmor = iArmor + (Send(self,@GetEnchantedState,#what=d) / 25);
+            iArmor = iArmor + ((Send(self,@GetEnchantedState,#what=d) + 1) / 20);
          }
       }
 
