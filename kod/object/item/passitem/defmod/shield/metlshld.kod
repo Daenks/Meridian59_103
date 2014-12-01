@@ -53,7 +53,8 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_SLASH,10]
+      return [ [ATCK_WEAP_CLAW,10],
+               [ATCK_WEAP_BITE,10]
              ];
    }
 

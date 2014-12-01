@@ -47,7 +47,7 @@ classvars:
    viInventory_group = 1
 
    viDefense_base = 15
-   viDamage_base = 2
+   viDamage_base = 3
 
 properties:
 
@@ -55,11 +55,8 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_ALL,-20],
-               [ATCK_WEAP_PIERCE,10]
-             ];
+      return [ [-ATCK_SPELL_ALL,-10] ];
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -50,7 +50,7 @@ classvars:
    viDamage_base = 0
 
 properties:
-   
+
 messages:
 
    ShowShirt()
@@ -60,15 +60,13 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_ALL,5]
-             ];
+      return [ [-ATCK_SPELL_ALL,10] ];
    }
 
    GetHeatDamage()
    {
       return 1;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
