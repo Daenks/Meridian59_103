@@ -15,9 +15,10 @@ constants:
 
 resources:
 
-   rmgcombat_name_rsc = "Guild and Faction Combat Only"
+   rmgcombat_name_rsc = "Guild, Faction, and Justice Combat Only"
    rmgcombat_icon_rsc = rmgcombat.bgf
-   rmgcombat_desc_rsc = "You must be in a guild, or be a faction soldier to fight here."
+   rmgcombat_desc_rsc = "Guilds and Faction soldiers may fight and execute "
+      "justice upon a murderer here."
 
 classvars:
 
