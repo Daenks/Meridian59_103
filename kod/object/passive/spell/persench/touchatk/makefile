@@ -5,6 +5,7 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\touchatk.bof
-BOFS = flametch.bof holytch.bof icyfing.bof zap.bof acidtch.bof 
+BOFS = flametch.bof holytch.bof icyfing.bof zap.bof acidtch.bof \
+       megpnch.bof
 
 !include  $(KODDIR)\kod.mak

@@ -1,0 +1,99 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MegaPunch is TouchAttackSpell
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   MegaPunch_name_rsc = "mega punch"
+   MegaPunch_icon_rsc = imegpnch.bgf
+   MegaPunch_desc_rsc = \
+      "Infuse your fists with Kranaan's fighting fury. "
+      "Requires nothing but a violent will."
+
+   MegaPunch_On_rsc = "You feel Kranaan's power flowing through your fists."
+   MegaPunch_Off_rsc = "Your fists are no longer super powered."
+   MegaPunch_Already_Enchanted_rsc = "Your fists are already super powered!"
+
+   MegaPunch_spell_intro = "Kranaan Lv. 1: Increase the power of your fists. Requires nothing but a violent will."
+  
+classvars:
+
+   vrName = MegaPunch_name_rsc
+   vrIcon = MegaPunch_icon_rsc
+   vrDesc = MegaPunch_desc_rsc
+
+   vrAlreadyEnchanted = MegaPunch_already_enchanted_rsc
+   vrEnchantment_On = MegaPunch_On_rsc
+   vrEnchantment_Off = MegaPunch_Off_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+   vrSpell_intro = MegaPunch_spell_intro
+
+   viSchool = SS_KRAANAN
+   viSpell_num = SID_MEGA_PUNCH
+   viSpellExertion = 6
+   viSpell_level = 1
+   viMana = 5
+
+   viMin_Damage = 6        %% touch spells typically do good damage    
+   viMax_Damage = 11       %% but are unaffected by weapon or strength bonuses
+
+   viRange = 2             %% touch spell range can vary, but are typically good     
+
+   viSpellType = ATCK_SPELL_ALL
+   viStroke = STROKE_PUNCH
+
+   vbAutomatic = FALSE
+
+properties:
+
+   plPrerequisites = $
+   plReagents = $
+
+messages:
+
+  ResetReagents()
+  {
+     plReagents = $;
+     return;
+  }
+
+   CheckWeaponAndDoAnimation(who=$,weapon_used=$,victim=$)
+   {
+      Send(who,@DoFistAttack);
+      
+      return TRUE;
+   }
+
+   GetProf(who=$)
+   {
+      local iProf, iMight;
+
+      iProf = Send(who,@GetSkillAbility,#skill_num=SKID_PUNCH);
+      Send(who,@FlipSkillAtrophyFlag,#SKID=SKID_PUNCH);
+      
+      iMight = (Send(who,@GetMight)*2);
+      
+      if iProf < iMight
+      {
+         iProf = iMight;
+      }
+
+      return bound(iProf,1,99);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
