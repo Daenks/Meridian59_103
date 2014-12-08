@@ -1549,7 +1549,13 @@ messages:
       piStomach = bound(piStomach,1,100);
       piTimeLastStomachUpdate = now;
 
+      Post(self,@DrawStomach);
       return;
+   }
+
+   GetStomach()
+   {
+      return piStomach;
    }
 
    HasVigor(amount = $)

@@ -145,7 +145,8 @@ resources:
    user_stat_offense = "Offense"
    user_stat_defense = "Defense"
    user_stat_armor = "Armor"
-   user_stat_training = "Training Pts"
+   user_stat_stomach = "Stomach"
+   user_stat_training = "Training Bonus"
    user_stat_hpgainchance = exp.bgf
    user_resist_magic = "Magic Resist"
    user_resist_fire = "Fire Resist"
@@ -2699,7 +2700,7 @@ messages:
 
       if group = 2
       {
-         AddPacket(1,BP_STAT_GROUP, 1,group, 1,25);
+         AddPacket(1,BP_STAT_GROUP, 1,group, 1,26);
 
          Send(self,@SendStatMight);
          Send(self,@SendStatIntellect);
@@ -2708,11 +2709,12 @@ messages:
          Send(self,@SendStatMysticism);
          Send(self,@SendStatAim);
          Send(self,@SendStatKarma);
-         Send(self,@SendStatTraining);
-         Send(self,@SendStatCapacity);
          Send(self,@SendStatOffense);
          Send(self,@SendStatDefense);
+         Send(self,@SendStatStomach);
          Send(self,@SendStatArmor);
+         Send(self,@SendStatCapacity);
+         Send(self,@SendStatTraining);
          
          i = 1;
          lCurrentResistances = Send(self,@GetCurrentResistances);
@@ -7289,6 +7291,30 @@ messages:
       
       AddPacket(1,12, 4,user_stat_armor, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iArmor_send, 4,0, 4,15, 4,iArmor_send);
+
+      return;
+   }
+
+   DrawStomach()
+   {
+      if pbLogged_on
+      {
+         AddPacket(1,BP_STAT,1,2);
+         Send(self,@SendStatStomach);
+         SendPacket(poSession);
+      }
+
+      return;
+   }
+   
+   SendStatStomach()
+   {
+      local iStomach_send;
+      
+      iStomach_send = Send(self,@GetStomach);
+      
+      AddPacket(1,26, 4,user_stat_stomach, 1,STAT_VALUE, 1,STAT_INTEGER,
+                4,iStomach_send, 4,0, 4,100, 4,iStomach_send);
 
       return;
    }
