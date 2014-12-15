@@ -47,7 +47,7 @@ classvars:
    vrIcon_female = neruditearmor_female_icon_rsc
 
    viDefense_base = -150
-   viDamage_base = 5
+   viDamage_base = 4
 
 properties:
 
@@ -60,10 +60,10 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,20],
-               [-ATCK_SPELL_SHOCK,20],
-               [-ATCK_SPELL_COLD,20],
-               [-ATCK_SPELL_ACID,20],
+      return [ [-ATCK_SPELL_FIRE,10],
+               [-ATCK_SPELL_SHOCK,10],
+               [-ATCK_SPELL_ACID,10],
+               [-ATCK_SPELL_COLD,10],
                [-ATCK_SPELL_QUAKE,-20]
              ];
    }

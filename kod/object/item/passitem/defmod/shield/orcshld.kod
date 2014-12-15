@@ -86,9 +86,7 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,15],
-               [-ATCK_SPELL_HOLY,-20]
-             ];
+      return [ [-ATCK_SPELL_HOLY,-20] ];
    }
 
    SendOverlayAnimation(animation = $)

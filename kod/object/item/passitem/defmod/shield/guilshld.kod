@@ -565,7 +565,7 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,10] ];
+      return [];
    }
 
    GetBaseSpellModifier(oSpell=$)
