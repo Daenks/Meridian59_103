@@ -1224,7 +1224,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 				D3DRenderShutDown();
 				gFrame = 0;
 				D3DRenderInit(hMain);
-				D3DGeometryBuildNew(room, &gWorldPoolStatic);
+				ResetUserData();
+				//D3DGeometryBuildNew(room, &gWorldPoolStatic);
 			}
 		}
 	}
