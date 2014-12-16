@@ -1214,18 +1214,18 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 
 		if (error == D3DERR_DEVICELOST)
 		{
+			// Keep checking until we can reset.
 			while (error == D3DERR_DEVICELOST)
 				error = IDirect3DDevice9_TestCooperativeLevel(gpD3DDevice);
 
 			if (error == D3DERR_DEVICENOTRESET)
 			{
+				IDirect3DDevice9_Reset(gpD3DDevice, &gPresentParam);
 				D3DRenderShutDown();
-
-				while (error != D3D_OK)
-					error = IDirect3DDevice9_Reset(gpD3DDevice, &gPresentParam);
-
+				gFrame = 0;
 				D3DRenderInit(hMain);
-				D3DGeometryBuildNew(room, &gWorldPoolStatic);
+				ResetUserData();
+				//D3DGeometryBuildNew(room, &gWorldPoolStatic);
 			}
 		}
 	}
