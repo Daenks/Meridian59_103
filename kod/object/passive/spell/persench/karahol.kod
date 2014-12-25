@@ -127,7 +127,7 @@ messages:
    % Stuff we handle to be an attack modifier
    ModifyHitRoll(who=$,what=$,hit_roll=$)
    {
-      return hit_roll + 100 + (Send(who,@GetEnchantedState,#what=self)*2);
+      return hit_roll + 100 + (Send(who,@GetEnchantedState,#what=self)*4);
    }
    
    ModifyDamage(who=$,what=$,damage=$)
@@ -146,7 +146,7 @@ messages:
       AppendTempString("Your current ");
       AppendTempString(Send(self,@GetName));
       AppendTempString(" enchantment adds ");
-      AppendTempString(100 + (Send(who,@GetEnchantedState,#what=self) * 2));
+      AppendTempString(100 + (Send(who,@GetEnchantedState,#what=self) * 4));
       AppendTempString(" offense and 1-");
       AppendTempString(1 + (Send(who,@GetEnchantedState,#what=self)/20));
       AppendTempString(" attack damage. When it expires, it will paralyze you for ");

@@ -461,6 +461,10 @@ messages:
          OR IsClass(what,&Bow)
          OR IsClass(what,&Lute)
          OR IsClass(what,&Totem)
+         OR (IsClass(what,&JewelofFroz)
+               AND (Send(poOwner,@IsUsingA,#class=&JewelofFroz)
+                       OR Send(poOwner,@IsUsingA,#class=&Weapon)
+                       OR Send(poOwner,@IsUsingA,#class=&Torch)))
       {
          Send(self,@SlingOnBack,#report=FALSE);
          return TRUE;
@@ -469,9 +473,6 @@ messages:
    }
 
    %%% For putting the shield on our back
-
-   % This is used for Bows and Lutes, currently.
-
    SlingOnBack(report=TRUE)
    {
       if piOverlayHotspot <> HS_SHIELD_BACK

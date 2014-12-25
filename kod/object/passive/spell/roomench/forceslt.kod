@@ -143,7 +143,7 @@ messages:
       local iSpellpower,iHitMod;
 
       iSpellpower = send(send(who,@GetOwner),@GetEnchantmentState,#what=self);
-      iHitMod = iSpellpower + 50;  %% 50 - 150
+      iHitMod = iSpellpower*2 + 50;  %% 50 - 250
       
       return hit_roll + iHitMod;
    }
@@ -174,7 +174,7 @@ messages:
       AppendTempString(Send(self,@GetName));
       AppendTempString(" enchantment currently adds ");
       
-      iState = Send(Send(who,@GetOwner),@GetEnchantedState,#what=self);
+      iState = Send(Send(who,@GetOwner),@GetEnchantedState,#what=self)*2;
       
       AppendTempString(iState + 50);
       AppendTempString(" offense to the attacks of good players and ");

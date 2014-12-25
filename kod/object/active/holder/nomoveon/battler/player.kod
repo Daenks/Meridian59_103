@@ -4782,7 +4782,7 @@ messages:
 
          if oWeapon <> $
          {
-            iOffense = Send(oWeapon,@ModifyHitRoll,#target=what,
+            iOffense = Send(oWeapon,@ModifyHitRoll,#who=self,#target=what,
                   #hit_roll=iOffense);
          }
       }
@@ -9904,7 +9904,7 @@ messages:
    RefreshPlayerVisualGear()
    {
       local n, plRefreshItemTypes, i, iHighestLayer, oHighestGear,
-            iLowestLayer, oLowestGear, oSoldierShield, bSoldierShieldSlung;
+            iLowestLayer, oLowestGear, oSoldierShield, bSoldierShieldSlung, iFrozCount;
 
       plRefreshItemTypes = [ITEM_USE_SHIRT,ITEM_USE_BODY,ITEM_USE_LEGS];
 
@@ -9953,6 +9953,8 @@ messages:
             Send(oLowestGear,@DoPlayerArt);
          }
       }
+      
+      iFrozCount = 0;
 
       % Check for Soldier Shield sling
       bSoldierShieldSlung = FALSE;
@@ -9961,10 +9963,18 @@ messages:
       {
          for i in plUsing
          {
+            if IsClass(i,&JewelofFroz)
+               OR IsClass(i,&Weapon)
+               OR IsClass(i,&Torch)
+            {
+               iFrozCount = iFrozCount + 1;
+            }
+         
             if (IsClass(i,&Shield)
                AND NOT IsClass(i,&SoldierShield))
                OR IsClass(i,&Bow)
                OR IsClass(i,&Lute)
+               OR iFrozCount > 1
             {
                Send(oSoldierShield,@SlingOnBack,#report=FALSE);
                bSoldierShieldSlung = TRUE;

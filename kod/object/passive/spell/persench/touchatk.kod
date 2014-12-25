@@ -208,6 +208,11 @@ messages:
       return Send(who,@GetSpellAbility,#spell_num=viSpell_num);
    }
 
+   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      return hit_roll;
+   }
+
    GetAttackType(weapon_used=$)
    {
       return viAttackType;

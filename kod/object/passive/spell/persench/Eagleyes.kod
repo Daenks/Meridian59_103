@@ -167,7 +167,7 @@ messages:
    {
       local iFactor, oWeapon;
 
-      iFactor = Send(who,@GetEnchantedState,#what=self);
+      iFactor = Send(who,@GetEnchantedState,#what=self) * 2;
 
       oWeapon = Send(who,@LookupPlayerWeapon);
 
@@ -201,7 +201,7 @@ messages:
       AppendTempString("Your current ");
       AppendTempString(Send(self,@GetName));
       AppendTempString(" enchantment adds ");
-      AppendTempString(Send(who,@GetEnchantedState,#what=self));
+      AppendTempString(Send(who,@GetEnchantedState,#what=self)*2);
       AppendTempString(" offense and 1 damage to your ranged attacks.");
 
       propagate;
