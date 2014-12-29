@@ -109,43 +109,18 @@ messages:
       return 15;
    }
 
-   MonsterCastSpell()
+   HitSideEffect(what = $)
    {
-      local iDistance, oSpell, iRandom, lTargets;
+      local oSpell;
 
-      iDistance = Send(self,@SquaredDistanceTo,#what=poTarget);
-
-      iRandom = Send(self,@AdjustedChanceBase,#base=SPELL_CHANCE);
-      if Random(1,iRandom) = 1
-         AND iDistance > Send(self,@GetAttackRange)
-         AND iDistance <= SPELL_RANGE_SQUARED
-         AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
-         AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
-                  #use_weapon=self)
-                  
-         oSpell = Send(SYS,@FindSpellByNum,#num=oSpell);
-         lTargets = Send(oSpell,@GetTargets,#who=self,#lTargets=lTargets);
-
-         if Send(oSpell,@CanPayMonsterCosts,#who=self,#ltargets=lTargets,
-                 #iSpellPower=SPELLPOWER_MAXIMUM)
-            AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,
-                     #litems=lTargets)
-         {
-            Send(oSpell,@CastSpell,#who=self,#ltargets=lTargets,
-                 #iSpellPower=SPELLPOWER_MAXIMUM);
-         }
-
-         if Random(1,POISON_CHANCE) = 1
-         {
-            oSpell = Send(SYS,@FindSpellByNum,#num=SID_POISON);
-            Send(oSpell,@MakePoisoned,#who=poTarget,#lossrate=POISON_LOSSRATE,
-                  #duration=POISON_DURATION);
-         }
-
-         return TRUE;
+      if Random(1,POISON_CHANCE) = 1
+      {
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_POISON);
+         Send(oSpell,@MakePoisoned,#who=what,
+               #lossrate=POISON_LOSSRATE,#duration=POISON_DURATION);
       }
 
-      return FALSE;
+      return;
    }
 
    CdFireball()
