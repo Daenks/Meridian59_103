@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ChaosDragon is Monster
+Blue Dragon is Monster
 
 constants:
 
@@ -217,7 +217,7 @@ messages:
    }
 
    CanBeSilenced()
-   "Chaos Dragons cannot be silenced by the room enchantment."
+   "Blue Dragons cannot be silenced by the room enchantment."
    {
       return FALSE;
    }
