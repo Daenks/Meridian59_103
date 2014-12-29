@@ -94,8 +94,12 @@ messages:
                         [ ATCK_SPELL_FIRE, 50 ],
                         [ ATCK_SPELL_SHOCK, 50 ],
                         [ ATCK_WEAP_ALL, 50 ],
-                        [ ATCK_WEAP_MAGIC, 50 ]
-                      ];
+                        [ ATCK_WEAP_MAGIC, 50 ] ];
+                      
+      plSpellBook = [ [SID_BLIND,5,20], [SID_EVIL_TWIN,10,30],
+                      [SID_PURGE,4,50], [SID_HOLD,5,40],
+                      [SID_DISCORDANCE,5,70], [SID_FORGET,5,100] ];
+                      
       propagate;
    }
 
@@ -118,52 +122,7 @@ messages:
          AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
          AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
                   #use_weapon=self)
-      {
-         iRandom = random(1,100);
-         if iRandom < 20
-         {
-            oSpell = SID_BLIND;
-            lTargets = [poTarget];
-         }
-         else
-         {
-            if iRandom < 30
-            {
-               % Summoning an Evil Twin
-               oSpell = SID_EVIL_TWIN;
-               lTargets = [poTarget];
-            }
-            else
-            {
-               if iRandom < 40
-               {
-                  oSpell = SID_HOLD;
-                  lTargets = [poTarget];
-               }
-               else
-               {
-                  if iRandom < 70
-                  {
-                     oSpell = SID_DISCORDANCE;
-                     lTargets = $;
-                  }
-                  else
-                  {
-                     if iRandom < 80
-                     {
-                        oSpell = SID_ENFEEBLE;
-                        lTargets = [poTarget];
-                     }
-                     else
-                     {
-                        oSpell = SID_FORGET;
-                        lTargets = [poTarget];
-                     }
-                  }
-               }
-            }
-         }
-
+                  
          oSpell = Send(SYS,@FindSpellByNum,#num=oSpell);
          lTargets = Send(oSpell,@GetTargets,#who=self,#lTargets=lTargets);
 
