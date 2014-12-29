@@ -1,0 +1,322 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChaosDragon is Monster
+
+constants:
+
+   include blakston.khd
+
+   ANIM_SPEED = 75
+
+   FRAME_STAND = 1
+   FRAME_ATTACK_START = 2
+   FRAME_ATTACK_END = 6
+
+
+   % Base percent chance to resist spells.
+   MAGIC_RESIST = 70
+   % Range, squared, of spell attacks.
+   SPELL_RANGE_SQUARED = 100
+   % Chance (1 in this many) to cast an offensive spell per attack.
+   SPELL_CHANCE = 2
+   
+   POISON_CHANCE = 20
+   % 30 seconds duration
+   POISON_DURATION = 40000
+   % in health points * 10^-4 / second
+   POISON_LOSSRATE = 4500   
+   
+resources:
+
+   BlueDragon_koc_name_rsc = "ozangelis"
+   BlueDragon_name_rsc = "Blue Dragon"
+   BlueDragon_icon_rsc = rdragon.bgf
+   BlueDragon_desc_rsc = \
+      "As you look the beast in the eyes, fear grips your heart, the Blue Dragon seeks the souls of "
+      "Warriors to consume.  The beast is towering in size, attempting to devour any that wander "
+      "near it.  Surely this beast is a fight not to handle alone!"
+
+   DarkAngel_dead_icon_rsc = angelX.bgf
+   DarkAngel_dead_name_rsc = "dead dark angel"
+
+   BlueDragon_sound_attack = lich_atk.wav
+   BlueDragon_sound_death = gst_dth.wav
+   BlueDragon_sound_aware = gst_awr.wav
+
+   BlueDragon_fireball = fireball.bgf
+
+classvars:
+
+   viIndefinite = ARTICLE_A
+   vrName = BlueDragon_name_rsc
+   vrIcon = BlueDragon_icon_rsc
+   vrDesc = BlueDragon_desc_rsc
+   vrDead_icon = DarkAngel_dead_icon_rsc
+   vrDead_name = DarkAngel_dead_name_rsc
+
+   viTreasure_type = TID_DARK_ANGEL
+   viCashmin = 50000
+   viCashmax = 100000
+   viSpeed = SPEED_FASTER
+   viAttack_type = ATCK_WEAP_MAGIC
+   viAttack_spell = ATCK_SPELL_FIRE
+   viLevel = 400
+   viDifficulty = 9
+   viKarma = 100
+   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_FIGHT_AGGRESSIVE \
+                        | AI_FIGHT_SWITCHALOT | AI_MOVE_REGROUP \
+                        | AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_THROUGH_WALLS \
+                        | AI_FIGHT_WIZARD_KILLER | AI_FIGHT_HYPERAGGRESSIVE 
+
+   vrSound_miss = DarkAngel_sound_attack
+   vrSound_aware = DarkAngel_sound_aware
+   vrSound_death = DarkAngel_sound_death
+
+properties:
+
+   piAnimation = ANIM_NONE
+
+messages:
+
+   MonsterAttack() { Send(self,@MonsterCastSpell); return; }
+
+   Constructed()
+   {
+      plResistances = [ [ ATCK_SPELL_COLD, 50 ],
+                        [ ATCK_SPELL_FIRE, 50 ],
+                        [ ATCK_SPELL_SHOCK, 50 ],
+                        [ ATCK_WEAP_ALL, 50 ],
+                        [ ATCK_WEAP_MAGIC, 50 ]
+                      ];
+      propagate;
+   }
+
+   % Blue Dragons have a range with their fireballs.
+   GetAttackRange()
+   {
+      return 15;
+   }
+
+   MonsterCastSpell()
+   {
+      local iDistance, oSpell, iRandom, lTargets;
+
+      iDistance = Send(self,@SquaredDistanceTo,#what=poTarget);
+
+      iRandom = Send(self,@AdjustedChanceBase,#base=SPELL_CHANCE);
+      if Random(1,iRandom) = 1
+         AND iDistance > Send(self,@GetAttackRange)
+         AND iDistance <= SPELL_RANGE_SQUARED
+         AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
+         AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
+                  #use_weapon=self)
+      {
+         iRandom = random(1,100);
+         if iRandom < 20
+         {
+            oSpell = SID_BLIND;
+            lTargets = [poTarget];
+         }
+         else
+         {
+            if iRandom < 30
+            {
+               % Summoning an Evil Twin
+               oSpell = SID_EVIL_TWIN;
+               lTargets = [poTarget];
+            }
+            else
+            {
+               if iRandom < 40
+               {
+                  oSpell = SID_HOLD;
+                  lTargets = [poTarget];
+               }
+               else
+               {
+                  if iRandom < 70
+                  {
+                     oSpell = SID_DISCORDANCE;
+                     lTargets = $;
+                  }
+                  else
+                  {
+                     if iRandom < 80
+                     {
+                        oSpell = SID_ENFEEBLE;
+                        lTargets = [poTarget];
+                     }
+                     else
+                     {
+                        oSpell = SID_FORGET;
+                        lTargets = [poTarget];
+                     }
+                  }
+               }
+            }
+         }
+
+         oSpell = Send(SYS,@FindSpellByNum,#num=oSpell);
+         lTargets = Send(oSpell,@GetTargets,#who=self,#lTargets=lTargets);
+
+         if Send(oSpell,@CanPayMonsterCosts,#who=self,#ltargets=lTargets,
+                 #iSpellPower=SPELLPOWER_MAXIMUM)
+            AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,
+                     #litems=lTargets)
+         {
+            Send(oSpell,@CastSpell,#who=self,#ltargets=lTargets,
+                 #iSpellPower=SPELLPOWER_MAXIMUM);
+         }
+
+         if Random(1,POISON_CHANCE) = 1
+         {
+            oSpell = Send(SYS,@FindSpellByNum,#num=SID_POISON);
+            Send(oSpell,@MakePoisoned,#who=poTarget,#lossrate=POISON_LOSSRATE,
+                  #duration=POISON_DURATION);
+         }
+
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   CdFireball()
+   {
+      piAnimation = ANIM_ATTACK;
+      Send(poOwner,@SomethingChanged,#what=self);
+      Send(poOwner,@SomethingShot,#who=self,#target=poTarget,#projectile=self,
+           #flags=PROJ_FLAG_LIGHT_SOURCE);
+      piAnimation = ANIM_NONE;
+
+      return;
+   }
+
+   GetProjectileIcon()
+   {
+      return BlueDragon_fireball;
+   }
+
+   GetProjectileSpeed()
+   {
+      return 25;
+   }
+
+   SendProjectileAnimation()
+   {
+      % 40ms between animations
+      AddPacket(1,ANIMATE_CYCLE, 4,40, 2,1, 2,2);
+
+      return;
+   }
+
+   GetProjectileLightFlags()
+   {
+      % General lighting information.
+      return LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC;
+   }
+
+   GetProjectileLightIntensity()
+   {
+      % Medium light radius for projectile.  Out of 255 levels.
+      return 125;
+   }
+
+   GetProjectileLightColor()
+   {
+      % Color is a bright orange.
+      return LIGHT_BORANGE;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_CYCLE,4,125,2,2,2,6);
+
+      return;
+   }
+
+   SendMoveAnimation()
+   {
+      if (piColor_Translation <> 202)
+      {
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
+      }
+
+      AddPacket(1,ANIMATE_CYCLE,4,75,2,2,2,6);
+
+      return;
+   }
+
+   SendAnimation()
+   {
+      if (piColor_Translation <> 202)
+      {
+         AddPacket(1,ANIMATE_TRANSLATION, 1,piColor_Translation);
+      }
+      if piAnimation = ANIM_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE,4,100,2,7,2,11,2,1);
+         return;
+      }
+
+      % if no body animation
+
+      propagate;
+   }
+
+   Delete()
+   {
+      propagate;
+   }
+
+   GetObjectFlags()
+   {
+      return MOVEON_NO | BATTLER_YES;
+   }
+
+   CanBeSilenced()
+   "Chaos Dragons cannot be silenced by the room enchantment."
+   {
+      return FALSE;
+   }
+
+   SpellResist(oSpell=$,who=$,iSpellpower=$)
+   {
+      local iResistChance;
+
+      if IsClass(who,&DM)
+      {
+         return FALSE;
+      }
+
+      if Send(oSpell,@IsHarmful)
+      {
+         iResistChance = MAGIC_RESIST;
+         if IsClass(oSpell,&Dazzle)
+            OR IsClass(oSpell,&Blind)
+            OR IsClass(oSpell,&Hold)
+         {
+            % Extra 60% chance to resist.  Brings 50% up to 80%
+            iResistChance = (iResistChance * 160)/100;
+         }
+
+         if iSpellPower < 40
+            OR Random(0,100) < iResistChance
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
