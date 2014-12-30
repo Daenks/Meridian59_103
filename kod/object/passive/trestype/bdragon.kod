@@ -30,18 +30,19 @@ messages:
    {
       plTreasure = [ [ &BlueDragonScale, 15 ],
                      [ &InkyCap, 20 ],
-                     [ &PlateArmor, 5 ],
+                     [ &PlateArmor, 8 ],
                      [ &Ruby, 10 ],
                      [ &PolishedSeraphym, 10 ],
                      [ &RingInvisibility, 8 ],
                      [ &BattleBow, 10 ],
                      [ &CyanMushroom, 9 ],
-                     [ &MysticSword, 4 ],
+                     [ &MysticSword, 5 ],
                      [ &TrueLute, 6 ],
-                     [ &IvyCirclet, 4 ],
+                     [ &Circlet, 5 ],
                      [ &JalaNecklace, 10 ],
                      [ &PurpleMushroom, 10 ],
                      [ &Rose, 1 ]
+                     [ &GuildShield, 2 ]
 			 ];
 
       propagate;
