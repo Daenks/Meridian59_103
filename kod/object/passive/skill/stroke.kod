@@ -98,23 +98,23 @@ messages:
    {
      local prof, target_level;
 
-     target_level = send(target,@GetLevel);
-     prof=send(use_weapon,@GetProfNumber);
+     target_level = Send(target,@GetLevel);
+     prof=Send(use_weapon,@GetProfNumber);
 
-     if random(1,100) > 60 or not send(who,@HasSkill,#num=prof)
+     if random(1,100) > 60 or not Send(who,@HasSkill,#num=prof)
      {
-        if send(who,@GetSkillAbility,#skill_num=viSkill_num) < 100
+        if Send(who,@GetSkillAbility,#skill_num=viSkill_num) < 100
           {
              % checking for stroke advancement
-             send(self,@ImproveAbility,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
+             Send(self,@ImproveAbility,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
           }
      }
      else
      {
-        if send(use_weapon,@getprof,#who=who) < 100
+        if Send(use_weapon,@getprof,#who=who) < 100
           {
              % checking for weapon proficiency advancement
-             send(use_weapon,@ImproveProficiency,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
+             Send(use_weapon,@ImproveProficiency,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
           }
      }
      
@@ -134,9 +134,9 @@ messages:
    {
       local oOwner, i;
 
-      if not send(who,@HasVigor,#amount=viSkillExertion) and vbCheck_Exertion = TRUE
+      if not Send(who,@HasVigor,#amount=viSkillExertion) and vbCheck_Exertion = TRUE
       {
-         send(who,@MsgSendUser, #message_rsc=skill_too_tired,#parm1=vrName);
+         Send(who,@MsgSendUser, #message_rsc=skill_too_tired,#parm1=vrName);
          
          return FALSE;
       }
@@ -146,12 +146,12 @@ messages:
 
    GetAttackType(weapon_used=$)
    {
-     return send(weapon_used,@getAttackType);
+     return Send(weapon_used,@getAttackType);
    }
 
    GetAttackSpell(weapon_used=$)
    {
-     return send(weapon_used,@getAttackSpell);
+     return Send(weapon_used,@getAttackSpell);
    }
 
    GetExertion()
@@ -175,13 +175,13 @@ messages:
    {
       if weapon_used = $
       {
-         send(who,@msgsenduser,#message_rsc=stroke_need_weapon_rsc);
+         Send(who,@msgsenduser,#message_rsc=stroke_need_weapon_rsc);
           
          return FALSE;
       }
 
       % while you're here, be sure weapon is undamaged.
-      return send(weapon_used,@ReqWeaponAttack,#what=victim);
+      return Send(weapon_used,@ReqWeaponAttack,#what=victim);
    }
 
    ToHitImprovers(raw_hitroll=0)
@@ -197,7 +197,7 @@ messages:
    "affects it depending on the stroke.  Default:  viRangeFactor = 0, meaning"
    "the weapon's raw range is used."
    {
-      return send(weapon_used,@getrange) + viRange_Factor;
+      return Send(weapon_used,@getrange) + viRange_Factor;
    }
 
    FindDamage(weapon_used=$, who=$, victim=$)
@@ -206,12 +206,12 @@ messages:
       local skill_ability, damage;
       
       % base weapon damage
-      damage = send(weapon_used,@GetDamage,#who=who,#target=victim);
+      damage = Send(weapon_used,@GetDamage,#who=who,#target=victim);
       
       % put in the individual skills factor
       damage = (damage*viDamage_factor)/100;
       
-      damage = send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=weapon_used);
+      damage = Send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=weapon_used);
 
       return bound(damage,1,$);
    }
@@ -223,8 +223,8 @@ messages:
       %% Text messages
       if bText
       {
-         send(who,@msgsenduser,#message_rsc=vrMissed_Message_Attacker,#parm1=color_rsc,
-              #parm2=vrName,#parm3=send(victim,@getdef),#parm4=send(victim,@getname));
+         Send(who,@msgsenduser,#message_rsc=vrMissed_Message_Attacker,#parm1=color_rsc,
+              #parm2=vrName,#parm3=Send(victim,@getdef),#parm4=Send(victim,@getname));
       }
 
       %% 'miss' sound
@@ -279,24 +279,24 @@ messages:
 
    SendMissMessageToDefender(who=$,attacker=$)
    {
-      send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
-           #parm1=send(attacker,@getcapdef),#parm2=send(attacker,@getname));
+      Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
+           #parm1=Send(attacker,@getcapdef),#parm2=Send(attacker,@getname));
            
       return;
    }
 
    PlayerHitSomethingMsg(who=$,victim=$,damage=$,color_rsc=$)
    {
-      send(who,@msgsenduser,#message_rsc=vrPlayer_hit_something,#parm1=color_rsc,#parm2=vrName,
-           #parm3=send(victim,@getdef),#parm4=send(victim,@getname));
+      Send(who,@msgsenduser,#message_rsc=vrPlayer_hit_something,#parm1=color_rsc,#parm2=vrName,
+           #parm3=Send(victim,@getdef),#parm4=Send(victim,@getname));
            
       return;
    }
 
    PlayerWasHitMsg(who=$,attacker=$,damage=$,color_rsc=$)
    {
-       send(who,@msgsenduser,#message_rsc=vrPlayer_was_hit,#parm1=color_rsc,
-            #parm2=send(attacker,@getcapdef),#parm3=send(attacker,@getname));
+       Send(who,@msgsenduser,#message_rsc=vrPlayer_was_hit,#parm1=color_rsc,
+            #parm2=Send(attacker,@getcapdef),#parm3=Send(attacker,@getname));
             
        return;
    }
@@ -310,8 +310,8 @@ messages:
          return FALSE;
       }
        
-      send(who,@msgsenduser,#message_rsc=vrPlayer_killed_something,
-            #parm1=send(victim,@getCapdef),#parm2=send(victim,@getname));
+      Send(who,@msgsenduser,#message_rsc=vrPlayer_killed_something,
+            #parm1=Send(victim,@getCapdef),#parm2=Send(victim,@getname));
             
       return TRUE;
    }
@@ -325,8 +325,8 @@ messages:
          return FALSE;
       }
       
-      send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
-           #parm1=send(attacker,@GetDef),#parm2=send(attacker,@GetName));
+      Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
+           #parm1=Send(attacker,@GetDef),#parm2=Send(attacker,@GetName));
            
       return TRUE;
    }
@@ -334,7 +334,7 @@ messages:
    DamageFactors(damage=0, who=$, weapon_used = $)
    "Different skills/strokes are affected by strength differently."
    {
-      local iDamage, stat, weapProf, profAbility, bonusPercentage;
+      local iDamage, stat, might, weapProf, profAbility, statBonus, mightBonus, bonusPercentage;
 
       iDamage = damage;
       if weapon_used <> $
@@ -345,17 +345,33 @@ messages:
       else
       {
          weapProf = Send(SYS,@FindSkillByNum,#num=SKID_BRAWLING);
-         profAbility = send(who,@GetSkillAbility,#skill_num=SKID_BRAWLING)+1;
+         profAbility = Send(who,@GetSkillAbility,#skill_num=SKID_BRAWLING)+1;
       }
 
       % Add a portion of the proficiency damage based on skill level.
       iDamage = iDamage + profAbility * viMaxProficiencyDamage / 100;
+	  
+	  % Scale profAbility up by 1000 to allow extra precision digits
+	  profAbility = profAbility * 1000;
       
       % Get the relevant amount of primary stat for our proficiency. This will be our base bonus percentage.
-      stat = send(weapProf,@GetRequisiteStat,#who=who) - 25;
+	  % Scale up by 1000 to allow extra precision digits
+      stat = (Send(weapProf,@GetRequisiteStat,#who=who) - 25) * 1000;
+	  might = (Send(who,@GetMight) - 25) * 1000;
       
+	  % Calculate the bonus for this attack from the primary stat
       % Scale down the bonus damage percentage if the user is not fully proficient in the weapon.
-      bonusPercentage = 100 + bound(stat * profAbility / 100, 0, 40);
+	  % Divide the bonus in half to allow it to combine with might bonus
+      statBonus = Bound(stat * profAbility / 100, 0, 40) / 2;
+	  
+	  % Calculate the bonus for this attack from might
+	  % Scale down the bonus damage percentage if the user is not fully proficient in the weapon.
+	  % Divide the bonus in half to allow it to combine with primary stat bonus
+	  mightBonus = Bound(might * profAbility / 100, 0, 40) / 2;
+	  
+	  % We divide by 1000 here to reverse our scaling, the extra () should allow the precision to be
+	  % present when the % is calculated, needs to be tested
+	  bonusPercentage = 100 + ((statBonus + mightBonus) / 1000);
 
       iDamage = iDamage * bonusPercentage / 100;
       
