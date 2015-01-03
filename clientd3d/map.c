@@ -401,7 +401,8 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
 
          if (r->obj.flags & OF_FRIEND)
          {
-            if ((r->obj.flags & OF_ENEMY) || (r->obj.flags & OF_GUILDMATE))
+            if ((r->obj.identityflags & OF_ENEMY)
+                  || (r->obj.identityflags & OF_GUILDMATE))
                ring_radius = 2.4f * radius;
 
             SelectObject(hdc, hFriendPen);
@@ -413,7 +414,7 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
          }
 
          // Enemy?
-         if (r->obj.flags & OF_ENEMY)
+         if (r->obj.identityflags & OF_ENEMY)
          {
             SelectObject(hdc, hEnemyPen);
             Ellipse(hdc, (int) (new_x - ring_radius),
@@ -423,7 +424,7 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
          }
 
          // Guildmate?
-         if (r->obj.flags & OF_GUILDMATE)
+         if (r->obj.identityflags & OF_GUILDMATE)
          {
              SelectObject(hdc, hGuildmatePen);
              Ellipse(hdc, (int) (new_x - ring_radius),
@@ -441,12 +442,12 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
           SelectObject(hdc, hPlayerPen);
           SelectObject(hdc, hPlayerBrush);
       }
-      else if ((r->obj.flags & OF_MINION_SELF) == OF_MINION_SELF)
+      else if ((r->obj.identityflags & OF_MINION_SELF) == OF_MINION_SELF)
       {
           SelectObject(hdc, hMinionPen);
           SelectObject(hdc, hMinionBrush);
       }
-      else if ((r->obj.flags & OF_MINION_OTHER) == OF_MINION_OTHER)
+      else if ((r->obj.identityflags & OF_MINION_OTHER) == OF_MINION_OTHER)
       {
           SelectObject(hdc, hMinionOtherPen);
           SelectObject(hdc, hMinionOtherBrush);
@@ -458,8 +459,8 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
       }
 
       // Draw a circle at the object's position
-      Ellipse(hdc, (int) (new_x - radius), (int) (new_y - radius), 
-	      (int) (new_x + radius), (int) (new_y + radius));
+      Ellipse(hdc, (int) (new_x - radius), (int) (new_y - radius),
+         (int) (new_x + radius), (int) (new_y + radius));
 
    }
 }

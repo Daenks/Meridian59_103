@@ -228,7 +228,7 @@ enum {
    UC_STAND = 6,
    UC_SAFETY = 7,
    UC_SUICIDE = 8,
-
+   UC_TEMPSAFE = 9,
    UC_REQ_GUILDINFO = 10,
    UC_GUILDINFO = 11,
    UC_INVITE = 12,
@@ -365,16 +365,7 @@ enum {
 #define OF_ACTIVATABLE   0x00000800    // Set if object can be activated
 #define OF_APPLYABLE     0x00001000    // Set if object can be applied to another object
 #define OF_SAFETY        0x00002000    // Set if player has safety on (self only)
-
-// Player name colors
-#define PF_KILLER        0x00004000    // Set if object is a killer (must also have OF_PLAYER)
-#define PF_OUTLAW        0x00008000    // Set if object is an outlaw (must also have OF_PLAYER)
-#define PF_DM            0x0000C000    // Set if object is a DM player
-#define PF_CREATOR       0x00010000    // Set if object is a creator player
-#define PF_SUPER         0x00014000    // Set if object is a "super DM"
-#define PF_MODERATOR     0x00018000    // Set if object is a "moderator"
-#define PF_EVENTCHAR     0x0001C000    // Set if object is an event character
-#define OF_PLAYER_MASK   0x0001C000    // Mask to get player flag bits
+#define OF_TEMPSAFE      0x00004000    // Set if player has temp safety on death on (self only)
 
 #define OF_FLICKERING    0x00020000    // For players or objects if holding a flickering light.
 #define OF_FLASHING      0x00040000    // For players or objects if flashing with light.
@@ -393,20 +384,27 @@ enum {
 #define OF_DITHERTRANS   0x00800000    // Dither (with two translates) 50% of pixels
 #define OF_DOUBLETRANS   0x00900000    // Translate twice each pixel, plus lighting
 #define OF_SECONDTRANS   0x00A00000    // Ignore per-overlay xlat and use only secondary xlat
-#define OF_EFFECT_MASK   0x00F00000    // Mask to get object drawing effect bits
-#define NUM_DRAW_EFFECTS 16            // # of possible object drawing effects
+#define OF_EFFECT_MASK   0x01F00000    // Mask to get object drawing effect bits
+#define NUM_DRAW_EFFECTS 32            // # of possible object drawing effects
 
-// Minimap dot colors
-#define OF_ENEMY         0x01000000    // Enemy player
-#define OF_FRIEND        0x02000000    // Friendly player
-#define OF_GUILDMATE     0x04000000    // Guildmate player
-#define OF_MINION        0x08000000    // Monster is a minion owned by a player
-#define OF_MINION_OTHER  0x09000000    // Set if monster is other's minion
-#define OF_MINION_SELF   0x0A000000    // Set if a monster is our minion
-#define OF_MINIMAP_MASK  0x0F000000    // Mask to get minimap drawing effects
+/* Object identity flags. These are a separate bit field (obj->identityflags) and
+ * are used for name drawing effects and minimap dot coloring */
+#define PF_SHADOW        0x00000001    // Set if object has a shadow form effect (black name)
+#define PF_KILLER        0x00000002    // Set if object is a killer
+#define PF_OUTLAW        0x00000004    // Set if object is an outlaw
+#define PF_DM            0x00000008    // Set if object is a DM player
+#define PF_CREATOR       0x00000010    // Set if object is a creator player
+#define PF_SUPER         0x00000020    // Set if object is a "super DM"
+#define PF_MODERATOR     0x00000040    // Set if object is a "moderator"
+#define PF_EVENTCHAR     0x00000080    // Set if object is an event character
 
-#define GetMinimapFlags(flags)  ((flags) & OF_MINIMAP_MASK)
-#define GetPlayerFlags(flags)   ((flags) & OF_PLAYER_MASK)
+#define OF_MINION_SELF   0x00010000    // Set if a monster is our minion
+#define OF_MINION_OTHER  0x00020000    // Set if monster is other's minion
+
+#define OF_ENEMY         0x00100000    // Enemy player
+#define OF_FRIEND        0x00200000    // Friendly player
+#define OF_GUILDMATE     0x00400000    // Guildmate player
+
 #define GetDrawingEffect(flags) ((flags) & OF_EFFECT_MASK)
 #define GetDrawingEffectIndex(flags) (((flags) & OF_EFFECT_MASK) >> 20)
 #define GetItemFlags(flags)   ((flags))

@@ -322,6 +322,20 @@ messages:
       return iFlags;
    }
 
+   GetObjectIdentityFlags()
+   {
+      local iFlags;
+
+      if poOriginal = $
+      {
+         post(self,@Delete);
+      }
+
+      iFlags = Send(poOriginal,@GetObjectIdentityFlags);
+
+      return iFlags;
+   }
+
    GetAttackRange()
    {
       local iWeapon;
