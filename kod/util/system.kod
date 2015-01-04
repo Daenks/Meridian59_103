@@ -5160,6 +5160,7 @@ messages:
       plItemTemplates = cons(create(&HospiceWand),plItemTemplates);
       plItemTemplates = cons(create(&DementWand),plItemTemplates);
       plItemTemplates = cons(create(&ForgetWand),plItemTemplates);
+      plItemTemplates = cons(create(&FireWand),plItemTemplates);
 
       % Rods
       plItemTemplates = cons(create(&ArmorOfGortRod),plItemTemplates);
