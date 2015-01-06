@@ -142,32 +142,19 @@ messages:
                #parm2=Send(self,@GetName,#cap=FALSE));
       }
 
-      Post(self,@RemoveOriginal);
+      poOriginal = $;
       poCaster = $;
-      if poArrow <> $
-      {
-         Send(poArrow,@Delete);
-      }
       poArrow = $;
 
       propagate;
-   }
-
-   RemoveOriginal()
-   {
-      poOriginal = $;
-
-      return;
    }
 
    SomethingKilled(what=$,victim=$)
    {
       % Delete the evil twin if the original dies.
       if victim = poOriginal
-         OR (poCaster <> $
-            AND victim = poCaster)
       {
-         Send(self,@Delete);
+         Post(self,@Delete);
       }
 
       return;
@@ -220,12 +207,11 @@ messages:
 
    ReqSomethingEntered(what=$)
    {
-      if poOriginal = $
-         OR NOT Send(poOriginal,@IsLoggedOn)
+      if NOT Send(poOriginal,@IsLoggedOn)
       {
-         return TRUE;
+         Post(self,@Delete);
       }
-
+      
       propagate;
    }
 
@@ -233,15 +219,13 @@ messages:
    {
       if poOriginal = $
       {
-         return;
+         Post(self,@Delete);
       }
 
       if IsClass(poOriginal,&Player)
          AND NOT Send(poOriginal,@IsLoggedOn)
       {
-         Send(self,@Delete);
-
-         return;
+         Post(self,@Delete);
       }
 
       if what = poOriginal
@@ -249,9 +233,9 @@ messages:
          % If target leaves room, hunt them down.
          if IsClass(Send(poOriginal,@GetOwner),&UnderWorld)
          {
-            Send(self,@Delete);
+            Post(self,@Delete);
 
-            return;
+            propagate;
          }
          else
          {
@@ -264,96 +248,28 @@ messages:
 
    GotoOriginal()
    {
-      local oOriginalOwner;
-
       if poOriginal = $
       {
+         Post(self,@Delete);
+
          return;
       }
 
-      if Send(poOriginal,@IsLoggedOn)
+      Send(Send(poOriginal,@GetOwner),@NewHold,#what=self,
+           #new_row = Send(poOriginal,@GetRow),#new_col = Send(poOriginal,@GetCol),
+           #new_angle = Send(poOriginal,@GetAngle));
+      if poOriginal <> poMaster
       {
-         oOriginalOwner = Send(poOriginal,@GetOwner);
-         Send(oOriginalOwner,@NewHold,#what=self,
-               #new_row = Send(poOriginal,@GetRow),
-               #new_col = Send(poOriginal,@GetCol),
-               #new_angle = Send(poOriginal,@GetAngle));
-         if poOriginal <> poMaster
-         {
-            Post(self,@TargetSwitch,#what=poOriginal,#iHatred=1000);
-            Post(self,@EnterStateChase);
-         }
+         Post(self,@TargetSwitch,#what=poOriginal,#iHatred=1000);
+         Post(self,@EnterStateChase);
       }
 
       return;
-   }
 
-   SetMaster(oMaster=$)
-   {
-      if oMaster = $
-      {
-         if poMaster <> $
-         {
-            Send(poMaster,@RemoveControlledMinion,#what=self);
-            if poOwner <> $
-            {
-               Post(poOwner,@SomethingChanged,#what=self);
-            }
-
-            % Evil twins will go after the original target.
-            if IsClass(self,&EvilTwin)
-            {
-               poMaster = Send(self,@GetCaster);
-               Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
-                     #value=FALSE);
-               Send(self,@GoToOriginal);
-            }
-         }
-      }
-      else
-      {
-         poMaster = oMaster;
-
-         if poMaster <> poCaster
-         {
-            % We've been captured, break target in case the new master
-            % doesn't want to attack them.
-            Send(self,@EnterStateWait);
-         }
-         else
-         {
-            % Original caster captured us back, break target unless we're
-            % attacking the original.
-            if poTarget <> poOriginal
-            {
-               Send(self,@EnterStateWait);
-            }
-         }
-
-         if poOwner <> $
-         {
-            Post(poOwner,@SomethingChanged,#what=self);
-         }
-
-         if NOT Send(SYS,@IsPKAllowed)
-            AND (poTarget <> $
-               AND IsClass(poTarget,&Player))
-         {
-            % Forget our target
-            Send(self,@EnterStateWait);
-         }
-      }
-
-      return;
    }
 
    GetOriginalInfo()
    {
-      if poOriginal = $
-      {
-         return;
-      }
-
       vrIcon = Send(poOriginal,@GetPlayerIcon);
       vrName = Send(poOriginal,@GetTrueName);
       piGender = Send(poOriginal,@GetGender);
@@ -368,6 +284,8 @@ messages:
 
       if poOriginal = $
       {
+         Post(self,@Delete);
+
          return 0;
       }
 
@@ -380,11 +298,6 @@ messages:
    {
       local iWeapon;
 
-      if poOriginal = $
-      {
-         return 0;
-      }
-
       iWeapon = Send(poOriginal,@GetWeapon);
       if iWeapon <> $
       {
@@ -394,13 +307,13 @@ messages:
       return 1;
    }
 
-   % This returns the battler's ability to-hit.
+   % This returns the battler's ability to-hit.  Ranges from 1 to 1000
    GetOffense(what = $, stroke_obj=$)
    {
       return Send(poOriginal,@GetOffense,#what=what,#stroke_obj=stroke_obj);
    }
 
-   % This returns the battler's ability to avoid being hit.
+   % This returns the battler's ability to avoid being hit.  Ranges from 1 to 1000.
    GetDefense(what = $, stroke_obj=$)
    {
       return Send(poOriginal,@GetDefense,#what=what,#stroke_obj=stroke_obj);
@@ -409,11 +322,6 @@ messages:
    GetDamage(what=$,stroke_obj=$)
    {
       local oStroke;
-
-      if poOriginal = $
-      {
-         return 0;
-      }
 
       oStroke = stroke_obj;
       if IsClass(poOriginal,&Player)
@@ -629,16 +537,16 @@ messages:
 
    SendAnimation()
    {
-      Send(poOriginal,@SendAnimation,#iAnimation=piAnimation);
+       Send(poOriginal,@SendAnimation,#iAnimation=piAnimation);
 
-      return;
+       return;
    }
 
    SendOverlays()
    {
-      Send(poOriginal,@SendOverlays,#iAnimation=piAnimation);
+       Send(poOriginal,@SendOverlays,#iAnimation=piAnimation);
 
-      return;
+       return;
    }
 
    GetIllusionForm()
@@ -650,6 +558,8 @@ messages:
    {
       if poOriginal = $
       {
+         Post(self,@Delete);
+
          return;
       }
 
@@ -663,19 +573,6 @@ messages:
       Send(what,@SendLookPlayer,#what=poOriginal);
 
       return;
-   }
-
-   SpecialHatredBehavior(what=$)
-   {
-      % Trying to reduce the tendency of reflections to turn on themselves
-      %  or their master.
-      if IsClass(what,&Revenant)
-         OR IsClass(what,&EvilTwin)
-      {
-         return -2000;
-      }
-
-      return 0;
    }
 
    GetCaster()

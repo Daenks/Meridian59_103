@@ -1125,7 +1125,7 @@ messages:
 
       for i in plReflections
       {
-         if First(i) = what
+         if first(i) = what
          {
             for j in Nth(i,2)
             {
@@ -1139,15 +1139,14 @@ messages:
             break;
          }
       }
-
       if (poQormas <> $)
       {
-         Send(poQormas,@UserLogoff,#who=what);
+         Send(poQormas, @UserLogoff, #who = what);
       }
 
       return;
    }
-
+   
    DeletePlayerReflections(who = $)
    {
       local i, j;
@@ -1157,45 +1156,45 @@ messages:
 
       for i in plReflections
       {
-         if First(i) = who
+         if first(i) = who
          {
             for j in Nth(i,2)
             {
-               Post(j,@Delete);
+               Send(j,@Delete);
             }
 
             break;
          }
       }
-
+      
       return;
    }
 
-   AddReflection(who = $, oReflection = $)
+   AddReflection(who = $, oreflection = $)
    {
-      local i, j;
+      local i,j;
 
       % Remember: plReflections format is:
       % [[player,[ref1,ref2]],[player2,[ref1,ref2]],...]
 
       for i in plReflections
       {
-         if First(i) = who
+         if first(i) = who
          {
-            SetNth(i,2,Cons(oReflection,Nth(i,2)));
+            SetNth(i,2,cons(oreflection,Nth(i,2)));
 
             return;
          }
       }
 
-      plReflections = Cons([who,[oReflection]],plReflections);
+      plReflections = cons([who,[oreflection]],plReflections);
 
       return;
    }
 
-   RemoveReflection(oReflection = $)
+   RemoveReflection(oreflection = $)
    {
-      local i, j;
+      local i,j;
 
       % Remember: plReflections format is:
       % [[player,[ref1,ref2]],[player2,[ref1,ref2]],...]
@@ -1204,7 +1203,7 @@ messages:
       {
          for j in Nth(i,2)
          {
-            if j = oReflection
+            if j = oreflection
             {
                SetNth(i,2,DelListElem(Nth(i,2),j));
             }
@@ -1212,16 +1211,13 @@ messages:
 
          if Length(Nth(i,2)) = 0
          {
-            if FindListElem(plReflections,i)
-            {
-               plReflections = DelListElem(plReflections,i);
-            }
+            plReflections = DelListElem(plReflections,i);
          }
       }
 
       return;
    }
-
+   
    GetReflectionsList()
    {
       return plReflections;
@@ -1229,20 +1225,20 @@ messages:
 
    CleanReflectionList()
    {
-      local i, j;
+      local i,j;
 
       % Remember: plReflections format is:
       % [[player,[ref1,ref2]],[player2,[ref1,ref2]],...]
 
       for i in plReflections
       {
-         if First(i) = $
-            OR (IsClass(First(i),&Player)
-               AND (NOT Send(First(i),@IsLoggedOn)))
+         if first(i) = $
+            OR (IsClass(first(i),&Player)
+                AND (NOT Send(first(i),@IsLoggedOn)))
          {
             for j in Nth(i,2)
             {
-               Send(j,@Delete);
+               Send(j,@delete);
             }
          }
       }
@@ -3742,6 +3738,7 @@ messages:
       Create(&KriipaTreasure);
       Create(&MolluskTreasure);
       Create(&ShadowbeastTreasure);
+      Create(&SnowRatTreasure);
       
       return;
    }
@@ -5327,6 +5324,8 @@ messages:
       plItemTemplates = cons(create(&NeruditeArrow),plItemTemplates);
       plItemTemplates = cons(create(&SilverArrow),plItemTemplates);
       plItemTemplates = cons(create(&Arrow),plItemTemplates);
+      plItemTemplates = cons(create(&FireArrow),plItemTemplates);
+      plItemTemplates = cons(create(&IceArrow),plItemTemplates);
 
       % Weapons
       plItemTemplates = cons(create(&MagicBow),plItemTemplates);

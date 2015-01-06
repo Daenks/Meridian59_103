@@ -826,12 +826,6 @@ messages:
       }
       poOwner = $;
 
-      % If we still have an evil twin at this stage, tell it to delete itself.
-      if poEvilTwin <> $
-      {
-         Send(poEvilTwin,@SomethingLeft,#what=self);
-      }
-
       % Check for phase out
       for j in plEnchantments
       {
