@@ -56,15 +56,15 @@ messages:
 
    GetDamage(who=$,target=$)
    {
-      if target <> $ AND random(1,100) <= 10
+      if target <> $ AND Random(1,100) <= 10
       {
-         send(who,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
-         if isClass(target,&Player)
+         Send(who,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
+         if IsClass(target,&Player)
          {
-            send(target,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
+            Send(target,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
          }
 
-         return random(viMinShatterDamage,viMaxShatterDamage);
+         return Random(viMinShatterDamage,viMaxShatterDamage);
       }
 
       propagate;
@@ -84,7 +84,7 @@ messages:
 
    GetProjectileIcon()
    {
-      return arrow_icon_rsc;
+      return nerudite_arrow_icon_rsc;
    }
 
    GetMinSpecialDamage()
