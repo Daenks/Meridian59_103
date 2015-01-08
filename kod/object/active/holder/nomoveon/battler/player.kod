@@ -3572,7 +3572,7 @@ messages:
       if NOT Send(Send(SYS,@GetParliament),@BetaPotionsEnabled)
          AND NOT IsClass(self,&DM)
       {
-         iCost = Bound(piMax_mana/4+1,6,$);
+         iCost = piMana * Send(Send(SYS,@GetSettings),@GetBroadcastManaCost) / 100;
          if piMana < iCost
          {
             Send(self,@MsgSendUser,#message_rsc=player_cant_broadcast);
@@ -12397,12 +12397,15 @@ messages:
    {
       local numMembers, oParliament, oQuestEngine, oQuest, oFlagPole;
 
-      oFlagPole = Send(poOwner,@FindHoldingActive,#Class=&Flagpole);
-      if oFlagPole <> $ AND Send(oFlagPole,@IsClaimAttemptInProgress)
+      if poOwner <> $
       {
-         if Send(oFlagPole,@GetClaimer) = self
+         oFlagPole = Send(poOwner,@FindHoldingActive,#Class=&Flagpole);
+         if oFlagPole <> $ AND Send(oFlagPole,@IsClaimAttemptInProgress)
          {
-            Send(oFlagPole,@ClaimFailed);
+            if Send(oFlagPole,@GetClaimer) = self
+            {
+               Send(oFlagPole,@ClaimFailed);
+            }
          }
       }
 
@@ -13918,6 +13921,7 @@ messages:
       if plControlledMinions = $
          OR oTarget = $
          OR NOT IsClass(oTarget,&Battler)
+         OR IsClass(oTarget,&Revenant)
       {
          return;
       }
@@ -13935,19 +13939,15 @@ messages:
          for oActive in plControlledMinions
          {
             if IsClass(oActive,&Monster)
+               AND Send(oActive,@GetMaster) = self
+               AND Send(oActive,@GetTarget) <> oTarget
             {
-               if Send(oActive,@GetMaster) = self
-               {
-                  if Send(oActive,@GetTarget) <> oTarget
-                  {
-                     Send(oActive,@SetBehaviorFlag,
-                           #flag=AI_MOVE_FOLLOW_MASTER,#value=FALSE);
-                     Send(oActive,@TargetSwitch,#what=oTarget,
-                           #iHatred=100);
-                     Send(oActive,@EnterStateChase,#target=oTarget,
-                           #actnow=TRUE);
-                  }
-               }
+               Send(oActive,@SetBehaviorFlag,
+                     #flag=AI_MOVE_FOLLOW_MASTER,#value=FALSE);
+               Send(oActive,@TargetSwitch,#what=oTarget,
+                     #iHatred=100);
+               Send(oActive,@EnterStateChase,#target=oTarget,
+                     #actnow=TRUE);
             }
          }
       }
