@@ -60,6 +60,10 @@ resources:
    monster_teach_impossible = \
       "Indeed, you have learned so much already! A fine accomplishment.  You "
       "have no... need... to learn further in this school."
+   monster_teach_ready_to_reincarnate = \
+      "I sense that you have reached the extremes of your potential, "
+      "and that you are ready to begin your journey again. That is the only "
+      "path forward for a master such as yourself."
    monster_teach_and = " and "
 
    monster_level = "level"
@@ -210,6 +214,8 @@ resources:
    autoloot_got_some_but_full_now = "You pick up some of your slain enemy's loot, but find yourself too encumbered to get it all."
    autoloot_got_nothing_because_full= "You can't carry any more, so you loot nothing from your fallen enemy."
    autoloot_got_only_shillings_because_full = "You can't carry any more, so you loot nothing from your fallen enemy, but you do find %d shillings."
+   
+   reincarnate_trigger = "I wish to reincarnate."
 
 classvars:
 
@@ -3105,6 +3111,12 @@ messages:
             propagate;
          }
       }
+      
+      if type = SAY_MESSAGE
+         AND stringEqual(string,reincarnate_trigger)
+      {
+         Send(self,@TriggerReincarnation,#who=what);
+      }
 
       propagate;
    }
@@ -5182,6 +5194,14 @@ messages:
       {
          Send(poOwner,@SomeoneSaid,#type=SAY_RESOURCE,#what=self,
               #string=monster_teach_impossible);
+         
+         if Send(who,@GetBaseMaxHealth) >= 100+Send(who,@GetRawStamina)
+            AND Send(who,@GetReincarnations) < MAX_REINCARNATIONS
+         {
+            Send(poOwner,@SomeoneSaid,#type=SAY_RESOURCE,#what=self,
+                 #string=monster_teach_ready_to_reincarnate);
+            Send(who,@EnableReincarnation,#value=TRUE);
+         }
 
          return FALSE;
       }
@@ -6572,6 +6592,11 @@ messages:
    GetBaseResistances()
    {
       return plResistances;
+   }
+   
+   TriggerReincarnation(who=$)
+   {
+      return;
    }
 
 end

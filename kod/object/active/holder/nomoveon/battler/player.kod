@@ -1084,6 +1084,10 @@ properties:
 
    % Put new reagents in your bag
    pbReagentBagAuto = TRUE
+   
+   % Track reincarnations here
+   piCanReincarnate = FALSE
+   piReincarnations = 0
 
 messages:
 
@@ -1893,6 +1897,14 @@ messages:
             AppendTempString(player_nl);
          }
       }
+    
+      if Send(self,@GetReincarnations) > 0
+      {
+         AppendTempString(Send(self,@GetHeShe,#cap=TRUE));
+         AppendTempString(" has reincarnated ");
+         AppendTempString(Send(self,@GetReincarnations));
+         AppendTempString(" times.");
+      }
 
       if poGuild <> $ AND NOT Send(poGuild,@isSecret)
       {
@@ -2626,6 +2638,8 @@ messages:
       {
          Send(SYS,@ClearLastMurderer);
       }
+      
+      piReincarnations=0;
 
       return;
    }
@@ -6594,8 +6608,8 @@ messages:
 
       piBase_max_health = Bound(piBase_max_health+amount,20,
                               (100 + Send(self,@GetStamina)));
-      % Bound ourselves at the top end to 150.
-      piBase_max_health = bound(piBase_max_health,$,150);
+      % Bound ourselves at the top end to 170.
+      piBase_max_health = bound(piBase_max_health,$,170);
       amount = piBase_max_health - iPrev_max;
 
       % Give them the "further info" gmail if they've advanced to 25.
@@ -7033,32 +7047,32 @@ messages:
 
    GetRawMight()
    {
-      return bound(piMight,1,50);
+      return bound(piMight,1,70);
    }
 
    GetRawIntellect()
    {
-      return bound(piIntellect,1,50);
+      return bound(piIntellect,1,70);
    }
 
    GetRawAgility()
    {
-      return bound(piAgility,1,50);
+      return bound(piAgility,1,70);
    }
 
    GetRawAim()
    {
-      return bound(piAim,1,50);
+      return bound(piAim,1,70);
    }
 
    GetRawStamina()
    {
-      return bound(piStamina,1,50);
+      return bound(piStamina,1,70);
    }
 
    GetRawMysticism()
    {
-      return bound(piMysticism,1,50);
+      return bound(piMysticism,1,70);
    }
 
    GetKarma()
@@ -11946,6 +11960,7 @@ messages:
             AND piBase_Max_health < Send(Send(SYS,@GetSettings),@GetPKillEnableHP)
             AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
             AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+            AND NOT Send(self,@GetReincarnations) > 0
          {
             ass_game = Send(SYS,@GetAssassinGame);
             if Send(ass_game,@IsCombatant,#who=self)
@@ -14323,6 +14338,88 @@ messages:
       }
 
       return;
+   }
+   
+   EnableReincarnation(value=FALSE)
+   {
+      piCanReincarnate=value;
+      return;
+   }
+   
+   GetCanReincarnate()
+   {
+      return piCanReincarnate;
+   }
+   
+   GetReincarnations()
+   {
+      return piReincarnations;
+   }
+   
+   Reincarnate(gain_might=0,gain_int=0,gain_stam=0,gain_agil=0,gain_myst=0,gain_aim=0)
+   {
+      local i;
+      
+      if NOT piCanReincarnate
+         OR if piReincarnations >= MAX_REINCARNATIONS
+      {
+         return FALSE;
+      }
+      
+      % Remove all and recalibrate
+      Send(self,@RecalibratePlayer);
+
+      % Permanent character base stat modification.
+      piMight = bound(piMight + gain_might,1,70);
+      piIntellect = bound(piIntellect + gain_int,1,70);
+      piStamina = bound(piStamina + gain_stam,1,70);
+      piAgility = bound(piAgility + gain_agil,1,70);
+      piMysticism = bound(piMysticism + gain_myst,1,70);
+      piAim = bound(piAim + gain_aim,1,70);
+
+      plSpells = $;
+      plSkills = $;
+
+      piBase_max_health = 20;
+      piMax_health = piBase_max_health;
+      piMax_mana = Send(self, @GetInitialMaxMana);
+      piMana = piMax_mana;
+
+      poKill_target = $;
+      piKarma = 0;
+
+      piVigor = 100;
+      piVigor_rest_threshold = 80;
+      piExertion = 0;
+      % percent stomach is full
+      piStomach = 0;
+      piTimeLastStomachUpdate = 0;
+
+      Send(self,@SetPlayerFlag,#flag=PFLAG_MURDERER,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_HAUNTED,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_PKILL_LOCK,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_INTRIGUING,#value=FALSE);
+
+      Send(SYS,@SystemRemoveFromChampionLists,#oldchamp=self);
+
+      Send(Send(sys,@GetAssassinGame),@RemoveFromGame,#who=self);
+
+      piNodelist = 0;
+
+      if Send(SYS,@GetLastMurderer) = self
+      {
+         Send(SYS,@ClearLastMurderer);
+      }
+      
+      Send(self,@SetAge,#age=0);
+      Send(self,@EnableReincarnation,#value=FALSE);
+      
+      piReincarnations = piReincarnations + 1;
+      
+      Post(self,@AdminGoToSafety);
+      
+      return TRUE;
    }
 
 end

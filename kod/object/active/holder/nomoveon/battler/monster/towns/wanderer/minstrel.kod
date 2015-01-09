@@ -25,6 +25,10 @@ resources:
      "forced to listen.  Rumor has it that Paddock has threatened to kill "
      "Parrin should he ever set foot in Familiars again.  For a generous tip, "
      "he may sing of your exploits.  For a bigger tip, he may even leave. "
+     
+     jala_reincarnation = "Before you move on, I shall teach thee some of my "
+                          "favorite jigs. They shall help thee win the adoration "
+                          "of the masses in thy next life, as I have in mine."
 
 classvars:
 
@@ -121,6 +125,16 @@ messages:
 
       propagate;
    }
-
+   
+   TriggerReincarnation(who=$)
+   {
+      if Send(who,@GetCanReincarnate)
+      {
+         Send(who,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+              #string=jala_reincarnation);
+         Send(who,@Reincarnate,#gain_agil=1);
+      }
+      return;
+   }
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

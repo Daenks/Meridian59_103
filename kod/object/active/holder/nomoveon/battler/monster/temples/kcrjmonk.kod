@@ -42,6 +42,9 @@ resources:
    riijamonk_unwanted_give = \
       "~k%s%s tells you, \"~BFool,~I I do not need anything "
       "from ~n~r~Byou~n~k\""
+      
+   riija_reincarnation = "~I~oYour mind would unravel if you were to truly ~ccomprehend~o "
+                         "what was about to happen to you..."
 
 classvars:
 
@@ -295,6 +298,17 @@ messages:
    GetFaction()
    {
       return FACTION_NEUTRAL;
+   }
+   
+   TriggerReincarnation(who=$)
+   {
+      if Send(who,@GetCanReincarnate)
+      {
+         Send(who,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+              #string=riija_reincarnation);
+         Send(who,@Reincarnate,#gain_int=1);
+      }
+      return;
    }
 
 end

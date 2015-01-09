@@ -3039,3 +3039,6 @@
    STAT_MONEYCREATED = 2
    STAT_PLAYERLOGIN = 3
    STAT_ASSESS_DAM = 4
+   
+   % Maximum times a player can reincarnate
+   MAX_REINCARNATIONS = 10

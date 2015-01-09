@@ -28,6 +28,9 @@ resources:
       "~B~bI do sell %s%s which is very potent.  You will remember none of "
       "those clumsy physical-based combat skills if you quaff it.~n~k"
    kraananpriestess_teach = "Through rigorous discipline, I can teach you "
+   
+   kraanan_reincarnation = "~B~bAs you grow closer to Kraanan, so, too, will you "
+                           "grow further from the weaknesses of the flesh."
 
 classvars:
    vrTeach_message = Kraananpriestess_teach
@@ -102,6 +105,17 @@ messages:
          ],
       $];
 
+      return;
+   }
+   
+   TriggerReincarnation(who=$)
+   {
+      if Send(who,@GetCanReincarnate)
+      {
+         Send(who,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+              #string=kraanan_reincarnation);
+         Send(who,@Reincarnate,#gain_stam=1);
+      }
       return;
    }
 

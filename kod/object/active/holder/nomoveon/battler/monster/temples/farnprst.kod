@@ -29,6 +29,9 @@ resources:
       "wish to buy one.  Beware though, the powers of the amnesiac are "
       "permanent.~n~k"
    faren_teach = "From Faren's fire, you can learn "
+   
+   faren_reincarnation = "~B~gIn your next life, you shall be more in tune with "
+                         "the mystic forces of nature."
 
 classvars:
 
@@ -81,6 +84,17 @@ messages:
          ],
       $];
 
+      return;
+   }
+   
+   TriggerReincarnation(who=$)
+   {
+      if Send(who,@GetCanReincarnate)
+      {
+         Send(who,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+              #string=faren_reincarnation);
+         Send(who,@Reincarnate,#gain_myst=1);
+      }
       return;
    }
 

@@ -46,6 +46,9 @@ resources:
       "and are ready to kill others for the glory of the Dark Mistress.~n~k"
 
    qorpriestess_teach = "Through the darkness of Qor, you can learn "
+   
+   qor_reincarnation = "~r~II've no wisdom for you, pawn, but do strike true "
+                       "and slay as many unworthy as you can in your next life. "
 
 classvars:
    vrTeach_message = qorpriestess_teach
@@ -219,6 +222,17 @@ messages:
       }
 
       propagate;
+   }
+   
+   TriggerReincarnation(who=$)
+   {
+      if Send(who,@GetCanReincarnate)
+      {
+         Send(who,@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
+              #string=qor_reincarnation);
+         Send(who,@Reincarnate,#gain_aim=1);
+      }
+      return;
    }
 
 end
