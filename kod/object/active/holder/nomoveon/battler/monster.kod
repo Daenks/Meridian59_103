@@ -1120,7 +1120,6 @@ messages:
       {
          if iRow <> 0 AND iCol <> 0
             AND Send(poMaster,@GetOwner) <> $
-            AND (piBehavior & AI_MOVE_FOLLOW_MASTER)
          {
             if ((piRow - iRow) <= 3
                AND (piCol - iCol) <= 3)
@@ -6241,6 +6240,8 @@ messages:
             Send(poMaster,@RemoveControlledMinion,#what=self);
 
             % After the honeymoon is over, go after the master!
+            Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
+                  #value=FALSE);
             Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
             poMaster = $;
 
