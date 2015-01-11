@@ -140,8 +140,7 @@ messages:
 
    Constructed(oNecromancerGuild=$)
    {
-      % Keep the scenario deactivated for now.
-      %send(send(SYS,@GetNecromancerBalance),@ActivateScenario);
+      Send(send(SYS,@GetNecromancerBalance),@ActivateScenario);
 
       pimax_Hit_Points = pimax_hit_Points * 2;
       piHit_Points = pimax_hit_points;
