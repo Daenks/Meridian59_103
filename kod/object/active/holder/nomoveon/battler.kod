@@ -167,8 +167,18 @@ messages:
    % They are included here in battler so both user and mobiles can enjoy
    %  the effect.
 
-   TryDeflect()
+   TryDeflect(what = $,caster=$)
    {
+      local oDeflect, lRadiusEnchantment;
+      
+      for lRadiusEnchantment in plRadiusEnchantments
+      {
+         if Send(Nth(lRadiusEnchantment,1),@TryDeflect,#caster=caster,#victim=self,#oSpell=what,#power=Nth(lRadiusEnchantment,2),#source=Nth(lRadiusEnchantment,3))
+         {
+            return TRUE;
+         }
+      }
+      
       return FALSE;
    }
   
