@@ -1,0 +1,88 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetLevelThree is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetLevelThree_Mission = "The priestesses of the land have noticed "
+                 "your arrival, and your latent talent for the magical arts. "
+                 "If you can manage to prove yourself by reaching level three "
+                 "in a spell school, they will reward you."
+                 "\n\n"
+                 "There are six schools of magic, each with different "
+                 "powers and specialties. Kraanan, the god of battle, "
+                 "offers warrior magic that enhances one's fighting "
+                 "abilities. His priestess and temple reside in the "
+                 "mountains near Jasper. Faren, the nature god, "
+                 "controls the elements. His priestess and temple are "
+                 "in the Badlands near Barloque. Jala, the goddess of "
+                 "song, offers numerous musical abilities. Her temple "
+                 "was destroyed long ago by the followers of Qor, "
+                 "but many citizens of Meridian still remember her "
+                 "songs. Qor, the goddess of evil, specializes in magics "
+                 "that debilitate and harm. Her temple and priestess "
+                 "change location, ever evading the wrath of Faren for "
+                 "the murder of Jala and her followers. "
+                 "Shal'ille, the goddess of good, offers healing and "
+                 "protective spells. Her temple and priestess are "
+                 "north of Marion, the city she protects. "
+                 "Riija, the final god, disappeared long ago. He was "
+                 "a trickster and an illusionist. Some say his temple "
+                 "still exists somewhere in a far off land."
+                 "\n\n"
+                 "If you can reach level three in any of these schools, "
+                 "you will be rewarded with twenty experience points "
+                 "and a rose that you can drop near a certain tree in "
+                 "Marion to aid your spirit."
+                        
+   GetLevelThree_Complete = "The priestesses been watching your progress "
+                 "through mystical means. Willing to guide you further, "
+                 "they transfer your deserved reward."
+                 
+   GetLevelThree_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetLevelThree_Mission
+   vsComplete = GetLevelThree_Complete
+   vsFailed = GetLevelThree_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 3
+   viDefaultTargetType = TARGET_TYPE_REACH_LEVEL
+   
+   viDefaultRewardType = REWARD_TYPE_EXPERIENCE
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 20
+   
+   viDefaultSecondRewardType = REWARD_TYPE_ITEM
+   viDefaultSecondRewardClass = &Rose
+   viDefaultSecondRewardAmount = 1
+
+properties:
+
+messages:
+
+   BountyAchieved()
+   {
+      Post(poPlayer,@AddSpecificBountyQuest,#class=&GetLevelFour);
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

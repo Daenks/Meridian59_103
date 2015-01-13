@@ -720,6 +720,8 @@ messages:
 
       % Update vigor drain time as 'now' so we drain vigor correctly
       piLastVigorDrainTime = GetTickCount();
+      
+      Send(self,@FillBountyQuestList);
 
       return;
    }

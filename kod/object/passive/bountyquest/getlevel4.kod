@@ -1,0 +1,79 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetLevelFour is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetLevelFour_Mission = "Your spell learning is going well. The priestesses "
+                 "of the land would like to see you advance further. "
+                 "To this end, if you reach level four in a spell school, "
+                 "you will be rewarded with fifty experience points and "
+                 "a special magical item to aid in your studies."
+                 "\n\n"
+                 "Many students of magic seek out mystical nodes of power "
+                 "to increase their maximum mana. These nodes are all across "
+                 "the land, often in the most dangerous and wild of places. "
+                 "Some say the energy the nodes gives off twist and mutate "
+                 "the wildlife nearby, but none can be certain. "
+                 "Many adventurers have run the mountain route before, "
+                 "noting locations of several nodes. They are in the cave "
+                 "west of Tos, in Ukgoth at a certain time, in the upstairs "
+                 "area of Castle Victoria, across a canyon near the Sentinel, "
+                 "and hidden somewhere in an ancient place with no name. "
+                 "These are just some of the world's nodes of power, but "
+                 "they may help you advance. The councilor Esseldi can "
+                 "tell you which nodes you've already melded with if you "
+                 "ask him for guidance. He can be found in Druid Hills, "
+                 "southwest of Marion, watching over two nodes close by."
+                        
+   GetLevelFour_Complete = "The priestesses been watching your progress "
+                 "through mystical means. Willing to guide you further, "
+                 "they transfer your deserved reward."
+                 
+   GetLevelFour_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetLevelFour_Mission
+   vsComplete = GetLevelFour_Complete
+   vsFailed = GetLevelFour_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 3
+   viDefaultTargetType = TARGET_TYPE_REACH_LEVEL
+   
+   viDefaultRewardType = REWARD_TYPE_EXPERIENCE
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 50
+   
+   viDefaultSecondRewardType = REWARD_TYPE_ITEM
+   viDefaultSecondRewardClass = &Circlet
+   viDefaultSecondRewardAmount = 1
+
+properties:
+
+messages:
+
+   BountyAchieved()
+   {
+      Post(poPlayer,@AddSpecificBountyQuest,#class=&GetLevelFive);
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

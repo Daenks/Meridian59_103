@@ -1,0 +1,69 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetThirtyHealth is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetThirtyHealth_Mission = "The political factions of the land welcome you "
+                 "as a new arrival. However, Meridian is a harsh land, and "
+                 "only the strongest can venture forth and achieve change. "
+                 "Your first task is to train your body. You have been "
+                 "weakened by entering this world; if you can manage to "
+                 "reach thirty health, the council will assist you. \n\n"
+                 "It is advised that you visit the Mausoleum in the north "
+                 "area of Raza and fight the mummies there to accomplish "
+                 "this task. Upon reaching thirty health, you will be "
+                 "given three hundred training points and ten thousand "
+                 "shillings to help you enter the world proper."
+                        
+   GetThirtyHealth_Complete = "The council has been watching your progress "
+                 "through mystical means. Willing to guide you further, "
+                 "they transfer your deserved reward."
+                 
+   GetThirtyHealth_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetThirtyHealth_Mission
+   vsComplete = GetThirtyHealth_Complete
+   vsFailed = GetThirtyHealth_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 30
+   viDefaultTargetType = TARGET_TYPE_REACH_HEALTH
+   
+   viDefaultRewardType = REWARD_TYPE_TRAINING_PTS
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 300
+   
+   viDefaultSecondRewardType = REWARD_TYPE_MONEY
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 10000
+
+properties:
+
+messages:
+
+   BountyAchieved()
+   {
+      Post(poPlayer,@AddSpecificBountyQuest,#class=&GetFiftyHealth);
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

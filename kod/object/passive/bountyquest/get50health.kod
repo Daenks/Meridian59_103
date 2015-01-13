@@ -1,0 +1,77 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetFiftyHealth is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetFiftyHealth_Mission = "Now that you have grown strong enough to venture "
+                 "into the world proper, you must continue training yourself "
+                 "until you are worthy to join one of the political factions. "
+                 "At fifty health, you can join the Princess, who trains "
+                 "her followers in the arts of Shal'ille, Faren, and Jala, as "
+                 "well as defense and regenerating mana; you can join the "
+                 "Duke, who trains his followers in Kraanan, Qor, Riija, and "
+                 "vigor efficiency; or you can become a rebel under Jonas, "
+                 "who trains his followers in offense and weapons. "
+                 "\n\n"
+                 "To reach fifty health, it is advised that you travel the "
+                 "world and visit the five mainland towns. Buy gear to equip "
+                 "yourself, and venture into the Tos Graveyard, or the "
+                 "upstairs area of Castle Victoria in the mountains. "
+                 "Other adventurers can guide you to these areas if you ask. "
+                 "\n\n"
+                 "Upon reaching fifty health, you will receive five hundred "
+                 "training points and thirty thousand shillings to help you "
+                 "further advance."
+                        
+   GetFiftyHealth_Complete = "The council has been watching your progress "
+                 "through mystical means. Willing to guide you further, "
+                 "they transfer your deserved reward."
+                 
+   GetFiftyHealth_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetFiftyHealth_Mission
+   vsComplete = GetFiftyHealth_Complete
+   vsFailed = GetFiftyHealth_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 50
+   viDefaultTargetType = TARGET_TYPE_REACH_HEALTH
+   
+   viDefaultRewardType = REWARD_TYPE_TRAINING_PTS
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 500
+   
+   viDefaultSecondRewardType = REWARD_TYPE_MONEY
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 30000
+
+properties:
+
+messages:
+
+   BountyAchieved()
+   {
+      Post(poPlayer,@AddSpecificBountyQuest,#class=&GetSeventyFiveHealth);
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

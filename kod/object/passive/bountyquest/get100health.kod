@@ -1,0 +1,71 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetOneHundredHealth is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetOneHundredHealth_Mission = "Your strength has increased noticeably "
+                 "since you arrived in this world. The council is eager "
+                 "to see what you can do. For their final task, you "
+                 "must reach one hundred health. This will mark your "
+                 "ability to handle some of Meridian's wilder and more "
+                 "lawless areas. Adventurers of this strength often "
+                 "travel to the distant island of Ko'catan, reachable "
+                 "only through the Orc Caves; or they find their way "
+                 "into the underground city of Brax, where legions "
+                 "of the undead still walk dusty halls. Too, one can "
+                 "venture into the very Throne Room of Castle Victoria, "
+                 "but stray not too deep, for the Ghost of the Mad King "
+                 "still resides within. The ubiquitous Trolls of our land "
+                 "can also be fought for advancement at this level, "
+                 "and they fall easily to exotic Nerudite weapons, if you "
+                 "can obtain one."
+                 "\n\n"
+                 "Good luck."
+                        
+   GetOneHundredHealth_Complete = "The council is satisfied that have "
+                 "become strong enough to hold your own. Your fate is "
+                 "now your own. Their transferred reward should help you "
+                 "begin your more advanced studies."
+                 
+   GetOneHundredHealth_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetOneHundredHealth_Mission
+   vsComplete = GetOneHundredHealth_Complete
+   vsFailed = GetOneHundredHealth_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 100
+   viDefaultTargetType = TARGET_TYPE_REACH_HEALTH
+   
+   viDefaultRewardType = REWARD_TYPE_TRAINING_PTS
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 900
+   
+   viDefaultSecondRewardType = REWARD_TYPE_MONEY
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 100000
+
+properties:
+
+messages:
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

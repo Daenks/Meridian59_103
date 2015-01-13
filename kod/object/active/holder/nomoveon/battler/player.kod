@@ -789,6 +789,9 @@ resources:
       
    bad_line_of_sight = \
       "Your hindered line of sight makes a successful hit more difficult."
+      
+   gained_gain_chance = \
+      "You gained %i points toward your next hit point!"
 
       
    pvp_notify_wav = gong.wav
@@ -1084,6 +1087,9 @@ properties:
 
    % Put new reagents in your bag
    pbReagentBagAuto = TRUE
+   
+   % Timed missions, constantly refreshed
+   plBountyQuests = $
 
 messages:
 
@@ -1092,6 +1098,10 @@ messages:
       % Let the poor bastards eat something.
       piTimeLastStomachUpdate = GetTime();
       piReward_timestamp = GetTime();
+      
+      Send(self,@AddSpecificBountyQuest,#class=&GetThirtyHealth);
+      Send(self,@AddSpecificBountyQuest,#class=&GetLevelThree);
+      Post(self,@NewHold,#what=Create(&BountyBook));
 
       propagate;
    }
@@ -1099,6 +1109,11 @@ messages:
    Delete()
    {
       local i;
+      
+      for i in plBountyQuests
+      {
+         Send(self,@RemoveBountyQuestFromList,#oBountyQuest=i);
+      }
 
       Send(self,@QuitGuild);
       for i in Send(SYS,@GetGuilds)
@@ -5662,6 +5677,11 @@ messages:
       {
          Send(shrunken,@OpponentKilled,#what=what,#stroke_obj=stroke_obj);
       }
+      
+      for i in plBountyQuests
+      {
+         Send(i,@KilledSomething,#what=what);
+      }
 
       return;
    }
@@ -6588,7 +6608,7 @@ messages:
 
    GainBaseMaxHealth(amount = 0)
    {
-      local iPrev_max;
+      local iPrev_max, i;
 
       iPrev_max = piBase_max_health;
 
@@ -6609,6 +6629,11 @@ messages:
 
       Send(self,@PlayerIsIntriguing);
       Send(self,@GainMaxhealth,#amount=amount);
+      
+      for i in plBountyQuests
+      {
+         Send(i,@GainedBaseMaxHealth);
+      }
 
       return;
    }
@@ -7687,6 +7712,11 @@ messages:
       }
 
       Send(self,@PlayerIsIntriguing);
+      
+      for i in plBountyQuests
+      {
+         Send(i,@BoughtSpell,#oSpell=Send(SYS,@FindSpellByNum,#num=num));
+      }
 
       return TRUE;
    }
@@ -8628,6 +8658,15 @@ messages:
    GetGainChance()
    {
       return piGain_chance;
+   }
+   
+   AddGainChance(amount=0)
+   {
+      Send(self,@MsgSendUser,#message_rsc=gained_gain_chance,
+                             #parm1=amount);
+      piGain_chance = piGain_chance + amount;
+      Post(self,@DrawHPChance);
+      return;
    }
 
    GetTrainingPoints()
@@ -14322,6 +14361,80 @@ messages:
          }
       }
 
+      return;
+   }
+   
+   BuildBountyQuestStrings()
+   {
+      local i, sBountyQuestStrings;
+      
+      ClearTempString();
+      
+      AppendTempString("Contained within are bounty quests "
+                       "available to you.");
+      for i in plBountyQuests
+      {
+         AppendTempString("¶");
+         Send(i,@BuildTempQuestString);
+      }
+
+      return;
+   }
+   
+   GetBountyQuests()
+   {
+      return plBountyQuests;
+   }
+   
+   RemoveBountyQuestFromList(oBountyQuest = $)
+   {
+      if plBountyQuests <> $
+         AND FindListElem(plBountyQuests,oBountyQuest)
+      {
+         plBountyQuests = DelListElem(plBountyQuests, oBountyQuest);
+      }
+      return;
+   }
+   
+   FillBountyQuestList()
+   {
+      while plBountyQuests = $
+         OR Length(plBountyQuests) < 3
+      {
+         Send(self,@AddRandomBountyQuest);
+      }
+      return;
+   }
+   
+   AddRandomBountyQuest()
+   {
+      local oBountyQuest, lTargetList, lRewardList, iTime,
+            lMonsterChoices, lRewardChoices;
+      
+      % 20 to 40 minutes
+      iTime = Random(1200000,2400000);
+      
+      lMonsterChoices = [&Lupogg,&AvarChieftain,&TuskedSkeleton,&Troll,&RedAnt];
+      
+      lTargetList = [Random(1,5),Nth(lMonsterChoices,Random(1,Length(lMonsterChoices))),1];
+      lRewardList = [10,$,3];
+      
+      oBountyQuest = Create(&BountyQuest,
+                            #target_list=lTargetList,
+                            #reward_list=lRewardList,
+                            #oPlayer=self,
+                            #iTime=iTime);
+      plBountyQuests = Cons(oBountyQuest,plBountyQuests);
+      return;
+   }
+   
+   AddSpecificBountyQuest(class=&LupoggKingBounty)
+   {
+      local oBountyQuest;
+      
+      oBountyQuest = Create(class,#oPlayer=self);
+      plBountyQuests = Cons(oBountyQuest,plBountyQuests);
+   
       return;
    }
 

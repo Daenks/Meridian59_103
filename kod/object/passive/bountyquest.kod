@@ -1,0 +1,311 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BountyQuest is PassiveObject
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   BountyQuest_name_rsc = "bounty"
+   BountyQuest_icon_rsc = roombell.bgf
+   BountyQuest_desc_rsc = "This is a short-form quest."
+
+   BountyQuest_complete = "You completed a bounty!"
+   BountyQuest_failed = "You failed a bounty."
+   
+   BountyQuest_default_mission = "Complete a bounty and get a reward."
+   
+   BountyQuest_target_slain = "You've killed a bounty target!"
+   
+   BountyQuest_reward_to_vault = "You couldn't hold the rewards, so they have "
+                                 "been deposited in your nearest vault free "
+                                 "of charge."
+   BountyQuest_reward_to_floor = "~BYou couldn't hold the rewards, and your "
+                                 "vault was full, so the mages of the Council "
+                                 "have been forced to deposit your spoils on "
+                                 "the ground beneath your feet!"
+
+classvars:
+
+   vrName = BountyQuest_name_rsc
+   vrIcon = BountyQuest_icon_rsc
+   vrDesc = BountyQuest_desc_rsc
+   
+   vsMission = BountyQuest_default_mission
+   vsComplete = BountyQuest_complete
+   vsFailed = BountyQuest_failed
+   vsTargetSlain = BountyQuest_target_slain
+   
+   viDefaultTime = 600000
+   
+   vcDefaultTarget = &Mummy
+   viDefaultTargetAmount = 1
+   viDefaultTargetType = TARGET_TYPE_KILL
+   
+   viDefaultRewardType = REWARD_TYPE_MONEY
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 1000
+   
+   viDefaultSecondRewardType = REWARD_TYPE_NONE
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 1
+   
+   viDefaultThirdRewardType = REWARD_TYPE_NONE
+   viDefaultThirdRewardClass = $
+   viDefaultThirdRewardAmount = 1
+
+properties:
+
+   poPlayer = $
+   % List of targets, [amount, class, type]
+   plTargets = $
+   % List of rewards, [amount, class, type]
+   plRewards = $
+   
+   ptBountyTimer = $
+
+messages:
+
+   Constructor(target_list=$, reward_list=$, oPlayer=$, iTime=0)
+   {
+      if target_list <> $
+      {
+         plTargets = target_list;
+      }
+      else
+      {
+         plTargets = Cons([viDefaultTargetAmount,
+                           vcDefaultTarget,
+                           viDefaultTargetType],plTargets);
+      }
+      
+      if oPlayer = $
+      {
+         Post(self,@Delete);
+      }
+      else
+      {
+         poPlayer = oPlayer;
+      }
+      
+      if reward_list = $
+      {
+         plRewards = Cons([viDefaultRewardAmount,
+                           viDefaultRewardClass,
+                           viDefaultRewardType],plRewards);
+                           
+         if viDefaultSecondRewardAmount <> REWARD_TYPE_NONE
+         {
+            plRewards = Cons([viDefaultSecondRewardAmount,
+                              viDefaultSecondRewardClass,
+                              viDefaultSecondRewardType],plRewards);
+         }
+                           
+         if viDefaultThirdRewardAmount <> REWARD_TYPE_NONE
+         {
+            plRewards = Cons([viDefaultThirdRewardAmount,
+                              viDefaultThirdRewardClass,
+                              viDefaultThirdRewardType],plRewards);
+         }
+      }
+      else
+      {
+         plRewards = reward_list;
+      }
+      
+      if iTime = $
+         OR viDefaultTime = $
+      {
+        propagate;
+      }
+      
+      if iTime <> 0
+      {
+         ptBountyTimer = CreateTimer(self,@BountyFailed,iTime);
+      }
+      else
+      {
+         ptBountyTimer = CreateTimer(self,@BountyFailed,viDefaultTime);
+      }
+
+      propagate;
+   }
+   
+   BoughtSpell(oSpell=$)
+   {
+      local i;
+      
+      for i in plTargets
+      {
+         if Nth(i,3) = TARGET_TYPE_REACH_LEVEL
+            AND Send(oSpell,@GetLevel) >= Nth(i,1)
+         {
+            Send(self,@BountyAchieved);
+         }
+      }
+      return;
+   }
+   
+   GainedBaseMaxHealth()
+   {
+      local i;
+      
+      for i in plTargets
+      {
+         if Nth(i,3) = TARGET_TYPE_REACH_HEALTH
+            AND Send(poPlayer,@GetBaseMaxHealth) >= Nth(i,1)
+         {
+            Send(self,@BountyAchieved);
+         }
+      }
+      return;
+   }
+
+   KilledSomething(what=$)
+   {
+      local i;
+      
+      for i in plTargets
+      {
+         if GetClass(what) = Nth(i,2)
+            AND Nth(i,3) = TARGET_TYPE_KILL
+         {
+            SetNth(i,1,Nth(i,1)-1);
+            if Nth(i,1) <= 0
+            {
+               Send(self,@BountyAchieved);
+            }
+            else
+            {
+               Send(poPlayer,@MsgSendUser,
+                             #message_rsc=vsTargetSlain);
+            }
+         }
+      }
+   
+      return;
+   }
+   
+   BuildTempQuestString()
+   {
+      AppendTempString(vsMission);
+      return;
+   }
+   
+   BountyAchieved()
+   {
+      local i, oReward, oRoom, oVault;
+      
+      if ptBountyTimer <> $
+      {
+         DeleteTimer(ptBountyTimer);
+         ptBountyTimer = $;
+      }
+      
+      Send(poPlayer,@MsgSendUser,#message_rsc=vsComplete);
+      
+      for i in plRewards
+      {
+         if Nth(i,3) = REWARD_TYPE_MONEY
+         {
+            oReward = Create(&Money,#amount=Nth(i,1));
+            Send(poPlayer,@NewHold,#what=oReward);
+         }
+         if Nth(i,3) = REWARD_TYPE_ITEM
+         {
+            oReward = Create(Nth(i,2),#amount=Nth(i,1));
+            
+            if IsClass(oReward,&GuildShield)
+            {
+               Send(oReward,@Randomize);
+            }
+            
+            if Send(poPlayer,@ReqNewHold,#what=oReward)
+            {
+               Send(poPlayer,@NewHold,#what=oReward);
+            }
+            else
+            {
+               oRoom = Send(poPlayer,@GetOwner);
+               if oRoom = $
+                  OR Send(oRoom,@GetRegion) <> RID_KOCATAN
+               {
+                  oVault = Send(SYS,@FindVaultByNum,#num=VID_BARLOQUE);
+               }
+               else
+               {
+                  oVault = Send(SYS,@FindVaultByNum,#num=VID_KOCATAN);
+               }
+
+               if Send(oVault,@CanDepositItems,#lItems=[oReward],#who=poPlayer)
+               {
+                  Send(poPlayer,@MsgSendUser,
+                                #message_rsc=BountyQuest_reward_to_vault);
+                  Send(oVault,@DepositItems,#lItems=[oReward],#who=poPlayer);
+               }
+               else
+               {
+                  if oRoom <> $
+                  {
+                     Send(poPlayer,@MsgSendUser,
+                                   #message_rsc=BountyQuest_reward_to_floor);
+                     Send(oRoom,@NewHold,#what=oReward,
+                                #new_row=Send(poPlayer,@GetRow),
+                                #new_col=Send(poPlayer,@GetCol),
+                                #fine_row=Send(poPlayer,@GetFineRow),
+                                #fine_col=Send(poPlayer,@GetFineCol));
+                  }
+               }
+            }
+         }
+         if Nth(i,3) = REWARD_TYPE_TRAINING_PTS
+         {
+            Send(poPlayer,@AddTrainingPoints,#points=Nth(i,1));
+         }
+         if Nth(i,3) = REWARD_TYPE_EXPERIENCE
+         {
+            Send(poPlayer,@AddGainChance,#amount=Nth(i,1));
+         }
+      }
+      
+      Post(self,@Delete);
+      return;
+   }
+   
+   BountyFailed()
+   {
+      ptBountyTimer = $;
+      Post(self,@Delete);
+      return;
+   }
+   
+   Delete()
+   {
+      if poPlayer <> $
+      {
+         Send(poPlayer,@RemoveBountyQuestFromList,#oBountyQuest=self);
+      }
+
+      if ptBountyTimer <> $
+      {
+         DeleteTimer(ptBountyTimer);
+      }
+      ptBountyTimer = $;
+      poPlayer = $;
+      plRewards = $;
+      plTargets = $;
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,81 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetSeventyFiveHealth is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetSeventyFiveHealth_Mission = "Your training is progressing well. As you "
+                 "may have learned, you are now attackable by other players. "
+                 "Progress will be more difficult, as you will be vulnerable "
+                 "to brigands and murderers. It is recommended that you join "
+                 "a guild for protection and allies, in addition to joining "
+                 "one of the land's political factions. "
+                 "\n\n"
+                 "Your next task is to reach seventy-five health. Once you "
+                 "do, you will be able to become a soldier for your "
+                 "political faction and acquire new strengths. Be warned, "
+                 "however, that soldiers of different factions can "
+                 "legally attack each other, so you will face additional "
+                 "danger and competition. Whether or not you decide to "
+                 "become a soldier, the council will still support your "
+                 "advancement if you can prove yourself worthy. "
+                 "Reach seventy-five health and you will receive "
+                 "seven hundred training points and fifty thousand shillings."
+                 "\n\n"
+                 "Many adventurers undertake this level of training by "
+                 "fighting in the main areas of Castle Victoria, or in "
+                 "the sewers of Barloque and Jasper. If you can gain "
+                 "entry, the Orc Caves are also filled with appropriate "
+                 "enemies."
+                        
+   GetSeventyFiveHealth_Complete = "The council has been watching your progress "
+                 "through mystical means. Willing to guide you further, "
+                 "they transfer your deserved reward."
+                 
+   GetSeventyFiveHealth_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetSeventyFiveHealth_Mission
+   vsComplete = GetSeventyFiveHealth_Complete
+   vsFailed = GetSeventyFiveHealth_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 75
+   viDefaultTargetType = TARGET_TYPE_REACH_HEALTH
+   
+   viDefaultRewardType = REWARD_TYPE_TRAINING_PTS
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 700
+   
+   viDefaultSecondRewardType = REWARD_TYPE_MONEY
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 50000
+
+properties:
+
+messages:
+
+   BountyAchieved()
+   {
+      Post(poPlayer,@AddSpecificBountyQuest,#class=&GetOneHundredHealth);
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,74 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GetLevelFive is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   GetLevelFive_Mission = "You are nearly a master of a spell school. "
+                 "The priestesses of the land are intrigued. If you can "
+                 "prove yourself worthy by reaching level five in any "
+                 "spell school, you will receive a substantial reward. "
+                 "\n\n"
+                 "By this point in your studies, you may have become aware "
+                 "of certain powerful spells which require multiple casters "
+                 "and a prism. These prism spells are some of the most "
+                 "difficult to cast, but can produce enormously strong "
+                 "effects. To cast a prism spell, you must gather the "
+                 "same number of casters as the prism has sides, and all "
+                 "focus your energies through it. In this manner, a guild "
+                 "or group of friends can work together. Some examples "
+                 "include adding magical effects to weapons, finding "
+                 "the location of an adventurer, or other mysterious "
+                 "abilities."
+                 "\n\n"
+                 "If you reach level five, you will be able to participate "
+                 "in some of these ceremonies. You will also receive "
+                 "one hundred experience points and a special shield "
+                 "that you can get engraved with an insignia. "
+                 "Go to the priestess of your choice and say insignia. "
+                 "If you complete the necessary quest, the shield will then "
+                 "offer spellpower to that school when equipped."
+                        
+   GetLevelFive_Complete = "The priestesses have deemed you ready to join "
+                 "the mages of the land. Your fate is now your own."
+                 
+   GetLevelFive_Failed = "You can't fail this one."
+
+classvars:
+   
+   vsMission = GetLevelFive_Mission
+   vsComplete = GetLevelFive_Complete
+   vsFailed = GetLevelFive_Failed
+
+   viTime = $
+
+   vcDefaultTarget = $
+   viDefaultTargetAmount = 3
+   viDefaultTargetType = TARGET_TYPE_REACH_LEVEL
+   
+   viDefaultRewardType = REWARD_TYPE_EXPERIENCE
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 100
+   
+   viDefaultSecondRewardType = REWARD_TYPE_ITEM
+   viDefaultSecondRewardClass = &GuildShield
+   viDefaultSecondRewardAmount = 1
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

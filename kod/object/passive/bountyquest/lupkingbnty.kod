@@ -1,0 +1,64 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LupoggKingBounty is BountyQuest
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   LupoggKing_Mission = "Slay the Lupogg King and stem the tide of evil! "
+                        "For delving into the sewer depths and committing "
+                        "this heroic act, the council will reward you "
+                        "with one hundred experience points, 25,000 "
+                        "shillings, and one hundred training points. "
+                        "You have one Meridian day to accomplish this task."
+                        
+   LupoggKing_Complete = "Beyond all belief, you've actually done it - "
+                         "you've slain the Lupogg King!"
+                         
+   LupoggKing_Failed = "Lupoggs swarm in Jasper and Barloque, wreaking havoc. "
+                       "The council's faith in you seems to have been "
+                       "misplaced."
+
+classvars:
+   
+   vsMission = LupoggKing_Mission
+   vsComplete = LupoggKing_Complete
+   vsFailed = LupoggKing_Failed
+   
+   % 2 hours
+   viTime = 7200000
+
+   vcDefaultTarget = &LupoggKing
+   viDefaultTargetAmount = 1
+   viDefaultTargetType = TARGET_TYPE_KILL
+   
+   viDefaultRewardType = REWARD_TYPE_EXPERIENCE
+   viDefaultRewardClass = $
+   viDefaultRewardAmount = 100
+   
+   viDefaultSecondRewardType = REWARD_TYPE_MONEY
+   viDefaultSecondRewardClass = $
+   viDefaultSecondRewardAmount = 25000
+   
+   viDefaultThirdRewardType = REWARD_TYPE_TRAINING_PTS
+   viDefaultThirdRewardClass = $
+   viDefaultThirdRewardAmount = 100
+
+properties:
+
+messages:
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
