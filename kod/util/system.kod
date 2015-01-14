@@ -2508,6 +2508,8 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_MARION,#class=&OldMarion);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_NORTH,#class=&OldBarloqueNorth);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_SOUTH,#class=&OldBarloqueSouth);
+      
+      Send(self,@CreateOneRoomIfNew,#num=RID_BATTLE_ARENA,#class=&BattleArena);
 
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.
@@ -5347,6 +5349,9 @@ messages:
       plItemTemplates = cons(create(&Axe),plItemTemplates);
       plItemTemplates = cons(create(&Hammer),plItemTemplates);
       plItemTemplates = cons(create(&Mace),plItemTemplates);
+      
+      % Scenario items
+      plItemTemplates = cons(create(&BattleFlag),plItemTemplates);
 
       return;
    }

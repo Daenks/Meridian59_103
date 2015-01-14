@@ -866,6 +866,11 @@ messages:
       
       return FALSE;
    }
+   
+   UserEntered()
+   {
+      return;
+   }
 
    FirstUserEntered(what = $,new_row = $,new_col = $)
    {
@@ -877,6 +882,11 @@ messages:
          Send(each_obj,@FirstUserEntered,#what=what,#new_row=new_row,#new_col=new_col);
       }
       
+      return;
+   }
+   
+   UserLeft()
+   {
       return;
    }
 

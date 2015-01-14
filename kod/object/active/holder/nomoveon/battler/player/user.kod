@@ -259,6 +259,9 @@ resources:
    user_cant_suicide_token = \
       "You can't kill yourself now, not when you're the sacred guardian of a "
       "Meridian token!"
+      
+   user_cant_suicide_arena = \
+      "You try to kill yourself, but you realize you can't die in an arena!"
 
    user_cant_suicide_OOG = \
       "Somehow, even though you deserve it, you are unable to bear the "
@@ -357,6 +360,10 @@ resources:
 
    user_logon_delay = \
       "You take a moment to recollect your senses."
+   
+   must_be_safe_to_join_battle_arena_rsc = "You must be in a safe area to join the Battle Arena."
+   too_low_hp_to_join_battle_arena_rsc = "You're not strong enough to join the Battle Arena."
+   not_in_battle_arena_rsc = "You are not in the Battle Arena."
 
 classvars:
 
@@ -1569,6 +1576,13 @@ messages:
             
             return;                 
          }
+         
+         if Send(Send(self,@GetOwner),@IsArena)
+         {
+            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_arena);
+            
+            return;
+         }
 
          % Successful SUICIDE.
 
@@ -2405,29 +2419,90 @@ messages:
                OR oIllusion = $
                OR NOT IsClass(oIllusion,&Monster)
             {
-               oOtherGuild = Send(what,@GetGuild);
-               if poGuild <> $ AND oOtherGuild <> $
+               if IsClass(Send(self,@GetOwner),&BattleArena)
                {
-                  if poGuild = oOtherGuild
+                  % Spectators see the teams as different colors for viewing purposes.
+                  if Send(Send(self,@GetOwner),@GetUserTeam,#what=self) = 1
                   {
-                     iFlags = (iFlags | PLAYER_IS_GUILDMATE);
+                     if Send(Send(self,@GetOwner),@GetUserTeam,#what=what) = 2
+                     {
+                        if Send(Send(self,@GetOwner),@IsUserCarryingFlag,#what=what) = TRUE
+                        {
+                           iFlags = (iFlags | 0x0C000000);
+                        }
+                        else
+                        {
+                           iFlags = (iFlags | PLAYER_IS_FRIEND);
+                        }
+                     }
+                     if Send(Send(self,@GetOwner),@GetUserTeam,#what=what) = 3
+                     {
+                        if Send(Send(self,@GetOwner),@IsUserCarryingFlag,#what=what) = TRUE
+                        {
+                           iFlags = (iFlags | 0x0A000000);
+                        }
+                        else
+                        {
+                           iFlags = (iFlags | PLAYER_IS_ENEMY);
+                        }
+                     }
                   }
-
-                  if Send(poGuild,@IsAlly,#otherguild=oOtherGuild)
-                     AND Send(oOtherGuild,@IsAlly,#otherguild=poGuild)
+                  else
                   {
-                     iFlags = (iFlags | PLAYER_IS_FRIEND);
+                     if Send(Send(self,@GetOwner),@GetUserTeam,#what=self) = Send(Send(self,@GetOwner),@GetUserTeam,#what=what)
+                     {
+                        if Send(Send(self,@GetOwner),@IsUserCarryingFlag,#what=what) = TRUE
+                        {
+                           iFlags = (iFlags | 0x0C000000);
+                        }
+                        else
+                        {
+                           iFlags = (iFlags | PLAYER_IS_FRIEND);
+                        }
+                     }
+                     else
+                     {
+                        if Send(Send(self,@GetOwner),@GetUserTeam,#what=what) <> 1
+                        {
+                           if Send(Send(self,@GetOwner),@IsUserCarryingFlag,#what=what) = TRUE
+                           {
+                              iFlags = (iFlags | 0x0A000000);
+                           }
+                           else
+                           {
+                              iFlags = (iFlags | PLAYER_IS_ENEMY);
+                           }
+                        }
+                     }
                   }
-
-                  if Send(poGuild,@IsMutualEnemy,#otherguild=oOtherGuild)
+               }
+               else
+               {
+                  oOtherGuild = Send(what,@GetGuild);
+                  if poGuild <> $ AND oOtherGuild <> $
                   {
-                     iFlags = (iFlags | PLAYER_IS_ENEMY);
+                     if poGuild = oOtherGuild
+                     {
+                        iFlags = (iFlags | PLAYER_IS_GUILDMATE);
+                     }
+
+                     if Send(poGuild,@IsAlly,#otherguild=oOtherGuild)
+                        AND Send(oOtherGuild,@IsAlly,#otherguild=poGuild)
+                     {
+                        iFlags = (iFlags | PLAYER_IS_FRIEND);
+                     }
+
+                     if Send(poGuild,@IsMutualEnemy,#otherguild=oOtherGuild)
+                     {
+                        iFlags = (iFlags | PLAYER_IS_ENEMY);
+                     }
                   }
                }
             }
 
             If what <> self
                AND NOT IsClass(self,&DM)
+               AND NOT IsClass(Send(self,@GetOwner),&BattleArena)
                AND Send(self,@AllowPlayerAttack,#victim=what,#report=FALSE,#actual=FALSE)
             {
                iFlags = (iFlags | PLAYER_IS_ENEMY);
@@ -4248,6 +4323,39 @@ messages:
                {
                   return;
                }
+            }
+         }
+
+         if type = SAY_NORMAL
+            AND StringEqual(string,"join the battle arena")
+         {
+            if Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+            {
+               if Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+               {
+                  Send(Send(SYS,@FindRoomByNum,#num=RID_BATTLE_ARENA),@Teleport,#what=self);
+               }
+               else
+               {
+                  Send(self,@MsgSendUser,#message_rsc=too_low_hp_to_join_battle_arena_rsc);
+               }
+            }
+            else
+            {
+               Send(self,@MsgSendUser,#message_rsc=must_be_safe_to_join_battle_arena_rsc);
+            }
+         }
+
+         if type = SAY_NORMAL
+            AND StringEqual(string,"leave the battle arena")
+         {
+            if poOwner = Send(SYS,@FindRoomByNum,#num=RID_BATTLE_ARENA)
+            {
+               Send(self,@AdminGoToLastSafeRoom,#region_override=TRUE);
+            }
+            else
+            {
+               Send(self,@MsgSendUser,#message_rsc=not_in_battle_arena_rsc);
             }
          }
 
@@ -7868,7 +7976,7 @@ messages:
       return;
    }
 
-   AdminGoToLastSafeRoom()
+   AdminGoToLastSafeRoom(region_override = FALSE)
    "Admin supported\n"
    "Sends the user to the last safe room they visited, whether they're logged in or not!\n"
    {
@@ -7885,6 +7993,7 @@ messages:
             iCurrentRegion = Send(oCurrentRoom,@GetRegion);
 
             if iCurrentRegion = iLastSafeRegion
+               OR region_override
             {
                Send(oLastSafeRoom,@Teleport,#what=self);
                Send(self,@MsgSendUser,#message_rsc=user_goto_lastsaferoom);
@@ -7908,6 +8017,7 @@ messages:
             iCurrentRegion = Send(oCurrentRoom,@GetRegion);
             
             if iCurrentRegion = iLastSafeRegion
+               OR region_override
             {
                piSave_room = piLastSafeRoom;
                piSave_row = Send(oLastSafeRoom,@GetTeleportRow);

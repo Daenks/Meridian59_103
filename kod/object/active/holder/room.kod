@@ -1921,6 +1921,8 @@ messages:
             Send(self,@FirstUserEntered,#what=what,#new_row=Nth(new_pos,2),
                  #new_col=Nth(new_pos,3));
          }
+         
+         Send(self,@UserEntered,#what=what,#new_row=First(new_pos),#new_col=Nth(new_pos,2));
 
          % Now send music.
          Send(what,@SendRoomMusic,#music_rsc=prMusic);
@@ -2105,6 +2107,7 @@ messages:
          each_obj = First(i);   % optimized for room
          if IsClass(each_obj,&User) AND each_obj <> what
          {
+            Send(self,@UserLeft,#what=what);
             propagate;
          }
       }
@@ -2704,6 +2707,11 @@ messages:
    {
       return pbUser_in_room;
    }
+   
+   UserEntered()
+   {
+      propagate;
+   }
 
    FirstUserEntered()
    {
@@ -2718,6 +2726,11 @@ messages:
          ptPeriodic_sounds = CreateTimer(self,@PeriodicSoundTimer,iTime);
       }
 
+      propagate;
+   }
+   
+   UserLeft()
+   {
       propagate;
    }
 
