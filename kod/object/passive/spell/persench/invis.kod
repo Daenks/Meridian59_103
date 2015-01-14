@@ -79,7 +79,10 @@ messages:
          lTargets = Cons(who, lTargets);
       }
 
-      Send(First(lTargets),@ResetPlayerFlagList);
+      if IsClass(First(lTargets),&Player)
+      {
+         Send(First(lTargets),@ResetPlayerFlagList);
+      }
       Send(First(lTargets),@AddDefenseModifier,#what=self);
 
       propagate;

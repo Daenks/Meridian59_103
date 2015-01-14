@@ -13,6 +13,7 @@ Battler is NoMoveOn
 constants:
 
    include blakston.khd
+   include protocol.khd
 
    % Raise or lower this number to raise or lower the chance the 'avoids 
    %  your attack' message comes up.
@@ -21,6 +22,9 @@ constants:
    % Threshold for the "wound" and "damage" levels of feedback.
    DAMAGE_THRESHOLD_WOUND = 5
    DAMAGE_THRESHOLD_DAMAGE = 15
+
+   % What's the maximum stat we can have after modification?
+   MAXIMUM_STAT = 70
 
 resources:
 
@@ -154,12 +158,57 @@ properties:
    % Each element is [ timer, object of spell, [optional state] ].
    plEnchantments = $
 
+   % Attack modifiers to attack roll & damage (includes items & spells)
+   plAttack_modifiers = $
+
+   % Defense modifiers to defense roll & damage (includes items & spells)
+   plDefense_modifiers = $
+
    % Default mana values.
    piMana = 20
    piMax_Mana = 20
 
    % Mana regen timer.
    ptMana = $
+
+   % Poison info
+   ptPoison = $
+   piPoisonStrength = 0
+
+   %%% Variable battler values.
+
+   % The player sees piMax_Health in their client.
+   % piBase_Max_Health is their base without any modifiers
+   piHealth = 20
+   piMax_Health = 20
+   piBase_Max_Health = 20
+
+   % Governs health and mana replacement rates
+   piVigor = 100
+   % Accumulates small vigor debits from attacks, etc.
+   piExertion = 0
+
+   % Permanent battler base stats.
+   piMight = 0
+   piIntellect = 0
+   piStamina = 0
+   piAgility = 0
+   piMysticism = 0
+   piAim = 0
+
+   % Modifiers to those base stats.
+   piMightMod = 0
+   piIntellectMod = 0
+   piStaminaMod = 0
+   piAgilityMod = 0
+   piMysticismMod = 0
+   piAimMod = 0
+
+   % stuff in use
+   plUsing = $
+
+   % This list keeps track of selfcast buffs for passive improvement.
+   plPassiveImprovement = $
 
 messages:
 
@@ -531,11 +580,36 @@ messages:
 
    % This does one attack by the battler.
    % For a monster, the stroke_obj is itself.
-   TryAttack(what = $,stroke_obj=$)
+   TryAttack(what = $,stroke_obj=$, is_mob_ranged_atk = FALSE)
    {
-      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon;
+      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon,
+            lWindsState, lSandStormState;
 
       oWeapon = Send(self,@GetWeapon);
+
+      % Special case:  Ranged weapons in windy room.
+      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
+         OR is_mob_ranged_atk
+      {
+         lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&Winds);
+         lSandStormState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&SandStorm);
+
+         if lWindsState <> $
+            AND Send(Nth(lWindsState,1),@TryRuinShot,#who=self,
+                     #iSpellPower=Nth(lWindsState,2))
+         {
+            return FALSE;
+         }
+
+         if lSandStormState <> $
+            AND Send(Nth(lSandStormState,1),@TryRuinShot,#who=self,
+                     #iSpellPower=Nth(lSandStormState,2))
+         {
+            return FALSE;
+         }
+      }
 
       % Derived class should have checked all specific restrictions by this point.
 
@@ -1273,12 +1347,6 @@ messages:
       return;
    }
 
-   % This returns the wielded weapon
-   GetWeapon()
-   {
-      return self;
-   }
-
    % Oo, 'e died
    Killed(what = $)
    {
@@ -1381,6 +1449,862 @@ messages:
          }
 
       return;
+   }
+
+   EnchantmentTimer(timer = $)
+   {
+      local i, j, oEnchanter;
+
+      for i in plEnchantments
+      {
+         if First(i) = timer
+         {
+            if Length(i) >= 3
+            {
+               Send(Nth(i,2),@EndEnchantment,#who=self,#state=Nth(i,3));
+            }
+            else
+            {
+               Send(Nth(i,2),@EndEnchantment,#who=self);
+            }
+
+            if IsClass(self,&Player)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                    #type=ENCHANTMENT_PLAYER);
+            }
+
+            % TODO: i no longer exists at this point?
+            % EndEnchantment removing it?
+            plEnchantments = DelListElem(plEnchantments,i);
+            
+            % Also remove from passive improvement list.
+            if IsClass(self,&Player)
+            {
+               for j in plPassiveImprovement
+               {
+                  if First(j) = Nth(i,2)
+                  {
+                     plPassiveImprovement = DelListElem(plPassiveImprovement,j);
+                  }
+               }
+
+               if IsClass(Nth(i,2),&Mirth)
+                  OR IsClass(Nth(i,2),&Melancholy)
+               {
+                  Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+               }
+               else
+               {
+                  Send(self,@ResetPlayerFlagList,#who=self);
+               }
+            }
+
+            if poOwner <> $
+            {
+               Send(poOwner,@SomethingChanged,#what=self);
+            }
+
+            return;
+         }
+      }
+
+      Debug("Enchantment timer went off with no enchantment",timer);
+
+      return;
+   }
+
+   PeriodicEnchantmentTimer(timer = $)
+   {
+      local i ;
+
+      for i in plEnchantments
+      {
+         if First(i) = timer
+         {
+            plEnchantments = DelListElem(plEnchantments,i);
+
+            if Length(i) >= 3
+            {
+               Send(Nth(i,2),@StartPeriodicEnchantment,
+                     #who=self,#state=Nth(i,3));
+            }
+            else
+            {
+               Send(Nth(i,2),@StartPeriodicEnchantment,#who=self,#state=$);
+            }
+
+            return;
+         }
+      }
+
+      Debug("Enchantment timer went off with no enchantment",timer);
+
+      return;
+   }
+
+   StartEnchantment(what=$,who=$,time=$,state=$,lastcall=TRUE,
+                     addicon=TRUE,ltype=$)
+   "Adds <what> to our enchantments, and creates a timer that will cause it "
+   "to end."
+   {
+      local oTimer, lNew_enchantment;
+
+      if time = $ OR time = SPELL_INDEFINITE_DURATION 
+      {
+         oTimer = $;
+      }
+      else
+      {
+         if lastcall
+         {
+            oTimer = CreateTimer(self,@EnchantmentTimer,time);
+         }
+         else
+         {
+            oTimer = CreateTimer(self,@PeriodicEnchantmentTimer,time);
+         }
+      }
+
+      if state = $
+      {
+         lNew_enchantment = [oTimer, what];
+      }
+      else
+      {
+         lNew_enchantment = [oTimer, what, state];
+      }
+
+      plEnchantments = Cons(lNew_enchantment,plEnchantments);
+
+      if IsClass(self,&Player)
+      {
+         % If we are also the source of the enchantment, add the enchantment
+         % to our passive improvement list. ltype has the form:
+         % [oSpell,Defensive,Offensive,Resistance]
+         if who = self
+            AND IsClass(self,&Player)
+         {
+            plPassiveImprovement = Cons(ltype,plPassiveImprovement);
+         }
+      
+         if IsClass(what,&Mirth)
+            OR IsClass(what,&Melancholy)
+         {
+            Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+         }
+         else
+         {
+            Send(self,@ResetPlayerFlagList,#who=self);
+         }
+
+         if addicon
+         {
+            Send(self,@ShowAddEnchantment,#what=what,#type=ENCHANTMENT_PLAYER);
+         }
+
+         Post(self,@DrawResistances);
+      }
+
+      return;
+   }
+
+   RemoveAllEnchantments(report=TRUE)
+   "Remove all current enchantments and reset the passive improvement list."
+   {
+      local i;
+
+      for i in plEnchantments
+      {
+         if NOT IsClass(Nth(i,2),&RadiusEnchantment)
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
+      }
+
+      if IsClass(self,&Player)
+      {
+         plPassiveImprovement = $;
+      }
+
+      return;
+   }
+
+   RemoveAllPersonalEnchantments(report=TRUE,override=FALSE)
+   "Remove all current *personal* enchantments and reset "
+   "the passive improvement list."
+   {
+      local i, oSpell, removedSomething;
+
+      removedSomething = FALSE;
+
+      for i in plEnchantments
+      {
+         oSpell = Nth(i,2);
+         if Send(oSpell,@IsPersonalEnchantment)
+            AND ((NOT IsClass(oSpell,&DMSpell)) OR override)
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+            removedSomething = TRUE;
+         }
+      }
+
+      if IsClass(self,&Player)
+      {
+         % Just to be sure, reset the player's flag list.
+         % this should remove any excess flags like invis or shadowform.
+         Send(self,@ResetPlayerFlagList);
+         Send(self,@ResetPlayerDrawfx,#SendSomethingChanged=TRUE);
+
+         plPassiveImprovement = $;
+      }
+
+      return removedSomething;
+   }
+
+   DispelIllusionEnchantments(report = TRUE, iChance = 100)
+   {
+      local i, oSpell, each_obj;
+
+      for i in plEnchantments 
+      {
+         oSpell = Nth(i,2);
+         if Send(oSpell,@IsIllusion)
+            AND Random(1,100) <= iChance
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
+      }
+
+      return;
+   }
+
+   RemoveSchoolEnchantments(school = $,report=TRUE)
+   {
+      local i, oSpell, each_obj;
+
+      for i in plEnchantments
+      {
+         oSpell = Nth(i,2);
+         if Send(oSpell,@GetSchool) = school
+         {
+            Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
+      }
+
+      return;
+   }
+
+   RemoveEnchantment(what = $, report=TRUE)
+   "If have a current enchantment set by <what>, end it."
+   {
+      local i,state;
+
+      state = $ ;
+
+      for i in plEnchantments
+      {
+         if Nth(i,2) = what
+         {
+            if Send(self,@IsLoggedOn)
+               OR IsClass(what,&Phase)
+            {
+               if First(i) <> $
+               {
+                  if IsTimer(First(i))
+                  {
+                     DeleteTimer(First(i));
+                  }
+                  SetNth(i,1,$);
+               }
+            }
+            if Length(i) >= 3
+            {
+               state = Nth(i,3);
+            }
+
+            Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,
+                  #state=state,#report=report);
+
+            if IsClass(self,&Player)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                     #type=ENCHANTMENT_PLAYER);
+            }
+
+            plEnchantments = DelListElem(plEnchantments,i);
+
+            if IsClass(self,&Player)
+            {
+               if IsClass(what,&Mirth)
+                  OR IsClass(what,&Melancholy)
+               {
+                  Send(self,@ResetPlayerFlagList,#nodraw=TRUE,#who=self);
+               }
+               else
+               {
+                  Send(self,@ResetPlayerFlagList,#who=self);
+               }
+            }
+         }
+      }
+
+      if IsClass(self,&Player)
+      {
+         % Also remove from passive improvement list.
+         for i in plPassiveImprovement
+         {
+            if First(i) = what
+            {
+               plPassiveImprovement = DelListElem(plPassiveImprovement,i);
+            }
+         }
+      }
+
+      return;
+   }
+
+   RemoveEnchantmentClass(class = &Object)
+   "If have a current enchantment set by anything in class, end it."
+   {
+      local i,state,removedSomething;
+
+      removedSomething = FALSE;
+
+      for i in plEnchantments
+      {
+         if IsClass(Nth(i,2),class)
+         {
+            removedSomething = TRUE;
+            if First(i) <> $
+            {
+               DeleteTimer(First(i));
+            }
+
+            if Length(i) >= 3
+            {
+               state = Nth(i,3);
+            }
+
+            Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,#state=state);
+
+            if IsClass(self,&Player)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                     #type=ENCHANTMENT_PLAYER);
+            }
+
+            plEnchantments = DelListElem(plEnchantments,i);
+            
+            if IsClass(self,&Player)
+            {
+               Send(self,@ResetPlayerFlagList,#who=self);
+            }
+         }
+      }
+
+      if IsClass(self,&Player)
+      {
+         % Also remove from passive improvement list.
+         for i in plPassiveImprovement
+         {
+            if IsClass(First(i),class)
+            {
+               plPassiveImprovement = DelListElem(plPassiveImprovement,i);
+            }
+         }
+      }
+
+      return removedSomething;
+   }
+
+   AddAttackModifier(what = $)
+   "Adds <what> to plAttack_modifiers, which can modify attack "
+   "strength and damage."
+   {
+      plAttack_modifiers = Cons(what,plAttack_modifiers);
+      
+      if IsClass(self,&Player)
+      {
+         Post(self,@DrawOffense);
+      }
+
+      return;
+   }
+
+   RemoveAttackModifier(what = $)
+   "Removes <what> from plAttack_modifiers."
+   {
+      local i;
+
+      for i in plAttack_modifiers
+      {
+         if i = what
+         {
+            plAttack_modifiers = DelListElem(plAttack_modifiers,i);
+            
+            if IsClass(self,&Player)
+            {
+               Post(self,@DrawOffense);
+            }
+
+            return;
+         }
+      }
+
+      return;
+   }
+
+   AddDefenseModifier(what = $)
+   "Adds <what> to plDefense_modifiers, which can modify defense strength "
+   "and damage."
+   {
+      plDefense_modifiers = Cons(what,plDefense_modifiers);
+      
+      if IsClass(self,&Player)
+      {
+         Post(self,@DrawDefense);
+         Post(self,@DrawArmor);
+      }
+
+      return;
+   }
+
+   RemoveDefenseModifier(what = $)
+   "Removes <what> from plDefense_modifiers."
+   {
+      local i;
+
+      for i in plDefense_modifiers
+      {
+         if i = what
+         {
+            plDefense_modifiers = DelListElem(plDefense_modifiers,i);
+            
+            if IsClass(self,&Player)
+            {
+               Post(self,@DrawDefense);
+               Post(self,@DrawArmor);
+            }
+            
+            return;
+         }
+      }
+      
+      Debug(self,"Tried to remove defense modifier",what,"but not in list",
+               plDefense_modifiers);
+
+      return;
+   }
+
+   AddPoison(strength = 0, bVigorLoss = TRUE)
+   {
+      if ptPoison = $
+      {
+         ptPoison = CreateTimer(self,@PoisonTimer,10000);
+      }
+
+      piPoisonStrength = piPoisonStrength + strength;
+
+      if bVigorLoss
+         AND IsClass(self,&Player)
+      {
+         piVigor = piVigor - 20;
+         Send(self,@NewVigor);
+      }
+
+      return;
+   }
+
+   RemovePoison(strength = 0)
+   {
+      piPoisonStrength = piPoisonStrength - strength;
+
+      return;
+   }
+
+   PoisonTimer()
+   {
+      ptPoison = $;
+
+      % For safety's sake
+      if piPoisonStrength <= 0
+      {
+         piPoisonStrength = 0;
+
+         return;
+      }
+
+      if poOwner <> $
+      {
+         ptPoison = CreateTimer(self,@PoisonTimer,10000);
+      }
+
+      if poOwner = $
+      {
+         return;
+      }
+
+      if IsClass(self,&Player)
+         AND Send(self,@IsPhasedOut)
+      {
+         return;
+      }
+
+      if NOT Send(poOwner,@SafePlayerAttack)
+         OR Send(poOwner,@IsValidTarget,#who=self)
+      {
+         % Poison only hurts you in the arena if you are a combatant.
+         piHealth = piHealth - piPoisonStrength / 1000;
+         if piHealth < 1
+         {
+            piHealth = 1;
+         }
+
+         if IsClass(self,&Player)
+         {
+            Send(self,@NewHealth);
+         }
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      if ptPoison <> $
+      {
+         DeleteTimer(ptPoison);
+         ptPoison = $;
+      }
+      propagate;
+   }
+   
+
+   AddMight(points = 0, bAbsolute = TRUE)
+   "Returns signed change to might (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigMight;
+
+      iOrigMight = piMightMod;
+      piMightMod = piMightMod + points;
+
+      if NOT bAbsolute
+      {
+         piMightMod = bound(piMightMod,-piMight,(MAXIMUM_STAT-piMight));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawMight);
+         Post(self,@DrawCapacity);
+      }
+
+      return piMightMod - iOrigMight;
+   }
+
+   AddIntellect(points = 0, bAbsolute = TRUE)
+   "Returns signed change to intellect (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigIntellect;
+
+      iOrigIntellect = piIntellectMod;
+      piIntellectMod = piIntellectMod + points;
+
+      if NOT bAbsolute
+      {
+         piIntellectMod = bound(piIntellectMod,-piIntellect,(MAXIMUM_STAT-piIntellect));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawIntellect);
+      }
+
+      return piIntellectMod - iOrigIntellect;
+   }
+
+   AddAim(points = 0, bAbsolute = TRUE)
+   "Returns signed change to aim (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigAim;
+
+      iOrigAim = piAimMod;
+      piAimMod = piAimMod + points;
+
+      if NOT bAbsolute
+      {
+         piAimMod = bound(piAimMod,-piAim,(MAXIMUM_STAT-piAim));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawAim);
+         Post(self,@DrawOffense);
+      }
+
+      return piAimMod - iOrigAim;
+   }
+
+   AddStamina(points = 0, bAbsolute = TRUE, scale_up_monster_health = FALSE)
+   "Returns signed change to stamina (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigStamina;
+
+      iOrigStamina = piStaminaMod;
+      piStaminaMod = piStaminaMod + points;
+
+      if NOT bAbsolute
+      {
+         piStaminaMod = bound(piStaminaMod,-piStamina,(MAXIMUM_STAT-piStamina));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawStamina);
+      }
+      if IsClass(self,&Monster)
+         AND scale_up_monster_health
+      {
+         piHealth=(Send(self,@GetHealth) * 
+                      (100+Send(self,@GetStamina)))/100;
+                      
+         piBase_max_health=(Send(self,@GetBaseMaxHealth) *
+                      (100+Send(self,@GetStamina)))/100;
+                      
+         piMax_health=(Send(self,@GetMaxHealth) *
+                      (100+Send(self,@GetStamina)))/100;
+      }
+
+      return piStaminaMod - iOrigStamina;
+   }
+
+   AddAgility(points = 0, bAbsolute = TRUE)
+   "Returns signed change to agility (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigAgility;
+
+      iOrigAgility = piAgilityMod;
+      piAgilityMod = piAgilityMod + points;
+
+      if NOT bAbsolute
+      {
+         piAgilityMod = Bound(piAgilityMod,-piAgility,(MAXIMUM_STAT-piAgility));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawAgility);
+         Post(self,@DrawDefense);
+      }
+
+      return piAgilityMod - iOrigAgility;
+   }
+
+   AddMysticism(points = 0, bAbsolute = TRUE, scale_up_monster_mana = FALSE)
+   "Returns signed change to agility (negative means decrease)"
+   "If restore = TRUE, ignore the bounds check and add the amount anyway."
+   {
+      local iOrigMysticism;
+
+      iOrigMysticism = piMysticismMod;
+      piMysticismMod = piMysticismMod + points;
+
+      if NOT bAbsolute
+      {
+         piMysticismMod = Bound(piMysticismMod,-piMysticism,(MAXIMUM_STAT-piMysticism));
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@DrawMysticism);
+         Send(self,@ComputeMaxMana);
+      }
+      if IsClass(self,&Monster)
+         AND scale_up_monster_mana
+      {
+         piMana = (Send(self,@GetMana) * 
+                  (100+Send(self,@GetMysticism)))/100;
+         piMax_mana = (Send(self,@GetMaxMana) *
+                      (100+Send(self,@GetMysticism)))/100;
+      }
+
+      return piMysticismMod - iOrigMysticism;
+   }
+
+   ZeroMods()
+   "Should NOT be called before removing all potential stat-modifying things"
+   {
+      piMightMod = 0;
+      piIntellectMod = 0;
+      piMysticismMod = 0;
+      piAgilityMod = 0;
+      piStaminaMod = 0;
+      piAimMod = 0;
+
+      return;
+   }
+
+   GetHealth()
+   {
+      return piHealth;
+   }
+
+   GetMaxHealth()
+   {
+      return piMax_health;
+   }
+
+   GetBaseMaxHealth()
+   {
+      return piBase_max_health;
+   }
+
+   GetMight()
+   {
+      return bound((piMight + piMightMod),1,MAXIMUM_STAT);
+   }
+
+   GetIntellect()
+   {
+      return bound((piIntellect + piIntellectMod),1,MAXIMUM_STAT);
+   }
+
+   GetAgility()
+   {
+      return bound((piAgility + piAgilityMod),1,MAXIMUM_STAT);
+   }
+
+   GetAim()
+   {
+      return bound((piAim + piAimMod),1,MAXIMUM_STAT);
+   }
+
+   GetStamina()
+   {
+      return bound((piStamina + piStaminaMod),1,MAXIMUM_STAT);
+   }
+
+   GetMysticism()
+   {
+      return bound((piMysticism + piMysticismMod),1,MAXIMUM_STAT);
+   }
+
+   GetRawMight()
+   {
+      return bound(piMight,1,50);
+   }
+
+   GetRawIntellect()
+   {
+      return bound(piIntellect,1,50);
+   }
+
+   GetRawAgility()
+   {
+      return bound(piAgility,1,50);
+   }
+
+   GetRawAim()
+   {
+      return bound(piAim,1,50);
+   }
+
+   GetRawStamina()
+   {
+      return bound(piStamina,1,50);
+   }
+
+   GetRawMysticism()
+   {
+      return bound(piMysticism,1,50);
+   }
+
+   GainHealthNormal(amount = $)
+   "Don't add beyond piMax_health"
+   {
+      local oldhealth;
+
+      oldhealth = piHealth;
+
+      if amount < 0
+      {
+         return;
+      }
+
+      if piHealth > piMax_health
+      {
+         return 0;
+      }
+
+      if NOT Send(self,@IsPhasedOut)
+      {
+         pihealth = piHealth + amount;
+         if piHealth > piMax_health
+         {
+            piHealth = piMax_health;
+         }
+      }
+
+      if IsClass(self,&Player)
+      {
+         Send(self,@NewHealth);
+      }
+
+      return (piHealth - OldHealth);
+   }
+
+   % Returns weapon used.
+   GetWeapon()
+   {
+      local oWeapon;
+
+      if IsClass(self,&Player)
+      {
+         oWeapon = Send(self,@LookupPlayerWeapon);
+      }
+      else
+      {
+         oWeapon = Send(self,@LookupMonsterWeapon);
+      }
+      
+      % If there is no wielded melee weapon, then see if we
+      % have a touch attack active.
+      if oWeapon = $
+      {
+         % This will return $ if there's no Touch Attacks enchanting player.
+         oWeapon = Send(self,@GetEnchantmentsByClass,
+               #EnchClass=&TouchAttackSpell);
+         if oWeapon <> $
+         {
+            % The spell object is the second element of the list. Get that.
+            oWeapon = Nth(first(oWeapon),2);
+         }
+      }
+
+      return oWeapon;
+   }
+
+   % Returns shield used.
+   GetShield()
+   {
+      local oShield;
+
+      if IsClass(self,&Player)
+      {
+         oShield = Send(self,@LookupPlayerShield);
+      }
+      else
+      {
+         oShield = Send(self,@LookupMonsterShield);
+      }
+
+      return oShield;
    }
 
 end

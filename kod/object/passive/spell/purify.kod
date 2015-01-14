@@ -94,17 +94,6 @@ messages:
 
       target = First(lTargets);
 
-      if not IsClass(target, &User)
-      {
-         if not bItemCast
-         {
-            Send(who,@MsgSendUser,#message_rsc=spell_bad_target, 
-                 #parm1=vrName,#parm2=Send(target,@GetDef),#parm3=Send(target,@GetName));
-         }
-         
-         return FALSE;
-      }
-
       % The target must have an enchantment
       lEnchantment = send(target,@GetEnchantmentList);
       bHasEnchantment = IsClass(who,&DM);
@@ -162,7 +151,10 @@ messages:
               #parm3=Send(oTarget,@GetName));
       }
       
-      Send(oTarget,@MsgSendUser,#message_rsc=purify_on);
+      if IsClass(oTarget,&Player)
+      {
+         Send(oTarget,@MsgSendUser,#message_rsc=purify_on);
+      }
 
       % keep tabs on guides/bards, but not admins.
       if IsClass(who, &DM)

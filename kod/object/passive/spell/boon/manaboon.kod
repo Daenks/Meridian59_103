@@ -44,24 +44,40 @@ messages:
 
    DoSpellEffect(who = $, amount = $)
    {
-   post(who,@ComputeMaxMana);
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=manaboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=manaboon_dec); }
+      if IsClass(who,&Player)
+      {
+         Post(who,@ComputeMaxMana);
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=manaboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=manaboon_dec);
+         }
+      }
 
-   return;
+      return;
    }
 
    UndoSpellEffect(who = $, amount = $)
    {
-   amount = -amount;
-   post(who,@ComputeMaxMana);
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=manaboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=manaboon_dec); }
-   return;
+      amount = -amount;
+      
+      if IsClass(who,&Player)
+      {
+         Post(who,@ComputeMaxMana);
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=manaboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=manaboon_dec);
+         }
+      }
+
+      return;
    }
    
    AffectsMaxMana()

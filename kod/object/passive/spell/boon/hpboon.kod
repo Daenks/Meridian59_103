@@ -49,24 +49,40 @@ messages:
 
    DoSpellEffect(who = $, amount = $)
    {
-   Send(who, @GainMaxHealth,#amount=amount);
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=hpboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=hpboon_dec); }
+      if IsClass(who,&Player)
+      {
+         Send(who, @GainMaxHealth,#amount=amount);
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=hpboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=hpboon_dec);
+         }
+      }
 
-   return;
+      return;
    }
 
    UndoSpellEffect(who = $, amount = $)
    {
-   amount = -amount;
-   Send(who, @GainMaxHealth,#amount=-amount);
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=hpboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=hpboon_dec); }
-   return;
+      amount = -amount;
+
+      if IsClass(who,&Player)
+      {
+         Send(who, @GainMaxHealth,#amount=amount);
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=hpboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=hpboon_dec);
+         }
+      }
+
+      return;
    }
 
 end

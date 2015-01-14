@@ -88,6 +88,11 @@ messages:
          state = 0;
       }
 
+      if IsClass(who,&Player)
+      {
+         Post(who,@DrawResistances);
+      }
+
       propagate;
    }
 

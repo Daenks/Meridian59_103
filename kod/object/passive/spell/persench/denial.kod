@@ -122,6 +122,7 @@ messages:
    EndEnchantmentEffects(who=$,state=$)
    {
       if state
+         AND IsClass(who,&Player)
       {
          Send(who,@LoseHealth,#amount=state);
 

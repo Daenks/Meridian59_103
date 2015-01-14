@@ -290,7 +290,7 @@ messages:
    {
       pbFire = TRUE;
       Send(poOwner,@SomethingShot,#who=self,#target=poTarget,#projectile=self);
-      Send(self,@TryAttack,#what=poTarget,#stroke_obj=self);
+      Send(self,@TryAttack,#what=poTarget,#stroke_obj=self,#is_mob_ranged_atk=TRUE);
 
       return;
    }

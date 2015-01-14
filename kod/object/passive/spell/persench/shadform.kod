@@ -111,10 +111,15 @@ messages:
 
    EndEnchantment(who=$,report=TRUE)
    {
-      Send(who,@ResetPlayerDrawfx);
+      if IsClass(who,&Player)
+      {
+         Send(who,@ResetPlayerDrawfx);
+      }
+
       Send(who,@RemoveDefenseModifier,#what=self);
 
       if report
+         AND IsClass(who,&Player)
       {
          Send(who,@MsgSendUser,#message_rsc=shadowform_off);
       }

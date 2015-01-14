@@ -58,7 +58,7 @@ classvars:
    vbCanCastOnOthers = TRUE
 
    % Overwrite to allow monster casts.
-   vbCanCastonMonsters = FALSE 
+   vbCanCastonMonsters = TRUE 
 
    viPersonal_ench = TRUE
 
@@ -213,12 +213,13 @@ messages:
 
    EndEnchantment(who=$,report=TRUE,state=0)
    {
-      if report
+      if IsClass(who,&Player)
       {
-          Send(who,@MsgSendUser,#message_rsc=vrEnchantment_Off);
+         if report
+         {
+             Send(who,@MsgSendUser,#message_rsc=vrEnchantment_Off);
+         }
       }
-
-      Post(who,@DrawResistances);
 
       return;
    }

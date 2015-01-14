@@ -44,35 +44,50 @@ messages:
 
    DoSpellEffect(who = $, amount = $)
    {
-   local iVigorRestThreshold;
-   iVigorRestThreshold = send(who, @GetVigorRestThreshold);
-   iVigorRestThreshold = iVigorRestThreshold + amount;
+      local iVigorRestThreshold;
    
-   send(who, @SetVigorRestThreshold, #amount = iVigorRestThreshold);
+      if IsClass(who,&Player)
+      {
+         iVigorRestThreshold = send(who, @GetVigorRestThreshold);
+         iVigorRestThreshold = iVigorRestThreshold + amount;
+         Send(who, @SetVigorRestThreshold, #amount = iVigorRestThreshold);
 
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=vigorboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=vigorboon_dec); }
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=vigorboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=vigorboon_dec);
+         }
+      }
 
-   return;
+      return;
    }
 
    UndoSpellEffect(who = $, amount = $)
    {
-   local iVigorRestThreshold;
+      local iVigorRestThreshold;
 
-   amount = -amount;
-   iVigorRestThreshold = send(who, @GetVigorRestThreshold);
-   iVigorRestThreshold = iVigorRestThreshold + amount;
+      amount = -amount;
    
-   send(who, @SetVigorRestThreshold, #amount = iVigorRestThreshold);
-   if amount >= 0
-      { Send(who,@MsgSendUser,#message_rsc=vigorboon_inc); }
-   else
-      { Send(who,@MsgSendUser,#message_rsc=vigorboon_dec); }
+      if IsClass(who,&Player)
+      {
+         iVigorRestThreshold = send(who, @GetVigorRestThreshold);
+         iVigorRestThreshold = iVigorRestThreshold + amount;
+         Send(who, @SetVigorRestThreshold, #amount = iVigorRestThreshold);
 
-   return;
+         if amount >= 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=vigorboon_inc);
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=vigorboon_dec);
+         }
+      }
+
+      return;
    }
 
 end

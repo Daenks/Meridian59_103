@@ -125,7 +125,10 @@ messages:
 
    EndEnchantment(who = $, report = TRUE, state = 0)
    {
-      Send(who,@LoseLight,#amount=viEnchantmentLight);
+      if IsClass(who,&Player)
+      {
+         Send(who,@LoseLight,#amount=viEnchantmentLight);
+      }
       
       propagate;
    }

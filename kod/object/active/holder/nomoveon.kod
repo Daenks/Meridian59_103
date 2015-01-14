@@ -310,6 +310,22 @@ messages:
       return plRadiusEnchantments;
    }
 
+   RemoveAllRadiusEnchantments()
+   "Remove all current radius enchantments."
+   {
+      local i;
+
+      for i in plRadiusEnchantments
+      {
+         Send(self,@RemoveRadiusEnchantment,#what=Nth(i,1),
+               #iPower=Nth(i,2),#caster=Nth(i,3));
+      }
+
+      plRadiusEnchantments = $;
+
+      return;
+   }
+
    IsInSameRoom(what = $)
    {
       if Send(self,@GetOwner) <> $

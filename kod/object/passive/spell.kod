@@ -2593,6 +2593,16 @@ messages:
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
    }
+   
+   ModifyAttackType(atype=0)
+   {
+      return atype;
+   }
+   
+   ModifySpellType(aspell=0)
+   {
+      return aspell;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

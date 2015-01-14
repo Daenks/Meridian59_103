@@ -111,8 +111,11 @@ messages:
       local oRoom;
       %% just in case something snuck by
 
-      send(who,@MsgSendUser,#message_rsc=anonymity_stop);
-      post(who,@ResetPlayerFlagList);
+      if IsClass(who,&Player)
+      {
+         send(who,@MsgSendUser,#message_rsc=anonymity_stop);
+         post(who,@ResetPlayerFlagList);
+      }
 
       oRoom = send(who,@GetOwner);
       if oRoom <> $

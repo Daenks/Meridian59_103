@@ -99,8 +99,7 @@ messages:
 
    StartSpecialEffect(what=$,iPower=0,source=$)
    {
-      If IsClass(what,&User)
-         AND iPower <> 0
+      If iPower <> 0
       {
          Send(what,@AddAim,#points=-(iPower/3));
       }
@@ -110,8 +109,7 @@ messages:
    
    EndSpecialEffect(what=$,iPower=0,source=$)
    {
-      If IsClass(what,&User)
-         AND iPower <> 0
+      If iPower <> 0
       {
          Send(what,@AddAim,#points=(iPower/3));
       }
@@ -127,7 +125,11 @@ messages:
       iMissChance = bound(iMissChance,25,60);
       if Random(1,100) < iMissChance
       {
-         send(who,@MsgSendUser,#message_rsc=winds_miss_rsc);
+         if IsClass(who,&Player)
+         {
+            Send(who,@MsgSendUser,#message_rsc=winds_miss_rsc);
+         }
+
          return TRUE;
       }
 
