@@ -1,0 +1,130 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Perception is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Perception_name_rsc = "perception"
+   Perception_icon_rsc = iDetGood.bgf
+   Perception_desc_rsc = "Allows a perceptive user to detect the casting of spells in the area."
+
+   Perception_skill_intro = "Banditry Lv. 2: The ability to detect cast spells, and their targets."
+
+   Perception_detect_no_target = "You perceive %s casting %s."
+   Perception_detect_complete = "You perceive %s casting %s on %s."
+   
+   Perception_himself = "himself"
+   Perception_herself = "herself"
+   Perception_itself = "itself"
+   Perception_you = "you"
+
+classvars:
+
+   vrName = Perception_name_rsc
+   vrIcon = Perception_icon_rsc
+   vrDesc = Perception_desc_rsc
+
+   vrSkill_intro = Perception_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_PERCEPTION
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 2
+   viChance_to_Increase = 10
+   viMeditate_ratio = 20
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+   
+   DoSkill(who=$, caster=$, oSpell=$, lItems=$)
+   {
+      local chance, iIntellect, iAbility, rTarget;
+      
+      iIntellect = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      
+      chance = (iIntellect/2) + iAbility;
+      chance = bound(chance,15,100);
+      
+      If caster <> $
+         AND IsClass(caster,&User)
+         AND Send(caster,@PlayerIsImmortal)
+      {
+         propagate;
+      }
+
+      if chance > Random(1,100)
+      {
+         if caster <> who
+         {
+            if lItems = $
+               OR length(lItems) = 0
+               OR length(lItems) > 1
+            {
+               Send(who,@MsgSendUser,#message_rsc=Perception_detect_no_target,#parm1=Send(caster,@GetName),
+                                     #parm2=Send(oSpell,@GetName));
+               propagate;
+            }
+            
+            rTarget = Send(First(lItems),@GetName);
+            
+            if First(lItems) = who
+            {
+               rTarget = Perception_you;
+            }
+            
+            if First(lItems) = caster
+            {
+               if IsClass(caster,&Player)
+               {
+                  if Send(caster,@GetGender) = GENDER_MALE
+                  {
+                     rTarget = Perception_himself;
+                  }
+                  else
+                  {
+                     rTarget = Perception_herself;
+                  }
+               }
+               else
+               {
+                  rTarget = Perception_itself;
+               }
+            }
+
+            Send(who,@MsgSendUser,#message_rsc=Perception_detect_complete,#parm1=Send(caster,@GetName),
+                                  #parm2=Send(oSpell,@GetName),#parm3=rTarget);
+         }
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

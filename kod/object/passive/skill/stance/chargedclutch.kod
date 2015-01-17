@@ -1,0 +1,85 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChargedClutch is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   ChargedClutch_name_rsc = "charged clutch"
+   ChargedClutch_icon_rsc = ienchant.bgf
+   ChargedClutch_desc_rsc = "An advanced stance that allows a mage with charged hands to imbue his weapon strikes with elemental energies."
+   
+   ChargedClutch_begin = "You send mana coursing through your hands."
+   ChargedClutch_end = "You let the charge in your hands fade."
+
+classvars:
+
+   vrName = ChargedClutch_name_rsc
+   vrIcon = ChargedClutch_icon_rsc
+   vrDesc = ChargedClutch_desc_rsc
+   
+   stance_begin_msg = ChargedClutch_begin
+   stance_end_msg = ChargedClutch_end
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_CHARGED_CLUTCH
+   viSchool = SS_FAREN
+   viSkill_Level = 4
+   viChance_to_Increase = 10
+   viMeditate_ratio = 50
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   GetSpellType(who=$)
+   {
+      local oTouchSpell, iChargedClutchAbility, iStat, chance;
+
+      iChargedClutchAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      chance = iChargedClutchAbility + (iStat/2);
+      chance = Bound(chance,10,100);
+      
+      if chance < Random(0,100)
+      {
+         return 0;
+      }
+
+      oTouchSpell = Send(who,@GetEnchantmentsByClass,#EnchClass=&TouchAttackSpell);
+      if oTouchSpell <> $
+      {
+         Send(self,@ImproveAbility,#who=who);  
+         return Send(Nth(first(oTouchSpell),2),@GetAttackSpell);
+      }
+
+      return 0;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

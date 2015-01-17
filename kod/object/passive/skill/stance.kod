@@ -1,0 +1,154 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Stance is Skill
+
+% Stances:
+% 1 -
+% Light Feet [Banditry] [Agility] (up to 50% less vigor from running)
+%
+% 2 -
+% Swift Hands [Banditry] [Agility] (up to 25% more offense and 50% less defense)
+%
+% 3 -
+%
+% 4 -
+% Heavy Arms [Banditry] [Agility] (up to 25% more defense and 50% less offense)
+% Charged Clutch [Faren] [Mysticism] (adds elemental damage type of an active touch spell to equipped melee weapons, overrides weapon's enchantment)
+%
+% 5 -
+%
+% 6 -
+% Reckless Heart [Banditry] [Might] (up to 20% more final damage to both the player and his opponent)
+% Poised Soul [Weaponcraft] [Intellect] (up to 36% faster mana regen, 100% slower health regeneration)
+% Focused Mind [Faren] [Agility] (up to 100% faster health regen, 100% slower mana regeneration)
+%
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Stance_name_rsc = "stance"
+   Stance_icon_rsc = isecwind.bgf
+   Stance_desc_rsc = "This is a combat stance - a modification of a fighter's capabilities."
+
+   Stance_skill_intro = "Banditry Lv. 1: A stance is a unique way of fighting."
+   
+   begin_stance_default_rsc = "You assume a default stance... cheater."
+   end_stance_default_rsc = "You fall out of a default stance."
+
+classvars:
+
+   vrName = Stance_name_rsc
+   vrIcon = Stance_icon_rsc
+   vrDesc = Stance_desc_rsc
+   
+   stance_begin_msg = begin_stance_default_rsc
+   stance_end_msg = end_stance_default_rsc   
+
+   vrSkill_intro = Stance_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_BANDITRY
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+   
+   BeginStance(who=$)
+   {
+      if IsClass(who,&User)
+      {
+         Send(who,@MsgSendUser,#message_rsc=stance_begin_msg);
+      }
+      
+      Send(who,@ClearStance);
+      Send(who,@BeginStance,#what=self);
+      Send(who,@ShowAddEnchantment,#what=self,#type=ENCHANTMENT_PLAYER);
+
+      return;
+   }
+   
+   EndStance(who=$)
+   {
+      if IsClass(who,&User)
+      {
+         Send(who,@MsgSendUser,#message_rsc=stance_end_msg);
+      }
+      Send(who,@ShowRemoveEnchantment,#what=self,#type=ENCHANTMENT_PLAYER);
+
+      return;
+   }
+
+   ModifyExertion(who=$, exertion=0)
+   {
+      return exertion;
+   }
+
+   LastPriorityModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      return hit_roll;
+   }
+
+   LastPriorityModifyDefensePower(who=$,what=$,defense_power=0)
+   {
+      return defense_power;
+   }
+
+   LastPriorityModifyDamage(who=$,what=$,damage=$)
+   {
+      return damage;
+   }
+
+   LastPriorityModifyDefenseDamage(who=$,what=$,damage=$)
+   {
+      return damage;
+   }
+   
+   ModifyRegenerationTime(who=$,iTime=60000)
+   {
+      return iTime;
+   }
+
+   ModifyRejuvenationTime(who=$,iTime=60000)
+   {
+      return iTime;
+   }
+
+   AppendDesc()
+   {
+      AppendTempString("\n\nTo enter a stance, say 'stance' and the name of that stance."); 
+      
+      propagate;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x02;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

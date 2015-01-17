@@ -131,6 +131,13 @@ resources:
    battler_pierce_damage = "lacerates"
    battler_pierce_wound = "pierces"
    battler_pierce_nick = "grazes"
+   
+   rTumbleSoundOne = Swoosh01.wav
+   rTumbleSoundTwo = Swoosh02.wav
+   rTumbleSoundThree = Swoosh03.wav
+   rTumbleSoundFour = Swoosh04.wav
+   
+   backstab_sound = Knife-Slice.wav
 
 classvars:
 
@@ -533,7 +540,8 @@ messages:
    % For a monster, the stroke_obj is itself.
    TryAttack(what = $,stroke_obj=$)
    {
-      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon;
+      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon,
+            iBackstabDamage, bDoingBackstab;
 
       oWeapon = Send(self,@GetWeapon);
 
@@ -546,7 +554,21 @@ messages:
       iChanceToHit = iOffense * Send(Send(SYS,@GetSettings),@GetEqualChanceToHit) / iDefense;
       iChanceToHit = bound(iChanceToHit,125,2000);
       if iChanceToHit >= random(1,1000)
+         OR (IsClass(self,&Player)
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+             AND Send(self,@GetSkillAbility,#skill_num=SKID_BACKSTAB) > 0
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_BACKSTAB),@TryAutomaticHit,#who=self,#what=what))
       {
+         If Send(Send(SYS,@FindSkillByNum,#num=SKID_TUMBLE),@AttemptTumble,#who=what,#what=self)
+         {
+            if IsClass(self,&Player)
+            {
+               Send(poOwner,@SomethingWaveRoom,#what=what,#wave_rsc=Send(self,@GetTumbleSound));
+            }
+            return FALSE;
+         }
+
          % We hit!
          iDamage = Send(self,@GetDamage,#what=what,#stroke_obj=stroke_obj);
          iScalefactor = 1000;
@@ -557,9 +579,28 @@ messages:
             iScalefactor = iChanceToHit;
          }
 
+         bDoingBackstab = FALSE;
+         if IsClass(self,&Player)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_BACKSTAB) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+         {
+            iBackstabDamage = Send(Send(SYS,@FindSkillByNum,#num=SKID_BACKSTAB),@LastPriorityModifyDamage,#who=self,#what=what,#damage=iDamage);
+            if iBackstabDamage > iDamage
+            {
+               iDamage = iBackstabDamage;
+               bDoingBackstab = TRUE;
+               
+               if IsClass(self,&Player)
+               {
+                  Send(poOwner,@SomethingWaveRoom,#what=what,#wave_rsc=backstab_sound);
+               }
+            }
+         }
+
          iDamage = Send(what,@AssessDamage,#what=self,#damage=iDamage,
-            #atype=Send(self,@GetDamageType),#aspell=Send(self,@GetSpellType),
-            #scalefactor=iScalefactor);
+            #atype=Send(self,@GetDamageType,#stroke_obj=stroke_obj),#aspell=Send(self,@GetSpellType,#stroke_obj=stroke_obj),
+            #scalefactor=iScalefactor,#absolute=bDoingBackstab);
 
          Send(self,@AssessHit,#what=what,#stroke_obj=stroke_obj,
               #damage=iDamage);
@@ -1108,16 +1149,22 @@ messages:
          %  weapon, or the attack name for a monster.
          rWeaponName = Send(oWeapon,@GetAttackName);
       }
+      
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         rWeaponName = Send(stroke_obj,@GetAttackName);
+      }
 
       % Spell types are usually represented by negative values, to
       %  differentiate between physical and spell damage.
-      iType = Send(self,@GetSpellType,#use_weapon=use_weapon);
+      iType = Send(self,@GetSpellType,#use_weapon=use_weapon,#stroke_obj=stroke_obj);
 
       % We only want to use a unique word if the spell damage is NOT generic
       %  or Hunter sword damage.  Otherwise, use the physical damage type.
       if (iType & (~ATCK_SPELL_HUNTERSWORD | ~ATCK_SPELL_ALL)) = 0
       {
-         iType = Send(self,@GetDamageType,#use_weapon=use_weapon);
+         iType = Send(self,@GetDamageType,#use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
       else
       {
@@ -1381,6 +1428,30 @@ messages:
          }
 
       return;
+   }
+   
+   GetTumbleSound()
+   {
+      local iRandom;
+      
+      iRandom = Random(1,4);
+      
+      if iRandom = 1
+      {
+         return rTumbleSoundOne;
+      }
+      
+      if iRandom = 2
+      {
+         return rTumbleSoundTwo;
+      }
+      
+      if iRandom = 3
+      {
+         return rTumbleSoundThree;
+      }
+      
+      return rTumbleSoundFour;
    }
 
 end

@@ -1639,6 +1639,7 @@
    ITEM_USE_SHIRT = 0x0800
    % In theory, used for masks.
    ITEM_USE_FACE = 0x1000
+   ITEM_USE_THROWING_DAGGERS = 0x2000
 
    ITEMTYPE_MISC =     0
    ITEMTYPE_WEAPON =   0x000001
@@ -1752,6 +1753,7 @@
    % Missile weapons ammo-type, determined by each missile weapon.
    AMMO_ARROW = 1
    AMMO_BOLT  = 2
+   AMMO_DAGGER  = 3
 
    %%% Attack types
 
@@ -1850,6 +1852,29 @@
    SKID_PROFICIENCY_SHORT_SWORD = 457
    % Duplicate, for the easily confused.
    SKID_PROFICIENCY_SHORTSWORD = 457
+
+   % Banditry skills.
+   SKID_AWARENESS = 500
+   SKID_LIGHT_FEET = 501
+   SKID_STAB = 502
+   SKID_PROFICIENCY_DAGGER = 503
+   SKID_PERCEPTION = 504
+   SKID_THROW = 505
+   SKID_TUMBLE = 506
+   SKID_TRACK = 507
+   SKID_PROFICIENCY_THROW = 508
+   SKID_PRECISION = 509
+   SKID_SNEAK = 510
+   SKID_SPY = 511
+   SKID_TIGHT_GRIP = 512
+   SKID_HIDE = 513
+   SKID_BACKSTAB = 514
+   SKID_POISED_SOUL = 515
+   SKID_SWIFT_HANDS = 516
+   SKID_HEAVY_ARMS = 517
+   SKID_RECKLESS_HEART = 518
+   SKID_FOCUSED_MIND = 519
+   SKID_CHARGED_CLUTCH = 520
 
    %%% Unique spell constants
 
@@ -2100,6 +2125,7 @@
    SKS_BRAWLING = 11
    SKS_TELEPATHY = 12
    SKS_THIEVERY = 13
+   SKS_BANDITRY = 14
 
    % Enchantment icon showing
    ENCHANTMENT_SHOW_NONE = 0

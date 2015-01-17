@@ -1085,6 +1085,9 @@ properties:
    % Put new reagents in your bag
    pbReagentBagAuto = TRUE
 
+   % Banditry stance object
+   poStance = $
+
 messages:
 
    Constructor()
@@ -1165,6 +1168,8 @@ messages:
          DeleteTimer(ptBondedItemReport);
          ptBondedItemReport = $;
       }
+
+      poStance = $;
 
       Send(SYS,@SystemRemoveFromChampionLists,#oldchamp = self);
       Send(Send(SYS,@GetLibrary),@DeleteCompletedQuest,#who=self,#id=-1);
@@ -2644,6 +2649,7 @@ messages:
    AddDefaultSkills()
    "Add the skills that all players have."
    {
+      Send(self,@AddSkill,#num=SKID_AWARENESS,#initial=TRUE);
       return;
    }
 
@@ -3439,10 +3445,31 @@ messages:
          Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,
             #num=SKID_SECOND_WIND),#type=ENCHANTMENT_PLAYER);
       }
+
       if ptCrystalizeManaSurgeTimer <> $
       {
          Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSpellByNum,
             #num=SID_CRYSTALIZE_MANA),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_HIDE),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SPY),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      If Send(self,@GetStance) <> $
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(self,@GetStance),#type=ENCHANTMENT_PLAYER);
       }
 
       return;
@@ -4456,6 +4483,7 @@ messages:
 
       % Check attack time.
       if NOT Send(self,@IsOkayAttackTime)
+         AND NOT IsClass(stroke_obj,&Throw)
       {
          return FALSE;
       }
@@ -4580,7 +4608,9 @@ messages:
 
       % Special case:  Ranged weapons in windy room.
       %  Do this after paying the costs so that the arrow is used.
-      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
+      if use_weapon <> $
+         AND (IsClass(use_weapon,&RangedWeapon)
+              OR IsClass(stroke_obj,&Throw))
       {
          lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
                               #byClass=&Winds);
@@ -4673,6 +4703,13 @@ messages:
 
          if iDist > iSquareRange
          {
+            if NOT IsClass(stroke_obj,&Throw)
+               AND Send(self,@GetSkillAbility,#skill_num=SKID_THROW) > 0
+            {
+               Post(Send(SYS,@FindSkillByNum,#num=SKID_THROW),@TryThrow,#who=self,#what=oTarget,#use_weapon=use_weapon);
+               return FALSE;
+            }
+
             Send(self,@SendAttackOutOfRangeMessage,#what=oFinalTarget,
                  #use_weapon=use_weapon,#stroke_obj=stroke_obj);
 
@@ -4825,6 +4862,11 @@ messages:
          iOffense = iOffense / 2;
       }
 
+      if Send(self,@GetStance) <> $
+      {
+         iOffense = Send(Send(self,@GetStance),@LastPriorityModifyHitRoll,#who=self,#what=what,#hit_roll=iOffense);
+      }
+
       % The universal modifier.
       iOffense = iOffense + ((iOffense * piFlags3) / 100);
 
@@ -4884,6 +4926,11 @@ messages:
 
       iDefense = iDefense + Send(Send(SYS,@GetParliament),
                                  @GetFactionDefenseBonus,#who=self);
+
+      if Send(self,@GetStance) <> $
+      {
+         iDefense = Send(Send(self,@GetStance),@LastPriorityModifyDefensePower,#who=self,#what=what,#defense_power=iDefense);
+      }
 
       % The universal modifier.
       iDefense = iDefense + ((iDefense * piFlags3) / 100);
@@ -5049,10 +5096,16 @@ messages:
    }
 
    % This is the type of damage done.
-   GetDamageType(what = $, use_weapon = $)
+   GetDamageType(what = $, use_weapon = $, stroke_obj = $)
    {
       local oWeapon, oMonster;
 
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetDamageType,#who=self);
+      }
+      
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
       if oMonster <> $ AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
@@ -5078,9 +5131,16 @@ messages:
       return Send(oWeapon,@GetAttackType);
    }
 
-   GetSpellType(what = $, use_weapon = $)
+   GetSpellType(what = $, use_weapon = $, stroke_obj = $)
    {
       local oWeapon, oMonster;
+      
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetSpellType,#who=self);
+      }
+      
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5102,6 +5162,13 @@ messages:
       {
          % No weapon means we are punching, no magical damage
          return 0;
+      }
+
+      if Send(self,@GetStance) <> $
+         AND IsClass(Send(self,@GetStance),&ChargedClutch)
+         AND NOT IsClass(oWeapon,&RangedWeapon)
+      {
+         return Send(Send(self,@GetStance),@GetSpellType,#who=self);
       }
 
       return Send(oWeapon,@GetAttackSpell);
@@ -5194,6 +5261,17 @@ messages:
          damage = damage + bonus;
 
          damage = damage * scalefactor / 1000;
+      }
+      
+      if IsClass(what,&Player)
+         AND Send(what,@GetStance) <> $
+      {
+         damage = Send(Send(what,@GetStance),@LastPriorityModifyDamage,#who=what,#what=self,#damage=damage);
+      }
+      
+      if Send(self,@GetStance) <> $
+      {
+         damage = Send(Send(self,@GetStance),@LastPriorityModifyDefenseDamage,#who=self,#what=what,#damage=damage);
       }
 
       iDuration = 800;
@@ -6376,8 +6454,15 @@ messages:
 
       iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                            #who=self,#hpregen=TRUE);
+      
+      iTime = bound(iTime,1000,60000);
 
-      return bound(iTime,1000,60000);
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,#who=self,#iTime=iTime);
+      }
+
+      return iTime;
    }
 
    CalculateManaTime()
@@ -6406,6 +6491,11 @@ messages:
          {
             iTime = Send(oSpell,@AdjustManaTime,#who=self,#time=iTime);
          }
+      }
+                           
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRejuvenationTime,#who=self,#iTime=iTime);
       }
 
       return iTime;
@@ -6450,7 +6540,7 @@ messages:
          return;
       }
 
-      if piFlags & PFLAG_TRANCE AND NOT decay
+      if NOT decay
       {
          Send(self,@BreakTrance,#event=EVENT_DAMAGE);
       }
@@ -10931,7 +11021,12 @@ messages:
    {
       local iTime, lRadiusState;
 
-      iTime = 1000 + (30* (51-Send(self,@getStamina)));
+      iTime = 1000 + (30* (51-Send(self,@getStamina))); 
+                           
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,#who=self,#iTime=iTime);
+      }
 
       return iTime;
    }
@@ -11069,6 +11164,17 @@ messages:
    BreakTrance(event = 0, what = $)
    {
       local i, oEnch,state, bFound, oYellNum, oYellRoom;
+      
+      if event = EVENT_RUN
+         OR event = EVENT_DAMAGE
+         OR event = EVENT_REST
+         OR event = EVENT_ATTACK
+         OR event = EVENT_CAST
+      {
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@StopHiding,#who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@StopSneaking,#who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@StopSpying,#who=self);
+      }
 
       bFound = FALSE;
       for i in plEnchantments
@@ -11333,6 +11439,8 @@ messages:
          }
       }
 
+      poStance = $;
+
       % Reset death costs to 0.
       piDeathCost = 0;
 
@@ -11385,6 +11493,8 @@ messages:
 
          if IsClass(nObj,&UtilitySpell)
             OR IsClass(nObj,&Blink)
+            OR (IsClass(nObj,&Skill)
+               AND Send(nObj,@IsUtilitySkill))
          {
             continue;
          }
@@ -11619,6 +11729,7 @@ messages:
 
          if NOT IsClass(nobj,&Blink)  % DON'T COUNT BLINK!
             AND NOT IsClass(nobj,&UtilitySpell) % Don't count utility spells
+            AND NOT (IsClass(nobj,&Skill) AND Send(nobj,@IsUtilitySkill))
          {
             if nSchool = SS_KRAANAN
                AND nLevel > iKraanan
@@ -11911,6 +12022,7 @@ messages:
 
             if iLevel > iWeapon
                AND iLevel < 50       % Catch DM only skills
+               AND NOT Send(oSpellObj,@IsUtilitySkill)
             {
                iWeapon = iLevel;
             }
@@ -14323,6 +14435,31 @@ messages:
       }
 
       return;
+   }
+
+   ClearStance()
+   {
+      Send(Send(self,@GetStance),@EndStance,#who=self);
+      poStance = $;
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+   
+   BeginStance(what=$)
+   {
+      poStance = what;
+      
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+   
+   GetStance()
+   {
+      return poStance;
    }
 
 end

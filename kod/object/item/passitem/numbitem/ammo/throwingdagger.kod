@@ -1,0 +1,103 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ThrowingDagger is Ammo
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   throwing_dagger_name_rsc = "throwing daggers"
+   throwing_dagger_icon_rsc = bkswd.bgf
+   throwing_dagger_desc_rsc = \
+      "These wicked blades are elegantly carved to be throwable at range."
+
+classvars:
+
+   vrName = throwing_dagger_name_rsc
+   vrIcon = throwing_dagger_icon_rsc
+   vrDesc = throwing_dagger_desc_rsc
+
+   viUse_type = ITEM_USE_THROWING_DAGGERS
+   viAmmo_type = AMMO_DAGGER
+   viValue_average = 20
+
+   viGround_group = 2
+   viInventory_group = 1
+   viBroken_group = 3
+
+   viBulk = 20
+   viWeight = 20
+
+   viMinDamage = 1
+   viMaxDamage = 4
+
+properties:
+
+   piNumber = 5
+   piAttack_type = ATCK_WEAP_PIERCE + ATCK_WEAP_NONMAGIC
+
+messages:
+
+   SendProjectileAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,1);
+
+      return;
+   }
+
+   GetProjectileSpeed()
+   {
+      return 11;
+   }
+
+   GetProjectileIcon()
+   {
+      return arrow_icon_rsc;
+   }
+   
+   GetMinDamage()
+   {
+      return viMinDamage;
+   }
+   
+   GetMaxDamage()
+   {
+      return viMaxDamage;
+   }
+
+   GetStroke(who=$)
+   {
+      send(who,@FlipSkillAtrophyFlag,#SKID=SKID_THROW);
+      
+      return send(who,@GetSkillAbility,#skill_num=SKID_THROW);
+   }
+
+   GetProf(who=$)
+   {
+      send(who,@FlipSkillAtrophyFlag,#SKID=SKID_PROFICIENCY_THROW);
+      
+      return send(who,@GetSkillAbility,#skill_num=SKID_PROFICIENCY_THROW);
+   }
+   
+   GetDamageType()
+   {
+      return piAttack_type;
+   }
+   
+   GetSpellType()
+   {
+      return 0;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
