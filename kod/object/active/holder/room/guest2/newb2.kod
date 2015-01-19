@@ -19,7 +19,7 @@ resources:
    include newb2.lkod
 
    room_name_newb2 = "Raza"
-
+   room_newb2 = newraza.roo
 classvars:
 
    vrName = room_name_newb2
@@ -29,7 +29,7 @@ classvars:
 properties:
 
    piRoom_num = RID_NEWB2
-
+   prRoom = room_newb2
    pbSnowGroundTexture = TRUE
 
 messages:
@@ -45,9 +45,9 @@ messages:
    {
       local oSign;
 
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=31,#new_col=56);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=35,#new_col=59);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=30,#new_col=59);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=4,#new_col=12);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=4,#new_col=9);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=6,#new_col=9);
 
       propagate;
    }
