@@ -90,7 +90,8 @@ classvars:
 
    viAffectsCaster = TRUE       % Caster is affected by the spell
    viAffectsGuildmates = FALSE  % Guildmates of caster
-   viAffectsAllies = FALSE      % Members of guilds allied with caster's guild
+   viAffectsAllies = FALSE      % Allied forces (monster to monster, summons, charmed mobs)
+   viAffectsGuildAllies = FALSE % Members of guilds allied with caster's guild
    viAffectsEnemies = FALSE     % Hostile, can cause outlaw status
    viAffectsInnocents = FALSE   % Unaffiliated white characters
    viAffectsNewbies = FALSE     % Angeled characters
@@ -524,8 +525,15 @@ messages:
       {
          return TRUE;
       }
-
+      
       if viAffectsAllies
+         AND IsClass(source,&Monster)
+         AND Send(source,@IsAlly,#target=target)
+      {
+         return TRUE;
+      }
+
+      if viAffectsGuildAllies
          AND IsClass(target,&User)
          AND IsClass(source,&User)
          AND Send(target,@GetGuild) <> $

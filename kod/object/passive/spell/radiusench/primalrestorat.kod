@@ -1,0 +1,117 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PrimalRestoration is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   PrimalRestoration_name_rsc = "primal restoration"
+   PrimalRestoration_icon_rsc = irestor.bgf
+   PrimalRestoration_desc_rsc = \
+      "This spell calls upon primal forces to regenerate allies of the caster."
+
+   PrimalRestoration_song = song05.mp3
+   
+   PrimalRestoration_cast = "You call upon primal forces of healing."
+   PrimalRestoration_starts = "The %s begins to call upon "
+                              "primal forces of healing."
+   PrimalRestoration_ends = "The primal enchantment maintained by the %s "
+                            "fades away."
+   PrimalRestoration_caster_ends = "Your primal force of healing fades away."
+   PrimalRestoration_caster_enter = "You feel the ache of your wounds diminish."
+   PrimalRestoration_enter = "The %s's healing primal enchantment eases the "
+                             "pain of your wounds."
+   PrimalRestoration_leave = "You can no longer feel the energy of the %s's "
+                             "primal enchantment."
+   
+classvars:
+
+   radius_ench_cast = PrimalRestoration_cast
+   radius_ench_starts = PrimalRestoration_starts
+   radius_ench_ends = PrimalRestoration_ends
+   radius_ench_caster_ends = PrimalRestoration_caster_ends
+   radius_ench_caster_enter = PrimalRestoration_caster_enter
+   radius_ench_enter = PrimalRestoration_enter
+   radius_ench_leave = PrimalRestoration_leave
+   
+   vrName = PrimalRestoration_name_rsc
+   vrIcon = PrimalRestoration_icon_rsc
+   vrDesc = PrimalRestoration_desc_rsc
+
+   viSpell_num = SID_PRIMAL_RESTORATION
+   viSchool = SS_SHALILLE
+   viSpell_level = 5
+
+   viMana = 0           % Mana is amount used upon inititiation
+   viManaDrain = 0      % Drain is amount used every viDrainTime milliseconds
+   viDrainTime = 5000   % Drain some mana every viDrainTime milliseconds
+   viBaseRange = 12
+   
+   viPeriodicEffect = TRUE
+   
+   viSpellExertion = 0      
+   viChance_To_Increase = 20
+   viMeditate_ratio = 20
+
+   viAffectsAllies = TRUE
+   viAffectsEnemies = TRUE
+
+properties:
+      
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+
+      return;
+   }
+
+   CalculatePeriodicEffectTime(iPower=0)
+   {
+      return 25000 / (iPower+1);
+   }
+
+   PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
+   {
+      local oBattler, lState;
+      
+      for oBattler in lEnchanted
+      {
+         if IsClass(oBattler,&Battler)
+         {
+            lState = Send(oBattler,@GetMostPowerfulRadiusEnchantmentState,
+                          #byClass=&PrimalRestoration);
+            
+            % Only allies of the source gain the health.
+            % This includes orcs, cave orcs orc pit boss, orc wizards,
+            % and players who have charmed an orc wizard.
+            % Must be set up this way so that players can see the
+            % Primal Restoration enchantment to discord it, but don't gain the
+            % health from it.
+            
+            if Nth(lState,3) = source
+               AND Nth(lState,2) = iPower
+               AND Send(source,@IsAlly,#target=oBattler)
+            {
+               Send(oBattler,@GainHealthNormal,#amount=1);
+            }
+         }
+      }
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

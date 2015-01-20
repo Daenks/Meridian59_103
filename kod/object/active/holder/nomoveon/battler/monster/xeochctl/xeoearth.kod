@@ -57,14 +57,15 @@ messages:
    {
       plResistances = [ [ATCK_WEAP_NERUDITE, 70 ],
                         [ATCK_WEAP_MAGIC, -10 ],
-                        [-ATCK_SPELL_SHOCK, -10 ],
+                        [-ATCK_SPELL_SHOCK, -20 ],
                         [-ATCK_SPELL_QUAKE, 110 ]
                       ];
 
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKIN4);
 
       plSpellBook = [ [SID_EARTHQUAKE,5,10], [SID_SAND_STORM,10,40],
-                      [SID_BLIND,2,80], [SID_BRITTLE,10,100] ];
+                      [SID_RESISTANCE_RADIUS_SHOCK,5,50],
+                      [SID_BLIND,2,90], [SID_BRITTLE,10,100] ];
 
       propagate;
    }

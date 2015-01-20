@@ -130,7 +130,7 @@ messages:
                         [ATCK_WEAP_MAGIC, -10 ]
                       ];
 
-      plSpellBook = [ [SID_HOLD,5,40], [SID_MANA_BOMB,6,70],
+      plSpellBook = [ [SID_HOLD,5,40], [SID_BLUR,4,50], [SID_MANA_BOMB,6,70],
                       [SID_HEAT,4,85], [SID_EVIL_TWIN,10,90],
                       [SID_EARTHQUAKE,10,100] ];
 

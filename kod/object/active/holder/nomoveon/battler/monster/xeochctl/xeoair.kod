@@ -55,8 +55,8 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ATCK_WEAP_NERUDITE, -20 ],
-                        [ATCK_WEAP_MAGIC, -10 ],
+      plResistances = [ [ATCK_WEAP_MAGIC, -10 ],
+                        [-ATCK_SPELL_ACID, -20],
                         [-ATCK_SPELL_SHOCK, 110 ],
                         [-ATCK_SPELL_QUAKE, 100 ]
                       ];
@@ -64,7 +64,8 @@ messages:
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKY);
 
       plSpellBook = [ [SID_LIGHTNING,3,50], [SID_WINDS,5,60],
-                      [SID_LIGHTNINGWALL,10,70], [SID_FLASH,1,100] ];
+                      [SID_RESISTANCE_RADIUS_ACID,5,70],
+                      [SID_LIGHTNINGWALL,10,80], [SID_FLASH,1,100] ];
 
       propagate;
    }

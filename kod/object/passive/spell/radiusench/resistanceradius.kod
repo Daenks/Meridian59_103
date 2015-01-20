@@ -1,0 +1,94 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ResistanceRadius is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ResistanceRadius_name_rsc = "resistance sphere"
+   ResistanceRadius_icon_rsc = iresfire.bgf
+   ResistanceRadius_desc_rsc = \
+      "This sphere of resistance protects the caster and nearby allies from "
+      "a specific element.
+
+   ResistanceRadius_song = song05.mp3
+   
+   ResistanceRadius_cast = "You tighten a sphere of resistance around yourself."
+   ResistanceRadius_starts = "The %s creates a sphere of elemental energy!"
+   ResistanceRadius_ends = "The resistance sphere maintained by "
+                           "the %s collapses."
+   ResistanceRadius_caster_ends = "Your resistance sphere collapses."
+   ResistanceRadius_caster_enter = "You feel protected."
+   ResistanceRadius_enter = "You enter the %s's resistance sphere."
+   ResistanceRadius_leave = "You can no longer feel the %s's elemental energy."
+   
+classvars:
+
+   radius_ench_cast = ResistanceRadius_cast
+   radius_ench_starts = ResistanceRadius_starts
+   radius_ench_ends = ResistanceRadius_ends
+   radius_ench_caster_ends = ResistanceRadius_caster_ends
+   radius_ench_caster_enter = ResistanceRadius_caster_enter
+   radius_ench_enter = ResistanceRadius_enter
+   radius_ench_leave = ResistanceRadius_leave
+   
+   vrName = ResistanceRadius_name_rsc
+   vrIcon = ResistanceRadius_icon_rsc
+   vrDesc = ResistanceRadius_desc_rsc
+
+   viSchool = SS_FAREN
+   viSpell_level = 6
+
+   viMana = 0           % Mana is amount used upon inititiation
+   viManaDrain = 0      % Drain is amount used every viDrainTime milliseconds
+   viDrainTime = 5000   % Drain some mana every viDrainTime milliseconds
+   viBaseRange = 5
+   
+   viSpellExertion = 0      
+   viChance_To_Increase = 20
+   viMeditate_ratio = 20
+
+   viAffectsAllies = TRUE
+   viAffectsEnemies = TRUE
+   
+   viResistedElement = -ATCK_SPELL_FIRE
+
+properties:
+      
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+
+      return;
+   }
+
+   ModifyResistance(attacker=$,atype=-ATCK_SPELL_ALL,iPower=0,caster=$,resistance=$)
+   {
+      % Allies of the caster do not face increased resistance on victims.
+      % Set up this way so that players can see resistance spheres to discord them,
+      % but without receiving the bonuses.
+   
+      if Send(caster,@IsAlly,#target=attacker)
+         OR atype <> viResistedElement
+      {
+         return resistance;
+      }
+      
+      return resistance + iPower;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

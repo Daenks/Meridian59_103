@@ -1,0 +1,97 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Blur is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   Blur_name_rsc = "blur"
+   Blur_icon_rsc = iblink.bgf
+   Blur_desc_rsc = \
+      "This spell calls upon mischievous unknown forces to protect the caster "
+      "and nearby allies. Enemies will have a harder time landing blows "
+      "on targets that are somewhat... indistinct."
+
+   Blur_song = song05.mp3
+   
+   Blur_cast = "You call upon mischievous forces."
+   Blur_starts = "The %s begins to call upon mischievous forces."
+   Blur_ends = "The mischievous enchantment maintained by the %s fades away."
+   Blur_caster_ends = "Your evasion enchantment fades away."
+   Blur_caster_enter = "You feel... indistinct."
+   Blur_enter = "The %s's mischievous enchantment brings a certain vagueness "
+                "to the area.
+   Blur_leave = "You can no longer feel the %s's mischievous enchantment."
+   
+classvars:
+
+   radius_ench_cast = Blur_cast
+   radius_ench_starts = Blur_starts
+   radius_ench_ends = Blur_ends
+   radius_ench_caster_ends = Blur_caster_ends
+   radius_ench_caster_enter = Blur_caster_enter
+   radius_ench_enter = Blur_enter
+   radius_ench_leave = Blur_leave
+   
+   vrName = Blur_name_rsc
+   vrIcon = Blur_icon_rsc
+   vrDesc = Blur_desc_rsc
+
+   viSpell_num = SID_BLUR
+   viSchool = SS_RIIJA
+   viSpell_level = 4
+
+   viMana = 0           % Mana is amount used upon inititiation
+   viManaDrain = 0      % Drain is amount used every viDrainTime milliseconds
+   viDrainTime = 5000   % Drain some mana every viDrainTime milliseconds
+   viBaseRange = 20
+   
+   viSpellExertion = 0      
+   viChance_To_Increase = 20
+   viMeditate_ratio = 20
+
+   viAffectsAllies = TRUE
+   viAffectsEnemies = TRUE
+
+properties:
+      
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+
+      return;
+   }
+
+   ModifyDefensePower(attacker=$,iPower=0,caster=$,defense_power=0)
+   {
+      % The power of Riija aids the Avar Shaman and his allies.
+      % Usually power 75, thus adding 300 defense.
+      
+      % Allies of the attacker do not face increased defenses on their targets
+      % This includes avars of the same clan attacking a player
+      % Or a player with a charmed shaman attacking someone else
+      % Must be set up this way so that players can see the radius enchant,
+      % but aren't boosted by it under usual circumstances
+      if Send(caster,@IsAlly,#target=attacker)
+      {
+         return defense_power;
+      }
+      
+      return defense_power + iPower*4;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

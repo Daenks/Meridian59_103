@@ -1772,7 +1772,7 @@ messages:
    "This returns the battler's ability to avoid being hit.  Ranges from "
    "1 to 2000."
    {
-      local iDefense;
+      local iDefense, i;
 
       if piDefense = $
       {
@@ -1781,6 +1781,12 @@ messages:
       else
       {
          iDefense = piDefense;
+      }
+
+      for i in plRadiusEnchantments
+      {
+         iDefense = Send(Nth(i,1),@ModifyDefensePower,#attacker=what,
+                     #iPower=Nth(i,2),#caster=Nth(i,3),#defense_power=iDefense);
       }
 
       return Bound(iDefense,1,2000);
@@ -1867,6 +1873,14 @@ messages:
       {
          iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,#aspell=aspell,#damage=damage);
          iResist = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
+         
+         for i in plRadiusEnchantments
+         {
+            iResist = Send(Nth(i,1),@ModifyResistance,#attacker=what,
+                  #atype=atype,#iPower=Nth(i,2),
+                  #caster=Nth(i,3),#resistance=iResist);
+         }
+         
          iDamage = Send(self,@GetDamageFromResistance,#what=iDamage,#value=iResist);
          iDamage = iDamage + bonus;
          iDamage = iDamage * scalefactor / 1000;
@@ -3499,7 +3513,7 @@ messages:
    Killed(what=$)
    "The mob was just killed."
    {
-      local oBody;
+      local oBody, i;
 
       % If the monster was just killed, assume it did itself in.
       if what = $
@@ -3510,6 +3524,14 @@ messages:
       if (viDefault_behavior & AI_NPC)
       {
          return;
+      }
+      
+      for i in plRadiusEnchantments
+      {
+         if Nth(i,3) = self
+         {
+            Send(Nth(i,1),@BreakTrance,#who=self,#event=EVENT_STEER);
+         }
       }
 
       if poOwner <> $

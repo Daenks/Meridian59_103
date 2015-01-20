@@ -3286,6 +3286,14 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_PRIMAL_RESTORATION,#class=&PrimalRestoration);
+      Send(self,@CreateOneSpellIfNew,#num=SID_BLUR,#class=&Blur);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_RESISTANCE_RADIUS_FIRE,#class=&ResistanceRadiusFire);
+      Send(self,@CreateOneSpellIfNew,#num=SID_RESISTANCE_RADIUS_COLD,#class=&ResistanceRadiusCold);
+      Send(self,@CreateOneSpellIfNew,#num=SID_RESISTANCE_RADIUS_SHOCK,#class=&ResistanceRadiusShock);
+      Send(self,@CreateOneSpellIfNew,#num=SID_RESISTANCE_RADIUS_ACID,#class=&ResistanceRadiusAcid);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);

@@ -92,7 +92,8 @@ messages:
                         [ATCK_WEAP_SLASH, 40 ],
                         [-ATCK_SPELL_HOLY, -25 ] ];
 
-      plSpellBook = [ [SID_SLITHERBOLT,5,40], [SID_KILLING_FIELDS,8,50],
+      plSpellBook = [ [SID_PRIMAL_RESTORATION,5,10], [SID_SLITHERBOLT,5,50],
+                      [SID_KILLING_FIELDS,8,60],
                       [SID_PURGE,4,85], [SID_MANA_BOMB,6,90],
                       [SID_FORGET,4,100] ];
 

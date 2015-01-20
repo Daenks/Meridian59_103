@@ -1,0 +1,34 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ResistanceRadiusCold is ResistanceRadius
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ResistanceRadiusCold_icon_rsc = irescold.bgf
+   
+classvars:
+
+   vrIcon = ResistanceRadiusCold_icon_rsc
+
+   viSpell_num = SID_RESISTANCE_RADIUS_COLD
+   
+   viResistedElement = -ATCK_SPELL_COLD
+
+properties:
+      
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

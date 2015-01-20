@@ -63,6 +63,7 @@ messages:
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_RED);
 
       plSpellBook = [ [SID_FIREBALL,2,60], [SID_FIREWALL,10,70],
+                      [SID_RESISTANCE_RADIUS_COLD,5,80],
                       [SID_DEMENT,3,100] ];
 
       propagate;
