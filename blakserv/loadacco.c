@@ -37,13 +37,13 @@ static int highestAccount = -1;
 /* local function prototypes */
 Bool LoadLineAccount(char *account_str,char *name_str,char *password_str,
 		     char *type_str,char *last_login_str,char *suspend_str,
-		     char *credits_str);
+		     char *credits_str, char *verified_str);
 
 Bool LoadAccounts(char *filename)
 {
    FILE *accofile;
    char line[MAX_ACCOUNT_LINE+1];
-   char *type_str,*t1,*t2,*t3,*t4,*t5,*t6,*t7;
+   char *type_str,*t1,*t2,*t3,*t4,*t5,*t6,*t7,*t8;
    int nextAccountID = -1;
 
    if ((accofile = fopen(filename,"rt")) == NULL)
@@ -70,15 +70,29 @@ Bool LoadAccounts(char *filename)
       t4 = strtok(NULL,":\n");
       t5 = strtok(NULL,":\n");
       t6 = strtok(NULL,":\n");
-      t7 = strtok(NULL,":\n");
+      
       /* t7 is suspend_str, note different order from LoadLineAccount args */
+      t7 = strtok(NULL,":\n");
 
+      /* t8 is a boolean that indicates the account is verified on the
+      openmeridian forums.  If t8 is null then the line in the account file
+      is of the old format and the account is unverified.  Replace the null
+      with 0 in this case, and the line will be of the new format next 
+      savegame */
+      t8 = strtok(NULL,":\n");
+      
+      if (t8 == NULL)
+      {
+         eprintf("found old account format, updating.");
+         t8 = "0\0";
+      }
+      
       if (*type_str == '#')
 	 continue;
 
       if (!stricmp(type_str,"ACCOUNT"))
       {
-	 if (!LoadLineAccount(t1,t2,t3,t4,t5,t7,t6))
+	 if (!LoadLineAccount(t1,t2,t3,t4,t5,t7,t6,t8))
 	 {
 	    fclose(accofile);
 	    return False;
@@ -109,9 +123,9 @@ Bool LoadAccounts(char *filename)
 
 Bool LoadLineAccount(char *account_str,char *name_str,char *password_str,
 		     char *type_str,char *last_login_str,char *suspend_str,
-		     char *credits_str)
+		     char *credits_str, char* verified_str)
 {   
-   int account_id,type,last_login_time,suspend_time,credits;
+   int account_id,type,last_login_time,suspend_time,credits,verified;
    int index;
    char decoded[100];
    char *ptr,*end_password;
@@ -124,7 +138,8 @@ Bool LoadLineAccount(char *account_str,char *name_str,char *password_str,
        sscanf(account_str,"%i",&account_id) != 1 ||
        sscanf(type_str,"%i",&type) != 1 ||
        sscanf(last_login_str,"%i",&last_login_time) != 1 ||
-       sscanf(credits_str,"%i",&credits) != 1)
+       sscanf(credits_str,"%i",&credits) != 1 ||
+       sscanf(verified_str,"%i",&verified) != 1 )
    {
       eprintf("LoadLineAccount (%i) found invalid account\n",lineno);
       return False;
@@ -156,7 +171,7 @@ Bool LoadLineAccount(char *account_str,char *name_str,char *password_str,
       highestAccount = account_id;
    }
 
-   LoadAccount(account_id,name_str,decoded,type,last_login_time,suspend_time,credits);
+   LoadAccount(account_id,name_str,decoded,type,last_login_time,suspend_time,credits,verified);
    return True;
 }
 

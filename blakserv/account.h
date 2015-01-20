@@ -24,6 +24,7 @@ typedef struct account_node_struct
    int credits;			/* remember, stored as 1/100 of a credit */
    int last_login_time;
    int suspend_time;
+   int verified;
    struct account_node_struct *next;
 } account_node;
 
@@ -36,7 +37,7 @@ Bool CreateAccount(char *name,char *password,int type,int *account_id);
 int CreateAccountSecurePassword(char *name,char *password,int type);
 int RecreateAccountSecurePassword(int account_id,char *name,char *password,int type);
 void LoadAccount(int account_id,char *name,char *password,int type,int last_login_time,
-		 int suspend_time, int credits);
+		 int suspend_time, int credits, int verified);
 Bool DeleteAccount(int account_id);
 void SetAccountName(account_node *a,char *name);
 void SetAccountPassword(account_node *a,char *password);
