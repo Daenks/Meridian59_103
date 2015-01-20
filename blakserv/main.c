@@ -68,13 +68,15 @@ void MainServer()
 	
 	OpenDefaultChannels();
 
-	if (ConfigBool(MYSQL_ENABLED))
+   	if (ConfigBool(MYSQL_ENABLED))
 	{
 		lprintf("Starting MySQL writer");
 		MySQLInit(ConfigStr(MYSQL_HOST), ConfigStr(MYSQL_USERNAME), ConfigStr(MYSQL_PASSWORD), ConfigStr(MYSQL_DB));
 	}
 
 	lprintf("Starting %s\n",BlakServLongVersionString());
+   
+   LoadCurl();
 	
 	InitClass();
 	InitMessage();
@@ -167,6 +169,8 @@ void MainExitServer()
 	if (ConfigBool(MYSQL_ENABLED))
 		MySQLEnd();
 	
+	UnloadCurl();
+   
 	ResetConfig();
 	
 	DeleteAllBlocks();

@@ -41,6 +41,7 @@ void InitAccount(void)
    console_account->last_login_time = 0;
    console_account->suspend_time = 0;
    console_account->credits = 0;
+   console_account->verified = 0;
 }
 
 void ResetAccount(void)
@@ -134,6 +135,7 @@ Bool CreateAccount(char *name,char *password,int type,int *account_id)
    a->last_login_time = 0;
    a->suspend_time = 0;
    a->credits = 100*ConfigInt(CREDIT_INIT);
+   a->verified = 0;
 
    InsertAccount(a);
 
@@ -170,6 +172,7 @@ int CreateAccountSecurePassword(char *name,char *password,int type)
    a->last_login_time = 0;
    a->suspend_time = 0;
    a->credits = 100*ConfigInt(CREDIT_INIT);
+   a->verified = 0;
 
    InsertAccount(a);
 
@@ -215,6 +218,7 @@ int RecreateAccountSecurePassword(int account_id,char *name,char *password,int t
    a->last_login_time = 0;
    a->suspend_time = 0;
    a->credits = 100*ConfigInt(CREDIT_INIT);
+   a->verified = 0;
 
    InsertAccount(a);
 
@@ -222,7 +226,7 @@ int RecreateAccountSecurePassword(int account_id,char *name,char *password,int t
 }
 
 void LoadAccount(int account_id,char *name,char *password,int type,int last_login_time,
-		 int suspend_time, int credits)
+		 int suspend_time, int credits, int verified)
 {
    account_node *a;
 
@@ -241,6 +245,7 @@ void LoadAccount(int account_id,char *name,char *password,int type,int last_logi
    a->last_login_time = last_login_time;
    a->suspend_time = suspend_time;
    a->credits = credits;
+   a->verified = verified;
 
    InsertAccount(a);
 }

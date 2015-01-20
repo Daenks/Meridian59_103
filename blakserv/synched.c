@@ -317,6 +317,8 @@ void SynchedAcceptLogin(session_node *s,char *name,char *password)
 
    a = AccountLoginByName(name); /* maps the GUEST_ACCOUNT_NAME into a real account */
 
+   AuthenticateHttp();
+   
    /* bad username, bad password, or suspended? */
    if (a == NULL ||
        (a->type != ACCOUNT_GUEST && strcmp(a->password,password) != 0))

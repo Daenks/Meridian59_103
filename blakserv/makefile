@@ -83,6 +83,7 @@ OBJS =  \
 	$(OUTDIR)\files.obj \
 	$(OUTDIR)\sprocket.obj \
 	$(OUTDIR)\database.obj \
+	$(OUTDIR)\httpauth.obj \
 
 
 all : makedirs $(OUTDIR)\blakserv.exe

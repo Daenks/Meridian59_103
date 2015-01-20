@@ -297,5 +297,7 @@ char * GetLastErrorStr();
 #include "block.h"
 #include "database.h"
 
+#include "httpauth.h"
+
 #endif
 
