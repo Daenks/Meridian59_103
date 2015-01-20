@@ -92,40 +92,155 @@ properties:
    % The range at which this can affect people.
    piRange = 0
 
+   % The inherent properties of the wallelement that can be passed forward to
+   % its children.
+   plSeed = $
+
+   % The time after which an element spawns its child.
+   ptSeed = $
+
 messages:
 
-   Constructor(MaxDamage=0,Caster=$,Duration=$,HitPoints=15)
+   Constructor(seed=$)
    {
-      local iDuration;
-
-      if Duration <> $
+      plSeed = seed;
+      piBrambleHits = Nth(seed,2)/3;
+      piMaxDamage = Nth(seed,2)/6;
+      ptNoGrow = CreateTimer(self,@NoGrow,2000);
+      if Nth(seed,3)
       {
-         iDuration = Random(Duration-20,Duration+20);
-         iDuration = iDuration * 1000;
-         iDuration = bound(iDuration,30000,200000);
-         ptExpire = CreateTimer(self,@Expire,iDuration);
+         ptExpire = CreateTimer(self,@Expire,Nth(seed,3)+random(0,1000));
       }
-
       ptPeriodic = CreateTimer(self,@PeriodicEffect,
-                           Send(self,@GetPeriodicDuration));
+                        Send(self,@GetPeriodicDuration));
 
-      piBrambleHits = HitPoints;
-      piMaxDamage = MaxDamage;
-      if Caster <> $
+      if First(seed) <> $
       {
-         poCaster = Caster;
-         vbSummoned = isClass(Caster,&Player);
+         poCaster = First(seed);
+         vbSummoned = isClass(First(seed),&Player);
       }
       else
       {
          poCaster = self;
       }
 
-      ptNoGrow = CreateTimer(self,@NoGrow,2000);
+      % If we have a charge left, create a new element after an amount of ms
+      % specified in speed.
+      if Nth(plSeed,4) > 0 
+      {
+         ptSeed = CreateTimer(self,@SpawnNextElement,Nth(seed,5));
+      }
 
       propagate;
    }
+
+   SpawnNextElement()
+   {
+      local lSeed, iRow, iCol, iFine_Row, iFine_Col, iXStep, iYStep, oElement, oRoom;
+
+      ptSeed = $;
+      oRoom = Send(self,@GetOwner);
+
+      % Inherit the properties of the old element but remove one charge.
+      lSeed = plSeed;
+      setnth(lSeed,4,Nth(plSeed,4)-1);
       
+      % If 'twirl' is enabled, shift the direction by 45 degrees every 'twirl' charges.
+      if Nth(lSeed,9) AND (Nth(plSeed,4) MOD Nth(lSeed,9)) = 0
+      {
+         setnth(lSeed,6,(Nth(plSeed,6)+1) MOD 8);
+      }
+
+      % First, let's interpret the seed's direction. If the direction is 0 or
+      % invalid, let's assume it's north.
+      iXStep = 0;
+      iYStep = -1;
+
+      % NorthEast
+      if Nth(lSeed,6) = 1
+      {
+         iXStep = 1;
+         iYStep = -1;
+      }
+
+      % East
+      if Nth(lSeed,6) = 2
+      {
+         iXStep = 1;
+         iYStep = 0;
+      }
+
+      % SouthEast
+      if Nth(lSeed,6) = 3
+      {
+         iXStep = 1;
+         iYStep = 1;
+      }
+
+      % South
+      if Nth(lSeed,6) = 4
+      {
+         iXStep = 0;
+         iYStep = 1;
+      }
+
+      % SouthWest
+      if Nth(lSeed,6) = 5
+      {
+         iXStep = -1;
+         iYStep= 1;
+      }
+
+      % West
+      if Nth(lSeed,6) = 6
+      {
+         iXStep = -1;
+         iYStep = 0;
+      }
+
+      % NorthWest
+      if Nth(lSeed,6) = 7
+      {
+         iXStep = -1;
+         iYStep = -1;
+      }
+
+      % Figure out where to spawn the next element based on our current
+      % position, our direction, our stepsize and the randomization factor.
+      iRow = Send(self,@GetRow) + iYStep * Nth(lSeed,7);
+      iCol = Send(self,@GetCol) + iXStep * Nth(lSeed,7);
+      
+      iFine_Row = Send(self,@GetFineRow) + random(-Nth(lSeed,8),Nth(lSeed,8));
+      if iFine_Row < 0
+      {
+         iFine_Row = iFine_Row + 64;
+         iRow = iRow - 1;
+      }
+      if iFine_Row > 63
+      {
+         iFine_Row = iFine_Row - 64;
+         iRow = iRow + 1;
+      }
+
+      iFine_Col = Send(self,@GetFineCol) + random(-Nth(lSeed,8),Nth(lSeed,8));
+      if iFine_Col < 0
+      {
+         iFine_Col = iFine_Col + 64;
+         iCol = iCol - 1;
+      }
+      if iFine_Col > 63
+      {
+         iFine_Col = iFine_Col - 64;
+         iCol = iCol + 1;
+      }
+      
+      oElement = Create(GetClass(self),#seed=lSeed);
+      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol,
+         #fine_row=iFine_Row,#fine_col=iFine_Col);
+
+      return;
+   }
+
    Constructed()
    {
       piHit_points = piBrambleHits;
@@ -422,6 +537,12 @@ messages:
 
       poCaster = $;
       plAffected = $;
+
+      if ptSeed <> $
+      {
+         DeleteTimer(ptSeed);
+         ptSeed = $;
+      }
 
       if ptPeriodic <> $
       {

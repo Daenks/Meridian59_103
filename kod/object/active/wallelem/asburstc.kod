@@ -44,18 +44,13 @@ classvars:
 
 properties:
 
-   piRangeSquared = 1
-   piBonus = 1
+   piMaxHoldTime = 0
 
 messages:
    
-   Constructor(caster=$,duration=$,range=$)
+   Constructor(seed=$)
    {
-      if range <> $
-      {
-         piRange = range;
-         piBonus = range;
-      }
+      piMaxHoldTime = Nth(seed,2)*80;
 
       propagate;
    }
@@ -67,7 +62,7 @@ messages:
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
 
       Send(oSpell,@DoHold,#what=self,#otarget=what,
-           #iDurationSecs=BASE_HOLD_DURATION+piBonus);
+           #iDuration=piMaxHoldTime);
 
       propagate;
    }   

@@ -3199,6 +3199,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_RESIST_POISON,#class=&ResistPoison);
       Send(self,@CreateOneSpellIfNew,#num=SID_ILLUSIONARY_FIREWALL,#class=&IllusionaryFirewall);
       Send(self,@CreateOneSpellIfNew,#num=SID_FIREWALL,#class=&Firewall);
+      Send(self,@CreateOneSpellIfNew,#num=SID_FLAME_WAVE,#class=&FlameWave);
       Send(self,@CreateOneSpellIfNew,#num=SID_GAZE_OF_THE_BASILISK,#class=&Paralyze);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_SPORE_BURST,#class=&SporeBurst);

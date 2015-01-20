@@ -52,8 +52,6 @@ classvars:
    % Webs can't kill anyone, so don't warn about being a murderer.
    viWallCanKill = FALSE
 
-   viNumElements = 9
-
    vrSummonLimitMsg = SummonWeb_failed_rsc
 
 properties:
@@ -75,146 +73,42 @@ messages:
       propagate;
    }
 
-   PlaceWallElements(who = $, iSpellPower = 0)
+   PlaceWallElements(seed = $)
    {
-      local oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, iMaxHoldTime,
-            iDuration, oElement;
+      local lSeeda, lSeedb, lSeedc, lSeedd, lSeede, lSeedf, lSeedg, lSeedh;
 
-      iAngle = Send(who,@GetAngle);
-      iMaxHoldTime = 3+(iSpellPower/33);
-      iMaxHoldTime = Bound(iMaxHoldtime,$,5);
+      % The standard seed is modified here.
+      % [(1)caster,(2)spellpower,(3)duration,(4)charges,(5)speed,(6)direction,(7)step,(8)noise,(9)twirl]
+      lSeeda = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),0,1,Nth(seed,8),3];
+      lSeedb = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),1,1,Nth(seed,8),3];
+      lSeedc = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),2,1,Nth(seed,8),3];
+      lSeedd = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),3,1,Nth(seed,8),3];
+      lSeede = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),4,1,Nth(seed,8),3];
+      lSeedf = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),5,1,Nth(seed,8),3];
+      lSeedg = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),6,1,Nth(seed,8),3];
+      lSeedh = [Nth(seed,1),Nth(seed,2),Nth(seed,3),Nth(seed,2)/5,Nth(seed,5),7,1,Nth(seed,8),3];
 
-      iDuration = (iSpellPower * 4) / 3 + 20;
-      iDuration = Bound(iDuration,20,130);
-
-
-      % Facing East
-      if iAngle > ANGLE_ENE OR iAngle < ANGLE_ESE
-      {
-         iCol = Send(who,@GetCol) + 2;
-         iRow = Send(who,@GetRow);
-      }
-
-      % Facing SouthEast
-      if iAngle >= ANGLE_ESE AND iAngle < ANGLE_SSE
-      {
-         iRow = Send(who,@GetRow) + 2;
-         iCol = Send(who,@GetCol) + 2;
-      }
-
-      % Facing South
-      if iAngle >= ANGLE_SSE AND iAngle < ANGLE_SSW
-      {
-         iRow = Send(who,@GetRow) + 2;
-         iCol = Send(who,@GetCol);
-      }
-
-      % Facing SouthWest
-      if iAngle >= ANGLE_SSW AND iAngle < ANGLE_WSW
-      {
-         iRow = Send(who,@GetRow) + 2;
-         iCol = Send(who,@GetCol) - 2;
-      }
-
-      % Facing West
-      if iAngle >= ANGLE_WSW AND iAngle < ANGLE_WNW
-      {
-         iCol = Send(who,@GetCol) - 2;
-         iRow = Send(who,@GetRow);
-      }
-
-      % Facing NorthWest
-      if iAngle >= ANGLE_WNW AND iAngle < ANGLE_NNW
-      {
-         iRow = Send(who,@GetRow) - 2;
-         iCol = Send(who,@GetCol) - 2;
-      }
-
-      % Facing North
-      if iAngle >= ANGLE_NNW AND iAngle < ANGLE_NNE
-      {
-         iRow = Send(who,@GetRow) - 2;
-         iCol = Send(who,@GetCol);
-      }
-
-      % Facing NorthEast
-      if iAngle >= ANGLE_NNE AND iAngle < ANGLE_ENE
-      {
-         iRow = Send(who,@GetRow) - 2;
-         iCol = Send(who,@GetCol) + 2;
-      }
-
-      % Sanity check for invalid location.
-      if iRow = $
-         OR iCol = $
-      {
-         % Don't try to place the web on $ coordinates.
-         return;
-      }
-
-      oRoom = Send(who,@GetOwner);
-
-      iFine_Row = Send(who,@GetFineRow);
-      iFine_Col = Send(who,@GetFineCol);
-
-      % Center, then clockwise from 12 o'clock
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow-1,#new_col=iCol,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow-1,#new_col=iCol+1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol+1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow+1,#new_col=iCol+1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow+1,#new_col=iCol,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow+1,#new_col=iCol-1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol-1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
-
-      oElement = Create(&Web,#MaxHoldTime=iMaxHoldTime,#Caster=who,
-                        #Duration=iDuration);
-      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow-1,#new_col=iCol-1,
-           #fine_row=iFine_Row,#fine_col=iFine_Col);
+      Send(self,@SpawnElement,#seed=lSeeda,#who=Nth(seed,1),#xoffset=0,#yoffset=-3,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedb,#who=Nth(seed,1),#xoffset=2,#yoffset=-2,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedc,#who=Nth(seed,1),#xoffset=3,#yoffset=0,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedd,#who=Nth(seed,1),#xoffset=2,#yoffset=2,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeede,#who=Nth(seed,1),#xoffset=0,#yoffset=3,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedf,#who=Nth(seed,1),#xoffset=-2,#yoffset=2,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedg,#who=Nth(seed,1),#xoffset=-3,#yoffset=0,#walltype=&Web);
+      Send(self,@SpawnElement,#seed=lSeedh,#who=Nth(seed,1),#xoffset=-2,#yoffset=-2,#walltype=&Web);
 
       propagate;
    }
 
-   DoHold(what = $, otarget = $, idurationsecs = $, report=TRUE)
+   DoHold(what = $, otarget = $, duration = $, report=TRUE)
    "Holds target for durationsecs seconds."
    {
       local i;
             
       % Can cast spell if the 1 target item is a user
-      if iDurationSecs = $
+      if duration = $
       {
-         iDurationSecs = 10;
+         duration = 10000;
       }
       
       if otarget = $
@@ -228,7 +122,7 @@ messages:
          return FALSE;
       }      
 
-      Send(oTarget,@StartEnchantment,#what=self,#time=idurationsecs*1000,
+      Send(oTarget,@StartEnchantment,#what=self,#time=duration,
            #report=report,#state=report);
 
       if IsClass(oTarget,&Player)

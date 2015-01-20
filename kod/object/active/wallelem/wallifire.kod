@@ -8,29 +8,13 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-WallofFire is ActiveWallElement
+IllusionaryWallOfFire is ActiveWallElement
 
 constants:
 
    include blakston.khd
 
 resources:
-
-   WallofFire_name_rsc = "wall of fire"
-   WallofFire_icon_rsc = woflame.bgf
-   WallofFire_desc_rsc = \
-      "The wall of fire flickers dangerously, threatening to make the day "
-      "of anyone passing through a bad one."
-
-   firewall_damage0 = "You withstand the fire unscathed."
-   firewall_damage5 = "You feel a bit toasted from the flames."
-   firewall_damage10 = "Something smells like burnt hair.  Wait, it's you!"
-   firewall_damage15 = "You are on fire!  Put it out!"
-   firewall_damage20 = "Ouch, that really burned!"
-
-   firewall_burn_snd = frying.wav
-
-   firewall_dissipates = "A bit of the firewall fades into coldness."
 
 classvars:
 
@@ -44,16 +28,17 @@ classvars:
    vrUnaffectedMessage = firewall_damage0
 
    viLightBonus = 15
+   viIllusion = TRUE
 
 properties:
 
-   piMaxDamage = 0
+   piSpellpower = 0
 
 messages:
 
    Constructor(seed=$)
    {
-      piMaxDamage = Nth(seed,2)/5;
+      piSpellpower = Nth(seed,2);
 
       propagate;
    }
@@ -63,9 +48,26 @@ messages:
       local iDamage, oIllusWounds, iDuration, rMessage;
 
       iDamage = 0;
-      
-      iDamage = Send(what,@AssessDamage,#what=poCaster,#damage=Random(0,piMaxDamage),
-                     #aspell=ATCK_SPELL_ALL+ATCK_SPELL_FIRE,#report=FALSE,#report_resistance=FALSE);
+
+      if (piSpellpower < 35)
+      {
+         return;
+      }
+
+      oIllusWounds = Send(SYS,@FindSpellByNum,#num=SID_ILLUSIONARY_WOUNDS);
+      iDuration = Send(oIllusWounds,@GetDuration,#iSpellPower=piSpellpower);
+      iDamage = Send(oIllusWounds,@GetHPLoss,#who=poCaster,#victim=what,#iSpellPower=piSpellpower);
+
+      if iDamage > 0
+      {
+         % We technically don't have a damage type, but we count as spell damage.
+         %  Also, don't lower damage based on resistances.
+         iDamage = Send(what,@AssessDamage,#what=poCaster,#damage=Random(0,iDamage),
+                        #aspell=ATCK_SPELL_ALL,#absolute=TRUE,#report=FALSE,
+                        #report_resistance=FALSE);
+         Send(what,@StartEnchantment,#what=oIllusWounds,#time=iDuration,#lastcall=TRUE,
+              #state=iDamage,#addicon=FALSE);
+      }
 
       if iDamage = $
       {
@@ -82,7 +84,7 @@ messages:
          }
          else
          {
-            if piMaxDamage > 0
+            if piSpellpower > 0
             {
                Send(poCaster,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
             }
@@ -139,8 +141,6 @@ messages:
 
    NewOwner(what = $)
    {
-      % Add a bit of light if this isn't an illusion.  Firewalls should add some light.
-
       % new room
       if what <> $
       {
@@ -158,7 +158,6 @@ messages:
 
    Delete()
    {
-
       if poOwner <> $
       {
          Send(poOwner,@AddBaseLight,#amount=-viLightBonus);
@@ -172,6 +171,7 @@ messages:
       AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
       % 5 out of 255 intensity of light
       AddPacket(1,5);
+
 
       % Red color
       AddPacket(2,LIGHT_RED);

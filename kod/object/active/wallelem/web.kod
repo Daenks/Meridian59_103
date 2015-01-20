@@ -55,9 +55,9 @@ properties:
 
 messages:
    
-   Constructor(caster = $, duration = 75, MaxHoldTime = 0)
+   Constructor(seed=$)
    {
-      piMaxHoldTime = MaxHoldTime;
+      piMaxHoldTime = Nth(seed,2)*50;
 
       % A list of monsters not affected by webbing
       % Includes: Spiders, Bosses, Fliers, Xeos, and Revenants
@@ -69,17 +69,6 @@ messages:
                            ];
      
       propagate;
-   }
-
-   GetDuration(duration = 0)
-   {
-      local iDuration;
-
-      iDuration = Random(duration-20,duration+20);
-      iDuration = iDuration * 1000;
-      iDuration = bound(iDuration,20000,150000);
-
-      return iDuration;
    }
 
    SomethingMoved(what = $,new_row = $,new_col = $)
@@ -112,8 +101,8 @@ messages:
 
       if piMaxHoldTime > 0
       {
-         iHoldTime = Random(piMaxHoldTime - 2,piMaxHoldTime);
-         iHoldTime = bound(iHoldTime,1,$);
+         iHoldTime = Random(piMaxHoldTime - 2000,piMaxHoldTime);
+         iHoldTime = bound(iHoldTime,1000,$);
 
          if IsClass(what,&Monster)
          {
@@ -123,7 +112,7 @@ messages:
 
       if iHoldTime > 0
       {
-         Send(oSpell,@DoHold,#what=poCaster,#oTarget=what,#iDurationSecs=iHoldTime,
+         Send(oSpell,@DoHold,#what=poCaster,#oTarget=what,#duration=iHoldTime,
               #report=FALSE);
       }
 
@@ -138,20 +127,20 @@ messages:
             % Duration greater than 0
             Send(what,@WaveSendUser,#wave_rsc=web_stick_snd);
 
-            if iHoldTime < 2
+            if iHoldTime < 2000
             {
                rMessage = web_stick1;
             }
             else
             {
 
-               if iHoldTime < 3
+               if iHoldTime < 3000
                {
                   rMessage = web_stick2;
                }
                else
                {
-                  if iHoldTime < 4
+                  if iHoldTime < 4000
                   {
                      rMessage = web_stick3;
                   }

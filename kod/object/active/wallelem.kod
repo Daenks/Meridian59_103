@@ -67,35 +67,316 @@ properties:
    %  this period.
    plAffected = $
 
+   % The wallelement carries all relevant information in its seed. This allows 
+   % the element to spawn additional elements that inherit their behavior from
+   % the parent. plSeed has the following structure:
+   % plSeed = [1caster,2spellpower,3duration,4charges,5speed,6direction,7step,8noise,9twirl,10seed]
+   plSeed = $
+
+   % The wallelement carries all relevant information in its seed. This allows 
+   % the element to spawn additional elements that inherit their behavior from
+   % the parent. plSeed has the following structure:
+   % plSeed = [1caster,2spellpower,3duration,4charges,5speed,6direction,7step,8noise,9twirl,10seed]
+   plSecondarySeed = $
+
+   % Timer that spawns the next element upon expiration.
+   ptSeed = $
+   % Timer that may spawn a secondary seed upon expiration.
+   ptSecondarySeed = $
+   
 messages:
 
-   Constructor(caster=$,duration=$)
+   Constructor(seed=$)
    {
-      poCaster = caster;
+      plSeed = seed;
 
-      ptExpire = CreateTimer(self,@Expire,
-                        Send(self,@GetDuration,#duration=duration));
+      poCaster = First(plSeed);
+
+      if Nth(plSeed,3)
+      {
+         ptExpire = CreateTimer(self,@Expire,Nth(plSeed,3)+random(0,1000));
+      }
       ptPeriodic = CreateTimer(self,@PeriodicEffect,
                         Send(self,@GetPeriodicDuration));
 
-      if IsClass(caster,&User)
+      if IsClass(First(plSeed),&User)
       {
          vbSummoned = TRUE;
       }
 
+      % If we have a charge left, create a new element after an amount of ms
+      % specified in speed.
+      if Nth(plSeed,4) > 0 
+      {
+         ptSeed = CreateTimer(self,@SpawnNextElement,Nth(plSeed,5));
+      }
+
+      % If we have a secondary plSeed, spawn it afer the time specified.
+      if Length(plSeed) > 9
+      {
+         plSecondarySeed = Send(SYS,@ListCopy,#source=Nth(plSeed,10));
+         ptSecondarySeed = CreateTimer(self,@SpawnSecondaryElement,Nth(plSecondarySeed,5));
+      }
+
       propagate;
+   }
+
+   SpawnNextElement()
+   {
+      local iRow, iCol, iFine_Row, iFine_Col, iXStep, iYStep, oElement, oRoom;
+
+      ptSeed = $;
+      oRoom = Send(self,@GetOwner);
+
+      % Inherit the properties of the old element but remove one charge.
+      setnth(plSeed,4,Nth(plSeed,4)-1);
+      
+      % If 'twirl' is enabled, shift the direction by 45 degrees every 'twirl' 
+      % charges. Positive twirl rotates cw, negative twirl roates ccw.
+      if Nth(plSeed,9) > 0 AND (Nth(plSeed,4) MOD Nth(plSeed,9)) = 0
+      {
+         if Nth(plSeed,6) = 7
+         {
+            setnth(plSeed,6,0);
+         }
+         else
+         {
+            setnth(plSeed,6,Nth(plSeed,6)+1);
+         }
+      }
+
+      if Nth(plSeed,9) < 0 AND (Nth(plSeed,4) MOD (-Nth(plSeed,9))) = 0
+      {
+         if Nth(plSeed,6) = 0
+         {
+            setnth(plSeed,6,7);
+         }
+         else
+         {
+            setnth(plSeed,6,Nth(plSeed,6)-1);
+         }
+      }
+
+      % First, let's interpret the seed's direction. If the direction is 0 or
+      % invalid, let's assume it's north.
+      iXStep = 0;
+      iYStep = -1;
+
+      % NorthEast
+      if Nth(plSeed,6) = 1
+      {
+         iXStep = 1;
+         iYStep = -1;
+      }
+
+      % East
+      if Nth(plSeed,6) = 2
+      {
+         iXStep = 1;
+         iYStep = 0;
+      }
+
+      % SouthEast
+      if Nth(plSeed,6) = 3
+      {
+         iXStep = 1;
+         iYStep = 1;
+      }
+
+      % South
+      if Nth(plSeed,6) = 4
+      {
+         iXStep = 0;
+         iYStep = 1;
+      }
+
+      % SouthWest
+      if Nth(plSeed,6) = 5
+      {
+         iXStep = -1;
+         iYStep= 1;
+      }
+
+      % West
+      if Nth(plSeed,6) = 6
+      {
+         iXStep = -1;
+         iYStep = 0;
+      }
+
+      % NorthWest
+      if Nth(plSeed,6) = 7
+      {
+         iXStep = -1;
+         iYStep = -1;
+      }
+
+      % Figure out where to spawn the next element based on our current
+      % position, our direction, our stepsize and the randomization factor.
+      iRow = Send(self,@GetRow) + iYStep * Nth(plSeed,7);
+      iCol = Send(self,@GetCol) + iXStep * Nth(plSeed,7);
+      
+      iFine_Row = Send(self,@GetFineRow) + random(-Nth(plSeed,8),Nth(plSeed,8));
+      if iFine_Row < 0
+      {
+         iFine_Row = iFine_Row + 64;
+         iRow = iRow - 1;
+      }
+      if iFine_Row > 63
+      {
+         iFine_Row = iFine_Row - 64;
+         iRow = iRow + 1;
+      }
+
+      iFine_Col = Send(self,@GetFineCol) + random(-Nth(plSeed,8),Nth(plSeed,8));
+      if iFine_Col < 0
+      {
+         iFine_Col = iFine_Col + 64;
+         iCol = iCol - 1;
+      }
+      if iFine_Col > 63
+      {
+         iFine_Col = iFine_Col - 64;
+         iCol = iCol + 1;
+      }
+      
+      oElement = Create(GetClass(self),#seed=plSeed);
+      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol,
+         #fine_row=iFine_Row,#fine_col=iFine_Col);
+
+      return;
+   }
+
+   SpawnSecondaryElement()
+   {
+      local iRow, iCol, iFine_Row, iFine_Col, iXStep, iYStep, oElement, oRoom;
+
+      ptSecondarySeed = $;
+      oRoom = Send(self,@GetOwner);
+
+      % Inherit the properties of the old element but remove one charge.
+      setnth(plSecondarySeed,4,Nth(plSecondarySeed,4)-1);
+      
+      % If 'twirl' is enabled, shift the direction by 45 degrees every 'twirl' 
+      % charges. Positive twirl rotates cw, negative twirl roates ccw.
+      if Nth(plSecondarySeed,9) > 0 AND (Nth(plSecondarySeed,4) MOD Nth(plSecondarySeed,9)) = 0
+      {
+         if Nth(plSecondarySeed,6) = 7
+         {
+            setnth(plSecondarySeed,6,0);
+         }
+         else
+         {
+            setnth(plSecondarySeed,6,Nth(plSecondarySeed,6)+1);
+         }
+      }
+
+      if Nth(plSecondarySeed,9) < 0 AND (Nth(plSecondarySeed,4) MOD (-Nth(plSecondarySeed,9))) = 0
+      {
+         if Nth(plSecondarySeed,6) = 0
+         {
+            setnth(plSecondarySeed,6,7);
+         }
+         else
+         {
+            setnth(plSecondarySeed,6,Nth(plSecondarySeed,6)-1);
+         }
+      }
+
+      % First, let's interpret the seed's direction. If the direction is 0 or
+      % invalid, let's assume it's north.
+      iXStep = 0;
+      iYStep = -1;
+
+      % NorthEast
+      if Nth(plSecondarySeed,6) = 1
+      {
+         iXStep = 1;
+         iYStep = -1;
+      }
+
+      % East
+      if Nth(plSecondarySeed,6) = 2
+      {
+         iXStep = 1;
+         iYStep = 0;
+      }
+
+      % SouthEast
+      if Nth(plSecondarySeed,6) = 3
+      {
+         iXStep = 1;
+         iYStep = 1;
+      }
+
+      % South
+      if Nth(plSecondarySeed,6) = 4
+      {
+         iXStep = 0;
+         iYStep = 1;
+      }
+
+      % SouthWest
+      if Nth(plSecondarySeed,6) = 5
+      {
+         iXStep = -1;
+         iYStep= 1;
+      }
+
+      % West
+      if Nth(plSecondarySeed,6) = 6
+      {
+         iXStep = -1;
+         iYStep = 0;
+      }
+
+      % NorthWest
+      if Nth(plSecondarySeed,6) = 7
+      {
+         iXStep = -1;
+         iYStep = -1;
+      }
+
+      % Figure out where to spawn the next element based on our current
+      % position, our direction, our stepsize and the randomization factor.
+      iRow = Send(self,@GetRow) + iYStep * Nth(plSecondarySeed,7);
+      iCol = Send(self,@GetCol) + iXStep * Nth(plSecondarySeed,7);
+      
+      iFine_Row = Send(self,@GetFineRow) + random(-Nth(plSecondarySeed,8),Nth(plSecondarySeed,8));
+      if iFine_Row < 0
+      {
+         iFine_Row = iFine_Row + 64;
+         iRow = iRow - 1;
+      }
+      if iFine_Row > 63
+      {
+         iFine_Row = iFine_Row - 64;
+         iRow = iRow + 1;
+      }
+
+      iFine_Col = Send(self,@GetFineCol) + random(-Nth(plSecondarySeed,8),Nth(plSecondarySeed,8));
+      if iFine_Col < 0
+      {
+         iFine_Col = iFine_Col + 64;
+         iCol = iCol - 1;
+      }
+      if iFine_Col > 63
+      {
+         iFine_Col = iFine_Col - 64;
+         iCol = iCol + 1;
+      }
+      
+      oElement = Create(GetClass(self),#seed=plSecondarySeed);
+      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol,
+         #fine_row=iFine_Row,#fine_col=iFine_Col);
+
+      return;
    }
 
    GetPeriodicDuration()
    {
       % 90 - 110% of base interval
       return (EFFECT_INTERVAL * Random(90,110))/100;
-   }
-
-   GetDuration(duration = 0)
-   "Return the final duration modified as necessary."
-   {
-      return duration;
    }
 
    SomethingMoved(what = $,new_row = $,new_col = $)
@@ -286,6 +567,18 @@ messages:
       {
          DeleteTimer(ptPeriodic);
          ptPeriodic = $;
+      }
+
+      if ptSeed <> $
+      {
+         DeleteTimer(ptSeed);
+         ptSeed = $;
+      }
+
+      if ptSecondarySeed <> $
+      {
+         DeleteTimer(ptSecondarySeed);
+         ptSecondarySeed = $;
       }
 
       if ptExpire <> $

@@ -52,22 +52,11 @@ properties:
 
 messages:
    
-   Constructor(Caster = $, Duration = 75, Odds = 0)
+   Constructor(seed=$)
    {
-      piOdds = Odds;
+      piOdds = Nth(seed,2);
 
       propagate;
-   }
-
-   GetDuration(duration = 0)
-   {
-      local iDuration;
-
-      iDuration = Random(duration-20,duration+20);
-      iDuration = iDuration * 1000;
-      iDuration = bound(iDuration,30000,200000);
-
-      return iDuration;
    }
 
    DoEffect(what = $)

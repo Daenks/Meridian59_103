@@ -34,8 +34,8 @@ classvars:
    % Can wall elements kill?  Affects the warning message we append.
    viWallCanKill = TRUE
 
-   % How many elements do we expect to summon?
-   viNumElements = 9
+   % How many empty spots does the room need before we can summon the wall?
+   viNumElements = 1
 
    vrSummonLimitMsg = WallSpell_failed_rsc
 
@@ -71,10 +71,136 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 1)
    {
-      Send(self,@PlaceWallElements,#who=who,#lTargets=lTargets,
-           #iSpellPower=iSpellPower);
+      Send(self,@CreateWallSeed,#who=who,#iSpellPower=iSpellPower);
 
       propagate;
+   }
+
+   CreateWallSeed(who = $, iSpellPower = 0)
+   {
+      local iAngle, iDirection, lSeed;
+
+      iAngle = Send(who,@GetAngle);
+      
+      iDirection = Send(self,@GetDirection,#who=who);
+
+      % This is a generic seed, individual spells may create different ones.
+      % [(1)caster,(2)spellpower,(3)duration,(4)charges,(5)speed,(6)direction,(7)step,(8)noise,(9)twirl]
+      lSeed = [who,iSpellPower,1200*iSpellPower,iSpellPower/10,20000/iSpellPower,iDirection,1,63*(100-iSpellpower)/100,0];
+
+      Send(self,@PlaceWallElements,#seed=lSeed);
+
+      return;
+   }
+
+   SpawnElement(seed=$,who=$,xoffset=0,yoffset=0,walltype=$)
+   {
+      local iCol, iRow, oElement, oRoom;
+
+      oRoom = Send(who,@GetOwner);
+      
+      iCol = Send(who,@GetCol) + xoffset;
+      iRow = Send(who,@GetRow) + yoffset;
+
+      oElement = Create(walltype,#seed=seed);
+      Send(oRoom,@NewHold,#what=oElement,#new_row=iRow,#new_col=iCol,#fine_row=Send(who,@GetFineRow),#fine_col=Send(who,@GetFineCol));
+      
+      return;
+   }
+
+   GetDirection(who=$)
+   {
+      local iAngle;
+
+      iAngle = Send(who,@GetAngle);
+
+      % Facing North
+      if iAngle >= ANGLE_NNW AND iAngle < ANGLE_NNE
+      {
+         return 0;
+      }
+
+      % Facing NorthEast
+      if iAngle >= ANGLE_NNE AND iAngle < ANGLE_ENE
+      {
+         return 1;
+      }
+
+      % Facing East
+      if iAngle >= ANGLE_ENE OR iAngle < ANGLE_ESE
+      {
+         return 2;
+      }
+
+      % Facing SouthEast
+      if iAngle >= ANGLE_ESE AND iAngle < ANGLE_SSE
+      {
+         return 3;
+      }
+
+      % Facing South
+      if iAngle >= ANGLE_SSE AND iAngle < ANGLE_SSW
+      {
+         return 4;
+      }
+
+      % Facing SouthWest
+      if iAngle >= ANGLE_SSW AND iAngle < ANGLE_WSW
+      {
+         return 5;
+      }
+
+      % Facing West
+      if iAngle >= ANGLE_WSW AND iAngle < ANGLE_WNW
+      {
+         return 6;
+      }
+
+      % Facing NorthWest
+      if iAngle >= ANGLE_WNW AND iAngle < ANGLE_NNW
+      {
+         return 7;
+      }
+      
+      return 0;
+   }
+
+   GetXStep(direction=0)
+   {
+      % Facing North or South
+      if direction = 0 OR direction = 4 
+      {
+         return 0;
+      }
+
+      % Facing Eastish
+      if direction < 4
+      {
+         return 1;
+      }
+
+      % Facing Westish
+      return -1;
+
+   }
+   
+   GetYStep(direction=0)
+   {
+      % Facing East or West
+      if direction = 2 OR direction = 6 
+      {
+         return 0;
+      }
+
+      % Facing Southish
+      if direction = 3 OR direction = 4 OR direction = 5  
+      {
+         return 1;
+      }
+
+      % Facing Northish
+      return -1;
+
    }
 
    PlaceWallElements(who = $, lTargets=$, iSpellPower = 0)

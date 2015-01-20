@@ -2311,7 +2311,7 @@ messages:
       if viSchool = SS_KRAANAN
       {
          % Kraanan favors adversity and armies.  More people in a room, the better.
-         iPrimaryBonus = Length(Send(oRoom,@GetHolderActive));
+         iPrimaryBonus = Send(oRoom,@CountMonsters,#class=&Battler);
          % Kraanan also favors the healthy warrior.  Full hps = more bonus.
          iSecondaryBonus = (Send(who,@GetHealth)*10)/Send(who,@GetMaxHealth);
 

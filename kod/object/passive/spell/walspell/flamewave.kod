@@ -1,0 +1,95 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FlameWave is WallSpell
+
+constants:
+   include blakston.khd
+
+resources:
+
+   FlameWave_name_rsc = "flame wave"
+   FlameWave_icon_rsc = iwalfire.bgf
+   FlameWave_desc_rsc = \
+      "Creates a flame wave that leaves a swathe of fiery "
+      "destruction in its path.  "
+      "Requires red mushrooms and firesand to cast."
+
+   FlameWave_cast_rsc = "A blazing hot wave of flame and cinder spreads before you!"
+   FlameWave_failed_rsc = \
+      "There is too much summoning magic focused here to create a flame wave.  " 
+   FlameWave_sound = farenwala822m.wav
+
+classvars:
+
+   vrName = FlameWave_name_rsc
+   vrIcon = FlameWave_icon_rsc
+   vrDesc = FlameWave_desc_rsc
+
+   viSpell_num = SID_FLAME_WAVE
+   viSchool = SS_FAREN
+   viSpell_level = 4
+   viMana = 15
+   viSpellExertion = 10
+   viMeditate_ratio = 30
+
+   viCast_time = 1000
+   vrSucceed_wav = FlameWave_sound
+
+   viHarmful = TRUE
+
+   vrSummonLimitMsg = FlameWave_failed_rsc
+
+properties:
+
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&RedMushroom,3],plReagents);
+      plReagents = Cons([&Firesand,2], plReagents);
+
+      return;
+   }
+
+   CastSpell(who = $, lTargets = $, iSpellPower = 1)
+   {
+      Send(who,@MsgSendUser,#message_rsc=FlameWave_cast_rsc);
+
+      propagate;
+   }
+
+   PlaceWallElements(seed = $)
+   {
+      local lSecondarySeed, lSeeda, lSeedb, iDirection, iXStep, iYStep;
+
+      iDirection = Nth(seed,6);
+      iXStep = Send(self,@GetXStep,#direction=iDirection);
+      iYStep = Send(self,@GetYStep,#direction=iDirection);
+
+      lSecondarySeed = [Nth(seed,1),Nth(seed,2)*3/2,500+Nth(seed,2)*25,Nth(seed,2)/3,300-Nth(seed,2)*2,iDirection,1,0,0];
+
+      % This creates a single row of wall elements up to 10 elements wide. These
+      % will then spawn the secondary wall elements specified above.
+      % [(1)caster,(2)spellpower,(3)duration,(4)charges,(5)speed,(6)direction,(7)step,(8)noise,(9)twirl]
+      lSeeda = [Nth(seed,1),Nth(seed,2)*3/2,500+Nth(seed,2)*25,Nth(seed,2)/20,300-Nth(seed,2)*2,(iDirection+6) MOD 8,1,0,0,lSecondarySeed];
+      lSeedb = [Nth(seed,1),Nth(seed,2)*3/2,500+Nth(seed,2)*25,Nth(seed,2)/20,300-Nth(seed,2)*2,(iDirection+2) MOD 8,1,0,0,lSecondarySeed];
+
+      Send(self,@SpawnElement,#seed=lSeeda,#who=Nth(seed,1),#xoffset=iXStep,#yoffset=iYStep,#walltype=&WallOfFire);
+      Send(self,@SpawnElement,#seed=lSeedb,#who=Nth(seed,1),#xoffset=iXStep,#yoffset=iYStep,#walltype=&WallOfFire);
+
+      propagate;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -64,8 +64,8 @@ messages:
       plMonsters = [ [&GroundwormQueen, 100] ];
 
       plGenerators = [ [10, 15], [19, 12], [23, 23], [4, 24], [8, 50],
-		      [11, 30], [25, 37], [37, 28], [36, 43], [41, 48], 
-		      [49, 34], [45, 22], [14, 41], [19, 30], [28, 50], [39, 37] ];
+            [11, 30], [25, 37], [37, 28], [36, 43], [41, 48], 
+            [49, 34], [45, 22], [14, 41], [19, 30], [28, 50], [39, 37] ];
 
       poShrine = create(&shrine,#shrine_num=SHRINE_BRAMBLE);
       send(self,@newhold,#what=poShrine,#new_row=43,#new_col=32,#fine_col=32);
@@ -146,7 +146,7 @@ messages:
 
       plDeadBrambles = DelListElem(plDeadBrambles,lLoc);
       % No duration when creating the Bramble means it doesn't go away, it isn't DestroyDisposable'd.
-      oBramble = Create(&Brambles,#MaxDamage=piBrambleDamage,#HitPoints=piBrambleHits); 
+      oBramble = Create(&Brambles,#seed=[$,200,0,0,0,0,0,0,0]);
       Send(self,@NewHold,#what=oBramble,#New_row=nth(lLoc,1),#New_col=nth(lLoc,2));
 
       return;

@@ -54,22 +54,11 @@ properties:
 
 messages:
    
-   Constructor(caster = $, duration=75, MaxDamage = 0)
+   Constructor(seed=$)
    {
-      piMaxDamage = MaxDamage;
+      piMaxDamage = Nth(seed,2)/4;
 
       propagate;
-   }
-
-   GetDuration(duration = 0)
-   {
-      local iDuration;
-
-      iDuration = Random(duration-20,duration+20);
-      iDuration = iDuration * 1000;
-      iDuration = bound(iDuration,30000,200000);
-
-      return iDuration;
    }
 
    DoEffect(what = $, periodic=FALSE)
