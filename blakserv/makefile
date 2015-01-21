@@ -6,7 +6,7 @@ TOPDIR=..
 
 !include $(TOPDIR)\common.mak
 
-CFLAGS = $(CFLAGS) /Gr
+CFLAGS = $(CFLAGS)
 
 BLAKSERVLINKFLAGS = /STACK:0x180000 /map /debug /SUBSYSTEM:WINDOWS",5.01"
 
