@@ -111,5 +111,7 @@ $(OUTDIR)\blakserv.exe: $(OBJS) $(OUTDIR)\blakserv.res
     $(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR) >nul
     $(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR) >nul
     $(CP) $(BLAKBINDIR)\jansson.dll $(BLAKSERVRUNDIR) >nul
+    $(CP) $(BLAKBINDIR)\libeay32.dll $(BLAKSERVRUNDIR)
+    $(CP) $(BLAKBINDIR)\ssleay32.dll $(BLAKSERVRUNDIR)
 
 !include $(TOPDIR)\rules.mak
