@@ -101,7 +101,9 @@ $(OUTDIR)\blakserv.exe: $(OBJS) $(OUTDIR)\blakserv.res
 	$(CC) $(CFLAGS) -Fo$(OUTDIR)/ /FpCpch /Fd$(OUTDIR)\vc90.pdb -c $(SOURCEDIR)\version.c
 	$(LINK)	$** $(LIBS) -OUT:$@ $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
 	$(CP) $@ $(BLAKSERVRUNDIR)
-	$(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR) >nul
-	$(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR) >nul
+	$(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\libeay32.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\ssleay32.dll $(BLAKSERVRUNDIR)
 
 !include $(TOPDIR)\rules.mak
