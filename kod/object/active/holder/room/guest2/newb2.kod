@@ -45,20 +45,12 @@ messages:
    {
       local oSign;
 
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=4,#new_col=12);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=4,#new_col=9);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=6,#new_col=9);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=27,#new_col=48);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=29,#new_col=47);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=30,#new_col=45);
 
       propagate;
    }
-
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
-   {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
