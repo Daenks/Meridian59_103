@@ -48,8 +48,8 @@ classvars:
 
    vrName = room_name_guest3
 
-   viTeleport_row = 6
-   viTeleport_col = 8
+   viTeleport_row = 5
+   viTeleport_col = 4
    viTeleport_angle = ANGLE_NORTH_WEST
 
    viDemo_base = RID_GUEST_BASE
@@ -75,8 +75,8 @@ messages:
       plExits = $;
 
       %% TO TOWN
-      plExits = Cons([ 7, 8, viDemo_base + 2, 17, 21, ROTATE_NONE ],plExits);
-      plExits = Cons([ 7, 9, viDemo_base + 2, 17, 21, ROTATE_NONE ],plExits);
+      plExits = Cons([ 4, 3, viDemo_base + 2, 18, 47, ROTATE_NONE ],plExits);
+      plExits = Cons([ 4, 4, viDemo_base + 2, 18, 47, ROTATE_NONE ],plExits);
 
       propagate;
    }
@@ -86,28 +86,28 @@ messages:
       local oSign;
 
       Send(self,@NewHold,#what=Create(&HazarBlacksmith),
-            #new_row=4,#new_col=5,#fine_row=32,#fine_col=32,#new_angle=ANGLE_SOUTH);
+            #new_row=7,#new_col=7,#fine_row=24,#fine_col=24,#new_angle=ANGLE_SOUTH);
 
       oSign = Create(&sign,#desc=guest3_sign,#name=guest3_signname,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=4,#new_col=7,#fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=oSign,#new_row=7,#new_col=5,#fine_row=24,#fine_col=24);
 
       % Lighting
       %  Forge
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BORANGE,#iIntensity=30),
-           #new_row=2,#new_col=6,#fine_row=40,#fine_col=32); 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BORANGE,#iIntensity=30),
+            #new_row=9,#new_col=6,#fine_row=16,#fine_col=24);
 
       %  Torches
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=4,#new_col=8,#fine_row=3,#fine_col=21); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=7,#new_col=4,#fine_row=50,#fine_col=18); 
- 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+            #new_row=7,#new_col=4,#fine_row=53,#fine_col=35);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+            #new_row=4,#new_col=8,#fine_row=6,#fine_col=38);
+
       propagate;
    }
 
    Constructed()
    {
-      plLooping_sounds = [[ fire_sound_guest3, 2, 4 ]];
+      plLooping_sounds = [[ fire_sound_guest3, 9, 6 ]];
 
       propagate;
    }
@@ -116,7 +116,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

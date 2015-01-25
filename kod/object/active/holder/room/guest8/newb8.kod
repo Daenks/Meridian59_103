@@ -56,23 +56,17 @@ messages:
    CreateStandardObjects()
    {
       local oSign;
-      
-      send(self,@NewHold,#what=Create(&NewbPortal),#new_row=2,#new_col=11,
-           #fine_row=32,#fine_col=32,#new_angle=ANGLE_SOUTH);
-      oSign=Create(&Sign,#name=newbie8_signname,#desc=newbie8_sign,#newbie=TRUE);
-      send(self,@newhold,#what=oSign,#new_row=2,#new_col=12,#fine_row=16,
-           #fine_col=16,#new_angle=ANGLE_SOUTH);
+
+      Send(self,@NewHold,#what=Create(&NewbPortal),#new_row=15,#new_col=11,
+            #fine_row=0,#fine_col=32,#new_angle=ANGLE_SOUTH);
+
+      oSign = Create(&Sign,#name=newbie8_signname,
+                     #desc=newbie8_sign,#newbie=TRUE);
+      Send(self,@NewHold,#what=oSign,#new_row=15,#new_col=10,#fine_row=16,
+            #fine_col=48,#new_angle=ANGLE_SOUTH);
 
       propagate;
    }
-
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
-   {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
