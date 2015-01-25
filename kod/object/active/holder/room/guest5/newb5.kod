@@ -25,7 +25,7 @@ resources:
       "whether you're solving a quest or you're plotting with your "
       "allies. The most common way to communicate is with the SAY "
       "command. For example, if you type SAY HELLO, the elder in this "
-      "hut will respond.\n\n"				 
+      "hut will respond.\n\n"
       "Any other player who happens to be in the same map area as you "
       "can hear what you say.  However, most shopkeepers and elders "
       "are hard of hearing; you need to get close for them to hear you.\n\n"
@@ -57,14 +57,6 @@ messages:
 
       propagate;
    }
-
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
-   {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

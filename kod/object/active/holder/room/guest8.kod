@@ -84,7 +84,7 @@ classvars:
 
    vrName = room_name_guest8
 
-   viTeleport_row = 9
+   viTeleport_row = 8
    viTeleport_col = 11
 
    viDemo_base = RID_GUEST_BASE
@@ -108,9 +108,9 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 13, 10, viDemo_base + 2, 9, 54, ROTATE_NONE ],plExits);
-      plExits = Cons([ 13, 11, viDemo_base + 2, 9, 54, ROTATE_NONE ],plExits);
-      plExits = Cons([ 13, 12, viDemo_base + 2, 9, 54, ROTATE_NONE ],plExits);
+      plExits = Cons([ 3, 10, viDemo_base + 2, 26, 14, SET_ANGLE_NORTH ],plExits);
+      plExits = Cons([ 3, 11, viDemo_base + 2, 26, 14, SET_ANGLE_NORTH ],plExits);
+      plExits = Cons([ 3, 12, viDemo_base + 2, 26, 14, SET_ANGLE_NORTH ],plExits);
 
       propagate;
    }
@@ -118,112 +118,112 @@ messages:
    CreateStandardObjects()
    {
       local oSign;
-      % if we put a new npc in here, put it at [4,11].
+      % if we put a new npc in here, put it at [row=13,00,col=11,32].
 
       oSign = Create(&Sign,#name=guest8_signname_1,#desc=guest8_sign_1,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=08,#new_col=11,#fine_row=32,#fine_col=32,
+      Send(self,@NewHold,#what=oSign,#new_row=9,#new_col=11,#fine_row=0,#fine_col=32,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_2,#desc=guest8_sign_2,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=08,#new_col=02,#fine_row=32,#fine_col=48,
+      Send(self,@NewHold,#what=oSign,#new_row=9,#new_col=20,#fine_row=0,#fine_col=16,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_3,#desc=guest8_sign_3,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=14,#new_col=02,#fine_row=32,#fine_col=48,
+      Send(self,@NewHold,#what=oSign,#new_row=3,#new_col=20,#fine_row=0,#fine_col=16,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_4,#desc=guest8_sign_4,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=08,#new_col=06,#fine_row=16,#fine_col=16,
+      Send(self,@NewHold,#what=oSign,#new_row=9,#new_col=16,#fine_row=16,#fine_col=48,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_5,#desc=guest8_sign_5,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=17,#fine_row=16,#fine_col=00,
+      Send(self,@NewHold,#what=oSign,#new_row=6,#new_col=6,#fine_row=16,#fine_col=0,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_6,#desc=guest8_sign_6,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=08,#new_col=20,#fine_row=32,#fine_col=00,
+      Send(self,@NewHold,#what=oSign,#new_row=9,#new_col=3,#fine_row=0,#fine_col=0,
            #new_angle=ANGLE_SOUTH);
       oSign = Create(&Sign,#name=guest8_signname_7,#desc=guest8_sign_7,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=14,#new_col=20,#fine_row=16,#fine_col=00,
+      Send(self,@NewHold,#what=oSign,#new_row=3,#new_col=3,#fine_row=16,#fine_col=0,
            #new_angle=ANGLE_SOUTH);
 
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_WAND),
-           #new_row=9,#new_col=4,#fine_col=32,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=18,#fine_row=16,#fine_col=32,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_THRONE),
-           #new_row=10,#new_col=3,#fine_col=40,#fine_row=16,#new_angle=ANGLE_SOUTH);
+           #new_row=7,#new_col=19,#fine_row=16,#fine_col=32,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SPIDER),
-           #new_row=9,#new_col=19,#fine_col=24,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=3,#fine_row=16,#fine_col=40,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_FEY),
-           #new_row=3,#new_col=20,#fine_col=32,#fine_row=56,#new_angle=ANGLE_WEST);
+           #new_row=13,#new_col=2,#fine_row=40,#fine_col=32,#new_angle=ANGLE_WEST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_LUPOGG),
-           #new_row=2,#new_col=17,#fine_col=32,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=5,#fine_row=48,#fine_col=32,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_LUTE),
-           #new_row=2,#new_col=7,#fine_col=0,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=16,#fine_row=48,#fine_col=0,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_PLATEARMOR),
-           #new_row=13,#new_col=15,#fine_col=16,#fine_row=32,#new_angle=ANGLE_EAST);
+           #new_row=4,#new_col=7,#fine_row=0,#fine_col=48,#new_angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SIGNETRING),
-           #new_row=4,#new_col=2,#fine_col=32,#fine_row=0,#new_angle=ANGLE_EAST);
+           #new_row=13,#new_col=20,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SCIMITAR),
-           #new_row=10,#new_col=19,#fine_col=24,#fine_row=16,#new_angle=ANGLE_SOUTH);
-      Send(self,@NewHold,#what=Create(&ModelNode),#new_row=13,#new_col=7,#fine_col=48,
-           #fine_row=32,#new_angle=ANGLE_WEST);
+           #new_row=7,#new_col=3,#fine_row=16,#fine_col=40,#new_angle=ANGLE_SOUTH);
+      Send(self,@NewHold,#what=Create(&ModelNode),#new_row=4,#new_col=15,
+           #fine_row=0,#fine_col=16,#new_angle=ANGLE_WEST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_FUNGUSBEAST),
-           #new_row=2,#new_col=16,#fine_col=0,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=7,#fine_row=48,#fine_col=0,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_AVAR),
-           #new_row=2,#new_col=19,#fine_col=0,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=4,#fine_row=48,#fine_col=0,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_ORC),
-           #new_row=2,#new_col=20,#fine_col=32,#fine_row=48,#new_angle=ANGLE_SOUTH_WEST);
+           #new_row=14,#new_col=2,#fine_row=48,#fine_col=32,#new_angle=ANGLE_SOUTH_WEST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_CENTIPEDE),
-           #new_row=9,#new_col=20,#fine_col=16,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=2,#fine_row=16,#fine_col=48,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_ANT),
-           #new_row=9,#new_col=18,#fine_col=32,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=4,#fine_row=16,#fine_col=32,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_HAMMER),
-           #new_row=10,#new_col=18,#fine_col=32,#fine_row=16,#new_angle=ANGLE_SOUTH);
+           #new_row=7,#new_col=4,#fine_row=16,#fine_col=32,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SHORTSWORD),
-           #new_row=10,#new_col=20,#fine_col=16,#fine_row=16,#new_angle=ANGLE_SOUTH);
+           #new_row=7,#new_col=2,#fine_row=16,#fine_col=48,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_HELM),
-           #new_row=12,#new_col=15,#fine_col=16,#fine_row=32,#new_angle=ANGLE_EAST);
+           #new_row=5,#new_col=7,#fine_row=0,#fine_col=48,#new_angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_GAUNTLETS),
-           #new_row=14,#new_col=15,#fine_col=16,#fine_row=32,#new_angle=ANGLE_EAST);
+           #new_row=3,#new_col=7,#fine_row=0,#fine_col=48,#new_angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_INKYCAP),
-           #new_row=2,#new_col=5,#fine_col=32,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=17,#fine_row=48,#fine_col=32,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_TOKEN),
-           #new_row=2,#new_col=4,#fine_col=0,#fine_row=48,#new_angle=ANGLE_SOUTH);
+           #new_row=14,#new_col=19,#fine_row=48,#fine_col=0,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_PRISM),
-           #new_row=2,#new_col=2,#fine_col=32,#fine_row=48,#new_angle=ANGLE_SOUTH_EAST);
+           #new_row=14,#new_col=20,#fine_row=48,#fine_col=32,#new_angle=ANGLE_SOUTH_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_POTION),
-           #new_row=9,#new_col=3,#fine_col=40,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=19,#fine_row=16,#fine_col=24,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SCROLL),
-           #new_row=9,#new_col=2,#fine_col=48,#fine_row=16,#new_angle=ANGLE_NORTH);
+           #new_row=8,#new_col=20,#fine_row=16,#fine_col=16,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_SHRINE),
-           #new_row=10,#new_col=4,#fine_col=32,#fine_row=16,#new_angle=ANGLE_SOUTH);
+           #new_row=7,#new_col=18,#fine_row=16,#fine_col=32,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_ALTAR),
-           #new_row=10,#new_col=2,#fine_col=48,#fine_row=16,#new_angle=ANGLE_SOUTH);
+           #new_row=7,#new_col=20,#fine_row=16,#fine_col=16,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_CHALICE),
-           #new_row=14,#new_col=7,#fine_col=48,#fine_row=32,#new_angle=ANGLE_WEST);
+           #new_row=3,#new_col=15,#fine_row=0,#fine_col=16,#new_angle=ANGLE_WEST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_MUSEUM_NEWS),
-           #new_row=12,#new_col=7,#fine_col=48,#fine_row=32,#new_angle=ANGLE_WEST);
+           #new_row=5,#new_col=15,#fine_row=0,#fine_col=16,#new_angle=ANGLE_WEST);
 
       % Lighting
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=6,#new_col=8,#fine_row=47,#fine_col=47); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=12,#new_col=9,#fine_row=56,#fine_col=49); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=12,#new_col=13,#fine_row=53,#fine_col=16); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=6,#new_col=14,#fine_row=46,#fine_col=13); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=6,#new_col=7,#fine_row=48,#fine_col=46); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=11,#new_col=4,#fine_row=7,#fine_col=46); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=4,#fine_row=22,#fine_col=46); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=4,#new_col=6,#fine_row=48,#fine_col=16); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=6,#new_col=15,#fine_row=48,#fine_col=16); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=4,#new_col=16,#fine_row=48,#fine_col=39); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=18,#fine_row=24,#fine_col=16); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=11,#new_col=18,#fine_row=8,#fine_col=15); 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=10,#new_col=14,#fine_row=49,#fine_col=17);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=4,#new_col=13,#fine_row=40,#fine_col=15);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=4,#new_col=9,#fine_row=43,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=10,#new_col=8,#fine_row=50,#fine_col=51);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=10,#new_col=15,#fine_row=48,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=6,#new_col=18,#fine_row=25,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=9,#new_col=18,#fine_row=10,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=12,#new_col=16,#fine_row=48,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=10,#new_col=7,#fine_row=48,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=12,#new_col=6,#fine_row=48,#fine_col=25);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=9,#new_col=4,#fine_row=8,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=6,#new_col=4,#fine_row=24,#fine_col=48);
 
       propagate;
    }
@@ -232,7 +232,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

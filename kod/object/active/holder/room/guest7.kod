@@ -33,7 +33,8 @@ resources:
       "health and your mana return depends largely on your vigor. "
       "Also, running requires vigor "
       "so you definitely want to keep your vigor high. "
-      "There are two ways to increase your vigor--by eating food ([USE] it from your inventory) "
+      "There are two ways to increase your vigor--by eating food "
+      "([USE] it from your inventory) "
       "and by resting (click on the button in the toolbar).  "
       "Resting in inns and taverns will heal your vigor "
       "twice as quickly.  Taverns and stores also frequently sell foodstuffs "
@@ -71,7 +72,8 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 5, 2, viDemo_base + 2, 18, 56, ROTATE_NONE ],plExits);
+      plExits = Cons([ 4, 8, viDemo_base + 2, 16, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 5, 8, viDemo_base + 2, 16, 12, ROTATE_NONE ],plExits);
 
       propagate;
    }
@@ -80,42 +82,43 @@ messages:
    {
       local oSign;
 
-      send(self,@NewHold,#what=Create(&Hazarbartender),#new_row=8,#new_col=7,
-           #new_angle=ANGLE_SOUTH_WEST);
+      Send(self,@NewHold,#what=Create(&Hazarbartender),#new_row=2,#new_col=3,
+           #fine_row=40,#fine_col=0,#new_angle=ANGLE_SOUTH_WEST);
       
       oSign = Create(&Sign,#desc=guest7_sign,#newbie=TRUE,#name=guest7_signname);
-      send(self,@NewHold,#what=oSign,#new_row=4,#new_col=7);
+      Send(self,@NewHold,#what=oSign,#new_row=6,#new_col=3,
+            #fine_row=40,#fine_col=0);
 
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=6,#new_col=4,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=4,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=6,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=3,#new_col=6,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=5,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=6,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=3,
-           #fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=4,
-           #fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=4,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=7,
+           #fine_row=8,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=6,
+           #fine_row=8,#fine_col=32,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_TALLURN),
-           #new_row=2,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);	
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=8,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=7,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=6,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Candle),#new_row=3,#new_col=6,
-           #fine_row=16,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=8,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=2,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=3,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=4,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Candle),#new_row=7,#new_col=4,
+           #fine_row=56,#fine_col=0,#angle=ANGLE_EAST);
 
       % Lighting
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=2,#new_col=4,#fine_row=16,#fine_col=63); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=2,#fine_row=54,#fine_col=40); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=6,#fine_row=55,#fine_col=56); 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=8,#new_col=5,#fine_row=56,#fine_col=33);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=2,#new_col=7,#fine_row=18,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=2,#new_col=3,#fine_row=17,#fine_col=40);
 
       propagate;
    }

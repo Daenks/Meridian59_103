@@ -21,7 +21,8 @@ resources:
    room_name_newb1 = "Raza Inn"
 
    Newbie1_god_name = "Designers' News"
-   Newbie1_god_desc = "Check here for information from the game administrators."
+   Newbie1_god_desc = \
+         "Check here for information from the game administrators."
 
 classvars:
 
@@ -53,19 +54,12 @@ messages:
       {
          oNews = Create(&NewsLink,#nid=NID_ANNOUNCEMENTS,
                         #name=Newbie1_god_name,#desc=Newbie1_god_desc);
-         Send(self,@NewHold,#what=oNews,#new_row=3,#new_col=8,#fine_row=32,#fine_col=16);
+         Send(self,@NewHold,#what=oNews,#new_row=7,#new_col=4,
+               #fine_row=24,#fine_col=56);
       }
 
       propagate;
    }
-
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
-   {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -47,8 +47,8 @@ classvars:
 
    vrName = room_name_guest4
 
-   viTeleport_row = 3
-   viTeleport_col = 5
+   viTeleport_row = 5
+   viTeleport_col = 4
 
    viDemo_base = RID_GUEST_BASE
 
@@ -72,9 +72,7 @@ messages:
       plExits = $;
 
       %% TO TOWN
-      plExits = Cons([ 2, 5, viDemo_base + 2, 23, 21, ROTATE_NONE ],plExits);
-      plExits = Cons([ 2, 6, viDemo_base + 2, 23, 21, ROTATE_NONE ],plExits);
-      plExits = Cons([ 3, 6, viDemo_base + 2, 23, 21, ROTATE_NONE ],plExits);
+      plExits = Cons([ 5, 3, viDemo_base + 2, 12, 47, ROTATE_NONE ],plExits);
 
       propagate;
    }
@@ -83,27 +81,27 @@ messages:
    {
       local oSign;
 
-      send(self,@NewHold,#what=create(&HazarApothecary),#new_row=6,#new_col=4,
-           #fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&HazarApothecary),#new_row=2,#new_col=5,
+            #fine_row=8,#fine_col=8);
 
-      oSign = create(&sign,#desc=guest4_sign,#name=guest4_signname,#newbie=TRUE);
-      send(self,@NewHold,#what=oSign,#new_row=4,#new_col=6,#fine_row=48,#fine_col=32,
-           #newbie=TRUE);
+      oSign = Create(&sign,#desc=guest4_sign,#name=guest4_signname,#newbie=TRUE);
+      Send(self,@NewHold,#what=oSign,#new_row=3,#new_col=3,
+            #fine_row=56,#fine_col=8);
 
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_TALLURN),
-           #new_row=2,#new_col=5,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+            #new_row=6,#new_col=4,#fine_row=8,#fine_col=8,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_POTION),
-           #new_row=5,#new_col=5,#fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
+            #new_row=3,#new_col=4,#fine_row=40,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_TALLURN),
-           #new_row=4,#new_col=7,#fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
+            #new_row=4,#new_col=2,#fine_row=40,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_FLASK_GREEN),
-           #new_row=5,#new_col=5,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+            #new_row=3,#new_col=4,#fine_row=8,#fine_col=8,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_FLASK_STAND),
-           #new_row=5,#new_col=4,#fine_row=24,#fine_col=24,#angle=ANGLE_EAST); 
+            #new_row=3,#new_col=5,#fine_row=16,#fine_col=16,#angle=ANGLE_EAST); 
 
       % Lighting
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=2,#new_col=3,#fine_row=59,#fine_col=51);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+            #new_row=5,#new_col=5,#fine_row=45,#fine_col=53);
 
       propagate;
    }
@@ -112,7 +110,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
