@@ -119,6 +119,11 @@ messages:
       plExits = Cons([ 27, 14, viDemo_base + 8, 4, 11, ROTATE_NONE ],plExits); % Museum
       plExits = Cons([ 27, 14, viDemo_base + 8, 4, 11, ROTATE_NONE ],plExits); % Museum
 
+      plExits = Cons([ 6, 10, viDemo_base + 9, 5, 8, ROTATE_NONE ],plExits); % Adventurer's Hall
+      plExits = Cons([ 6, 11, viDemo_base + 9, 5, 8, ROTATE_NONE ],plExits); % Adventurer's Hall
+      plExits = Cons([ 7, 10, viDemo_base + 9, 5, 8, ROTATE_NONE ],plExits); % Adventurer's Hall
+      plExits = Cons([ 7, 11, viDemo_base + 9, 5, 8, ROTATE_NONE ],plExits); % Adventurer's Hall
+
       propagate;
    }
 
@@ -135,8 +140,6 @@ messages:
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=29,#new_col=5,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Museum
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
-            #new_row=7,#new_col=5,#fine_row=40,#fine_col=32,#new_angle=ANGLE_EAST); % Tavern
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=28,#new_col=7,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Museum
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=26,#new_col=6,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Museum
@@ -144,12 +147,13 @@ messages:
             #new_row=26,#new_col=8,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Museum
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=24,#new_col=5,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Museum
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
-            #new_row=7,#new_col=13,#fine_row=40,#fine_col=32,#new_angle=ANGLE_EAST); % Tavern
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
-            #new_row=10,#new_col=13,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Tavern
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
-            #new_row=10,#new_col=5,#fine_row=32,#fine_col=32,#new_angle=ANGLE_EAST); % Tavern
+
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Apple),
+            #new_row=9,#new_col=13,#fine_row=52,#fine_col=04,#new_angle=ANGLE_EAST); % Tavern
+
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Apple),
+            #new_row=4,#new_col=13,#fine_row=56,#fine_col=04,#new_angle=ANGLE_EAST); % Tavern
+
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=6,#new_col=30,#fine_row=0,#fine_col=32,#new_angle=ANGLE_EAST); % Inn
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
@@ -168,8 +172,6 @@ messages:
             #new_row=6,#new_col=43,#fine_row=0,#fine_col=0,#new_angle=ANGLE_EAST); % Gate
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
             #new_row=16,#new_col=48,#fine_row=56,#fine_col=20,#new_angle=ANGLE_EAST); % Blacksmith
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_TREE1),
-            #new_row=9,#new_col=6,#fine_row=4,#fine_col=32,#new_angle=ANGLE_EAST); % Tavern
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_RAZA_SHRUB),
             #new_row=28,#new_col=5,#fine_row=32,#fine_col=0,#new_angle=ANGLE_EAST); % Museum
 
