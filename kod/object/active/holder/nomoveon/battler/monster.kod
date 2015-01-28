@@ -124,11 +124,14 @@ resources:
    Lm_monster_healing = \
       "%s%s falls back to recover for a moment, then returns to the fight."
 
-   Lm_condition_good = "%s\n\n%s%s is injured, but is still relatively strong."
-   Lm_condition_fair = "%s\n\n%s%s is wounded, but is still relatively strong."
-   Lm_condition_poor = "%s\n\n%s%s is suffering from deep wounds."
+   Lm_condition_healthy = "%s\n\n%q"
+   Lm_condition_good = \
+      "%s\n\n%q\n\n%s%s is injured, but is still relatively strong."
+   Lm_condition_fair = \
+      "%s\n\n%q\n\n%s%s is wounded, but is still relatively strong."
+   Lm_condition_poor = "%s\n\n%q\n\n%s%s is suffering from deep wounds."
    Lm_condition_bad = \
-      "%s\n\n%s%s is weak and seems unlikely to survive much longer."
+      "%s\n\n%q\n\n%s%s is weak and seems unlikely to survive much longer."
 
    Lm_cant_remove_item = "You can't give %s%s away right now."
    Lm_mrcnt_not_selling = "You tried to buy something that is not being sold."
@@ -201,20 +204,28 @@ resources:
 
    autolooted_all = "You loot the corpse clean, and find %d shillings."
    autolooted_all_no_money = "You loot the corpse clean."
-   autolooted_some = "You loot some of the items from your fallen kill, and find %d shillings."
+   autolooted_some = "You loot some of the items from your fallen kill, and "
+      "find %d shillings."
    autolooted_some_no_money = "You loot some of the items from your fallen enemy."
-   autolooted_only_money = "You find nothing easily lootable on your slain enemy other than %d shillings."
+   autolooted_only_money = "You find nothing easily lootable on your slain "
+      "enemy other than %d shillings."
    autolooted_none = "You find nothing easily lootable on your slain enemy."
      
    autoloot_too_far_away = "You're too far away to loot your fallen enemy!"
-   autoloot_got_some_but_full_now = "You pick up some of your slain enemy's loot, but find yourself too encumbered to get it all."
-   autoloot_got_nothing_because_full= "You can't carry any more, so you loot nothing from your fallen enemy."
-   autoloot_got_only_shillings_because_full = "You can't carry any more, so you loot nothing from your fallen enemy, but you do find %d shillings."
+   autoloot_got_some_but_full_now = "You pick up some of your slain enemy's "
+      "loot, but find yourself too encumbered to get it all."
+   autoloot_got_nothing_because_full= "You can't carry any more, so you loot "
+      "nothing from your fallen enemy."
+   autoloot_got_only_shillings_because_full = "You can't carry any more, so you "
+      "loot nothing from your fallen enemy, but you do find %d shillings."
 
 classvars:
 
    vrKocName = monster_koc_name
    viGender = GENDER_NEUTER
+   
+   vbNamedMob = FALSE
+   
    vrDead_icon = $
    vrDead_name = $
 
@@ -272,6 +283,7 @@ classvars:
    % templates, and copies are sold.
    vbSellFromInventory = FALSE
 
+   vrCondition_healthy = Lm_condition_healthy
    vrCondition_good = Lm_condition_good
    vrCondition_fair = Lm_condition_fair
    vrCondition_poor = Lm_condition_poor
@@ -322,6 +334,9 @@ properties:
    ptRandom = $
    ptSpasm = $
 
+   % IMPORTANT NOTE: For higher accuracy, a battler's current health 
+   %(and only current health) is inflated by a factor of 100. Doing so 
+   % avoids truncation errors but is not revealed to users in any way.
    piHit_points = 1
    piMax_hit_points = 1
 
@@ -415,7 +430,7 @@ messages:
       local iStatPoints, iMin, iMax;
 
       piMax_Hit_points = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints));
-      piHit_points = piMax_hit_points;
+      piHit_points = piMax_hit_points*100;
       piMana = piMax_mana;
       piSpellChance = viSpellChance;
       piVisionDistance = viVisionDistance;
@@ -490,6 +505,11 @@ messages:
       return vrKocName;
    }
 
+   IsNamedMob()
+   {
+      return vbNamedMob;
+   }
+   
    % Overridden for specific NPCs,
    % common point for mood changes, except word triggers
    AffectMood( why = $, what = $ )
@@ -689,13 +709,6 @@ messages:
       piAnimation = animation;
 
       return;
-   }
-
-   %%% DrawFX
-
-   GetDrawFX()
-   {
-      return piDrawfx;
    }
 
    %%% Enchantments of Monsters
@@ -1130,7 +1143,9 @@ messages:
             if IsClass(poMaster,&Player)
                AND NOT Send(poMaster,@IsLoggedOn)
             {
-               Post(self,@SetMaster,#oMaster=$);
+               % Send this rather than post, otherwise the master's
+               % piMonsterChasers isn't updated properly.
+               Send(self,@SetMaster,#oMaster=$);
             }
          }
       }
@@ -1294,7 +1309,7 @@ messages:
       }
 
       % Perhaps we heal this chase moment.
-      if piHit_points < piMax_hit_points AND Random(0,18) < 2
+      if piHit_points < piMax_hit_points*100 AND Random(0,18) < 2
       {
          Send(self,@HealHitPoint);
       }
@@ -1345,7 +1360,7 @@ messages:
       }
 
       % Perhaps we heal this movement tick.
-      if piHit_points < piMax_hit_points AND Random(1,8) = 1
+      if piHit_points < piMax_hit_points*100 AND Random(1,8) = 1
       {
          Send(self,@HealHitPoint);
       }
@@ -1520,7 +1535,7 @@ messages:
 
       % The bigger/tougher I am, the less likely I'm interested in milling
       %  around.
-      if Random(1,140) < piHit_points
+      if Random(1,140) < piHit_points/100
       {
          return;
       }
@@ -1805,7 +1820,7 @@ messages:
 
       if piMinDamage = $ and piMaxDamage = $
       {
-         iDamage = Send(Self,@Fuzzy,#num=viLevel/Random(10,15));
+         iDamage = Send(Self,@Fuzzy,#num=viLevel*100/Random(10,15));
       }
       else
       {
@@ -1817,7 +1832,7 @@ messages:
          {
             piMaxDamage = piMinDamage;
          }
-         iDamage = random(piMinDamage,piMaxDamage);
+         iDamage = random(piMinDamage*100,piMaxDamage*100);
       }
 
       if piEnch_flags & ENCH_PALSY
@@ -1825,7 +1840,7 @@ messages:
          iDamage = iDamage * 3 / 4 ;
       }
       
-      return Bound(iDamage,1,$);
+      return Bound(iDamage,0,$);
    }
 
    % This is the type of damage done.
@@ -1845,12 +1860,25 @@ messages:
       return FALSE;
    }
 
-   AssessDamage(what = $,damage = $,atype = 0, aspell = 0, bonus = 0, scalefactor = 1000,
-                absolute = FALSE)
-   "This is called when something causes damage to us.  "
-   "Applies damage to the battler, calculating appropriate resistances."
+   % Handles damage done to monster
+   % IMPORTANT NOTE: AssessDamage handles both legacy damage calculations and 
+   % high precision damage calculation which avoid truncation. If you feed 
+   % AssessDamage with a high precision damage number such as 941 for 9.41 
+   % points of damage, you need to notify AssessDamage by passing it a 
+   % #precision=TRUE. If you don't, AssessDamage will assume that you are 
+   % passing a legacy damage value and multiply it by 100 for further 
+   % calculations. Most notably, damage from attackspells and melee is now 
+   % handled with high precision. Eventually, all damage calculations should 
+   % be handled in high precision mode.
+   AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
+      absolute=FALSE,precision=FALSE)
    {
       local iDamage,iResist,iPercentClass,i,each_obj;
+
+      if NOT precision
+      {
+         damage = damage * 100;
+      }
 
       if (piBehavior & AI_NPC )
       { 
@@ -1863,7 +1891,8 @@ messages:
 
       if NOT absolute
       {
-         iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,#aspell=aspell,#damage=damage);
+         iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,
+            #aspell=aspell,#damage=damage);
          iResist = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
          iDamage = Send(self,@GetDamageFromResistance,#what=iDamage,#value=iResist);
          iDamage = iDamage + bonus;
@@ -1875,10 +1904,10 @@ messages:
       }
 
       % Set a predamage mark... we'll compare to it to see if threshold crossed.
-      iPercentClass = piHit_points*5/piMax_hit_points;
+      iPercentClass = piHit_points/(piMax_hit_points*20);
 
-      % Always do a minimum of one point of damage.
-      iDamage = Bound(iDamage,1,$);
+      % Make sure we don't deal negative damage.
+      iDamage = Bound(iDamage,0,$);
       
       % I hate my target more if he hits me.
       if what = poTarget
@@ -1914,7 +1943,7 @@ messages:
       }
 
       % Check to see if we crossed a threshold due to the damage.
-      if iPercentClass <> (piHit_points*5/piMax_hit_points)
+      if iPercentClass <> (piHit_points/(piMax_hit_points*20))
       {
          Send(self,@HitPointThreshold);
       }
@@ -1928,22 +1957,24 @@ messages:
       
       return iDamage;
    }
-   
+
+   % Allows monsters to have armor not related to specific equipped items. 
+   % Based on piArmor.
    ArmorCheck(what=$,damage=0,atype=0,aspell=0,bonus=0)
-   "Allows monsters to have armor not related to specific equipped items. Based on piArmor."
    {
       local iDamageReduce, oAttribute;
 
       for oAttribute in plObject_attributes
       {
-         damage = Send(oAttribute,@ModifyDefenseDamage,#who=self,#what=what,#damage=damage,#atype=atype,#aspell=aspell);
+         damage = Send(oAttribute,@ModifyDefenseDamage,#who=self,#what=what,
+            #damage=damage,#atype=atype,#aspell=aspell);
       }
 
       iDamageReduce = 0;
       if piArmor <> 0
       {
-         iDamageReduce = random(piArmor/3,piArmor);
-         iDamageReduce = bound(iDamageReduce,0,(damage-1));
+         iDamageReduce = random(piArmor*33,piArmor*100);
+         iDamageReduce = bound(iDamageReduce,0,(damage-100));
       }
 
       if aspell <> 0
@@ -3438,9 +3469,9 @@ messages:
 
       % If we have a master, they are responsible for our kills.
       if poMaster <> $
-         AND IsClass(poMaster,&Player)
       {
          if IsClass(what,&Player)
+            AND IsClass(poMaster,&Player)
          {
             % If we killed an innocent, tell the master they're in trouble.
             if (NOT Send(poMaster,@CheckPlayerFlag,#flag=PFLAG_MURDERER))
@@ -3486,14 +3517,25 @@ messages:
 
       if vrDead_icon <> $
       {
-         oBody = Create(&DeadBody,#icon=vrDead_icon,#name=vrDead_name,
-                        #mob=TRUE,#playername=Send(killer,@GetTrueName),
-                        #monstername=vrName,#drawfx=viDead_drawfx);       
+         oBody = Create(&DeadBody,
+                        #victim=self,
+                        #killer=killer,
+                        #drawfx=viDead_drawfx);       
       }
 
       return oBody;
    }
 
+   GetDeadName()
+   {
+      return vrDead_name;
+   }
+   
+   GetDeadIcon()
+   {
+      return vrDead_Icon;
+   }
+   
    Killed(what=$)
    "The mob was just killed."
    {
@@ -4341,10 +4383,15 @@ messages:
       return viOccupation;
    }
 
-   GainHealthNormal(amount = $)
+   GainHealthNormal(amount = $, precision = FALSE)
    "for when holy touch is cast on a good monster"
    {
-      piHit_points = Bound(piHit_points+amount,1,piMax_hit_points);
+      if NOT precision
+      {
+         amount = amount * 100;
+      }
+
+      piHit_points = Bound(piHit_points+amount,1,piMax_hit_points*100);
 
       return;
    }
@@ -4483,7 +4530,7 @@ messages:
    {
       local i, iThreshold, rDamage_report, each_obj;
 
-      iThreshold = piHit_points*5 / piMax_hit_points;
+      iThreshold = piHit_points / (piMax_hit_points *20);
 
       if iThreshold >= 4
       {
@@ -4532,15 +4579,15 @@ messages:
    {
       local iPercentClass,i,each_obj;
 
-      if piHit_points >= piMax_Hit_points
+      if piHit_points >= piMax_Hit_points*100
       {
          return;
       }
 
       % We set a mark to see if the healing changes our threshold
-      iPercentClass = piHit_points*5/piMax_Hit_points;
-      piHit_points = piHit_points+1;
-      if iPercentClass <> (piHit_points*5/piMax_Hit_points)
+      iPercentClass = piHit_points/(piMax_Hit_points*20);
+      piHit_points = piHit_points+100;
+      if iPercentClass <> (piHit_points/(piMax_Hit_points*20))
       {
          for i in Send(poOwner,@GetHolderActive)
          {
@@ -4596,13 +4643,26 @@ messages:
    }
 
    ShowDesc(iHitPoint_Percent = $)
-   "Recently modified to show the condition of the monster."
+   "Adds max HP that can be gained from monster, followed by its condition."
    {
-      local iHit_Percent,rMonster_condition;
+      local iHit_Percent, rHitPoints, rMonster_condition;
+
+      ClearTempString();
+      if piBehavior & AI_NPC
+      {
+         AppendTempString(monster_nothing);
+      }
+      else
+      {
+         AppendTempString("This monster will take you to ");
+         AppendTempString(viLevel);
+         AppendTempString(" hitpoints.");
+      }
+      rHitPoints = GetTempString();
 
       if iHitPoint_Percent = $
       {
-         iHit_Percent = (100 * piHit_points) / piMax_hit_points;
+         iHit_Percent = piHit_points / piMax_hit_points;
       }
       else
       {
@@ -4611,9 +4671,12 @@ messages:
 
       if iHit_Percent > 80
       {
-         propagate;
+         rMonster_condition = vrCondition_healthy;
+         AddPacket(4,vrCondition_healthy,4,vrDesc,4,rHitPoints);
+
+         return;
       }
-      else 
+      else
       {
          if iHit_Percent > 60
          {
@@ -4639,8 +4702,8 @@ messages:
          }
       }
 
-      AddPacket(4,rMonster_Condition, 4,vrDesc, 4,Send(self,@GetCapDef),
-                4,Send(self,@GetName));
+      AddPacket(4,rMonster_Condition, 4,vrDesc, 4,rHitPoints,
+            4,Send(self,@GetCapDef), 4,Send(self,@GetName));
 
       return;
    }
@@ -4666,13 +4729,18 @@ messages:
    SetMaxHitPoints(amount=$)
    {
       piMax_hit_points = amount;
-      piHit_points = amount;
+      piHit_points = amount*100;
 
       return;
    }
 
    % Returns the number of remaining hit points.
    GetHealth()
+   {
+      return piHit_points/100;
+   }
+
+   GetExactHealth()
    {
       return piHit_points;
    }
@@ -4932,8 +5000,9 @@ messages:
 
          % finally we reduce the timer a bit (right now it's exact at ms)
          % why? the client should get a new position before the last destination
-         % is reached. This prevents cases of stuttering if our message was a bit late in transmission.
-         % the client has a dynamic playout which will compensate this.
+         % is reached. This prevents cases of stuttering if our message was a 
+         % bit late in transmission. the client has a dynamic playout which 
+         % will compensate this.
          iTime = iTime - 5;
 		 
 		 % make sure timer interval does not get negative
@@ -5533,9 +5602,10 @@ messages:
 
    CreateTreasure(who=$,corpse=$)
    {
-      local i, j, oReagent, iNumberItems, oTreasure, oTreasure_type, tokengen, iSafetyCntr,
-            lTreasureItems, iNumberOfItemsDropped, iNumberOfItemsLooted, iRandomCashAmount, oMoney,
-            iGetResult, bCapacityFailure, bRangeFailure;
+      local i,j,oReagent,iNumberItems,oTreasure,oTreasure_type,tokengen,
+            iSafetyCntr,lTreasureItems,iNumberOfItemsDropped,
+            iNumberOfItemsLooted,iRandomCashAmount,oMoney,iGetResult,
+            bCapacityFailure,bRangeFailure;
 
       % Apparitions, etc, provide no treasure
       if pbIllusion
@@ -5640,7 +5710,8 @@ messages:
          lTreasureItems = cons(oMoney,lTreasureItems);
       }
 
-      % Add one set of spell reagents to the treasure for each type of spell that was cast on the monster.
+      % Add one set of spell reagents to the treasure for each type of spell 
+      % that was cast on the monster.
       for i in plSpellList
       {
          for j in send(i,@GetReagents)
@@ -5728,7 +5799,8 @@ messages:
             {
                if iRandomCashAmount > 0
                {
-                  Send(who,@MsgSendUser,#message_rsc=autoloot_got_only_shillings_because_full,#parm1=Send(oMoney,@GetNumber));
+                  Send(who,@MsgSendUser,#message_rsc=autoloot_got_only_shillings_because_full,
+                     #parm1=Send(oMoney,@GetNumber));
                }
                else
                {
@@ -5743,7 +5815,8 @@ messages:
          {
             if iRandomCashAmount > 0
             {
-               Send(who,@MsgSendUser,#message_rsc=autolooted_all,#parm1=Send(oMoney,@GetNumber));
+               Send(who,@MsgSendUser,#message_rsc=autolooted_all,
+                  #parm1=Send(oMoney,@GetNumber));
             }
             else
             {
@@ -5756,7 +5829,8 @@ messages:
          {
             if iRandomCashAmount > 0
             {
-               Send(who,@MsgSendUser,#message_rsc=autolooted_some,#parm1=Send(oMoney,@GetNumber));
+               Send(who,@MsgSendUser,#message_rsc=autolooted_some,
+                  #parm1=Send(oMoney,@GetNumber));
             }
             else
             {
@@ -5767,7 +5841,8 @@ messages:
          if iNumberOfItemsLooted = 0
             AND iRandomCashAmount > 0
          {
-            Send(who,@MsgSendUser,#message_rsc=autolooted_only_money,#parm1=Send(oMoney,@GetNumber));
+            Send(who,@MsgSendUser,#message_rsc=autolooted_only_money,
+               #parm1=Send(oMoney,@GetNumber));
          }
          
          if iNumberOfItemsLooted = 0
@@ -5874,25 +5949,23 @@ messages:
    {
       local iFlags;
 
-      iFlags = MOVEON_NO;
+      iFlags = viObject_flags | piDrawEffectFlag;
 
-      if NOT (piBehavior & AI_NPC)
+      if (piBehavior & AI_NPC)
       {
-         iFlags = iFlags | BATTLER_YES;
+         iFlags = iFlags & ~OF_ATTACKABLE;
       }
 
       if Send(Self,@MobIsSeller)
       {
-         iFlags = iFlags | BUY_YES;
+         iFlags = iFlags | OF_BUYABLE;
       }
 
       if (viAttributes & MOB_BUYER)
          OR (viAttributes & MOB_RECEIVE)
       {
-         iFlags = iFlags | OFFER_YES;
+         iFlags = iFlags | OF_OFFERABLE;
       }
-
-      iFlags = iFlags | piDrawfx;
 
       return iFlags;
    }
@@ -6174,7 +6247,7 @@ messages:
       
       % If wimpy is set at 50, monster will flee once his health is at 49% of
       %  max.
-      if ((piHit_points * 100)/ piMax_Hit_points) < viWimpy
+      if (piHit_points/ piMax_Hit_points) < viWimpy
       {
          return TRUE;
       }
@@ -6187,6 +6260,7 @@ messages:
       return poMaster;
    }
 
+   % Evil twin and reflection have an override for this.
    SetMaster(oMaster=$)
    {
       if oMaster = $
@@ -6194,43 +6268,13 @@ messages:
          if poMaster <> $
          {
             Send(poMaster,@RemoveControlledMinion,#what=self);
-            if poOwner <> $
-            {
-               Post(poOwner,@SomethingChanged,#what=self);
-            }
 
-            % After the honeymoon is over, go after the master! Exception here
-            % are Reflections who've been captured back by the original caster.
-            % Evil twins will go after the original target.
-            if IsClass(self,&EvilTwin)
-            {
-               poMaster = Send(self,@GetCaster);
-               Send(self,@TargetSwitch,#what=Send(self,@GetIllusionForm),
-                     #iHatred=1000);
-               Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
-                     #value=FALSE);
-            }
-            else
-            {
-               % Reflections return to owner's control, attacking
-               % the player who stole them.
-               if IsClass(self,&Reflection)
-               {
-                  if poMaster = Send(self,@GetOriginal)
-                  {
-                     return;
-                  }
-                  Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
-                  poMaster = Send(self,@GetOriginal);
-                  % Add ourselves back to master's control list.
-                  Send(poMaster,@NewControlledMinion,#minion=self);
-               }
-               else
-               {
-                  Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
-                  poMaster = $;
-               }
-            }
+            % After the honeymoon is over, go after the master!
+            Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
+                  #value=FALSE);
+            Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
+            poMaster = $;
+
             Send(self,@EnterStateChase);
          }
       }
@@ -6238,27 +6282,22 @@ messages:
       {
          poMaster = oMaster;
 
-         if poTarget = poMaster
-         {
-            Send(self,@EnterStateWait);
-         }
-         else
-         {
-            if NOT IsClass(self,&EvilTwin)
-            {
-               Send(self,@EnterStateWait);
-            }
-         }
+         % Break target.
+         Send(self,@EnterStateWait);
 
-         if poOwner <> $
-         {
-            Post(poOwner,@SomethingChanged,#what=self);
-         }
-         if NOT Send(SYS,@IsPKAllowed) AND poTarget <> $
-         {
-            % Forget our target
-            Send(self,@EnterStateWait);
-         }
+         % Uncomment this if post-capture attack behavior changes.
+         %if NOT Send(SYS,@IsPKAllowed)
+         %   AND (poTarget <> $
+         %      AND IsClass(poTarget,&Player))
+         %{
+         %   % Forget our target
+         %   Send(self,@EnterStateWait);
+         %}
+      }
+
+      if poOwner <> $
+      {
+         Post(poOwner,@SomethingChanged,#what=self);
       }
 
       return;
@@ -6297,8 +6336,15 @@ messages:
          return;
       }
 
+      if IsClass(what,&User)
+         AND NOT Send(what,@IsLoggedOn)
+      {
+         % Trying to switch to someone logged off. Can't do that.
+         return;
+      }
+
       piHatred = iHatred;
-      
+
       if poTarget <> $
          AND Send(poTarget,@GetOwner) = poOwner
          AND IsClass(poTarget,&user)
@@ -6369,12 +6415,12 @@ messages:
 
    IsInvisible()
    {
-      return (Send(self,@GetObjectFlags) & DRAWFX_INVISIBLE);
+      return (Send(self,@GetDrawingEffects) & DRAWFX_INVISIBLE);
    }
 
    IsShadowForm()
    {
-      return (Send(self,@GetObjectFlags) & DRAWFX_BLACK);
+      return (Send(self,@GetDrawingEffects) & DRAWFX_BLACK);
    }
 
    GetVaultNum()
