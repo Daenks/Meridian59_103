@@ -30,6 +30,16 @@ resources:
    giantrat_sound_miss = rat_atkm.wav
    giantrat_sound_death = rat_dth.wav
    giantrat_sound_aware = rat_awr.wav
+   
+   giantrat_charmed = \
+      "The giant rat scarfs down the %s and looks at you with "
+      "obvious adoration."
+   giantrat_notcharmed = \
+      "The giant rat scarfs down the %s, sniffs your hand, and looks at "
+      "you expectantly."
+   GiantRat_unwanted_give = \
+      "~k%s%s cocks its head quizzically and sniffs your hand.~n~k"
+   
 
 classvars:
 
@@ -44,7 +54,7 @@ classvars:
 
    viSpeed = SPEED_FAST
    viAttack_type = ATCK_WEAP_CLAW
-   viAttributes = 0
+   viAttributes = MOB_RECEIVE
    viLevel = 30
    viDifficulty = 1
    viVisionDistance = 6
@@ -57,12 +67,21 @@ classvars:
    vrSound_miss = giantrat_sound_miss
    vrSound_aware = giantrat_sound_aware
    vrSound_death = giantrat_sound_death
+   
+   vrUnwanted_give = GiantRat_unwanted_give
 
 properties:
 
    piAnimation = ANIM_NONE
 
 messages:
+
+   Constructor()
+   {
+      plWantedItems = [&Food];
+
+      propagate;
+   }
 
    Constructed()
    {
@@ -126,6 +145,80 @@ messages:
    
       return FALSE;
    }
+   
+   CanAcceptOffer()
+   {
+      return TRUE;
+   }
+
+   GotWantedItem(who=$, obj = 0)
+   {
+      local oPlayerObj, i;
+
+      if NOT IsClass(obj,&Food)
+      {
+         return FALSE;
+      }
+
+      oPlayerObj = $;
+      for i in Send(who,@GetHolderPassive)
+      {
+         if IsClass(i,GetClass(obj))
+         {
+            oPlayerObj = i;
+
+            break;
+         }
+      }
+
+      if oPlayerObj = $
+      {
+         Debug("player offered some food he didn't have.");
+
+         return FALSE;
+      }
+
+      if Send(oPlayerObj,@GetNumber) < Send(obj,@GetNumber)
+      {
+         Debug("Player offered more food than he had.");
+
+         return FALSE;
+      }
+
+      if IsClass(obj,&Cheese)
+         AND (poMaster = $ OR IsClass(poMaster,&User))
+      {
+         %% GiantRat is charmed.
+         Send(self,@SetMaster,#oMaster=who);
+         Post(self,@ResetBehaviorFlags);
+         Post(who,@MsgSendUser,#message_rsc=GiantRat_charmed,
+               #parm1=Send(obj,@GetName));
+      }
+      else
+      {
+         Post(who,@MsgSendUser,#message_rsc=GiantRat_notcharmed,
+               #parm1=Send(obj,@GetName));
+      }
+
+      Send(oPlayerObj,@SubtractNumber,#number=Send(obj,@Getnumber));
+      Send(obj,@Delete);
+
+      return TRUE;
+   }
+
+   TweakBehavior(mob = $)
+   {
+      if poMaster <> $
+      {
+         Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,#value=TRUE);
+         Send(self,@SetBehaviorFlag,#flag=AI_FIGHT_AGGRESSIVE,#value=FALSE);
+         Send(self,@SetBehaviorFlag,#flag=AI_FIGHT_NEWBIESAFE);
+         Send(self,@SetBehaviorFlag,#flag=AI_FIGHT_MONSTERS);
+      }
+
+      return;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
