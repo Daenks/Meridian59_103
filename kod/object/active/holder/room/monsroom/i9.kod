@@ -36,6 +36,8 @@ resources:
 
    i9_portal_icon_rsc = teleport.bgf
 
+   shatterlocked_portal = "The mountain winds howl madly as a spacial bridge forms to somewhere cold and dark..."
+
 classvars:
 
    vrName = room_name_i9
@@ -426,6 +428,33 @@ messages:
          }
       }
 
+      return;
+   }
+
+   CanShatterlockHere()
+   {
+      return TRUE;
+   }
+   
+   Shatterlocked(oPrism=$,lCasters=$)
+   {
+      local i, each_obj;
+      
+      if oPrism <> $
+         AND Send(self,@IsInStonehenge,#what=oPrism)
+      {
+         Send(self,@OpenPortalToTemple);
+      }
+      
+      for i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            Send(each_obj,@MsgSendUser,#message_rsc=shatterlocked_portal);
+         }
+      }
+      
       return;
    }
 

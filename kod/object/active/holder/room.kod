@@ -4734,6 +4734,17 @@ messages:
       pbNoReagents=FALSE;
       return;
    }
-      
+
+   CanShatterlockHere()
+   "Is there a dimensional secret that must be unlocked?"
+   {
+      return FALSE;
+   }
+   
+   Shatterlocked(oPrism=$)
+   {
+      return;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
