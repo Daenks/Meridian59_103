@@ -1,0 +1,49 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BlackDesertLarge is Room
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_BlackDesertLarge = "Black Desert Large"
+   room_BlackDesertLarge = blackdesertlarge.roo
+   BlackDesertLarge_music = temple.mp3
+
+classvars:
+
+   vrName = room_name_BlackDesertLarge
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_MOUNTAIN
+
+properties:
+
+   prRoom = room_BlackDesertLarge
+   piRoom_num = RID_BLACK_DESERT_LARGE
+
+   prMusic = BlackDesertLarge_music
+
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 3
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+messages:
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

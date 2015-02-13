@@ -1,0 +1,49 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WaylayOasis is Room
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_waylay = "Waylay Oasis"
+   room_waylay = waylayoasis.roo
+   waylay_music = temple.mp3
+
+classvars:
+
+   vrName = room_name_waylay
+
+   viTeleport_row = 16
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_MOUNTAIN
+
+properties:
+
+   prRoom = room_waylay
+   piRoom_num = RID_WAYLAY_OASIS
+
+   prMusic = waylay_music
+
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 3
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+messages:
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

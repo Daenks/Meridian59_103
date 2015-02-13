@@ -332,6 +332,7 @@ properties:
    poTerritoryGame = $
    poNodeAttack = $
    poRentableRoomMaintenance = $
+   poDesertMaintenance = $
    
    % Singleton object that keeps track of various game statistics
    poStatistics = $
@@ -483,6 +484,7 @@ messages:
       Send(self,@RecreateQuestEngine);
       Send(self,@RecreateNodeAttack);
       Send(self,@RecreateRentableRoomMaintenance);
+      Send(self,@RecreateDesertMaintenance);
 
       Send(self,@RecreateAllSpells,#figure_totals=FALSE);
       Send(self,@RecreateAllSkills,#figure_totals=FALSE);
@@ -586,6 +588,7 @@ messages:
       Send(self,@RecreateParliament);
       Send(self,@RecreateNodeAttack);
       Send(self,@RecreateRentableRoomMaintenance);
+      Send(self,@RecreateDesertMaintenance);
       Send(self,@RecreateWarEvent);
 	  Send(self,@CreateAllSpellsIfNew);
 	  Send(self,@CreateAllRoomsIfNew);
@@ -1317,6 +1320,7 @@ messages:
       Send(poParliament,@NewDay);
       Send(poNodeAttack,@NewDay);
       Send(poRentableRoomMaintenance,@NewDay);
+      Send(poDesertMaintenance,@NewDay);
       Send(&SoldierShield,@NewDay);
 
       Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewDay);
@@ -2508,7 +2512,9 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_MARION,#class=&OldMarion);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_NORTH,#class=&OldBarloqueNorth);
       Send(self,@CreateOneRoomIfNew,#num=RID_OLD_BAR_SOUTH,#class=&OldBarloqueSouth);
-
+      
+      Send(self,@CreateOneRoomIfNew,#num=RID_WAYLAY_OASIS,#class=&WaylayOasis);
+      Send(self,@CreateOneRoomIfNew,#num=RID_BLACK_DESERT_LARGE,#class=&BlackDesertLarge);
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.
       {
@@ -4733,6 +4739,11 @@ messages:
    {
       return poRentableRoomMaintenance;
    }
+   
+   GetDesertMaintenance()
+   {
+      return poDesertMaintenance;
+   }
 
    RecreateTerritoryGame()
    {
@@ -4789,6 +4800,20 @@ messages:
       else
       {
          poRentableRoomMaintenance = Create(&RentableRoomMaintenance);
+      }
+
+      return TRUE;
+   }
+
+   RecreateDesertMaintenance()
+   {
+      if poDesertMaintenance <> $
+      {
+         Send(poDesertMaintenance,@Recreate);
+      }
+      else
+      {
+         poDesertMaintenance = Create(&DesertMaintenance);
       }
 
       return TRUE;

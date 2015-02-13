@@ -1,0 +1,313 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BlackDesertNoSlopes is Room
+
+constants:
+
+   include blakston.khd
+   
+   % Users can backtrack for a short time.
+   % After that, the rooms they were in disappear.
+   DESERT_ROOM_VANISH_TIME = 60000
+   
+   SECTOR_FLOOR_BEGIN = 1
+   SECTOR_FLOOR_END = 191
+   
+   SECTOR_BORDER = 192
+
+   % Still need to connect the desert to the west and east
+   
+resources:
+
+   room_name_BlackDesertNoSlopes = "The Great Eastern Desert"
+   room_BlackDesertNoSlopes = blackdesertnoslopes.roo
+   BlackDesertNoSlopes_music = temple.mp3
+
+   Desert_room_new = "You wander for a time."
+   Desert_room_old = "You attempt to backtrack."
+
+classvars:
+
+   vrName = room_name_BlackDesertNoSlopes
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_MOUNTAIN
+
+properties:
+
+   prRoom = room_BlackDesertNoSlopes
+   piRoom_num = $
+
+   prMusic = BlackDesertNoSlopes_music
+
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 3
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+   
+   piLongitude = 0
+   piRIDLastRoom = 0
+   piLastRoomDirection = 0
+   
+   ptSelfDeleteTimer = $
+
+messages:
+
+   Constructor(iRID=RID_DESERT_START)
+   {
+      piRoom_num = iRID;
+
+      propagate;
+   }
+   SetProperties(iLongitude=0,iRIDLastRoom=0,iLastRoomDirection=0)
+   {
+      % Keep track of how far east the player has gotten
+      piLongitude = iLongitude;
+      piRIDLastRoom = iRIDLastRoom;
+      piLastRoomDirection = iLastRoomDirection;
+      return;
+   }
+
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)
+   {
+      if NOT isClass(what,&player) OR type = SAY_YELL
+      {
+         propagate;
+      }
+      
+      if StringEqual(string,"randomize")
+      {
+         Send(self,@Randomize);
+      }
+
+      propagate;
+   }
+   
+   Randomize(iSpeed=0)
+   {
+      local i, iHeight, iRowsMax, iColsMax, iNumObjects, each_obj;
+
+      if iSpeed <> 0
+      {
+         Post(self,@Rumble,#duration=5000,#disruption=100);
+      }
+
+      i = SECTOR_FLOOR_BEGIN;
+      iHeight = 0;
+      
+      while i <= SECTOR_FLOOR_END
+      {
+         iHeight = Bound(iHeight + Random(-10,10),0,900);
+         if Random(1,30) = 1
+         {
+            Send(self,@SetSector,#sector=i,
+                                 #animation=ANIMATE_FLOOR_LIFT,
+                                 #height=200,
+                                 #speed=50*iSpeed);
+         }
+         else
+         {
+            Send(self,@SetSector,#sector=i,
+                                 #animation=ANIMATE_FLOOR_LIFT,
+                                 #height=iHeight,
+                                 #speed=iSpeed);
+         }
+
+         i = i + 1;
+      }
+      
+      return;
+   }
+
+   StandardLeaveDir(what = $,dir = $)
+   {
+      local i, iRID, iAngle, iRow, iCol, iLongitudeChange,
+            poDesertMaintenance;
+
+      % Don't move monsters to new rooms.
+      if IsClass(what,&Monster)
+      {
+         return;
+      }
+
+      iRID = 0; % destination RID
+      iRow = 0; % destination row
+      iCol = 0; % destination col
+      iLongitudeChange = 0;
+      
+      if (piLastRoomDirection = LEAVE_NORTH
+         AND dir = LEAVE_SOUTH)
+         OR (piLastRoomDirection = LEAVE_SOUTH
+             AND dir = LEAVE_NORTH)
+         OR (piLastRoomDirection = LEAVE_WEST
+             AND dir = LEAVE_EAST)
+         OR (piLastRoomDirection = LEAVE_EAST
+             AND dir = LEAVE_WEST)
+      {
+         iRID = piRIDLastRoom;
+         Send(what,@MsgSendUser,#message_rsc=Desert_room_old);
+      }
+
+      iAngle = ROTATE_NONE;
+      if dir = LEAVE_NORTH
+      {
+         iAngle = ANGLE_NORTH;
+         iRow = Send(self,@GetRoomRows) - 2;
+         iCol = Send(self,@GetRoomCols) / 2;
+      }
+      if dir = LEAVE_SOUTH
+      {
+         iAngle = ANGLE_SOUTH;
+         iRow = 2;
+         iCol = Send(self,@GetRoomCols) / 2;
+      }
+      if dir = LEAVE_WEST
+      {
+         iAngle = ANGLE_WEST;
+         iLongitudeChange = -1;
+         iRow = Send(self,@GetRoomRows) / 2;
+         iCol = Send(self,@GetRoomCols) - 2;
+      }
+      if dir = LEAVE_EAST
+      {
+         iAngle = ANGLE_EAST;
+         iLongitudeChange = 1;
+         iRow = Send(self,@GetRoomRows) / 2;
+         iCol = 2;
+      }
+
+      poDesertMaintenance = Send(SYS,@GetDesertMaintenance);
+
+      if iRID = 0
+      {
+         iRID = Send(poDesertMaintenance,@DetermineWhereToSendTraveler,
+                      #who=what,
+                      #iLongitude=piLongitude+iLongitudeChange,
+                      #iRIDLastRoom=piRoom_num,
+                      #iLastRoomDirection=dir);
+         Send(what,@MsgSendUser,#message_rsc=Desert_room_new);
+      }
+
+      if iRID <> 0
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=iRID),
+              #new_row=iRow,#new_col=iCol,#new_angle=iAngle);
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      local poDesertMaintenance;
+      
+      poDesertMaintenance = Send(SYS,@GetDesertMaintenance);
+      Send(poDesertMaintenance,@RoomDeleted,#what=self);
+      
+      if ptSelfDeleteTimer <> $
+      {
+         DeleteTimer(ptSelfDeleteTimer);
+         ptSelfDeleteTimer = $;
+      }
+      
+      propagate;
+   }
+   
+   GetRIDLastRoom()
+   {
+      return piRIDLastRoom;
+   }
+   
+   SetRIDLastRoom(iRID=0)
+   {
+      piRIDLastRoom = iRID;
+      return;
+   }
+   
+   GetLastRoomDirection()
+   {
+      return piLastRoomDirection;
+   }
+   
+   SetLastRoomDirection(dir=0)
+   {
+      piLastRoomDirection = dir;
+      return;
+   }
+   
+   GetLongitude()
+   {
+      return piLongitude;
+   }
+   
+   SetLongitude(iLongitude=0)
+   {
+      piLongitude = iLongitude;
+      return;
+   }
+   
+   FirstUserEntered()
+   {
+      if ptSelfDeleteTimer <> $
+      {
+         DeleteTimer(ptSelfDeleteTimer);
+         ptSelfDeleteTimer = $;
+      }
+      else
+      {
+         Send(self,@PopulateMonsters);
+      }
+
+      propagate;
+   }
+
+   LastUserLeft()
+   {
+      if ptSelfDeleteTimer = $
+      {
+         ptSelfDeleteTimer = CreateTimer(self,@SelfDeleteTime,
+                                         DESERT_ROOM_VANISH_TIME);
+      }
+
+      propagate;
+   }
+   
+   SelfDeleteTime(timer=$)
+   {
+      ptSelfDeleteTimer = $;
+      
+      Send(self,@Delete);
+
+      return;
+   }
+   
+   % These rooms only spawn mobs upon the first entrance by a user.
+   % This means users have to keep moving to keep fighting.
+   PopulateMonsters()
+   {
+      local oMonster;
+      
+      oMonster = Create(&XeoEarth);
+      
+      Send(self,@NewHold,#what=oMonster,
+                         #new_row=Random(1,Send(self,@GetRoomRows)),
+                         #new_col=Random(1,Send(self,@GetRoomCols)));
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

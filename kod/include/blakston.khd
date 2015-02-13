@@ -858,9 +858,16 @@
    RID_OLD_MARION = 9001
    RID_OLD_BAR_NORTH = 9002
    RID_OLD_BAR_SOUTH = 9003
+   
+   RID_WAYLAY_OASIS = 9010
+   RID_BLACK_DESERT_LARGE = 9011
+   RID_BLACK_DESERT_NOSLOPES = 9012
 
    % Rentable Rooms 10000+
    RID_RENTABLE_START = 10000
+   
+   % Desert start
+   RID_DESERT_START = 200000
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    % RID Constants with .roo extentions.                           %
