@@ -67,6 +67,7 @@ messages:
       plEdge_exits = $;
 
       plEdge_Exits = Cons([LEAVE_WEST, RID_H4, 39, 36, ROTATE_NONE], plEdge_exits);
+      plEdge_Exits = Cons([LEAVE_EAST, RID_EAST1, 3, 1, ROTATE_NONE], plEdge_exits);
       plEdge_Exits = Cons([LEAVE_SOUTH, RID_H6, 3, 20, ROTATE_NONE], plEdge_exits);
       propagate;
    }

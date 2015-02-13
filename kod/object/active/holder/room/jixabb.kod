@@ -1,0 +1,46 @@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+JixaBB is Room
+
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_jixabb = jixabb.roo
+   room_name_jixabb = "jixabb Room"
+
+classvars:
+
+   vrName = room_name_jixabb
+
+   viTeleport_row = 4
+   viTeleport_col = 3
+
+   viTerrain_type = TERRAIN_CITY | TERRAIN_RESIDENCE
+
+properties:
+
+   prRoom = room_jixabb
+   piRoom_num = RID_JIXA_BB
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 3
+
+
+messages:
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      plExits = Cons([ 7, 3, RID_JIXA, 15, 23, ROTATE_NONE ],plExits);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

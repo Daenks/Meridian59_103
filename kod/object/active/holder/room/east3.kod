@@ -1,0 +1,48 @@
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+East3 is Room
+
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_east3 = east3.roo
+   room_name_east3 = "East3"
+
+classvars:
+
+   vrName = room_name_east3
+
+   viTeleport_row = 16
+   viTeleport_col = 30
+
+   viTerrain_type = TERRAIN_CITY | TERRAIN_RESIDENCE
+
+properties:
+
+   prRoom = room_east3
+   piRoom_num = RID_EAST3
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 3
+
+
+messages:
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      plEdge_exits = Cons([ LEAVE_SOUTH, RID_EAST2, 1, 24, ROTATE_NONE, ROW_IS_GREATER_THAN, 27 ],plEdge_exits);
+      plEdge_exits = Cons([ LEAVE_NORTH, RID_EAST4, 27, 30, ROTATE_NONE, ROW_IS_LESS_THAN, 3 ],plEdge_exits);
+
+      propagate;
+
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
