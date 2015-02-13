@@ -1,0 +1,625 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TosHousing is TosRoom
+
+constants:
+
+   include blakston.khd
+   
+   % bottom stairs are: Row 1-2, Col 1-3
+   % top stairs are: Row 1-2, Col 4+
+   
+   SECTOR_ROOM_ONE = 1
+   SECTOR_ROOM_CONNECT = 2
+   SECTOR_ROOM_TWO = 3
+   
+   SECTOR_STAIR_ACCESS = 8
+   
+   WALL_FRONT_DOOR = 4
+   WALL_BOTTOM_STAIR_ACCESS = 5
+   WALL_TOP_STAIR_ACCESS = 6
+   
+   WALL_ONE_SOUTH_MIDDLE = 10
+   WALL_ONE_SOUTH_WEST = 11
+   
+   WALL_TWO_SOUTH_EAST = 12
+   WALL_TWO_SOUTH_MIDDLE = 13
+   WALL_TWO_SOUTH_WEST = 14
+   
+   FRONT_DOOR_TEX = 9544
+   WALL_TEX = 9575
+   FAKE_DOOR_TEX = 9574
+   CURTAIN_TEX = 1030
+
+resources:
+
+   room_toshousing = toshousing.roo
+   room_name_toshousing = "An ancient home"
+   toshousing_music = tos.mp3
+
+   housing_construction_default_sound = doorrsup.wav
+   
+   bought_new_room_msg = "You buy an extra room for your house."
+   not_enough_money_msg = "You don't have enough money for that!"
+
+classvars:
+
+   vrName = room_name_toshousing
+
+   viTeleport_Row = 8
+   viTeleport_Col = 13
+
+   viTerrain_type = TERRAIN_CITY | TERRAIN_RESIDENCE
+   
+   vrConstructRoomSound = housing_construction_default_sound
+   
+   viRoomTwoPrice = 1000000
+   viRoomThreePrice = 2000000
+   viRoomFourPrice = 3000000
+   
+   vrBoughtNewRoom = bought_new_room_msg
+   vrNotEnoughMoney = not_enough_money_msg
+
+properties:
+
+   prRoom = room_toshousing
+   piRoom_num = $
+   prMusic = toshousing_music
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 0
+   
+   piCurrentFloor = 1
+   
+   plFirstFloorObjects = $
+   plSecondFloorObjects = $
+   
+   plFirstFloorPassives = $
+   plSecondFloorPassives = $
+   
+   plPlacedPassives = $
+   
+   piBoughtRooms = 1
+   
+   poHouseOwner = $
+
+messages:
+
+   Constructor(iRID=RID_TOS_HOUSING_START)
+   {
+      piRoom_num = iRID;
+
+      propagate;
+   }
+
+   Enter(who=$)
+   {
+      Send(self,@NewHold,#what=who,#new_row=8,#new_col=13,
+            #new_angle=ANGLE_NORTH);
+
+      return;
+   }
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      plFirstFloorPassives = Cons([&Skull,
+                              3,
+                              13,
+                              35,
+                              29],plFirstFloorPassives);
+      
+      plFirstFloorPassives = Cons([&Skull,
+                              8,
+                              1,
+                              26,
+                              61],plFirstFloorPassives);
+      
+      plSecondFloorPassives = Cons([&Skull,
+                              3,
+                              2,
+                              27,
+                              6],plSecondFloorPassives);
+
+      Send(self,@NewHold,#what=Create(&Chest),
+           #new_row=4,#new_col=4,#fine_col=10,
+           #fine_col=10,#new_angle=ANGLE_EAST);
+
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      Send(self,@LoadFirstFloor);
+      propagate;
+   }
+
+   SomethingTryGo(what = $,row = $,col = $)
+   {
+      local oTos;
+
+      if row = 8
+         AND col = 13
+         AND piCurrentFloor = 1
+      {
+         oTos = Send(SYS,@FindRoomByNum,#num=RID_TOS);
+         Send(oTos,@Teleport,#what=what);
+         return;
+      }
+
+      propagate;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_row < 3
+         AND new_col > 3
+         AND piCurrentFloor = 1
+      {
+         Send(self,@LoadSecondFloor);
+      }
+
+      if new_row < 3
+         AND new_col < 4
+         AND piCurrentFloor = 2
+      {
+         Send(self,@LoadFirstFloor);
+      }
+
+      propagate;
+   }
+   
+   LoadFirstFloor()
+   {
+      local i, oObj;
+      
+      for i in plPassive
+      {
+         oObj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(oObj,&Item)
+            AND (plFirstFloorObjects = $
+                OR FindListElem(oObj,plFirstFloorObjects) = 0)
+         {
+            plSecondFloorObjects = Cons([oObj,
+                                  Send(oObj,@GetRow),
+                                  Send(oObj,@GetCol),
+                                  Send(oObj,@GetFineRow),
+                                  Send(oObj,@GetFineCol)],
+                                  plSecondFloorObjects);
+         }
+      }
+      
+      for i in plActive
+      {
+         oObj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(oObj,&StorageBox)
+            AND (plFirstFloorObjects = $
+                OR FindListElem(oObj,plFirstFloorObjects) = 0)
+         {
+            plSecondFloorObjects = Cons([oObj,
+                                  Send(oObj,@GetRow),
+                                  Send(oObj,@GetCol),
+                                  Send(oObj,@GetFineRow),
+                                  Send(oObj,@GetFineCol)],
+                                  plSecondFloorObjects);
+         }
+      }
+      
+      for i in plSecondFloorObjects
+      {
+         if Send(Nth(i,1),@GetOwner) <> self
+         {
+            SetNth(i,1,$);
+            plSecondFloorObjects = DelListElem(plSecondFloorObjects,i);
+         }
+         else
+         {
+            Send(self,@LeaveHold,#what=Nth(i,1));
+            Send(Nth(i,1),@NewOwner,#what=$);
+         }
+      }
+      
+      for i in plFirstFloorObjects
+      {
+         if Send(Nth(i,1),@GetOwner) <> $
+         {
+            SetNth(i,1,$);
+            plFirstFloorObjects = DelListElem(plFirstFloorObjects,i);
+         }
+         else
+         {
+            Send(self,@NewHold,#what=Nth(i,1),
+                               #new_row=Nth(i,2),
+                               #new_col=Nth(i,3),
+                               #fine_row=Nth(i,4),
+                               #fine_col=Nth(i,5));
+         }
+      }
+      
+      for i in plPlacedPassives
+      {
+         Send(i,@Delete);
+      }
+      
+      for i in plFirstFloorPassives
+      {
+         oObj = Create(Nth(i,1));
+         plPlacedPassives = Cons(oObj,plPlacedPassives);
+         Send(self,@NewHold,#what=oObj,
+                            #new_row=Nth(i,2),
+                            #new_col=Nth(i,3),
+                            #fine_row=Nth(i,4),
+                            #fine_col=Nth(i,5));
+      }
+      
+      Send(self,@SetSector,#sector=SECTOR_ROOM_ONE,
+           #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      
+      if piBoughtRooms > 1
+      {
+         Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+              #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      }
+      else
+      {
+         Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+              #animation=ANIMATE_FLOOR_LIFT,#height=85,#speed=0);
+      }
+      
+      Send(self,@SetSector,#sector=SECTOR_ROOM_TWO,
+           #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+           
+      Send(self,@SetSector,#sector=SECTOR_ROOM_ONE,
+           #animation=ANIMATE_CEILING_LIFT,#height=85,#speed=0);
+      Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+           #animation=ANIMATE_CEILING_LIFT,#height=85,#speed=0);
+      Send(self,@SetSector,#sector=SECTOR_ROOM_TWO,
+           #animation=ANIMATE_CEILING_LIFT,#height=85,#speed=0);
+           
+      Send(self,@ChangeTexture,#id=WALL_FRONT_DOOR,
+                               #new_texture=FRONT_DOOR_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_BOTTOM_STAIR_ACCESS,
+                               #new_texture=CURTAIN_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_TOP_STAIR_ACCESS,
+                               #new_texture=WALL_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_TWO_SOUTH_MIDDLE,
+                               #new_texture=WALL_TEX,
+                               #flags=CTF_NORMALWALL);
+
+      Send(self,@AnimateWall,#wall=WALL_BOTTOM_STAIR_ACCESS,
+                             #animation=ANIMATE_NONE,
+                             #first_group=1,
+                             #passable=TRUE); 
+      Send(self,@AnimateWall,#wall=WALL_TOP_STAIR_ACCESS,
+                             #animation=ANIMATE_NONE,
+                             #first_group=1,
+                             #passable=FALSE); 
+           
+      piCurrentFloor = 1;
+
+      return;
+   }
+
+   LoadSecondFloor()
+   {
+      local i, oObj;
+      
+      for i in plPassive
+      {
+         oObj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(oObj,&Item)
+            AND (plSecondFloorObjects = $
+                OR FindListElem(oObj,plSecondFloorObjects) = 0)
+         {
+            plFirstFloorObjects = Cons([oObj,
+                                  Send(oObj,@GetRow),
+                                  Send(oObj,@GetCol),
+                                  Send(oObj,@GetFineRow),
+                                  Send(oObj,@GetFineCol)],
+                                  plFirstFloorObjects);
+         }
+      }
+      
+      for i in plActive
+      {
+         oObj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(oObj,&StorageBox)
+            AND (plSecondFloorObjects = $
+                OR FindListElem(oObj,plSecondFloorObjects) = 0)
+         {
+            plFirstFloorObjects = Cons([oObj,
+                                  Send(oObj,@GetRow),
+                                  Send(oObj,@GetCol),
+                                  Send(oObj,@GetFineRow),
+                                  Send(oObj,@GetFineCol)],
+                                  plFirstFloorObjects);
+         }
+      }
+      
+      for i in plFirstFloorObjects
+      {
+         if Send(Nth(i,1),@GetOwner) <> self
+         {
+            SetNth(i,1,$);
+            plFirstFloorObjects = DelListElem(plFirstFloorObjects,i);
+         }
+         else
+         {
+            Send(self,@LeaveHold,#what=Nth(i,1));
+            Send(Nth(i,1),@NewOwner,#what=$);
+         }
+      }
+      
+      for i in plSecondFloorObjects
+      {
+         if Send(Nth(i,1),@GetOwner) <> $
+         {
+            SetNth(i,1,$);
+            plSecondFloorObjects = DelListElem(plSecondFloorObjects,i);
+         }
+         else
+         {
+            Send(self,@NewHold,#what=Nth(i,1),
+                               #new_row=Nth(i,2),
+                               #new_col=Nth(i,3),
+                               #fine_row=Nth(i,4),
+                               #fine_col=Nth(i,5));
+         }
+      }
+      
+      for i in plPlacedPassives
+      {
+         Send(i,@Delete);
+      }
+      
+      for i in plSecondFloorPassives
+      {
+         oObj = Create(Nth(i,1));
+         plPlacedPassives = Cons(oObj,plPlacedPassives);
+         Send(self,@NewHold,#what=oObj,
+                            #new_row=Nth(i,2),
+                            #new_col=Nth(i,3),
+                            #fine_row=Nth(i,4),
+                            #fine_col=Nth(i,5));
+      }
+      
+      Send(self,@SetSector,#sector=SECTOR_ROOM_ONE,
+           #animation=ANIMATE_CEILING_LIFT,#height=173,#speed=0);
+      Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+           #animation=ANIMATE_CEILING_LIFT,#height=173,#speed=0);
+      Send(self,@SetSector,#sector=SECTOR_ROOM_TWO,
+           #animation=ANIMATE_CEILING_LIFT,#height=173,#speed=0);
+           
+      Send(self,@SetSector,#sector=SECTOR_ROOM_ONE,
+           #animation=ANIMATE_FLOOR_LIFT,#height=88,#speed=0);
+      
+      if piBoughtRooms > 3
+      {
+         Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+            #animation=ANIMATE_FLOOR_LIFT,#height=88,#speed=0);
+      }
+      else
+      {
+         Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+            #animation=ANIMATE_FLOOR_LIFT,#height=173,#speed=0);
+      }
+
+      Send(self,@SetSector,#sector=SECTOR_ROOM_TWO,
+           #animation=ANIMATE_FLOOR_LIFT,#height=88,#speed=0);
+           
+      Send(self,@ChangeTexture,#id=WALL_FRONT_DOOR,
+                               #new_texture=WALL_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_BOTTOM_STAIR_ACCESS,
+                               #new_texture=WALL_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_TOP_STAIR_ACCESS,
+                               #new_texture=CURTAIN_TEX,
+                               #flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=WALL_TWO_SOUTH_MIDDLE,
+                               #new_texture=FAKE_DOOR_TEX,
+                               #flags=CTF_NORMALWALL);
+
+      Send(self,@AnimateWall,#wall=WALL_BOTTOM_STAIR_ACCESS,
+                             #animation=ANIMATE_NONE,
+                             #first_group=1,
+                             #passable=FALSE);
+      Send(self,@AnimateWall,#wall=WALL_TOP_STAIR_ACCESS,
+                             #animation=ANIMATE_NONE,
+                             #first_group=1,
+                             #passable=TRUE);
+           
+      piCurrentFloor = 2;
+
+      return;
+   }
+
+   DisposeTimer()
+   "Called by the dispose timer."
+   {
+      % If someone's in the room, don't do anything.  Try later.
+      if pbUser_in_room
+      {
+         ptDispose = $;
+         ptDispose = CreateTimer(self,@DisposeTimer,piDispose_delay);
+
+         return;
+      }
+
+      propagate;
+   }
+
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)                       
+   {
+      local i, each_obj;
+
+      if NOT isClass(what,&player) OR type = SAY_YELL
+      {
+         propagate;
+      }
+
+      if StringEqual(string,"buy room")
+      {
+         if piBoughtRooms = 1
+         {
+            Send(self,@BuySecondRoom,#who=what);
+            return;
+         }
+         if piBoughtRooms = 2
+         {
+            Send(self,@BuyThirdRoom,#who=what);
+            return;
+         }
+         if piBoughtRooms = 3
+         {
+            Send(self,@BuyFourthRoom,#who=what);
+            return;
+         }
+      }
+
+      propagate;
+   }
+   
+   BuySecondRoom(who=$)
+   {
+      local oMoney, iCash;
+
+      if IsClass(who,&User)
+      {
+         oMoney = Send(who,@GetMoneyObject);
+         if oMoney = $
+         {
+            % No cash.
+            iCash = 0;
+         }
+         else
+         {
+            iCash = Send(oMoney,@GetValue);
+         }
+         
+         if iCash < viRoomTwoPrice
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrNotEnoughMoney);
+            return;
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrBoughtNewRoom);
+            Send(oMoney,@SubtractNumber,#number=viRoomTwoPrice);
+         }
+      }
+   
+      Send(self,@SomethingWaveRoom,#wave_rsc=vrConstructRoomSound); 
+      Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+           #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=20);
+      piBoughtRooms = 2;
+      return;
+   }
+   
+   BuyThirdRoom(who=$)
+   {
+      local oMoney, iCash;
+
+      if IsClass(who,&User)
+      {
+         oMoney = Send(who,@GetMoneyObject);
+         if oMoney = $
+         {
+            % No cash.
+            iCash = 0;
+         }
+         else
+         {
+            iCash = Send(oMoney,@GetValue);
+         }
+         
+         if iCash < viRoomThreePrice
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrNotEnoughMoney);
+            return;
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrBoughtNewRoom);
+            Send(oMoney,@SubtractNumber,#number=viRoomThreePrice);
+         }
+      }
+      
+      Send(self,@SomethingWaveRoom,#wave_rsc=vrConstructRoomSound); 
+      Send(self,@SetSector,#sector=SECTOR_STAIR_ACCESS,
+           #animation=ANIMATE_FLOOR_LIFT,#height=8,#speed=20);
+      piBoughtRooms = 3;
+      return;
+   }
+   
+   BuyFourthRoom(who=$)
+   {
+      local oMoney, iCash;
+
+      if IsClass(who,&User)
+      {
+         oMoney = Send(who,@GetMoneyObject);
+         if oMoney = $
+         {
+            % No cash.
+            iCash = 0;
+         }
+         else
+         {
+            iCash = Send(oMoney,@GetValue);
+         }
+         
+         if iCash < viRoomFourPrice
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrNotEnoughMoney);
+            return;
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrBoughtNewRoom);
+            Send(oMoney,@SubtractNumber,#number=viRoomFourPrice);
+         }
+      }
+
+      Send(self,@SomethingWaveRoom,#wave_rsc=vrConstructRoomSound);
+      if piCurrentFloor = 2
+      {
+         Send(self,@SetSector,#sector=SECTOR_ROOM_CONNECT,
+            #animation=ANIMATE_FLOOR_LIFT,#height=88,#speed=20);
+      }
+      piBoughtRooms = 4;
+      return;
+   }
+
+   SetOwner(who=$)
+   {
+      poHouseOwner = who;
+      return;
+   }
+
+   GetHouseOwner()
+   {
+      return poHouseOwner;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

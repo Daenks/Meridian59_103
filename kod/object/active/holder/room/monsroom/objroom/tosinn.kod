@@ -132,5 +132,24 @@ messages:
       propagate;
    }
 
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)                       
+   {
+      local i, each_obj, poTosHousingMaintenance;
+
+      if NOT isClass(what,&player) OR type = SAY_YELL
+      {
+         propagate;
+      }
+
+      if StringEqual(string,"buy house")
+      {
+         poTosHousingMaintenance = Send(SYS,@GetTosHousingMaintenance);
+         Send(poTosHousingMaintenance,@BuyHouse,#who=what);
+      }
+
+      propagate;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

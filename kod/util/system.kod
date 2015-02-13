@@ -332,6 +332,7 @@ properties:
    poTerritoryGame = $
    poNodeAttack = $
    poRentableRoomMaintenance = $
+   poTosHousingMaintenance = $
    
    % Singleton object that keeps track of various game statistics
    poStatistics = $
@@ -483,6 +484,7 @@ messages:
       Send(self,@RecreateQuestEngine);
       Send(self,@RecreateNodeAttack);
       Send(self,@RecreateRentableRoomMaintenance);
+      Send(self,@RecreateTosHousingMaintenance);
 
       Send(self,@RecreateAllSpells,#figure_totals=FALSE);
       Send(self,@RecreateAllSkills,#figure_totals=FALSE);
@@ -586,6 +588,7 @@ messages:
       Send(self,@RecreateParliament);
       Send(self,@RecreateNodeAttack);
       Send(self,@RecreateRentableRoomMaintenance);
+      Send(self,@RecreateTosHousingMaintenance);
       Send(self,@RecreateWarEvent);
 	  Send(self,@CreateAllSpellsIfNew);
 	  Send(self,@CreateAllRoomsIfNew);
@@ -4733,6 +4736,11 @@ messages:
    {
       return poRentableRoomMaintenance;
    }
+   
+   GetTosHousingMaintenance()
+   {
+      return poTosHousingMaintenance;
+   }
 
    RecreateTerritoryGame()
    {
@@ -4789,6 +4797,20 @@ messages:
       else
       {
          poRentableRoomMaintenance = Create(&RentableRoomMaintenance);
+      }
+
+      return TRUE;
+   }
+   
+   RecreateTosHousingMaintenance()
+   {
+      if poTosHousingMaintenance <> $
+      {
+         Send(poTosHousingMaintenance,@Recreate);
+      }
+      else
+      {
+         poTosHousingMaintenance = Create(&TosHousingMaintenance);
       }
 
       return TRUE;
@@ -5072,6 +5094,7 @@ messages:
       plItemTemplates = cons(create(&RoomKey),plItemTemplates);
       plItemTemplates = cons(create(&SanctuaryKey),plItemTemplates);
       plItemTemplates = cons(create(&Key),plItemTemplates);
+      plItemTemplates = cons(create(&HouseKey),plItemTemplates);
 
       plItemTemplates = cons(create(&SpiderEggShell),plItemTemplates);
       plItemTemplates = cons(create(&SpiderEgg),plItemTemplates);

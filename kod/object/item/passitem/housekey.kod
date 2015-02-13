@@ -1,0 +1,167 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HouseKey is PassiveItem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   HouseKey_name_rsc = "house key"
+   HouseKey_icon_rsc = roomkey.bgf
+   HouseKey_desc_rsc = "This key will take you to your house in Tos "
+                       "if you use it in Familiars."
+
+classvars:
+
+   vrName = HouseKey_name_rsc
+   vrIcon = HouseKey_icon_rsc
+   vrDesc = HouseKey_desc_rsc
+
+   viItem_type = ITEMTYPE_SPECIAL
+
+   viBulk = 1
+   viWeight = 1
+   viValue_average = 80
+
+   viUse_type = ITEM_SINGLE_USE
+
+properties:
+
+   piRID = $
+
+messages:
+
+   Constructor(iRID=$)
+   {
+      if iRID = $
+      {
+         post(self,@Delete);
+
+         return;
+      }
+
+      piRID = iRID;
+
+      propagate;
+   }
+
+   CanBeGivenToNPC()
+   {
+      return FALSE;
+   }
+
+   GetRID()
+   {
+      return piRID;
+   }
+
+   OriginalDeleted()
+   {
+      if (poOwner <> $) and isClass(poOwner,&User)
+      {
+         if NOT send(poOwner,@IsLoggedOn)
+         {
+            if Send(poOwner,@GetSaveRoom) = piRID
+            {
+               Send(poOwner,@AdminGoToSafety);
+            }
+         }
+      }
+      
+      send(self,@Delete);
+      
+      return;
+   }
+   
+   SendAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+
+   SendInventoryAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,1);
+
+      return;
+   }
+
+   ReqNewApply()
+   {
+      return TRUE;
+   }
+
+   NewApplied(what = $,apply_on = $)
+   {
+      local oRoom, oInn;
+      
+      oRoom = Send(SYS,@FindRoomByNum,#num=piRID);
+      oInn = Send(SYS,@FindRoomByNum,#num=RID_TOS_INN);
+
+      if send(what,@GetOwner) = oInn
+      {
+         % Can't bring a token in; no one can follow you
+         if Send(what, @PossessesA, #class = &Token) 
+         {
+            return;
+         }
+
+         send(what,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,#duration=750);
+         send(send(SYS,@FindRoomByNum,#num=piRID),@Enter,#who=what);
+      }
+
+      return;
+   }
+
+   ReqNewOwner(what=$)
+   {
+      return FALSE;
+   }
+
+   CanSwap()
+   {
+      return FALSE;
+   }
+
+   CanShatter()
+   {
+      return FALSE;
+   }
+
+   ReqDMDelete()
+   "Keys are not deleted with the DM clear inventory command."
+   {
+      return FALSE;
+   }
+   
+   CanBeStoredInVault()   
+   {
+      return FALSE;
+   }
+
+   DropOnDeath()
+   {
+      return FALSE;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
