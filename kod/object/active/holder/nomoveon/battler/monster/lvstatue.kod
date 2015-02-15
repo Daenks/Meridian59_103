@@ -141,7 +141,7 @@ classvars:
 
    viTreasure_type = TID_STATUE
 
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
 
    vrSound_hit = LivingStatue_sound_attack
    vrSound_miss = LivingStatue_sound_attack
@@ -158,6 +158,10 @@ classvars:
    viNormalSpeed = SPEED_AVERAGE
    viCashmin = 150
    viCashmax = 500
+
+   vbBlock = TRUE
+   vbParry = TRUE
+
 
 properties:
 
@@ -459,29 +463,6 @@ messages:
       vrName = LivingStatue_active_name_rsc;
 
       return;
-   }
-
-   %%% Defense messages
-
-   GetParryAbility(stroke_obj=$)
-   {
-      if (stroke_obj <> $) AND NOT Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-      
-      return (viDifficulty*10)/2;
-   }
-
-   GetBlockAbility(stroke_obj=$)
-   {
-      if ((stroke_obj <> $) AND NOT Send(stroke_obj,@CanBlock))
-         OR NOT pbHasShield
-      {
-         return 0;
-      }
-      
-      return (viDifficulty*10);
    }
 
    %%% Graphics setup

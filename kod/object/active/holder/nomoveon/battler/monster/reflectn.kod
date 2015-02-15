@@ -51,7 +51,7 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_VERY_FAST
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 45
    viDifficulty = 4
@@ -69,6 +69,9 @@ classvars:
 
    viDefault_behavior = AI_FIGHT_MONSTERS | AI_FIGHT_NEWBIESAFE \
                         | AI_FIGHT_AGGRESSIVE
+
+   vbBlock = TRUE
+   vbParry = TRUE
 
 properties:
 
@@ -458,21 +461,21 @@ messages:
       return iDamage * piDamagePercent / 100;
    }
 
-   GetDamageType(what=$,use_weapon=$)
+   GetAttackType(what=$,use_weapon=$)
    {
       if poOriginal = $
       {
-         return viAttack_type;
+         return viAttackType;
       }
 
-      return Send(poOriginal,@GetDamageType,#what=what,#use_weapon=use_weapon);
+      return Send(poOriginal,@GetAttackType,#what=what,#use_weapon=use_weapon);
    }
 
    GetSpellType(what=$,use_weapon=$)
    {
       if poOriginal = $
       {
-         return viAttack_spell;
+         return viSpellType;
       }
 
       return Send(poOriginal,@GetSpellType,#what=what,#use_weapon=use_weapon);
@@ -552,9 +555,7 @@ messages:
       return;
    }
 
-   % The next three messages deal with the three defense skills.
-   % These messages return the relative values of the three skills.
-   %  Used in player for defense, used in battler for defense messages.
+   % Defensive Abilities
    GetParryAbility(stroke_obj=$)
    {
       return Send(poOriginal,@GetParryAbility,#stroke_obj=stroke_obj);

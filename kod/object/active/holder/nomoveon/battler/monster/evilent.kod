@@ -46,7 +46,7 @@ classvars:
    vrDead_name = EvilEnt_dead_name_rsc
 
    viTreasure_type = TID_ENT
-   viAttack_type = ATCK_WEAP_WHIP
+   viAttackType = ATCK_WEAP_WHIP
    viSpeed = SPEED_NONE
    viAttributes = MOB_NOMOVE
    viDefault_behavior = AI_NOMOVE | AI_FIGHT_KARMA_AGGRESSIVE
@@ -194,11 +194,11 @@ messages:
       return;
    }
 
-   AssessDamage(aSpell=0)
+   AssessDamage(spelltype=0)
    {
       % Living trees get more dangerous if you burn 'em.
 
-      if (aSpell & ATCK_SPELL_FIRE) AND piSpellChance > 2
+      if (spelltype & ATCK_SPELL_FIRE) AND piSpellChance > 2
       {
          piSpellChance = piSpellChance - 1;
       }

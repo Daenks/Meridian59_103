@@ -48,7 +48,7 @@ classvars:
 
    viTreasure_type = TID_VERY_TOUGH
    viSpeed = SPEED_SLOW
-   viAttack_type = ATCK_WEAP_CLAW
+   viAttackType = ATCK_WEAP_CLAW
    viAttributes = 0
    viLevel = 170
    viDifficulty = 9
@@ -92,6 +92,16 @@ messages:
       Send(self,@DoSlash);
 
       return;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Claws;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    DoSlash()

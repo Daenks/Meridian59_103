@@ -53,7 +53,7 @@ messages:
    ItemReqUse(oItem=$,oPlayer=$)
    {
       %% This person needs 50% in the weapon's proficiency to use
-      if Send(oItem,@GetProf,#who=oPlayer) < 50
+      if Send(oPlayer,@GetSkillAbility,#skill_num=Send(oItem,@GetProfNum)) < 50
       {
          Send(oPlayer,@MsgSendUser,#message_rsc=blinder_fail_use,
                #parm1=Send(oItem,@GetDef),#parm2=Send(oItem,@GetName));
@@ -71,26 +71,31 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
-   "Wielder has a 1% chance of blinding target with any hit."
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
+   "Wielder has a 15% chance of blinding target with any hit."
    {
       local oSpell;
+      
+      if what = $
+      {
+         return 0;
+      }
 
       if Random(1,100) < piEffect_percent
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_blind);
 
          %% No duplicates
-         if NOT Send(target,@IsEnchanted,#what=oSpell)
+         if NOT Send(what,@IsEnchanted,#what=oSpell)
          {
-            Send(oSpell,@CastSpell,#who=self,#ltargets=[target],#iSpellPower=50,#bItemCast=TRUE);
-            Send(wielder,@MsgSendUser,#message_rsc=blinder_worked,
-                 #parm1=Send(target,@GetCapDef),#parm2=Send(target,@GetName),
-                 #parm3=Send(target,@GetHisher));
+            Send(oSpell,@CastSpell,#who=self,#ltargets=[what],#iSpellPower=50,#bItemCast=TRUE);
+            Send(who,@MsgSendUser,#message_rsc=blinder_worked,
+                 #parm1=Send(what,@GetCapDef),#parm2=Send(what,@GetName),
+                 #parm3=Send(what,@GetHisher));
          }
       }
 
-      return Damage;
+      return 0;
    }
 
    IsMagicalEffect()

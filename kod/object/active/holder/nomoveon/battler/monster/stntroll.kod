@@ -85,6 +85,11 @@ messages:
       propagate;
    }
 
+   GetMonsterWeaponClass()
+   {
+      return &Claws;
+   }
+
    MonsterAttack(what = $)
    {
       piAnimation = ANIM_ATTACK;

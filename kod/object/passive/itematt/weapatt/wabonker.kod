@@ -53,18 +53,23 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder has a 1% chance of blinding target with any hit."
    {
       local oSpell;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if random(1,100) <= piEffect_percent
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_BONK);
-         Send(oSpell,@CastSpell,#who=wielder,#lTargets=[target],#iSpellPower=50,#bItemCast=TRUE);
+         Send(oSpell,@CastSpell,#who=who,#lTargets=[what],#iSpellPower=50,#bItemCast=TRUE);
       }
 
-      return Damage;
+      return 0;
    }
 
    IsMagicalEffect()

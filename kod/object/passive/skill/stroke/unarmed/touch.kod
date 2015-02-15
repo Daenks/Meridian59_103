@@ -1,0 +1,119 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Touch is Unarmed
+
+constants:
+
+   include blakston.khd
+
+resources:
+   touch_name_rsc = "touch"
+   touch_icon_rsc = light.bgf
+   touch_desc_rsc = "Touching a target allows a mage to transfer a charge of "
+      "magical energy. The results may vary wildly and depend largely upon the "
+      "type of magic that is used."
+
+   touch_skill_intro = "Weaponcraft Lv. 1: The most basic way to transfer "
+      "magical energy to a target."
+
+   touch_first_person = "touch"
+   touch_third_person = "touches"
+   touch_action_noun = "touch"
+
+classvars:
+
+   vrName = touch_name_rsc
+   vrIcon = touch_icon_rsc
+   vrDesc = touch_desc_rsc
+
+   vrStroke_first_person = touch_first_person
+   vrStroke_third_person = touch_third_person
+   vrStroke_action_noun = touch_action_noun
+
+   vrSkill_intro = touch_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+   viSchool = SKS_FENCING
+
+   viSkill_num = SKID_TOUCH
+   viSkillExertion = 3
+   vbCheck_exertion = FALSE
+
+   viSkill_level = 1
+
+properties:
+
+messages:
+
+   GetAbility(who=$)
+   {
+      % Touch is not available to battlers as an actual skill. For players,
+      % we return a rating based on the battler's maximum health. Monsters are
+      % covered in the superclass already.
+      if IsClass(who,&Player)
+      {
+         return bound(Send(who,@GetMaxHealth),20,100);
+      }
+
+      propagate;
+   }
+
+   SendMissSound(who=$,victim=$,use_weapon = $)
+   {
+      local iRandom, rSound;
+      
+      % 'miss' sound
+      if vrMiss_Sound = $
+      {
+         % Play a random miss sound.
+         iRandom = random(1,3);
+         if iRandom = 1
+         {
+            rSound = TouchAttack_missed1_sound;
+         }
+         else
+         {
+            if iRandom = 2
+            {
+               rSound = TouchAttack_missed2_sound;
+            }
+            else
+            {
+               rSound = TouchAttack_missed3_sound;
+            }
+         }
+      }
+      else
+      {
+         rSound = vrMiss_Sound;
+      }
+      
+      Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=rSound);
+
+      return;
+   }
+
+   DoAnimation(who=$)
+   "Do the cast animation."
+   {
+      Send(who,@DoCast);
+
+      return;
+   }
+   
+   GetHitsound()
+   {
+      return touchattack_hit_sound;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

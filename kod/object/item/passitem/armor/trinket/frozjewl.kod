@@ -1,0 +1,210 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+JewelofFroz is Trinket
+
+constants:
+
+   include blakston.khd
+
+   ANIM_FLASH = 2
+
+resources:
+
+   frozjewel_name_rsc = "Jewel of Froz"
+   frozjewel_icon_rsc = frozjewl.bgf
+   frozjewel_desc_rsc = \
+      "This gem was created by the great alchemist, Froz, in a secret process "
+      "known only to him. Rumor has it that it is a conduit for mystical "
+      "aggression, using raw mana to boost elemental touch spells. "
+      "Your hand tingles when you hold it."
+
+   jof_condition_exc = " is in immaculate condition."
+   jof_condition_good = " is lightly scratched."
+   jof_condition_med = \
+      " is moderately scratched, and appears slightly opaque."
+   jof_condition_poor = \
+      " is heavily scratched and seems to be losing its glow."
+
+   frozjewel_desc_broken_rsc = "The jewel seems ordinary and dull."
+
+   frozjewel_broken = "The Jewel of Froz now seems quite ordinary."
+
+   frozjewel_wrong_weapon = "You realize that you can't attack with your hands "
+      "full and return the Jewel of Froz to your pack."
+
+   frozjewel_no_mana = "You feel too drained to sustain the Jewel of Froz any "
+      "longer and return it to your pack."
+
+classvars:
+
+   vrName = frozjewel_name_rsc
+   vrIcon = frozjewel_icon_rsc
+
+   viUse_type = ITEM_USE_HAND
+   viUse_amount = 1
+
+   viHits_init_min = 350
+   viHits_init_max = 550
+
+   viValue_average = 400
+   viBulk = 10
+   viWeight = 15
+
+   vbShow_condition = TRUE
+
+   vrCondition_exc = jof_condition_exc
+   vrCondition_good = jof_condition_good
+   vrCondition_med = jof_condition_med
+   vrCondition_poor = jof_condition_poor
+   vrCondition_broken = frozjewel_desc_broken_rsc
+
+   viManaLossJewel = 1
+
+   %%% Combat Mods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   viCombatModOffense = 150
+   viCombatModMagic = 150
+
+properties:
+
+   vrDesc = frozjewel_desc_rsc
+   viItem_type = ITEMTYPE_GEM
+
+   piAnimation = ANIM_NONE
+
+   % The mana cost of each successful touchattack while holding the jewel.
+   piManaLossJewel = 1
+
+messages:
+
+   DefaultValues()
+   {
+      piManaLossJewel = viManaLossJewel;
+
+      propagate;
+   }
+
+   ReqUseSomething(what=$)
+   {
+      local i, iJewelNumber;
+
+      if IsClass(what,&Weapon)
+         OR IsClass(what,&Lute)
+      {
+         if Send(poOwner,@TryUnuseItem,#what=self)
+         {
+            propagate;
+         }
+         else
+         {
+            return FALSE;
+         }
+      }
+
+      if IsClass(what,&Shield)
+      {
+         iJewelNumber = 0;
+
+         for i in Send(poOwner,@GetPlayerUsing)
+         {
+            if IsClass(i,&JewelOfFroz)
+               OR IsClass(i,&Book)
+            {
+               iJewelNumber = iJewelNumber + 1;
+            }
+         }
+
+         if iJewelNumber > 1
+         {
+            if Send(poOwner,@TryUnuseItem,#what=self)
+            {
+               propagate;
+            }
+            else
+            {
+               return FALSE;
+            }
+         }
+      }
+
+      propagate;
+   }
+
+   AttackHook(who=$,what=$,use_weapon=$,stroke_obj=$)
+   {
+
+      if NOT IsClass(use_weapon,&MagicWeapon)
+      {
+         if Send(poOwner,@TryUnuseItem,#what=self)
+         {
+            Send(self,@MsgSendUser,#message_rsc=frozjewel_wrong_weapon);
+
+            return TRUE;
+         }
+
+         return FALSE;
+      }
+
+      if Send(who,@GetMana) < piManaLossJewel
+      {
+         if Send(poOwner,@TryUnuseItem,#what=self)
+         {
+            Send(self,@MsgSendUser,#message_rsc=frozjewel_no_mana);
+
+            return TRUE;
+         }
+         
+         return FALSE;
+      }
+
+      Send(who,@LoseMana,#amount=piManaLossJewel);
+
+      return TRUE;
+   }
+
+   DoFlash()
+   {
+      piAnimation = ANIM_FLASH;
+      Send(poOwner,@SomethingChanged,#what=self);
+      piAnimation = ANIM_NONE;
+
+      return;
+   }
+
+   SendAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,2);
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_NONE,2,1);
+
+      return;
+   }
+
+   SendInventoryAnimation()
+   {
+      if piAnimation = ANIM_FLASH
+      {
+         AddPacket(1,ANIMATE_ONCE,4,300,2,3,2,3,2,1);
+      }
+      else
+      {
+         AddPacket(1,ANIMATE_NONE,2,1);
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

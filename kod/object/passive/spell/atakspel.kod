@@ -33,8 +33,8 @@ classvars:
    vrHit = attack_spell_hit_rsc
 
 
-   viAttack_type = 0
-   viAttack_spell = ATCK_SPELL_ALL
+   viAttackType = 0
+   viSpellType = ATCK_SPELL_ALL
 
    % In seconds, since it works off GetTime(),
    viPostCast_time = 2
@@ -130,7 +130,7 @@ messages:
          % A little fudge factor to account for lag drift, etc.
          if IsClass(target,&Player) AND Send(target,@HasMovedRecently)
          {
-            iTotalRange = iTotalRange + RANGE_MOVEMENT_BONUS;
+            iTotalRange = iTotalRange + 1;
          }
 
          if Send(target,@GetOwner) <> $
@@ -157,7 +157,7 @@ messages:
 
    CastSpell(who=$,lTargets=$,iSpellPower=0,bItemCast=FALSE)
    {
-      local i, iDamage, iManaFocus, iTemp, oRoom;
+      local i, iDamage, iManaFocus, iTemp, iReduction, oRoom;
 
       iTemp = $;
 
@@ -239,8 +239,15 @@ messages:
                % To prevent spam, we don't consider 0 damage earthquake hits.
                continue;
             }
-            iDamage = Send(i,@AssessDamage,#what=who,#damage=iDamage,#atype=viAttack_type,
-                           #aspell=Send(self,@GetAttackSpell),#absolute=pbAbsolute,#precision=TRUE);
+
+            % For the sake of printing the absorbed amount later, we split damage
+            % absorption from AssessDamage and handle it here.
+            iReduction = Send(i,@GetDamageReduction,#damage=iDamage,
+                  #attacktype=viAttackType,#spelltype=viSpellType);
+
+            iDamage = Send(i,@AssessDamage,#what=who,#damage=iDamage,
+                        #reduction=iReduction,#attacktype=viAttackType,#spelltype=viSpellType,
+                        #absolute=pbAbsolute,#precision=TRUE);
             if iDamage = $
             {
                if IsClass(who,&Room)
@@ -263,14 +270,18 @@ messages:
          }
          else
          {
+            iReduction = Send(i,@GetDamageReduction,#damage=iDamage,
+                  #attacktype=viAttackType,#spelltype=viSpellType);
+
             iDamage = Send(i,@AssessDamage,#what=who,#damage=iDamage,
-                        #atype=viAttack_type,#aspell=Send(self,@GetAttackSpell),
-                        #absolute=pbAbsolute,#precision=TRUE);
+                        #reduction=iReduction,#attacktype=viAttackType,
+                        #spelltype=viSpellType,#absolute=pbAbsolute,#precision=TRUE);
          }
 
          if IsClass(who,&Battler)
          {
-            Send(who,@AssessHit,#what=i,#damage=iDamage,#use_weapon=self);
+            Send(who,@AssessHit,#what=i,#damage=iDamage,#use_weapon=self,
+               #reduction=iReduction);
 
             if iDamage = $
             {
@@ -301,14 +312,14 @@ messages:
       return iDamage;
    }
 
-   GetAttackSpell()
+   GetSpellType()
    {
-      return viAttack_spell;
+      return viSpellType;
    }
 
    GetAttackType()
    {
-      return viAttack_type;
+      return viAttackType;
    }
 
    IsRangedAttack()
@@ -324,16 +335,19 @@ messages:
 
    HurtCaster(who=$,iDamage=$)
    {
-      local iFinalDamage;
+      local iFinalDamage, iReduction;
 
       % Adjust damage based on how much it should hurt the caster.
       iDamage = (iDamage * piCasterDmgPct) / 100;
 
       if IsClass(who,&Player)
       {
+         iReduction = Send(who,@GetDamageReduction,#damage=iDamage,
+               #attacktype=viAttackType,#spelltype=viSpellType);
          % Apply the spell damage to the caster. Kill them if necessary.
-         iFinalDamage = Send(who,@AssessDamage,#what=who,#damage=iDamage,#atype=0,
-                           #aspell=viAttack_spell,#report=TRUE,#precision=TRUE);
+         iFinalDamage = Send(who,@AssessDamage,#what=who,#damage=iDamage,
+            #reduction=iReduction,#attacktype=viAttackType,#spelltype=viSpellType,
+            #report=TRUE,#precision=TRUE);
 
          if iFinalDamage = $
          {
@@ -343,7 +357,8 @@ messages:
          else
          {
             Send(who,@MsgSendUser,#message_rsc=vrCast);
-            Send(who,@AssessHit,#what=who,#damage=iFinalDamage,#use_weapon=self);
+            Send(who,@AssessHit,#what=who,#damage=iFinalDamage,#use_weapon=self,
+               #reduction=iReduction);
          }
       }
 

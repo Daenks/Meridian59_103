@@ -22,7 +22,7 @@ WeapAttVamper is WeaponAttribute
 
 constants:
 
-   include blakston.khd
+   include blakston.khd   
 
 resources:
 
@@ -51,9 +51,8 @@ properties:
    piValue_modifier = 200   %% modify the object's price by 100%
    piValue_power_modifier = 10
    piEffect_percent = 10
-
-   piMinHealthGain = 1
-   piMaxHealthGain = 8
+   piMinHealthGain = 6
+   piMaxHealthGain = 10
 
 messages:
 
@@ -63,31 +62,36 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
-   "Wielder has a 10% chance of stealing life from target with any hit."
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
+   "Wielder has a piEffect_percent chance of restoring health with any hit."
    {
       local oSpell;
-      if Random(1,100) <= piEffect_percent
+
+      if what = $
       {
-         Send(wielder,@GainHealth,
-               #amount=Bound(damage,piMinHealthGain,piMaxHealthGain));
-         Send(wielder,@MsgSendUser,#message_rsc=vamper_worked,
-               #parm1=send(target,@GetCapDef),#parm2=Send(target,@GetName),
-               #parm3=send(target,@GetHisHer));
-         Send(target,@MsgSendUser,#message_rsc=vamper_worked_target,
-               #parm1=Send(wielder,@GetCapDef),#parm2=Send(wielder,@GetName),
-               #parm3=Send(wielder,@GetHisHer));
+         return 0;
       }
 
-      return Damage;
+      if Random(1,100) <= piEffect_percent
+      {
+         Send(who,@GainHealth,#amount=random(piMinHealthGain,piMaxHealthGain));
+         Send(who,@MsgSendUser,#message_rsc=vamper_worked,
+               #parm1=send(what,@GetCapDef),#parm2=Send(what,@GetName),
+               #parm3=send(what,@GetHisHer));
+         Send(what,@MsgSendUser,#message_rsc=vamper_worked_target,
+               #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName),
+               #parm3=Send(who,@GetHisHer));
+      }
+
+      return 0;
    }
+
 
    ItemReqUse(oItem=$,oPlayer=$)
    {
-      % Need 50% weapon proficiency to use this weapon attribute.
-      if Send(oItem,@GetProf,#who=oPlayer) < 50
+      if Send(oPlayer,@GetSkillAbility,#skill_num=Send(oItem,@GetProfNum)) < 50 
       {
-         Send(oPlayer,@MsgSendUser,#message_rsc=Vamper_fail_use,
+         Send(oPlayer, @MsgSendUser, #message_rsc = Vamper_fail_use,
                #parm1=Send(oItem,@GetDef),#parm2=Send(oItem,@GetName));
 
          return FALSE;

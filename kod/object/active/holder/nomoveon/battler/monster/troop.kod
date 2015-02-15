@@ -159,7 +159,7 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_FASTER
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = 0
    viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
 
@@ -178,6 +178,9 @@ classvars:
 
    viCashMin = 200
    viCashMax = 600
+
+   vbBlock = TRUE
+   vbParry = TRUE
 
 properties:
 
@@ -210,7 +213,6 @@ properties:
    prNose = FactionTroop_nose_ax_icon
    prToupee = FactionTroop_hair_ac_icon
 
-   plUsing = $
    plOverlays = $
    piBody_translations = 0
    piBody_translations2 = 0
@@ -675,26 +677,6 @@ messages:
       return;
    }
 
-   % Next two messages affect the defense messages.
-   GetParryAbility(stroke_obj=$)
-   {
-      if (stroke_obj <> $) and not Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-      
-      return (viDifficulty*10)/2;
-   }
-
-   GetBlockAbility(stroke_obj=$)
-   {
-      if (stroke_obj <> $) and not Send(stroke_obj,@CanBlock)
-      {
-         return 0;
-      }
-      
-      return (viDifficulty*10);
-   }
    % Returns weapon used.
 
    GetWeapon()

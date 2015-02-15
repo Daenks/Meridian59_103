@@ -89,19 +89,14 @@ messages:
       return piPowerStrength;
    }
    
-   ModifySpellPower(iModifier=0,oSpell=$,oCaster=$)
+   SpellPowerHook(who=$,oSpell=$)
    {
-      if oSpell = $
+      if (oSpell <> $) AND (Send(oSpell,@GetSchool) = Send(self,@GetSchool))
       {
-         return iModifier;
+         return Send(self,@GetStrength);
       }
       
-      if Send(oSpell,@GetSchool) = Send(self,@GetSchool)
-      {
-         return iModifier + Send(self,@GetStrength);
-      }
-      
-      return iModifier;
+      return 0;
    }
    
    AppendDesc()

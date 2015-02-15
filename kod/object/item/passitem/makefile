@@ -5,8 +5,8 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\passitem.bof
-BOFS = arsenic.bof attmod.bof betap.bof bosshead.bof \
-   chalice.bof defmod.bof factflag.bof gem.bof gift.bof healer.bof \
+BOFS = armor.bof arsenic.bof betap.bof bosshead.bof \
+   chalice.bof factflag.bof gem.bof gift.bof healer.bof \
    hstone.bof inscript.bof instrum.bof junk.bof karmapotion.bof key.bof \
    manacrys.bof minigame.bof necklace.bof nerudore.bof numbitem.bof \
    offering.bof orecheap.bof orechunk.bof pforget.bof pillufrm.bof \

@@ -34,7 +34,7 @@ classvars:
    
    viSpell_num = SID_SPLASH_OF_ACID
 
-   viAttack_spell = ATCK_SPELL_ALL + ATCK_SPELL_ACID
+   viSpellType = ATCK_SPELL_ALL + ATCK_SPELL_ACID
 
    viSchool = SS_QOR
    viSpell_level = 4

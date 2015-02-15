@@ -45,7 +45,7 @@ classvars:
    viCashmax = 1500
    viTreasure_type = TID_TOUGH
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_THRUST
+   viAttackType = ATCK_WEAP_THRUST
    viAttributes = 0
    viLevel = 75
    viDifficulty = 5
@@ -53,6 +53,8 @@ classvars:
    viKarma = -50
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT \
                         | AI_MOVE_FLEE_FRIGHTENERS
+
+   vbParry = TRUE
 
    vrSound_miss = skeleton_sound_miss
    vrSound_aware = skeleton_sound_aware
@@ -73,6 +75,11 @@ messages:
       propagate;
    }
 
+   GetMonsterWeaponClass()
+   {
+      return &LongSword;
+   }
+
    SetResistances()
    {
       plResistances = [ [ATCK_WEAP_PIERCE, 70 ],
@@ -86,17 +93,6 @@ messages:
                       ];
 
       return;
-   }
-
-   % Used for defense messages
-   GetParryAbility(stroke_obj=$)
-   {
-      if stroke_obj <> $ AND NOT Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-
-      return (viDifficulty*10)/2;
    }
 
    MonsterAttack(what = $)

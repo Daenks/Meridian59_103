@@ -200,6 +200,9 @@ properties:
    % This amount is added to a battler's offense and defense and serves as a baseline for calculation.
    piBaseRating = 0
 
+   % Determines whether damage values are shown as integers or accurately.
+   piAccuracy = FALSE
+
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
 
@@ -497,6 +500,11 @@ messages:
    GetBaseRating()
    {
       return piBaseRating;
+   }
+
+   GetAccuracy()
+   {
+      return piAccuracy;
    }
 
    GetBroadcastManaCost()

@@ -81,16 +81,9 @@ messages:
       return;
    }
 
-   CastSpell(who=$,iSpellPower=0,lTargets=$)
-   {
-      Send(who,@AddAttackModifier,#what=self);
-
-      propagate;
-   }
-
    GetStateValue(iSpellpower=$)
    {
-      return iSpellpower;
+      return iSpellpower+1;
    }
 
    GetDuration(iSpellPower=0)
@@ -105,8 +98,6 @@ messages:
    EndEnchantment(who=$,report=TRUE,state=0)
    {
       local oHoldSpell, iDuration;
-
-      Send(who,@RemoveAttackModifier,#what=self);
 
       % Now, for the side effect.  Hold 'em!
       oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
@@ -124,15 +115,14 @@ messages:
       propagate;
    }
 
-   % Stuff we handle to be an attack modifier
-   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   OffenseHook(who=$)
    {
-      return hit_roll + 100 + (Send(who,@GetEnchantedState,#what=self)*2);
+      return Send(who,@GetEnchantedState,#what=self)*3;
    }
-   
-   ModifyDamage(who=$,what=$,damage=$)
+
+   DamageHook(who=$)
    {
-      return (damage + 1 + Random(0,Send(who,@GetEnchantedState,#what=self)/20));
+      return Send(who,@GetEnchantedState,#what=self)*2;
    }
 
    GetPotionClass()

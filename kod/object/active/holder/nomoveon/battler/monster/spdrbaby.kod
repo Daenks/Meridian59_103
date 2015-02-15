@@ -43,7 +43,7 @@ classvars:
    viDefault_behavior = AI_FIGHT_AGGRESSIVE
 
    viSpeed = SPEED_SLOW
-   viAttack_type = ATCK_WEAP_BITE
+   viAttackType = ATCK_WEAP_BITE
    viAttributes = MOB_SPASM
    viLevel = 25
    viDifficulty = 4
@@ -67,6 +67,16 @@ messages:
       plResistances = [ [ATCK_WEAP_BLUDGEON, -15] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    DoSpasm()

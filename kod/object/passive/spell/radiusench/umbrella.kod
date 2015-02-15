@@ -78,22 +78,22 @@ messages:
       return;
    }
 
-   ModifyDefensePower(attacker=$,iPower=0,caster=$,defense_power=0)
+   DefenseHook(who=$,what=$,iPower=0,caster=$)
    {
-      if attacker <> $
+      if what <> $
       {
-         if Send(attacker,@IsAffectedByRadiusEnchantment,#what=self,#caster=caster)
+         if Send(what,@IsAffectedByRadiusEnchantment,#what=self,#caster=caster)
          {
             % Umbrella can't help if the attacker is within its limits
-            return defense_power;
+            return 0;
          }
       }
 
       % Adds up to 198 defense against attacks from outside the umbrella
-      return defense_power + iPower*2;
+      return iPower*2;
    }
 
-   ModifyResistance(attacker=$,atype=-ATCK_SPELL_ALL,iPower=0,caster=$,resistance=$)
+   ModifyResistance(attacker=$,attacktype=-ATCK_SPELL_ALL,iPower=0,caster=$,resistance=$)
    {
       if attacker <> $
       {

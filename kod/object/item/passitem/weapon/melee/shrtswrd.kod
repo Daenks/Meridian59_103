@@ -1,0 +1,75 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShortSword is MeleeWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   shortsword_name_rsc = "short sword"
+   shortsword_icon_rsc = shswd.bgf
+   shortsword_desc_rsc = \
+      "Plain in appearance, the blade of this short sword is sharp enough "
+      "to be dangerous.  It can be effective when wielded against small "
+      "beasts."
+
+   shortsword_window_overlay_rsc = povshswd.bgf
+   shortsword_player_overlay = shswdov.bgf
+
+classvars:
+   vrName = shortsword_name_rsc
+   vrIcon = shortsword_icon_rsc
+   vrDesc = shortsword_desc_rsc
+
+   viProficiency_Needed = SKID_PROFICIENCY_SHORTSWORD
+
+   viValue_average = 250
+   viWeight = 50
+   viBulk = 50
+
+   viGround_group = 1
+   viInventory_group = 3
+   viBroken_group = 2
+
+   vrWeapon_window_overlay = shortsword_window_overlay_rsc
+   vrWeapon_overlay = shortsword_player_overlay
+
+   viDamage = 500
+   viProficiencyBonus = 500
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viStab = 120
+   viStrike = 0
+   viSlash = 80
+   viThrust = 100
+   viFire = 0
+   viTouch = 0
+   viDisarmMod = 0
+   viParryMod = 0
+   viSpellpowerMod = 0
+   viRange = 128
+
+   viPrimaryStat = STAT_MIGHT
+   viSecondaryStat = STAT_AIM
+   viAttackType = ATCK_WEAP_NONMAGIC+ATCK_WEAP_THRUST
+   viSpellType = 0
+   viDeviation = 20
+
+properties:
+
+messages:
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,92 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Scimitar is MeleeWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   scimitar_name_rsc = "scimitar"
+   scimitar_icon_rsc = scimitar.bgf
+   scimitar_desc_rsc = \
+      "This elegant weapon, heavy yet finely formed, is both beautiful and "
+      "deadly.  Runes of war decorate its golden hilt."
+
+   scimitar_window_overlay_rsc = povscim.bgf
+   scimitar_player_overlay = scimov.bgf
+
+classvars:
+   vrName = scimitar_name_rsc
+   vrIcon = scimitar_icon_rsc
+   vrDesc = scimitar_desc_rsc
+
+   viProficiency_Needed = SKID_PROFICIENCY_SCIMITAR
+
+   viValue_average = 150
+   viWeight = 85
+   viBulk = 70
+
+   vrWeapon_window_overlay = scimitar_window_overlay_rsc
+   vrWeapon_overlay = scimitar_player_overlay
+
+   viGround_group = 1
+   viInventory_group = 3
+   viBroken_group = 2
+
+   viDamage = 200
+   viProficiencyBonus = 800
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viStab = 0
+   viStrike = 60
+   viSlash = 120
+   viThrust = 60
+   viFire = 0
+   viTouch = 0
+   viDisarmMod = 0
+   viParryMod = 0
+   viSpellpowerMod = 0
+   viRange = 192
+
+   viPrimaryStat = STAT_MIGHT
+   viSecondaryStat = STAT_AGILITY
+   viAttackType = ATCK_WEAP_NONMAGIC+ATCK_WEAP_SLASH
+   viSpellType = 0
+   viDeviation = 20
+
+properties:
+
+messages:
+
+   GetSwings(who=$)
+   {
+      local iFactor, iStat, iPower;
+
+      iFactor = Send(self,@GetSecondaryScaling);
+      iStat = Send(who,@GetStat,#stat=Send(self,@GetSecondaryStat));
+      iPower = iFactor * iStat / 50 ;
+
+      if random(0,99) < iPower
+      {
+         return 2;
+      }
+
+      return 1;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+

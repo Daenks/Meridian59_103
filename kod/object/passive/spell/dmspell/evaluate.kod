@@ -152,7 +152,7 @@ messages:
       }
 
       send(dmis,@msgsenduser,#message_rsc=Evaluate_combat,#parm1=send(who,@getname),#parm2=send(who,@GetOffense),
-           #parm3=send(who,@GetDefense),#parm4=send(who,@GetDamage),#parm5=send(who,@GetDamageType),
+           #parm3=send(who,@GetDefense),#parm4=send(who,@GetDamage),#parm5=send(who,@GetAttackType),
            #parm6=Send(who,@GetSpellType));
 
 

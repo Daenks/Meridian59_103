@@ -1,0 +1,41 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Attack is MonsterStroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   attack_name_rsc = "attack"
+
+   attack_first_person = "attack"
+   attack_third_person = "attacks"
+   attack_action_noun = "attack"
+
+classvars:
+
+   vrName = attack_name_rsc
+
+   vrStroke_first_person = attack_first_person
+   vrStroke_third_person = attack_third_person
+   vrStroke_action_noun = attack_action_noun
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_ATTACK
+   viSkill_level = 50
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

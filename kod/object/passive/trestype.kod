@@ -360,7 +360,7 @@ messages:
          return;
       }
       
-      if IsClass(oDefenseModifier,&Armor)
+      if IsClass(oDefenseModifier,&BodyArmor)
       {
          % Mob difficulty makes a huge difference for armor max sockets
          iDifficultyBonus = (piDiff_seed - 5) * 10;

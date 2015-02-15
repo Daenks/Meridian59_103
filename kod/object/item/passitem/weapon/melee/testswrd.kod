@@ -1,0 +1,103 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TestSword is MeleeWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   testsword_name_rsc = "test sword"
+   testsword_icon_rsc = huntswrd.bgf
+
+   testsword_desc_rsc = \
+      "You're not sure how much damage you could actually do with this thing.\n\n"
+      "Use ChangeWeaponSkill to change the weapon to use another skill. "
+      "SKID_PROFICIENCY_SWORD is fencing (default), change to either AXE, HAMMER, "
+      "MACE, SHORT_SWORD or SCIMITAR as required.\n\nUse SetWeaponDamageType(what=$) "
+      "to change the weapon's damage type to that of the desired weapon, by "
+      "sending the following numbers:\n"
+      "Hammer and mace (bludgeon): 1\n"
+      "Sword (covers long and short; thrust): 2\n"
+      "Scimitar, axe or riija sword (slash): 3\n"
+      "Nerudite (thrust and nerudite dmg): 4\n"
+      "Mystic (thrust and magic dmg): 5\n"
+      "Other options can be edited in the object properties."
+
+   testsword_window_overlay_rsc = povhunts.bgf
+   testsword_player_overlay = huntswov.bgf
+
+classvars:
+   vrName = testsword_name_rsc
+   vrIcon = testsword_icon_rsc
+   vrDesc = testsword_desc_rsc
+
+   viValue_average = 800
+   viWeight = 80
+   viBulk = 60
+
+   vrWeapon_window_overlay = testsword_window_overlay_rsc
+   vrWeapon_overlay = testsword_player_overlay
+
+   viGround_group = 1
+   viInventory_group = 3
+   viBroken_group = 2
+
+properties:
+
+   % Overriding.
+   viProficiency_Needed = SKID_PROFICIENCY_SWORD
+
+messages:
+
+   ChangeWeaponSkill(what=SKID_PROFICIENCY_SWORD)
+   {
+      % Defaults to fencing
+      
+      viProficiency_Needed = what;
+      return viProficiency_Needed;
+   }
+
+   SetWeaponDamageType(what=$)
+   {
+      % Sets the test weapon's damage type to that of the requested weapon.
+
+      if what=1
+      {
+         piAttackType = ATCK_WEAP_NONMAGIC+ATCK_WEAP_BLUDGEON;
+      }
+
+      if what=2
+      {
+         piAttackType = ATCK_WEAP_NONMAGIC+ATCK_WEAP_THRUST;
+      }
+
+      if what=3
+      {
+         piAttackType = ATCK_WEAP_NONMAGIC+ATCK_WEAP_SLASH;	  
+      }
+
+      if what=4
+      {
+         piAttackType = ATCK_WEAP_THRUST+ATCK_WEAP_NERUDITE;
+      }
+
+      if what=5
+      {
+         piAttackType = ATCK_WEAP_MAGIC+ATCK_WEAP_THRUST;
+      }
+
+      return piAttackType;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

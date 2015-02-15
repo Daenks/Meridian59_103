@@ -1,0 +1,65 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Stab is Stroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   stab_name_rsc = "stab"
+   stab_icon_rsc = slashico.bgf
+   stab_desc_rsc = "Stabbing allows the wielder of a suitable weapon to sink "
+      "it right between the enemy's shoulder blades, provided that they are close "
+      "enough."
+
+   stab_skill_intro = "Weaponcraft Lv. 2: An essential skill for muggers, "
+      "assassins and other likable folks that lurk in the shadows.  Works great "
+      "with small bladed weapons."
+
+   stab_first_person = "stab at"
+   stab_third_person = "stabs at"
+   stab_action_noun = "stab"
+
+classvars:
+
+   vrName = stab_name_rsc
+   vrIcon = stab_icon_rsc
+   vrDesc = stab_desc_rsc
+
+   vrSkill_intro = stab_skill_intro
+
+   vrStroke_first_person = stab_first_person
+   vrStroke_third_person = stab_third_person
+   vrStroke_action_noun = stab_action_noun
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_STAB
+   viSkill_level = 2
+   viChance_to_increase = 20
+   viMeditate_ratio = 30
+
+   viskillExertion = 2
+   vbCheck_exertion = FALSE
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

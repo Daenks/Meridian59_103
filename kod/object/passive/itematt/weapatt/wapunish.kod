@@ -79,71 +79,81 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder gets a damage bonus, equal to (proficiency/4) - 2."
    {
       local iNum, iPower;
+
+      if what = $
+      {
+         return 0;
+      }
 
       %% here, iNum = power itself
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=first(lData));
       iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
 
-      if target <> $
+      if what <> $
       {
          %% No special effects for monsters
-         if IsClass(target,&Monster)
+         if IsClass(what,&Monster)
          {
-            return Damage;
+            return 0;
          }
 
          % Double standard effect on murderers.
-         if Send(target,@CheckPlayerFlag,#flag = PFLAG_MURDERER)
+         if Send(what,@CheckPlayerFlag,#flag = PFLAG_MURDERER)
          {
-            return (damage + ((iPower*3)/2));
+            return iPower*3/2;
          }
 
          % One and one half effect on outlaws.
-         if send(target,@CheckPlayerFlag,#flag = PFLAG_OUTLAW)
+         if send(what,@CheckPlayerFlag,#flag = PFLAG_OUTLAW)
          {
-            return (damage + iPower);
+            return iPower;
          }
       }
 
-      return damage;    %% No extra damage against monsters.
+      return 0;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData= $)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder gets a hit bonus based on whether or not the target is a murderer or outlaw."
    {
       local iNum, iPower;
+
+      if what = $
+      {
+         return 0;
+      }
 
       %% here, iNum = power itself
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=first(lData));
       iPower = Send(self,@DecipherHitRollFromPower,#iPower=iPower);
 
       %% no special effects for monsters
-      if target <> $
+      if what <> $
       {
-         if IsClass(target,&Monster)
+         if IsClass(what,&Monster)
          {
-            return hitroll;
+            return 0;
          }
 
          % Double standard effect on murderers.
-         if Send(target,@CheckPlayerFlag,#flag = PFLAG_MURDERER)
+         if Send(what,@CheckPlayerFlag,#flag = PFLAG_MURDERER)
          {
-            return (hitroll + ((iPower*3)/2));
+            return iPower*3/2;
          }
 
          % One and one half effect on outlaws.
-         if Send(target,@CheckPlayerFlag,#flag = PFLAG_OUTLAW)
+         if Send(what,@CheckPlayerFlag,#flag = PFLAG_OUTLAW)
          {
-            return (hitroll + iPower);
+            return iPower;
          }
       }
 
       % Return normal hitroll
-      return hitroll;
+      return 0;
    }
 
    ItemReqUse(oItem=$,oPlayer=$)

@@ -67,13 +67,6 @@ messages:
       return;
    }
 
-   CastSpell(who=$,lTargets=$)
-   {
-      Send(first(lTargets),@AddDefenseModifier,#what=self);
-
-      propagate;
-   }
-
    GetDuration(iSpellPower=$)
    {
       local iDuration;
@@ -86,42 +79,19 @@ messages:
       return iDuration;
    }
 
-   GetStateValue(iSpellpower=$)
+   GetStateValue(who=$,iSpellPower=0,Target=$)
    {
-      return iSpellpower;
+      return iSpellPower+1;
    }
 
-   EndEnchantment(who=$,report=TRUE,state=0)
+   DefenseHook(who=$)
    {
-      Send(who,@RemoveDefenseModifier,#what=self);
-
-      propagate;
+      return 2*Send(who,@GetEnchantedState,#what=self)+50;
    }
 
    GetPotionClass()
    {
       return &MagicShieldPotion;
-   }
-
-   % Stuff we handle to be a defense modifier.
-
-   ModifyDefensePower(who=$,what=$,defense_power=0)
-   {
-      local iSpellpower;
-
-      iSpellpower = Send(who,@GetEnchantedState,#what=self);
-
-      return (defense_power + 50 + (2 * iSpellpower));
-   }
-
-   ModifyDefenseDamage(who=$,what=$,damage=$)
-   {
-      return damage;
-   }
-
-   DefendingHit(who=$,what=$)
-   {
-      return;
    }
 
    EffectDesc(who=$)

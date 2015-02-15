@@ -106,7 +106,7 @@ messages:
       propagate;
    }
    
-   DefendingHit()
+   DamageGear()
    {
       return;
    }
@@ -137,16 +137,6 @@ messages:
    DestroyDisposable()
    {
       return FALSE;
-   }
-
-   ModifyDefensePower(who = $,what = $,defense_power = 0)
-   {
-      return defense_power;
-   }
-
-   ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
-   {
-      return damage;
    }
    
 end

@@ -47,22 +47,5 @@ properties:
 
 messages:
 
-   SendProjectileAnimation()
-   {
-      AddPacket(1,ANIMATE_NONE,2,1);
-
-      return;
-   }
-
-   GetProjectileSpeed()
-   {
-      return 7;
-   }
-
-   GetProjectileIcon()
-   {
-      return vrIcon;
-   }
-
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

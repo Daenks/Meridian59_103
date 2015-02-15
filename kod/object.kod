@@ -90,17 +90,44 @@ properties:
 
 messages:
 
-   Constructor()
+   Constructor(lstats=$,lower=-20,upper=20)
    {
-      % Essential for creation stuff that needs to happen AFTER constructors
-      %  called
-      Send(self,@Constructed);
-      % Set any default values
-      Send(self,@DefaultValues);
+      % If we haven't provided any stats to the creation process, create the
+      % object using default values. Send it to constructed for any post
+      % construction modification, such as stat randomization.
+      % If we provide stats, skip that and set those instead.
+      if lstats = $
+      {
+         Send(self,@DefaultValues);
+         Send(self,@Constructed,#lower=lower,#upper=upper);
+      }
+      else
+      {
+         Send(self,@SetStats,#lstats=lstats);
+      }
+
       return;
    }
 
-   Constructed()
+   % This message will restore the default values in any object.  Must be
+   % defined for any subclass that wants to use it. This is intended to
+   % make updating a bit smoother, so you can re-set properties in objects
+   % that have changed radically.
+   DefaultValues()
+   {
+      return;
+   }
+
+   % This message handles post creation modification of the item's properties,
+   % such as stat randomization or determining its durability.
+   Constructed(lower=0,upper=0)
+   {
+      return;
+   }
+
+   % This message sets an item's stats if they have been provided to the
+   % constructor. If none have been provided, it is skipped instead.
+   SetStats(lstats=$)
    {
       return;
    }
@@ -120,15 +147,6 @@ messages:
          Send(i,@Delete);
       }
 
-      return;
-   }
-
-   % This message will restore the default values in any object.  Must be
-   %  defined for any subclass that wants to use it. This is intended to
-   %  make updating a bit smoother, so you can re-set properties in objects
-   %  that have changed radically.
-   DefaultValues()
-   {
       return;
    }
 
@@ -1044,6 +1062,37 @@ messages:
    GetObjectAttributes()
    {
       return plObject_attributes;
+   }
+
+   % Items, spells and trance can all be asked for hooks, so lets cover it here.
+   AttackHook()
+   {
+      return TRUE;
+   }
+   
+   DamageHook()
+   {
+      return 0;
+   }
+
+   DamageReductionHook()
+   {
+      return 0;
+   }
+
+   OffenseHook()
+   {
+      return 0;
+   }
+
+   DefenseHook()
+   {
+      return 0;
+   }
+
+   SpellPowerHook()
+   {
+      return 0;
    }
 
 end

@@ -91,12 +91,10 @@ messages:
 
    GetStateValue(who=$,iSpellPower=0)
    {
-      Send(who,@AddDefenseModifier,#what=self);
-
       return iSpellPower;
    }
 
-   ModifyDefensePower(who=$,what=$,defense_power=$)
+   DefenseHook(who=$,what=$)
    {
       local iSpellpower, oSpell, iDuration, oWeapon;
 
@@ -126,7 +124,7 @@ messages:
                   AND random(1,100) < 50
                {
                   % No effect.
-                  return defense_power;
+                  return 0;
                }
 
                Send(what,@MsgSendUser,#message_rsc=paralyze_target_on,
@@ -140,13 +138,11 @@ messages:
          }
       }
 
-      return defense_power;
+      return 0;
    }
 
    EndEnchantment(who=$,report=TRUE,state=0)
    {
-      Send(who,@RemoveDefenseModifier,#what=self);
-
       propagate;
    }
 

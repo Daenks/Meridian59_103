@@ -258,26 +258,7 @@ resources:
       "%sThe pain seems to resonate and grow inside you."
    player_anti_immune_to_hit = \
       "%sYour body is wracked with pain of incredible magnitude."
-   
-   player_was_missed = "%s%s%s misses you."
-   player_was_hit = "%s%s%s hits you."
-   player_was_slashed = "%s%s%s slashes your side, leaving a nasty cut."
-   player_was_bludgeoned = "%s%s%s bludgeons you, causing a large bruise."
-   player_was_pierced = "%s%s%s slyly pierces you while you were distracted."
-   player_was_thrusted = "%s%s%s skewers you with a deft thrust.  Sluish!"
-   player_was_burned = "%s%s%s's fire flares brightly, leaving you charred."
-   player_was_shocked = "%s%s%s grins as a jolt of electricity hits you."
-   player_was_frozen = "%s%s%s stings you with a jolt of cold."
-   player_was_quaked = "%s%s%s's tremors shake you about."
-   player_was_holyhit = "%s%s%s hits you with a jolt of purity."
-   player_was_unholyhit = \
-      "%s%s%s hits you, and you feel your soul has been invaded."
-   player_was_stung = "%s%s%s dances away after having stung you badly."
-   player_was_bitten = "%s%s%s bites you several times, leaving you bloody."
-   player_was_clawed = "%s%s%s rends your flesh with razor sharp claws."
-   player_was_punched = "%s%s%s hits you with a solid punch."
-   player_was_kicked = "%s%s%s slams a foot into your gut."
-   
+
    player_out_of_room = "%s%s is not here."
    player_not_supported = "Not supported yet"
    
@@ -750,7 +731,6 @@ resources:
       "You feel more relaxed as your second wind dissipates."
 
    player_monster_attack_string = "monster attack"
-   player_no_weapon_string = "no weapon"
 
    cannot_attack_ally = "You can't attack %s, %s's your ally!"
    cannot_attack_guildmate = "You can't attack %s, %s's your guildmate!"
@@ -963,12 +943,6 @@ properties:
    % Default strength of light source at player is 5
    piLight = 5
 
-   % Attack modifiers to attack roll & damage (includes items & spells)
-   plAttack_modifiers = $
-
-   % Defense modifiers to defense roll & damage (includes items & spells)
-   plDefense_modifiers = $
-
    % Gear preferences for 'set' and 'loadout'
    plLoadout_list = $
 
@@ -1089,6 +1063,7 @@ messages:
       % Let the poor bastards eat something.
       piTimeLastStomachUpdate = GetTime();
       piReward_timestamp = GetTime();
+      Send(self,@CreateMartialWeapon,#cweapon=&Fist);
 
       propagate;
    }
@@ -1415,8 +1390,7 @@ messages:
          piVigor = SECONDWIND_THRESHOLD;
       }
 
-      iAmount = 80 + ((Send(self,@GetSkillAbility,
-                        #Skill_num=SKID_SECOND_WIND) + 1) / 5);
+      iAmount = 80 + (Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND)/5);
       Send(self,@SetVigorRestThreshold,#amount=iAmount);
       Send(self,@NewVigor);
       Send(self,@MsgSendUser,#message_rsc=second_wind_finished);
@@ -1442,7 +1416,7 @@ messages:
       }
 
       piVigor_rest_threshold = Bound(piVigor_rest_threshold,10,80 +
-               ((Send(self,@GetSkillAbility,#skill_num=SKID_SECOND_WIND)+1)/5));
+               (Send(self,@GetSkillAbility,#skill_num=SKID_SECOND_WIND)/5));
 
       Send(self,@DrawVigor);
 
@@ -2581,6 +2555,20 @@ messages:
       piStomach = 0;
       piTimeLastStomachUpdate = 0;
 
+      % Reset the various combat mods.
+      piCombatModDefense = 0;
+      piCombatModOffense = 0;
+      piCombatModMelee = 0;
+      piCombatModRanged = 0;
+      piCombatModMagic = 0;
+      piPhysicalReductionFactor = 0;
+      piMagicalReductionFactor = 0;
+      piPhysicalReductionFlat = 0;
+      piMagicalReductionFlat = 0;
+      piSpellpowerMod = 0;
+      plSkillmods = $;
+      plSpellmods = $;
+
       piKill_count = 0;
       piKill_count_decay = 0;
       piJustified_kill_count = 0;
@@ -3452,78 +3440,6 @@ messages:
       return;
    }
 
-   AddAttackModifier(what = $)
-   "Adds <what> to plAttack_modifiers, which can modify attack "
-   "strength and damage."
-   {
-      plAttack_modifiers = Cons(what,plAttack_modifiers);
-      Post(self,@DrawOffense);
-
-      return;
-   }
-
-   RemoveAttackModifier(what = $)
-   "Removes <what> from plAttack_modifiers."
-   {
-      local i;
-
-      for i in plAttack_modifiers
-      {
-         if i = what
-         {
-            plAttack_modifiers = DelListElem(plAttack_modifiers,i);
-            Post(self,@DrawOffense);
-
-            return;
-         }
-      }
-
-      % Karahol's Curse can get here, because it has to remove itself when
-      % done, because it doesn't know if it was a normal ending or a
-      % user-quit ending.
-
-      return;
-   }
-
-   AddDefenseModifier(what = $)
-   "Adds <what> to plDefense_modifiers, which can modify defense strength "
-   "and damage."
-   {
-      plDefense_modifiers = Cons(what,plDefense_modifiers);
-      Post(self,@DrawDefense);
-      Post(self,@DrawArmor);
-
-      return;
-   }
-
-   RemoveDefenseModifier(what = $)
-   "Removes <what> from plDefense_modifiers."
-   {
-      local i, bFound;
-
-      bFound = FALSE ;
-      for i in plDefense_modifiers
-      {
-         if i = what
-         {
-            plDefense_modifiers = DelListElem(plDefense_modifiers,i);
-            Post(self,@DrawDefense);
-            Post(self,@DrawArmor);
-            bFound = TRUE;
-
-            return;
-         }
-      }
-
-      if NOT bFound
-      {
-         Debug(self,"Tried to remove defense modifier",what,"but not in list",
-               plDefense_modifiers);
-      }
-
-      return;
-   }
-
    %
    % Squelch functions.
    %
@@ -3638,7 +3554,7 @@ messages:
          }
 
          % These unequip amongst themselves automatically.
-         if IsClass(what,&DefenseModifier)
+         if IsClass(what,&Armor)
             OR IsClass(what,&Gauntlet)
          {
             return TRUE;
@@ -3945,7 +3861,7 @@ messages:
       % Default location to check is where we are.
       oRoom = poOwner;
 
-      % If the victim is in a room, then check that location instead.  This
+      % If the victim is in a room, then check that location instead. This
       % allows distance attacks (like wall spells) to work properly.
       if victim <> $
          AND Send(victim,@GetOwner) <> poOwner
@@ -4446,126 +4362,36 @@ messages:
       return TRUE;
    }
 
-   TryAttack(what = $,use_weapon = $,stroke_obj=$)
+   TryAttack(what=$,use_weapon=$,stroke_obj=$)
    {
       local i, iRange, lWindsState, lSandstormState;
 
-      % Can't target self.
-      if what = self
+      % We are actually doing something, so let's alert all AIs in the room of 
+      % our presence.
+      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       {
-         Send(self,@MsgSendUser,#message_rsc=player_no_target_self);
-         
-         return FALSE;
+         Send(self,@NotifyMonstersOfPresence);
       }
 
-      % Check attack time.
-      if NOT Send(self,@IsOkayAttackTime)
+      % Also interrupt any trance we may be in.
+      if piFlags & PFLAG_TRANCE
       {
-         return FALSE;
+         Send(self,@BreakTrance,#event=EVENT_ATTACK);
       }
 
-      % Is it in the same room?
-      if poOwner <> Send(what,@GetOwner) 
-      {
-         return FALSE;
-      }
-
-      % Holding a token?  Then don't let them attack
-      if send(self,@FindHolding,#class=&Token) <> $
-      {
-         return FALSE;
-      }
-
-      % If we have minions, see if they can attack too
-      Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
-
-      % Can pay costs?  Only check for skills, spells have already been cast.
-      if IsClass(stroke_obj,&Skill)
-         AND NOT Send(stroke_obj,@CanPayCosts,#who=self,#oTarget=what)
-      {
-         return FALSE;
-      }
-
-      % Send to the STROKE to get the range; unarmed attacks have ranges too
-      iRange = Send(stroke_obj,@GetRange,#weapon_used=use_weapon);
-
-      % A little fudge factor to account for lag drift, etc.
-      %  Don't fudge for ranged weapons.
-      if IsClass(what,&User) AND Send(what,@HasMovedRecently)
-         AND (use_weapon <> $ AND NOT IsClass(use_weapon,&RangedWeapon))
-      {
-         iRange = iRange + RANGE_MOVEMENT_BONUS;
-      }
-
-      if NOT Send(self,@TargetWithinSightAndRange,#oTarget=what,#iRange=iRange,
-                  #use_weapon=use_weapon,#stroke_obj=stroke_obj)
-      {
-         return FALSE;
-      }
-
-      % Special case assassin's daggers
-      if use_weapon <> $
-         AND IsClass(use_weapon,&BlackDagger)
-         AND IsClass(stroke_obj,&Stroke)
-      {
-         % Let the assassin's game handle it
-         return Send(Send(SYS,@GetAssassinGame),@TryAssassinAttack,
-                     #attacker=self,#target=what,#dagger_obj=use_weapon);
-      }
-
-      if IsClass(what,&Monster)
-      {
-         % Check if its a non hittable monster
-         if NOT Send(what,@CanMonsterFight,#who=self,#oStroke=stroke_obj,
-                     #use_weapon=use_weapon)
-         {
-            return FALSE;
-         }
-         else
-         {
-            if NOT Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Jig)
-            {
-               % Tell the monster this is a valid attack.
-               Send(what,@ValidAttack,#who=self);
-            }
-            else
-            {
-               Send(self,@MsgSendUser,#message_rsc=Jig_cannot_attack,
-                     #parm1=Send(what,@GetName));
-
-               return FALSE;
-            }
-         }
-      }
-
-      % Checking for legal PK attack here.
-      if NOT Send(self,@AllowPlayerAttack,#victim=what,#stroke_obj=stroke_obj,
-                  #use_weapon=use_weapon)
-      {
-         return FALSE;
-      }
-
-      % If this attack initiates pvp, notify victim (combatants maybe?) 
+      % If this attack initiates pvp, notify the victim (combatants maybe?) 
       % initially, but then not again until PVP_NOTIFY_DECAY has passed
-      
       if IsClass(what,&User) 
          AND Send(what, @GetLastPvpWarned) < GetTime() - PVP_NOTIFY_DECAY
       {
          Send(what,@DoPvpNotify);
       }
-      
-      % Special stroke stuff 
-      if NOT Send(stroke_obj,@CheckSpecial,#who=self,#victim=what)
-      {
-         return FALSE;
-      }
 
-      % Okay, checking is done, attack is okay.  Do the animation thing.
-      if NOT Send(stroke_obj,@CheckWeaponAndDoAnimation,#who=self,
-                  #weapon_used=use_weapon,#victim=what)
-      {
-         return FALSE;
-      }
+      % If we have minions, see if they would care to join us in battle.
+      Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+
+      % Now that the formalities are out of the way, do the animation thing.
+      Send(stroke_obj,@DoAnimation,#who=self);
 
       % Switching targets?
       % Do this before paying skill costs, otherwise projectiles
@@ -4634,11 +4460,16 @@ messages:
       propagate;
    }
 
+   GetSwings(use_weapon=$)
+   {
+      return Send(use_weapon,@GetSwings,#who=self);
+   }
+
    % Determines if target is within attacking range, and within sight.
    % iRange=$ means there's no range check.
    TargetWithinSightAndRange(oTarget=$,iRange=$,use_weapon=$,stroke_obj=$)
    {
-      local iSquareRange, iDist, oTargetOwner, oFinalTarget, iAngle,
+      local iDist, oTargetOwner, oFinalTarget, iAngle,
             iRow, iCol, iTargetRow, iTargetCol;
 
       oTargetOwner = Send(oTarget,@GetOwner);
@@ -4661,8 +4492,6 @@ messages:
          oTargetOwner = Send(oFinalTarget,@GetOwner);
       }
 
-      iDist = Send(self,@SquaredDistanceTo,#what=oFinalTarget);
-
       % If we don't share the same owner, then we're not in range.
       if poOwner <> oTargetOwner
       {
@@ -4672,10 +4501,38 @@ messages:
       % See if target is within range, if we provided a range.
       if iRange <> $
       {
-         iSquareRange = iRange;
-         iSquareRange = iSquareRange * iSquareRange;
+         % If the target's a player who has moved recently, add a little fudge
+         % factor to account for lag.
+         if IsClass(oTarget,&User) AND Send(oTarget,@HasMovedRecently)
+         {
+            iRange = iRange + RANGE_MOVEMENT_BONUS;
+         }
 
-         if iDist > iSquareRange
+         iDist = Send(self,@SquaredDistanceTo,#what=oFinalTarget);
+
+         % We can't use SquaredFineDistanceTo in all cases since it will return nil
+         % if we stand too far apart. Hence we limit its use to slightly extended
+         % melee distance. Since viRange in weapon.kod uses fine grain, we need to
+         % convert our range to low accuracy if we leave the melee zone. As ranged
+         % weapons aren't using fine grain, we assign them max distance in the melee
+         % zone instead.
+         if iDist < 25
+         {
+            iDist = Send(self,@SquaredFineDistanceTo,#what=oFinalTarget);
+            if IsClass(use_weapon,&RangedWeapon)
+            {
+               iRange = 320;
+            }
+         }
+         else
+         {
+            if NOT IsClass(use_weapon,&RangedWeapon)
+            {
+               iRange = iRange / 64;
+            }
+         }
+         
+         if iDist > iRange * iRange
          {
             Send(self,@SendAttackOutOfRangeMessage,#what=oFinalTarget,
                  #use_weapon=use_weapon,#stroke_obj=stroke_obj);
@@ -4692,6 +4549,7 @@ messages:
             OR (IsClass(stroke_obj,&Spell)
                AND Send(stroke_obj,@GetNumSpellTargets) = 1))
       {
+         iDist = Send(self,@SquaredDistanceTo,#what=oFinalTarget);
          iAngle = Send(self,@GetAngle);
          iRow = piRow;
          iCol = piCol;
@@ -4747,81 +4605,57 @@ messages:
       return TRUE;
    }
 
-   % This returns the battler's ability to-hit.  Ranges from 1 to 1000
-   GetOffense(what = $, stroke_obj=$)
+   GetOffense(what=$,stroke_obj=$,use_weapon=$)
    {
-      local i, oWeapon, iStroke, iProficiency, iAim, iOffense,
-            oMonster, lRadiusState;
+      local i, iStroke, iProficiency, iAim, iOffense, oMonster, lRadiusState;
 
-      oWeapon = $;
+      % Figure out the relevant skill levels.
+      iStroke = Send(stroke_obj,@GetAbility,#who=self);
+      iProficiency = Send(self,@GetSkillAbility,#skill_num=Send(use_weapon,@GetProfNum));
+      iAim = Send(self,@GetAim);
+      
+      % The actual weighting of the different factors.
+      iOffense = (iStroke*2) + (iProficiency*2) + (iAim*8) +
+         (200 * piBase_Max_Health)/(100 + Send(self,@GetStamina));
 
-      % Morphed?
+      % Add the weapons offense modifier.
+      iOffense = iOffense + Send(use_weapon,@GetHitMod,#who=self,#what=what,#stroke_obj=stroke_obj);
+
+      % If we are morphed, we take the monster's offense instead.
       oMonster = Send(self,@GetIllusionForm);
-      if (oMonster <> $) and Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (oMonster <> $) AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
-         iOffense = Send(oMonster,@GetOffense,#what=what,#stroke_obj=stroke_obj);
-      }
-      else
-      {
-         % A player's offense is based on his stroke (basic),
-         % proficiency (advanced) skills, aim and max hps.
-         oWeapon = Send(self,@GetWeapon);
-
-         if oWeapon <> $
-         {
-            % Get weapon's numbers.
-            iStroke = Send(oWeapon,@GetStroke,#who=self);
-            iProficiency = Send(oWeapon,@GetProf,#who=self);
-         }
-         else
-         {
-            % Unarmed
-            iStroke = Send(self,@GetSkillAbility,#skill_num=SKID_PUNCH);
-            iProficiency = Send(self,@GetSkillAbility,#skill_num=SKID_BRAWLING);
-         }
-
-         iAim = Send(self,@GetAim);
-         iOffense = (iStroke*2) + (iProficiency*2) + (iAim*8) +
-               (200 * piBase_Max_Health)/(100 + Send(self,@GetStamina));
-
-         if oWeapon <> $
-         {
-            iOffense = Send(oWeapon,@ModifyHitRoll,#target=what,
-                  #hit_roll=iOffense);
-         }
+         iOffense = Send(oMonster,@GetOffense,#what=what);
       }
 
-      % List of items and spells that affect chance-to-hit
-      for i in plAttack_modifiers
-      {
-         iOffense = Send(i,@ModifyHitRoll,#who=self,#what=what,
-                        #hit_roll=iOffense,#stroke_obj=stroke_obj);
-      }
+      % Check for any modification to our offense rating. 
+      iOffense = iOffense + piCombatModOffense;
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
-      {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-               #byClass=&Mirth);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
-                        #hit_roll=iOffense,#lRadiusState=lRadiusState);
-      }
+      iOffense = iOffense + Send(Send(SYS,@GetParliament),@GetFactionHitrollBonus,#who=self);
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+      % Allow spells and items to hook in here for dynamic offense modification.
+      for i in plUsing
       {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-               #byClass=&Melancholy);
-         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
-                        #hit_roll=iOffense,#lRadiusState=lRadiusState);
+         iOffense = iOffense + Send(i,@OffenseHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
-
-      iOffense = iOffense + Send(Send(SYS,@GetParliament),
-                                 @GetFactionHitrollBonus,#who=self);
+      for i in plEnchantments
+      {
+         iOffense = iOffense + Send(Nth(i,2),@OffenseHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
+      }
+      for i in plRadiusEnchantments
+      {
+         iOffense = iOffense + Send(First(i),@OffenseHook,#who=self,
+         #what=what,#iPower=Nth(i,2),#caster=Nth(i,3),
+         #use_weapon=use_weapon,#stroke_obj=stroke_obj);
+      }
 
       % If we're using a ranged weapon and don't have a clear line of sight,
       %  then half our offense.
       if what <> $
-         AND oWeapon <> $
-         AND IsClass(oWeapon,&RangedWeapon)
+         AND use_weapon <> $
+         AND IsClass(use_weapon,&RangedWeapon)
          AND NOT Send(poOwner,@LineOfSight,#obj1=self,#obj2=what)
          AND NOT (IsClass(self,&DM) AND Send(self,@PlayerIsImmortal))
       {
@@ -4829,68 +4663,52 @@ messages:
          iOffense = iOffense / 2;
       }
 
-      % The universal modifier.
-      iOffense = iOffense + ((iOffense * piFlags3) / 100);
-
       return Bound(iOffense,1,2000);
    }
 
-   GetDefense(what = $, stroke_obj=$)
-   "This returns the battler's ability to avoid being hit. "
-   "Ranges from 1 to 2000."
+   GetDefense(what=$,stroke_obj=$,use_weapon=$)
    {
-      local i, oWeapon, oShield, iParry, iDodge, iBlock, iAgility,
-            iDefense, iHealth, oMonster;
+      local i, iParry, iDodge, iBlock, iAgility,
+            iDefense, oMonster;
 
-      % Morphed?
+      % Get our defensive abilities.
+      iParry = Send(self,@GetParryAbility,#stroke_obj=stroke_obj);
+      iBlock = Send(self,@GetBlockAbility,#stroke_obj=stroke_obj);
+      iDodge = Send(self,@GetDodgeAbility,#stroke_obj=stroke_obj);
+      iAgility = Send(self,@GetAgility);
+
+      iDefense = iParry + iBlock + (iDodge*2) + (iAgility*8)
+         + (200 * piBase_Max_Health)/(100 + Send(self,@GetStamina));
+
+      % If we are morphed, we take the monster's offense instead.
       oMonster = Send(self,@GetIllusionForm);
       if (oMonster <> $) and Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
-         iDefense = Send(oMonster,@GetDefense,#what=what,
-                        #stroke_obj=stroke_obj);
+         iDefense = Send(oMonster,@GetDefense,#what=what,#stroke_obj=stroke_obj);
       }
-      else
+
+      % Check for any modification to our defense rating.
+      iDefense = iDefense + piCombatModDefense;
+
+      iDefense = iDefense + Send(Send(SYS,@GetParliament),@GetFactionDefenseBonus,#who=self);
+
+      % Allow spells and items to hook in here for dynamic defense modification.
+      for i in plUsing
       {
-         % A player's defense is based on his dodge, parry,
-         % block skills, agility, and max hps.
-         iParry = 0;
-         iDodge = 0;
-         iBlock = 0;
-
-         % Ask the weapon, it might give a bonus to parrying.
-         iParry = Send(self,@GetParryAbility,#stroke_obj=stroke_obj);
-
-         % Ask the shield, it might give a bonus to block.
-         iBlock = Send(self,@GetBlockAbility,#stroke_obj=stroke_obj);
-
-         iDodge = Send(self,@GetDodgeAbility,#stroke_obj=stroke_obj);
-
-         iAgility = Send(self,@GetAgility);
-
-         % Bind health between 20-150 for defense calculation.
-         iHealth = Bound(piBase_Max_Health,20,150);
-
-         iDefense = iParry + iBlock + (iDodge*2) + (iAgility*8)
-                     + (200 * iHealth)/(100 + Send(self,@GetStamina));
+         iDefense = iDefense + Send(i,@DefenseHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
-
-      for i in plDefense_modifiers
+      for i in plEnchantments
       {
-         iDefense = Send(i,@ModifyDefensePower,#who=self,
-                           #what=what,#defense_power=iDefense);
+         iDefense = iDefense + Send(Nth(i,2),@DefenseHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
-
       for i in plRadiusEnchantments
       {
-         iDefense = Send(Nth(i,1),@ModifyDefensePower,#attacker=what,
-                     #iPower=Nth(i,2),#caster=Nth(i,3),#defense_power=iDefense);
+         iDefense = iDefense + Send(First(i),@DefenseHook,#who=self,
+         #what=what,#iPower=Nth(i,2),#caster=Nth(i,3),
+         #use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
-
-      iDefense = iDefense + Send(Send(SYS,@GetParliament),
-                                 @GetFactionDefenseBonus,#who=self);
-
-      % The universal modifier.
-      iDefense = iDefense + ((iDefense * piFlags3) / 100);
 
       return bound(iDefense,1,2000);
    }
@@ -4900,7 +4718,7 @@ messages:
    % player for defense, used in battler for defense messages.
    GetParryAbility(stroke_obj=$)
    {
-      local oWeapon, oMonster;
+      local iMod, oMonster;
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -4909,40 +4727,53 @@ messages:
          return Send(oMonster,@GetParryAbility,#stroke_obj=stroke_obj);
       }
 
-      oWeapon = Send(self,@GetWeapon);
-      if oWeapon = $
-         OR NOT Send(Send(sys,@FindSkillByNum,#num=SKID_PARRY),
-                     @CanPayCosts,#who=self)
-         OR (stroke_obj <> $ AND NOT Send(stroke_obj,@CanParry))
+      if NOT Send(Send(sys,@FindSkillByNum,#num=SKID_PARRY),@CanPayCosts,#who=self)
+         OR ((stroke_obj <> $) AND NOT Send(stroke_obj,@CanParry))
       {
          return 0;
       }
 
-      return Send(oWeapon,@GetParryAbility,#who=self);
+      iMod = Send(Send(self,@GetWeapon),@GetParryMod);
+
+      % Certain weapons may not permit parrying. If so, their bonus returns nil
+      % instead of 0.
+      if iMod = $
+      {
+         return 0;
+      }
+
+      return Send(self,@GetSkillAbility,#skill_num=SKID_PARRY)*(100+iMod)/100;
    }
 
    GetBlockAbility(stroke_obj=$)
    {
-      local oShield, oMonster;
+      local iMod, oShield, oMonster;
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
       if oMonster <> $ AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
-         % Should only be one morph enchantment on the player.
          return Send(oMonster,@GetBlockAbility,#stroke_obj=stroke_obj);
       }
 
       oShield = Send(self,@LookupPlayerShield);
       if oShield = $
-         OR NOT Send(Send(sys,@FindSkillByNum,#num=SKID_BLOCK),
-                     @CanPayCosts,#who=self)
+         OR NOT Send(Send(sys,@FindSkillByNum,#num=SKID_BLOCK),@CanPayCosts,#who=self)
          OR ((stroke_obj <> $) AND NOT Send(stroke_obj,@CanBlock))
       {
          return 0;
       }
 
-      return Send(oShield,@GetBlockAbility,#who=self);
+      iMod = Send(oShield,@GetBlockMod);
+
+      % Certain shields may not permit blocking (torch!) If so, their bonus 
+      % returns nil instead of 0.
+      if iMod = $
+      {
+         return 0;
+      }
+
+      return Send(self,@GetSkillAbility,#skill_num=SKID_BLOCK)*(100+iMod)/100;
    }
 
    GetDodgeAbility(stroke_obj=$)
@@ -4971,147 +4802,155 @@ messages:
    }
 
    % This returns the damage done to target "what" before resistances.
-   GetDamage(what = $, stroke_obj=$)
+   GetDamage(what = $, use_weapon = $, stroke_obj = $)
    {
-      local i, iDamage, oStroke, oWeapon, iStrokeNum, iModBonus, iDamageBonus,
-            oSpell, oMonster, lRadiusState;
+      local i, iDamage, iBonus, oMonster, iStrokeNum, iDeviation;
 
-      % Morphed?
+      % If we are morphed, we take the monster's damage, if we are not, we ask
+      % our stroke instead.
       oMonster = Send(self,@GetIllusionForm);
       if oMonster <> $ AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
-         iDamage = Send(oMonster,@GetDamage,#what=what,#stroke_obj=stroke_obj);
+         iDamage = Send(oMonster,@GetDamage,#what=what);
       }
       else
       {
-         oStroke = stroke_obj;
-         if stroke_obj = $
-         {
-            oWeapon = Send(self,@GetWeapon);
-            if oWeapon = $
-            {
-               oStroke=Send(SYS,@FindSkillByNum,#num=SKID_PUNCH);
-            }
-            else
-            {
-               if IsClass(oWeapon,&Weapon)
-               {
-                  oStroke=Send(SYS,@FindSkillByNum,
-                        #num=Send(oWeapon,@GetDefaultStrokeNumber));
-               }
-               else
-               {
-                  % It's a spell, use it as the stroke object.
-                  oStroke = oWeapon;
-               }
-            }
-         }
-
-         % Currently considers the damage of the weapon and player's might.
-         % Stroke sets damage
-         iDamage = Send(oStroke,@FindDamage,#weapon_used=Send(self,@GetWeapon),
-                        #who=self,#victim=what); 
+         % Ask the stroke, which asks the weapon, each modifying damage accordingly.
+         iDamage = Send(stroke_obj,@GetDamage,#use_weapon=use_weapon,#who=self,#what=what);
       }
 
-      % Spells and attmods that modify damage
-      iDamageBonus = 0;
-      for i in plAttack_modifiers
+      % Check for damage modification. 
+
+      iStrokeNum = Send(stroke_obj,@GetSkillNum);
+      if iStrokeNum = SKID_FIRE
       {
-         % Attack modifiers return the total damage, subtract out the original
-         %  damage to get the damage bonus.
-         iModBonus = Send(i,@ModifyDamage,#who=self,#what=what,#damage=iDamage,
-                          #stroke_obj=oStroke);
-         iDamageBonus = iDamageBonus + (iModBonus - iDamage);
-
-         Send(i,@WeaponHitTarget);
+         iBonus = piCombatModRanged;
       }
-
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+      
+      if iStrokeNum = SKID_TOUCH
       {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                              #byClass=&Melancholy);
-         iDamageBonus = Send(Nth(lRadiusState,1),@ModifyDamage,#who=self,
-                              #what=what,#damage=iDamageBonus);
+         iBonus = piCombatModMagic;
       }
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
+      
+      if iStrokeNum <> SKID_FIRE AND iStrokeNum <> SKID_TOUCH
       {
-         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                              #byClass=&Mirth);
-         iDamageBonus = Send(Nth(lRadiusState,1),@ModifyDamage,#who=self,
-                              #what=what,#damage=iDamageBonus);
+         iBonus = piCombatModMelee;
       }
 
-      iDamageBonus = iDamageBonus + Send(Send(SYS,@GetParliament),
-                                          @GetFactionDamageBonus,#who=self);
+      % Allow spells and items to hook in here for dynamic damage modification.
+      for i in plUsing
+      {
+         iBonus = iBonus + Send(i,@DamageHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
+      }
+      for i in plEnchantments
+      {
+         iBonus = iBonus + Send(Nth(i,2),@DamageHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
+      }
+      for i in plRadiusEnchantments
+      {
+         iBonus = iBonus + Send(First(i),@DamageHook,#who=self,
+            #what=what,#iPower=Nth(i,2),#caster=Nth(i,3),
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj);
+      }
 
-      % Convert to high precision. Super dirty, will be cleaned up shortly.
-      iDamageBonus = iDamageBonus*100;
+      iBonus = iBonus + Send(Send(SYS,@GetParliament),@GetFactionDamageBonus,#who=self);
+      
+      iDamage = iDamage + iDamage*iBonus/1000;
 
-      iDamage = iDamage + iDamageBonus;
-
-      % The universal modifier.
-      iDamage = iDamage + ((iDamage * piFlags3) / 100);
+      % As a last step, run damage by the deviation factor to randomize. We do
+      % this last to avoid discrete damage levels that occur when damage is
+      % randomized first and scaled later.
+      iDeviation = Send(use_weapon,@GetDeviation);
+      iDamage = iDamage * (100 + random(-iDeviation,iDeviation))/100;
 
       return iDamage;
    }
 
-   % This is the type of damage done.
-   GetDamageType(what = $, use_weapon = $)
+   GetDamageReduction(damage=0,what=$,attacktype=0,spelltype=0)
    {
-      local oWeapon, oMonster;
+      local i, iRedFlat, iRedFactor, iReduction, oGort, iGort, oShield;
 
-      % Morphed?
-      oMonster = Send(self,@GetIllusionForm);
-      if oMonster <> $ AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      % Armor of Gort may limit the initial damage.
+      oGort = Send(SYS,@FindSpellByNum,#Num=SID_ARMOR_OF_GORT);
+      if Send(self,@IsEnchanted,#what=oGort)
       {
-         return Send(oMonster,@GetDamageType,#what=what);
-      }
-
-      if use_weapon = $
-      {
-         oWeapon = Send(self,@GetWeapon);
+         iGort = Send(oGort,@GetDamageReduction,#damage=damage,#attacktype=attacktype,
+            #spelltype=spelltype);
       }
       else
       {
-         oWeapon = use_weapon;
+         iGort = 0;
       }
 
-      if oWeapon = $
+      % Reduce damage based on our damage reduction values.
+      iRedFactor = 0;
+      iRedFlat = 0;
+
+      if spelltype <> 0 AND attacktype <> 0 
       {
-         % No weapon means we are punching
-         return ATCK_WEAP_UNARMED+ATCK_WEAP_PUNCH;
+         iRedFactor = (piPhysicalReductionFactor + piMagicalReductionFactor) / 2;
+         iRedFlat = (piPhysicalReductionFlat + piMagicalReductionFlat) / 2;
+      }
+      if spelltype <> 0 AND attacktype = 0 
+      {
+         iRedFactor = piMagicalReductionFactor;
+         iRedFlat = piMagicalReductionFlat;
+      }
+      if spelltype = 0 AND attacktype <> 0 
+      {
+         iRedFactor = piPhysicalReductionFactor;
+         iRedFlat = piPhysicalReductionFlat;
       }
 
-      return Send(oWeapon,@GetAttackType);
+      % Allow spells and items to hook in here for dynamic damage modification.
+      for i in plUsing
+      {
+         iRedFactor = iRedFactor + Send(i,@DamageReductionHook,#who=self,#what=what,
+            #damage=damage,#attacktype=attacktype,#spelltype=spelltype);
+      }
+      for i in plEnchantments
+      {
+         iRedFactor = iRedFactor + Send(Nth(i,2),@DamageReductionHook,#who=self,#what=what,
+            #damage=damage,#attacktype=attacktype,#spelltype=spelltype);
+      }
+      for i in plRadiusEnchantments
+      {
+         iRedFactor = iRedFactor + Send(First(i),@DamageReductionHook,#who=self,
+            #what=what,#iPower=Nth(i,2),#caster=Nth(i,3),
+            #damage=damage,#attacktype=attacktype,#spelltype=spelltype);
+      }
+
+      iReduction = (damage*iRedFactor/1000) + iRedFlat;
+      
+      % Gort only takes effect if its effect is greater than that of regular
+      % damage reduction. Since Gort is greater than 0, this also makes sure
+      % that damage reduction doesn't become negative. (debuffs)
+      if iGort > iReduction
+      {
+         iReduction = iGort;
+      }
+
+      % We made sure that reduction is positive, now let's make sure it doesn't
+      % exceed the original damage.
+      if iReduction > damage
+      {
+         iReduction = damage;
+      }
+
+      return  iReduction;
+   }
+
+   % This is the type of damage done.
+   GetAttackType(what = $, use_weapon = $)
+   {
+         return Send(use_weapon,@GetAttackType);
    }
 
    GetSpellType(what = $, use_weapon = $)
    {
-      local oWeapon, oMonster;
-
-      % Morphed?
-      oMonster = Send(self,@GetIllusionForm);
-      if oMonster <> $ AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
-      {
-         return Send(oMonster,@GetSpellType,#what=what);
-      }
-
-      if use_weapon = $
-      {
-         oWeapon = Send(self,@GetWeapon);
-      }
-      else
-      {
-         oWeapon = use_weapon;
-      }
-
-      if oWeapon = $
-      {
-         % No weapon means we are punching, no magical damage
-         return 0;
-      }
-
-      return Send(oWeapon,@GetAttackSpell);
+      return Send(use_weapon,@GetSpellType);
    }
 
    AssessHit(what = $, stroke_obj = $, damage = $)
@@ -5148,23 +4987,31 @@ messages:
    % calculations. Most notably, damage from attackspells and melee is now 
    % handled with high precision. Eventually, all damage calculations should 
    % be handled in high precision mode.
-   AssessDamage(what=$,damage=$,atype=0,aspell=0,stroke_obj=$,bonus=0,
+   AssessDamage(what=$,damage=0,reduction=$,attacktype=0,spelltype=0,stroke_obj=$,
       scalefactor=1000,report=TRUE,report_resistance=TRUE,absolute=FALSE,
       precision=FALSE)
    {
-      local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
-            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken;
+      local origdamage, i, iResistance, oSoldierShield, color_rsc, iLimit,
+         shrunken;
 
       if NOT precision
       {
          damage = damage * 100;
       }
 
-      origdamage = damage/100;
-      color_rsc = player_hit_color_none;
+      % Ask Gear if it takes damage.
+      for i in plUsing
+      {
+         if IsClass(i,&Armor) OR IsClass(i,&ResistRing)
+         {
+            Send(i,@DamageGear,#who=self,#what=what,#damage=damage,#attacktype=attacktype,
+               #spelltype=spelltype,#report_resistance=report_resistance);
+         }
+      }
 
-      % Attacks against a minion master will cause minions to defend the master
-      Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+      origdamage = damage/100;
+
+      color_rsc = player_hit_color_none;
 
       if what <> $ AND IsClass(what,&monster)
       {
@@ -5173,30 +5020,23 @@ messages:
 
       if NOT absolute
       {
-         % Armor of Gort has a special effect that must go first
-         oGort = Send(SYS,@FindSpellByNum,#Num=SID_ARMOR_OF_GORT);
-         if Send(self,@IsEnchanted,#what=oGort)
+         % If damage reduction hasn't already been handled, handle it now.
+         if reduction = $
          {
-            damage = Send(oGort,@PriorityModifyDefenseDamage,#who=self,
-                           #what=what,#damage=damage,
-                           #atype=atype,#aspell=aspell);
+            reduction = Send(what,@GetDamageReduction,#damage=damage,#what=what,
+            #attacktype=attacktype,#spelltype=spelltype);
          }
-         
-         for i in plDefense_modifiers
-         {
-            damage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,
-                           #damage=damage,#atype=atype,#aspell=aspell,
-                           #report_resistance=report_resistance);
-            Send(i,@DefendingHit,#who=self,#what=what);
-         }
-      
-         iResistance = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
+
+         % Reduction is already capped to be no greater than damage.
+         damage = damage - reduction;
+
+         iResistance = Send(self,@ResistanceCheck,#attacktype=attacktype,#spelltype=spelltype);
 
          for i in plRadiusEnchantments
          {
             iResistance = Send(Nth(i,1),@ModifyResistance,#attacker=what,
-                  #atype=atype,#iPower=Nth(i,2),
-                  #caster=Nth(i,3),#resistance=iResistance);
+               #attacktype=attacktype,#iPower=Nth(i,2),
+               #caster=Nth(i,3),#resistance=iResistance);
          }
 
          damage = Send(self,@GetDamageFromResistance,#what=damage,#value=iResistance);
@@ -5204,76 +5044,35 @@ messages:
          % Allow protective spells a chance to improve when they take effect!
          for i in plPassiveImprovement
          {
-            if (aspell & -Nth(i,4)) AND random(1,10) = 10
+            if (spelltype & -Nth(i,4)) AND random(1,10) = 10
             {
                Send(First(i),@ImproveAbility,#who=self,#target=what);
             }
          }
 
-         % Add attmods AFTER resistance/suscep mods.
-         damage = damage + bonus;
-
          damage = damage * scalefactor / 1000;
-      }
 
-      % Make sure we don't deal negative damage.
-      damage = Bound(damage,0,$);
 
-      iDuration = 800;
-      if damage <= 600
-      {
-         iDuration = 600;
-      }
-
-      if damage <= 300
-      {
-         iDuration = 400;
-      }
-
-      % Spell damage types do different flashes to inform the victim.
-      % If it's just physical damage, do pain instead. Notably: spell
-      % damage type flashes cannot be turned off by unchecking the
-      % Show Pain option in client config.
-      if aspell <> 0
-      {
-         iDuration = iDuration / 2;
-         Send(self,@DamageTypeFlashEffect,#aspell=aspell,#duration=iDuration);
-      }
-      else
-      {
-         Send(self,@EffectSendUserDuration,#what=self,
-               #effect=EFFECT_PAIN,#duration=iDuration);
-      }
-
-      if damage > 0
-      {
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_PARALYZED,#flagset=2)
-         {
-            Send(self,@RemoveEnchantment,
-                  #what=Send(SYS,@FindSpellByNum,#num=SID_PARALYZE));
-         }
-      }
-
-      if NOT absolute
-      {
-         % If we have more health than twice our max, no percent limit on damage.
-         % If we are outlaw or murderer, no percent limit on damage.
-         if piHealth < (piBase_Max_Health * 200)
-            AND ((NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+         % We cap damage dealt at a fraction of the player's max health to prevent
+         % rampant newbie slaughter. PKs obviously don't require such protection 
+         % and are exempted by default. Also, damage is generally bound at an upper
+         % limit regardless of PK status.
+         if ((NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
                AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER))
                OR Send(Send(SYS,@GetSettings),@DamageCapProtectionMurderersEnabled))
          {
-            % Cap damage to 1/3 of max health (+2 so we "round up")
+            % Cap damage to a fraction of max health. We add the denominator - 1
+            % to maxhealth in order to make sure that the target dies in x hits
+            % (x being the denominator) instead of surviving with 1 health.
             iLimit = ((piBase_Max_Health*100) + (MAX_HEALTH_DAMAGE_FRACTION-1))
                                              / MAX_HEALTH_DAMAGE_FRACTION;
             damage = Bound(damage,$,iLimit);
          }
 
-         % maximum of 30 damage per hit.
          damage = bound(damage,$,MAX_DAMAGE_PER_HIT*100);
       }
 
-      % Faction enemies an extra 15% damage to each other, above caps.
+      % Faction enemies deal an extra 15% damage to each other, above caps.
       if what <> $ AND IsClass(what,&Player)
       {
          oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield,#damage=TRUE);
@@ -5284,44 +5083,37 @@ messages:
          }
       }
 
+      % Handle visual pain feedback.
+      Send(self,@DoDamageFlash,#damage=damage,#spelltype=spelltype);
+
       Send(self,@LoseHealth,#amount=damage,#precision=TRUE);
 
+      % Report to Daenks, he needs to be informed right away!
       if IsClass(what,&Monster)
       {
          RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),
-            Send(what,@GetTrueName),aspell,atype,damage/100,origdamage,
+            Send(what,@GetTrueName),spelltype,attacktype,damage/100,origdamage,
             player_monster_attack_string);
       }
 
       if IsClass(what,&Player)
       {
-         oWeapon = Send(what,@GetWeapon);
-         if oWeapon <> $
-         {
-            RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),
-               Send(what,@GetTrueName),aspell,atype,damage/100,origdamage,
-               Send(Send(what,@GetWeapon),@GetTrueName));
-         }
-         else
-         {
-            RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),
-               Send(what,@GetTrueName),aspell,atype,damage/100,origdamage,
-               player_no_weapon_string);
-         }
+         RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),
+            Send(what,@GetTrueName),spelltype,attacktype,damage/100,origdamage,
+            Send(Send(what,@GetWeapon),@GetTrueName));
       }
 
+      % Report to our shrunken head if we have one.
+      shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
+      if damage > 0 AND shrunken <> $
+      {
+         Send(shrunken,@DamageTaken,#what=what,#amount=damage/100);
+      }
+
+      % The player was killed, skip the rest and return $ for damage to let
+      % TryAttack in battler know, which will handle the rest.
       if piHealth <= 0
       {
-         if stroke_obj = $
-            OR NOT Send(stroke_obj,@PlayerWasKilledMsg,#who=self,#attacker=what,#damage=$)
-         {
-            if report
-            {
-               Send(self,@MsgSendUser,#message_rsc=Send(self,@PlayerWasHit,#atype=atype,#aspell=aspell),
-                     #parm1=color_rsc,#parm2=Send(what,@GetCapDef),#parm3=Send(what,@GetName));
-            }
-         }
-
          return $;
       }
 
@@ -5336,7 +5128,7 @@ messages:
          Send(self,@SetPlayerFlag,#flag=PFLAG_TOOK_DAMAGE,#value=TRUE);
       }
 
-      % Should we print resistance message?
+      % If the player has survived the attack and we are told to report, report.
       if report_resistance
       {
          if IsClass(what,&User)
@@ -5349,42 +5141,24 @@ messages:
                #target=self,#color_rsc=color_rsc);
       }
 
-      % Report to shrunken head
-      shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
-      if damage > 0 AND shrunken <> $
-      {
-         Send(shrunken,@DamageTaken,#what=what,#amount=damage/100);
-      }
+      % Attacks against a minion master will cause minions to defend the master
+      Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
 
       return damage;
    }
 
    % This message kicks in when damage is done to the opponent.
-   DidDamage(what = $, amount = 0)
+   DidDamage(what = $, use_weapon = $, amount = 0)
    {
-      local oWeapon, i, shrunken;
+      local i, shrunken;
 
-      oWeapon = Send(self,@GetWeapon);
-
-      if oWeapon <> $
-      {
-         Send(oWeapon,@WeaponHitTarget);
-      }
-
-      for i in plAttack_modifiers
-      {
-         Send(i,@WeaponHitTarget);
-      }
+      % See if the weapon is being damaged.
+      Send(use_weapon,@DamageGear);
 
       if Send(self,@GetSkillAbility,#Skill_num=SKID_DISARM) > 0
       {
-         if oWeapon <> $ AND IsClass(oWeapon,&Spell)
-         {
-            oWeapon = $;
-         }
-
          Send(Send(SYS,@FindSkillByNum,#num=SKID_DISARM),@DoSkill,#who=self,
-               #oTarget=what,#oWeapon=oWeapon);
+            #what=what,#use_weapon=use_weapon);
       }
 
       if amount > 0
@@ -5405,45 +5179,26 @@ messages:
    % Returns weapon used.
    GetWeapon()
    {
-      local oWeapon;
+      local oMonster;
 
-      oWeapon = Send(self,@LookupPlayerWeapon);
-      % If there is no wielded melee weapon, then see if we
-      % have a touch attack active.
-      if oWeapon = $
+      % For players only, if we are morphed, we take the weapon of the monster
+      % into which we morphed instead.
+      oMonster = Send(self,@GetIllusionForm);
+      if (oMonster <> $) AND Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
       {
-         % This will return $ if there's no Touch Attacks enchanting player.
-         oWeapon = Send(self,@GetEnchantmentsByClass,
-               #EnchClass=&TouchAttackSpell);
-         if oWeapon <> $
-         {
-            % The spell object is the second element of the list. Get that.
-            oWeapon = Nth(first(oWeapon),2);
-         }
+         return Send(oMonster,@GetWeapon);
       }
 
-      return oWeapon;
+      propagate;
    }
 
    % The next three functions deal with weapon improvement.
-
    % This keeps track of the weapon swings.
    SwingWeapon(times=1)
    {
-      local oWeapon, iProfNum;
+      local iProfNum;
 
-      oWeapon = Send(self,@LookupPlayerWeapon);
-
-      if oWeapon <> $
-      {
-         % Get weapon's numbers.
-         iProfNum = Send(oWeapon,@GetProfNumber,#who=self);
-      }
-      else
-      {
-         % Unarmed or touch attacks.
-         iProfNum = SKID_BRAWLING;
-      }
+      iProfNum = Send(Send(self,@GetWeapon),@GetProfNum);
 
       if iProfNum <> (piWeaponInfo MOD 1000)
       {
@@ -5680,7 +5435,7 @@ messages:
       return;
    }
 
-   GetSomethingMissedYouSound(what = $,weapon_used = $)
+   GetSomethingMissedYouSound(what = $,use_weapon = $)
    {
       local i,iRoll;
 
@@ -5776,6 +5531,39 @@ messages:
       }
 
       return player_sound_female_ouch4;
+   }
+
+   DoDamageFlash(damage=0,spelltype=0)
+   {
+      local iDuration;
+      
+      iDuration = 800;
+      if damage <= 600
+      {
+         iDuration = 600;
+      }
+
+      if damage <= 300
+      {
+         iDuration = 400;
+      }
+
+      % Spell damage types do different flashes to inform the victim.
+      % If it's just physical damage, do pain instead. Notably: spell
+      % damage type flashes cannot be turned off by unchecking the
+      % Show Pain option in client config.
+      if spelltype <> 0
+      {
+         iDuration = iDuration / 2;
+         Send(self,@DamageTypeFlashEffect,#spelltype=spelltype,#duration=iDuration);
+      }
+      else
+      {
+         Send(self,@EffectSendUserDuration,#what=self,
+               #effect=EFFECT_PAIN,#duration=iDuration);
+      }
+      
+      return;
    }
 
    RevenantChance(who=$,target=$)
@@ -6107,38 +5895,36 @@ messages:
 
    SendAttackOutOfRangeMessage(what = $, use_weapon = $, stroke_obj = $)
    {
-      if use_weapon = $
-         AND stroke_obj = $
+      if use_weapon = $ AND stroke_obj <> $
       {
+         if IsClass(stroke_obj,&RadiusEnchantment)
+         {
+            return;
+         }
+
+         Send(self,@MsgSendUser,#message_rsc=player_attack_out_of_SPELL_range,
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
+               #parm3=Send(stroke_obj,@GetName));
          return;
       }
 
-      if use_weapon <> $
+      if IsClass(use_weapon,&MeleeWeapon) OR IsClass(use_weapon,&RangedWeapon)
       {
          Send(self,@MsgSendUser,#message_rsc=player_attack_out_of_range,
                #parm1=Send(what,@GetCapDef),#parm2=Send(what,@GetName),
                #parm3=Send(use_weapon,@GetIndef),
                #parm4=Send(use_weapon,@GetName));
-      }
-      else
-      {
-         if IsClass(stroke_obj,&spell)
-         {
-            if IsClass(stroke_obj,&RadiusEnchantment)
-            {
-               return;
-            }
 
-            Send(self,@MsgSendUser,#message_rsc=player_attack_out_of_SPELL_range,
-                  #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
-                  #parm3=Send(stroke_obj,@GetName));
-         }
-         else
-         {
-            Send(self,@MsgSendUser,#message_rsc=player_attack_out_of_PUNCH_range,
-                  #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
-                  #parm3=Send(stroke_obj,@GetName));
-         }
+         return;
+      }
+
+      if IsClass(use_weapon,&MagicWeapon) OR IsClass(use_weapon,&MartialWeapon)
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_attack_out_of_PUNCH_range,
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
+               #parm3=Send(stroke_obj,@GetName));
+
+         return;
       }
 
       return;
@@ -6182,7 +5968,6 @@ messages:
       for i in plUsing
       {
          if IsClass(i,&Shield)
-            AND Send(i,@GetBlockAbility,#who=self) > 0
          {
             return i;
          }
@@ -6283,96 +6068,6 @@ messages:
          {
             return i;
          }
-      }
-
-      return $;
-   }
-
-   ChooseArmorPosition()
-   "Defense now chooses a body place at random, and checks to see if the "
-   "defender has any defense value there. Much better than random pattern "
-   "of previous combat."
-   {
-      local rand, armor_pos;
-
-      rand = random(1,12);
-      armor_pos = 0;
-
-      if rand < 6
-      {
-         return ITEM_USE_BODY;
-      }
-
-      if rand < 8
-      {
-         return ITEM_USE_LEGS;
-      }
-
-      if rand < 9
-      {
-         return ITEM_USE_HEAD;
-      }
-
-      if rand < 10
-      {
-         return ITEM_USE_GAUNTLET;
-      }
-
-      % Default position: shield
-      return -1;
-   }
-
-   GetDefenseModifier()
-   "Returns a number from 0-100."
-   {
-      local armor_mod, armor_pos, i, shirt;
-
-      armor_mod = 0;
-      armor_pos = Send(self,@ChooseArmorPosition);
-
-      if armor_pos = -1
-      {
-         for i in plUsing
-         {
-            if IsClass(i,&Shield)
-            {
-               return i;
-            }
-         }
-
-         return $;
-      }
-      else
-      {
-         if armor_pos & ITEM_USE_BODY
-         {
-            shirt = $;
-            for i in plUsing
-            {
-               if Send(i,@GetItemUseType) & armor_pos
-               {
-                  return i;
-               }
-               if Send(i,@GetItemUseType) & ITEM_USE_SHIRT
-               {
-                  shirt = i;
-               }
-            }
-
-            return shirt;
-         }
-         else
-         {
-            for i in plUsing
-            {
-               if Send(i,@GetItemUseType) = armor_pos
-               {
-                  return i;
-               }
-            }
-         }
-
-         return $;
       }
 
       return $;
@@ -7061,6 +6756,23 @@ messages:
       return;
    }
 
+   GetMana()
+   {
+      return piMana;
+   }
+
+   GetStat(stat=0)
+   {
+      if stat = STAT_MIGHT {  return Send(self,@GetMight); }
+      if stat = STAT_INTELLECT {  return Send(self,@GetIntellect); }
+      if stat = STAT_STAMINA {  return Send(self,@GetStamina); }
+      if stat = STAT_AGILITY {  return Send(self,@GetAgility); }
+      if stat = STAT_MYSTICISM {  return Send(self,@GetMysticism); }
+      if stat = STAT_AIM {  return Send(self,@GetAim); }
+
+      return 0;
+   }
+
    GetMight()
    {
       return bound((piMight + piMightMod),1,MAXIMUM_STAT);
@@ -7402,17 +7114,45 @@ messages:
 
    GetSpellAbility(spell_num = 0)
    {
+      local i, iModifier;
+
+      iModifier = 0;
+      
+      for i in plSpellmods
+      {
+         if First(i) = spell_num
+         {
+            iModifier = Nth(i,2);
+         }
+      }
+
+      for i in plSpells
+      {
+         if Send(self,@DecodeSpellNum,#compound=i) = spell_num
+         {
+            % Let's return a nice round 100 at 99 percent.
+            return Send(self,@DecodeSpellAbility,#compound=i) + iModifier + 1;
+         }
+      }
+
+      % This spell is not in the player's spell list. Return 0 ability.
+      return 0;
+   }
+
+   % Saves processing power.
+   CanSpellAdvance(spell_num = 0)
+   {
       local i;
 
       for i in plSpells
       {
          if Send(self,@DecodeSpellNum,#compound=i) = spell_num
          {
-            return Send(self,@DecodeSpellAbility,#compound=i);
+            return Send(self,@DecodeSpellAbility,#compound=i) MOD 99;
          }
       }
 
-      % This spell is not in the player's spell list. Return 0 ability.
+      % This spell is not in the player's spell list. Can't advance.
       return 0;
    }
 
@@ -7451,12 +7191,6 @@ messages:
       {
          % Can't advance a spell you don't have.
          return FALSE;
-      }
-
-      bUsed = Send(self,@WasSpellUsed,#compound=i);
-      if NOT bUsed
-      {
-         bUsed = -1;
       }
 
       iAbility = Send(self,@DecodeSpellAbility,#compound=i);
@@ -7861,7 +7595,7 @@ messages:
 
    ActivateSpellAtrophy()
    {
-      local i, j, iability, lSchoolsUsed, aSpell, bSpell,
+      local i, j, iability, lSchoolsUsed, spelltype, bSpell,
             bFound, highmark, iAmount;
 
       % Must get below highmark for atrophy to activate
@@ -7874,7 +7608,7 @@ messages:
             iAbility = Send(self,@DecodeSpellAbility,#compound=i);
             if iAbility > 2
             {
-               aSpell = Send(SYS,@FindSpellByNum,
+               spelltype = Send(SYS,@FindSpellByNum,
                      #num=Send(self,@DecodeSpellNum,#compound=i));
                bFound = FALSE;
 
@@ -7882,14 +7616,14 @@ messages:
                {
                   bSpell = Send(SYS,@FindSpellByNum,
                         #num=Send(self,@DecodeSpellNum,#compound=j));
-                  if j > 0 AND Send(aSpell,@GetSchool) = Send(bSpell,@GetSchool)
+                  if j > 0 AND Send(spelltype,@GetSchool) = Send(bSpell,@GetSchool)
                   {
                      iAmount = -1;
 
                      break;
                   }
                }
-               Send(self,@ChangeSpellAbility,#spell_num=Send(aSpell,@GetSpellNum),
+               Send(self,@ChangeSpellAbility,#spell_num=Send(spelltype,@GetSpellNum),
                     #amount=iamount);
             }
          }
@@ -7939,17 +7673,45 @@ messages:
 
    GetSkillAbility(Skill_num = 0, absolute=FALSE)
    {
+      local i,iModifier;
+
+      iModifier = 0;
+      
+      for i in plSkillmods
+      {
+         if First(i) = Skill_num
+         {
+            iModifier = Nth(i,2);
+         }
+      }
+
+      for i in plSkills
+      {
+         if Send(self,@DecodeSkillNum,#compound=i) = Skill_num
+         {
+            % Let's return a nice round 100 at 99 percent.
+            return Send(self,@DecodeSkillAbility,#compound=i) + iModifier + 1;
+         }
+      }
+
+      % this Skill is not in the player's Skill list.  return 0 ability.
+      return 0;
+   }
+
+   % Saves processing power.
+   CanSkillAdvance(Skill_num = 0)
+   {
       local i;
 
       for i in plSkills
       {
          if Send(self,@DecodeSkillNum,#compound=i) = Skill_num
          {
-            return Send(self,@DecodeSkillAbility,#compound=i);
+            return Send(self,@DecodeSkillAbility,#compound=i) MOD 99;
          }
       }
 
-      % this Skill is not in the player's Skill list.  return 0 ability.
+      % This skill is not in the player's skill list. Can't advance.
       return 0;
    }
 
@@ -7987,12 +7749,6 @@ messages:
       {
          % Can't advance in a skill you don't have.
          return FALSE;
-      }
-
-      bUsed = Send(self,@WasSpellUsed,#compound=i);
-      if bUsed = 0
-      {
-         bUsed = -1;
       }
 
       iability = Send(self,@DecodeSkillAbility,#compound=i);
@@ -8183,8 +7939,7 @@ messages:
       % resting vigor threshold.
       if num = SKID_SECOND_WIND
       {
-         iVigorChange = (Send(self,@GetSkillAbility,
-                              #Skill_num=SKID_SECOND_WIND) + 1) / 5;
+         iVigorChange = Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND)/5;
          Post(self,@SetVigorRestThreshold,
                #amount=piVigor_rest_threshold - iVigorChange);
       }
@@ -9436,6 +9191,15 @@ messages:
       return;
    }
 
+   DoSwing()
+   "Causes the user to do a weapon swing in 1st & 3rd person. Since the"
+   "animation depends on the used weapon, this is outsourced to weapon.kod."
+   {
+      send(send(self,@GetWeapon),@WeaponAttack);
+
+      return;
+   }
+
    DoBowFire()
    {
       piAnimation = PANM_BOW_FIRE;
@@ -9986,7 +9750,7 @@ messages:
          oHighestGear = $;
          for i in plUsing
          {
-            if IsClass(i,&DefenseModifier)
+            if IsClass(i,&Armor)
                AND Send(i,@GetItemUseType) & n
             {
                if Send(i,@GetLayer) >= iHighestLayer
@@ -10009,7 +9773,7 @@ messages:
       oLowestGear = $;
       for i in plUsing
       {
-         if IsClass(i,&DefenseModifier)
+         if IsClass(i,&Armor)
             AND Send(i,@GetItemUseType) & ITEM_USE_HEAD
          {
             if Send(i,@GetLayer) <= iLowestLayer
@@ -10757,37 +10521,6 @@ messages:
       return;
    }
 
-   PlayerWasHit(atype = 0, aspell = 0)
-   "Select a message to Send the player when they are hit."
-   {
-      if aspell > 0 % do spell attacks first, so flaming swords use the special
-      {
-         if (aspell&ATCK_SPELL_FIRE) > 0 { return player_was_burned;}
-         if (aspell&ATCK_SPELL_SHOCK) > 0 { return player_was_shocked;}
-         if (aspell&ATCK_SPELL_COLD) > 0 { return player_was_frozen;}
-         if (aspell&ATCK_SPELL_HOLY) > 0 { return player_was_holyhit;}
-         if (aspell&ATCK_SPELL_UNHOLY) > 0 { return player_was_unholyhit;}
-         if (aspell&ATCK_SPELL_QUAKE) > 0 { return player_was_quaked;}
-      }
-
-      if atype > 0   % do weapon attacks (odd ones first).
-      {
-         if (atype&ATCK_WEAP_BITE) > 0 { return player_was_bitten;}
-         if (atype&ATCK_WEAP_CLAW) > 0 { return player_was_clawed;}
-         if (atype&ATCK_WEAP_STING) > 0 { return player_was_stung;}
-         if (atype&ATCK_WEAP_SLASH) > 0 { return player_was_slashed;}
-         if (atype&ATCK_WEAP_BLUDGEON) > 0 { return player_was_bludgeoned;}
-         if (atype&ATCK_WEAP_PIERCE) > 0 { return player_was_pierced;}
-         if (atype&ATCK_WEAP_THRUST) > 0 { return player_was_thrusted;}
-
-         % Put non-weapon strokes here.
-         if (atype&ATCK_WEAP_PUNCH) > 0 {return player_was_punched;}
-         if (atype&ATCK_WEAP_KICK) > 0 {return player_was_kicked;}
-      }
-
-      return player_was_hit;
-   }
-
    AddPoison(strength = 0, bVigorLoss = TRUE)
    {
       if ptPoison = $
@@ -11076,7 +10809,7 @@ messages:
 
       for i in plUsing
       {
-         if IsClass(i,&Armor)
+         if IsClass(i,&BodyArmor)
          {
             return i;
          }
@@ -11297,36 +11030,24 @@ messages:
                #num=SKID_SECOND_WIND),#type=ENCHANTMENT_PLAYER);
       }
 
-      iAmount = 80 + ((Send(self,@GetSkillAbility,
-                           #Skill_num=SKID_SECOND_WIND) + 1) / 5);
+      iAmount = 80 + (Send(self,@GetSkillAbility,#Skill_num=SKID_SECOND_WIND) / 5);
       Send(self,@SetVigorRestThreshold,#amount=iAmount);
 
       Send(self,@EndCrystalizeManaSurge);
 
-      % All attack modifiers should be a room enchantment, a personal
-      % enchantment or something they are wearing. If one still exists,
-      % bug.  This is also true for defense modifiers and resistances.
-      if plAttack_modifiers <> $
-      {
-         for i in plAttack_modifiers
-         {
-            Debug("Recalibrating: player",Send(self,@GetTrueName),self,
-                  "still had attmod",Send(i,@GetName));
-         }
-
-         plAttack_modifiers = $;
-      }
-
-      if plDefense_modifiers <> $
-      {
-         for i in plDefense_modifiers
-         {
-            Debug("Recalibrating: player",Send(self,@GetTrueName),self,
-                  "still had defmods",Send(i,@GetName));
-         }
-         
-         plDefense_modifiers = $;
-      }
+      % Reset the various combat mods.
+      piCombatModDefense = 0;
+      piCombatModOffense = 0;
+      piCombatModMelee = 0;
+      piCombatModRanged = 0;
+      piCombatModMagic = 0;
+      piPhysicalReductionFactor = 0;
+      piMagicalReductionFactor = 0;
+      piPhysicalReductionFlat = 0;
+      piMagicalReductionFlat = 0;
+      piSpellpowerMod = 0;
+      plSkillmods = $;
+      plSpellmods = $;
 
       if plResistances <> $
       {
@@ -14114,24 +13835,7 @@ messages:
 
    SumDamageReduction()
    {
-      local iArmor, d;
-
-      iArmor = 0;
-
-      for d in plDefense_modifiers
-      {
-         if IsClass(d,&DefenseModifier)
-         {
-            iArmor = iArmor + Send(d,@GetDamageReduction);
-         }
-
-         if IsClass(d,&ArmorOfGort)
-         {
-            iArmor = iArmor + (Send(self,@GetEnchantedState,#what=d) / 25);
-         }
-      }
-
-      return iArmor;
+      return piPhysicalReductionFlat;
    }
 
    CanEvilTwin()

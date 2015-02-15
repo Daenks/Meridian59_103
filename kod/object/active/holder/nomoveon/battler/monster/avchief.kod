@@ -76,7 +76,7 @@ classvars:
 
    viIndefinite = ARTICLE_AN
    viTreasure_type = TID_AVAR_CHIEF
-   viAttack_type = ATCK_WEAP_PIERCE
+   viAttackType = ATCK_WEAP_PIERCE
    viSpeed = SPEED_FAST
    viDefault_behavior = \
       AI_FIGHT_AGGRESSIVE | AI_MOVE_OPTIMAL_RANGE\
@@ -131,6 +131,11 @@ messages:
                       ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &BattleBow;
    }
 
    SetClan(clan = AVARCLAN_PROMAGIC)

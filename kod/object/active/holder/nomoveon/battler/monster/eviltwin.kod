@@ -47,7 +47,7 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_FAST
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 20
    viDifficulty = 8
@@ -68,11 +68,14 @@ classvars:
       AI_FIGHT_SINGLEMINDED | AI_FIGHT_MONSTERS \
       | AI_FIGHT_NEWBIESAFE | AI_FIGHT_AGGRESSIVE
 
+   vbBlock = TRUE
+   vbParry = TRUE
+
 properties:
 
    vrName = EvilTwin_name_rsc
    piDrawfx = 4
-   vrIcon = EvilTwin_male_icon_rsc
+   vrIcon = 0
    piAnimation = PANM_NONE
    poCaster = $
    poOriginal = $         % Who the EvilTwin is of.
@@ -462,21 +465,21 @@ messages:
       return iDamage * piDamagePercent / 100;
    }
 
-   GetDamageType(what=$,use_weapon=$)
+   GetAttackType(what=$,use_weapon=$)
    {
       if poOriginal = $
       {
-         return viAttack_type;
+         return viAttackType;
       }
 
-      return Send(poOriginal,@GetDamageType,#what=what,#use_weapon=use_weapon);
+      return Send(poOriginal,@GetAttackType,#what=what,#use_weapon=use_weapon);
    }
 
    GetSpellType(what=$,use_weapon=$)
    {
       if poOriginal = $
       {
-         return viAttack_spell;
+         return viSpellType;
       }
 
       return Send(poOriginal,@GetSpellType,#what=what,#use_weapon=use_weapon);

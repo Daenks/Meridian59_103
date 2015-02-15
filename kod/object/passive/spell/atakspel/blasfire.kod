@@ -34,7 +34,7 @@ classvars:
    
    viSpell_num = SID_BLAST_OF_FIRE
 
-   viAttack_spell = ATCK_SPELL_ALL + ATCK_SPELL_FIRE
+   viSpellType = ATCK_SPELL_ALL + ATCK_SPELL_FIRE
 
    viSchool = SS_FAREN
    viSpell_level = 4

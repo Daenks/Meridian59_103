@@ -43,7 +43,7 @@ classvars:
    viTreasure_type = TID_CAVE_ORC
 
    viSpeed = SPEED_FAST
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 80
    viDifficulty = 7
@@ -55,6 +55,8 @@ classvars:
    viCashmin = 250
    viCashmax = 650
    viWimpy = 4
+
+   vbParry = TRUE
 
    vrSound_hit = CaveOrc_sound_hit
    vrSound_miss = CaveOrc_sound_miss
@@ -77,15 +79,9 @@ messages:
       propagate;
    }
 
-   % Used for defense messages
-   GetParryAbility(stroke_obj=$)
+   GetMonsterWeaponClass()
    {
-      if (stroke_obj <> $) and not Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-
-      return (viDifficulty*10)/4;
+      return &Pickaxe;
    }
 
    MonsterAttack(what = $)

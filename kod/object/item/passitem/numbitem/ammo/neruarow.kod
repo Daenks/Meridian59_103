@@ -41,60 +41,32 @@ classvars:
    viBulk = 4
    viWeight = 5
 
-   viMinDamage = 2
-   viMaxDamage = 6
+   viMinShatterDamage = 300
+   viMaxShatterDamage = 800
 
-   viMinShatterDamage = 3
-   viMaxShatterDamage = 8
+   viAttackType = ATCK_WEAP_NERUDITE
 
 properties:
 
    piNumber = 5
-   piAttack_type = ATCK_WEAP_PIERCE + ATCK_WEAP_NERUDITE
-
+   
 messages:
 
-   GetDamage(who=$,target=$)
+   % Ammo may add a special effect to bow shots.
+   DoSpecialEffect(who=$,what=$,stroke_obj=$,power=0)
    {
-      if target <> $ AND Random(1,100) <= 10
+      if what <> $ AND Random(1,100) <= power
       {
-         Send(who,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
-         if IsClass(target,&Player)
+         Post(who,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
+         if IsClass(what,&Player)
          {
-            Send(target,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
+            Post(what,@MsgSendUser,#message_rsc=nerudite_arrow_explodes);
          }
 
          return Random(viMinShatterDamage,viMaxShatterDamage);
       }
-
+      
       propagate;
-   }
-
-   GetMinSpecialDamage()
-   {
-      return viMinShatterDamage;
-   }
-
-   GetMaxSpecialDamage()
-   {
-      return viMaxShatterDamage;
-   }
-
-   SendProjectileAnimation()
-   {
-      AddPacket(1,ANIMATE_NONE,2,1);
-
-      return;
-   }
-
-   GetProjectileSpeed()
-   {
-      return 7;
-   }
-
-   GetProjectileIcon()
-   {
-      return vrIcon;
    }
 
 end

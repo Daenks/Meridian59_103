@@ -101,40 +101,24 @@ messages:
       propagate;
    }
 
-   % Stuff we handle to be an attack modifier.
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
+   OffenseHook(what=$,iPower=0)
    {
-      if what = $
+      if what <> $ AND (Send(what,@GetKarma) < 0)
       {
-         return hit_roll;
+         return -2*iPower*Send(what,@GetKarma)/100;
       }
-
-      % Only affect the evil ones...
-      if Send(what,@GetKarma,#detect=TRUE) < 0
-      {
-         % Give a small bonus
-         return hit_roll + 100;
-      }
-
-      return hit_roll;
+      
+      return 0;
    }
-   
-   ModifyDamage(who = $,what = $,damage = $)
+
+   DamageHook(what=$,iPower=0)
    {
-      if what = $
+      if what <> $ AND (Send(what,@GetKarma) < 0)
       {
-         return damage;
+         return -2*iPower*Send(what,@GetKarma)/100;
       }
-
-      % Only affect the evil ones...
-      if Send(what,@GetKarma,#detect=TRUE) < 0
-      {
-         % Roughly equal to Killing Fields
-         return damage + Random(1,5);
-      }
-
-      return damage;
+      
+      return 0;
    }
 
 

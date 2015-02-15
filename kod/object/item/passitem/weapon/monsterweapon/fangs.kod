@@ -1,0 +1,37 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Fangs is MonsterWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   fangs_name_rsc = "fangs"
+
+classvars:
+
+   vrName = fangs_name_rsc
+
+   viAttackType = ATCK_WEAP_NONMAGIC + ATCK_WEAP_BITE
+
+properties:
+
+messages:
+
+   GetStrokeNum()
+   {
+      return SKID_TEAR;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

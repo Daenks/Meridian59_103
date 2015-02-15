@@ -76,14 +76,12 @@ messages:
 
    CastSpell(who=$,iSpellPower=0,lTargets=$)
    {
-      Send(First(lTargets),@AddAttackModifier,#what=self);
-
       propagate;
    }
 
    GetStateValue(iSpellpower=$)
    {
-      return iSpellpower;
+      return iSpellpower+1;
    }
 
    GetDuration(iSpellPower=0)
@@ -96,23 +94,14 @@ messages:
       return iDuration;
    }
 
-   EndEnchantment(who=$,report=TRUE,state=0)
+   OffenseHook(who=$)
    {
-      Send(who,@RemoveAttackModifier,#what=self);
-
-      propagate;
+      return Send(who,@GetEnchantedState,#what=self);
    }
 
-   % Stuff we handle to be an attack modifier
-
-   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   DamageHook(who=$)
    {
-      return hit_roll + Send(who,@GetEnchantedState,#what=self);
-   }
-   
-   ModifyDamage(who=$,what=$,damage=$)
-   {
-      return damage + Random(0,send(who,@GetEnchantedState,#what=self)/33);
+      return Send(who,@GetEnchantedState,#what=self);
    }
 
    EffectDesc(who=$)

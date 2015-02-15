@@ -93,69 +93,56 @@ messages:
        return FALSE;
    }
 
-   DoSkill(who=$,oTarget=$,oWeapon=$)
+   DoSkill(who=$,what=$,use_weapon=$)
    {
-      local iAbil,iModifier,oOppWeapon, oHoldSpell;
-   
-      if (who=$)
-      {
-         debug("DoSkill called with bad who.");
-         return FALSE;
-      }
+      local iAbil,iMod,oOppWeapon, oHoldSpell;
 
-      if oWeapon=$
+      % Get the weapon's disarm modifier.
+      iMod = Send(use_weapon,@GetDisarmMod);
+
+      % Certain weapons may not permit disarming. If so, their bonus returns nil
+      % instead of 0.
+      if iMod = $
       {
-         % Talented people can disarm even bare-handed.
-         iAbil = Send(who,@GetSkillAbility,#Skill_num=SKID_BRAWLING);
-         if iAbil < BRAWL_THRESHOLD
-         {
-            return FALSE;
-         }
-         
-         iModifier = iAbil;
-      }
-      else
-      {
-         iModifier = Send(oWeapon,@GetDisarmBonus);
+         return 0;
       }
       
-      if not (Send(self,@CanPayCosts,#who=who) and Send(self,@PayCosts,#who=who,#modifier=iModifier))
+      if NOT (Send(self,@CanPayCosts,#who=who) AND Send(self,@PayCosts,#who=who,#modifier=iMod))
       {
          return FALSE;
       }
 
       % Get player's ability in this skill.
       iAbil = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
-
-      if (IsClass(oTarget,&Player)) and (Send(SYS,@IsPKAllowed) or Send(Send(who,@GetOwner),@IsArena))
+      
+      if (IsClass(what,&Player)) AND (Send(SYS,@IsPKAllowed) OR Send(Send(who,@GetOwner),@IsArena))
       {
-         % Players will unwield weapon
-
-         oOppWeapon = Send(oTarget,@LookupPlayerWeapon);
-         if oOppWeapon = $
+         % Players will unwield weapon if they have a disarmable weapon.
+         oOppWeapon = Send(what,@GetWeapon);
+         if NOT Send(oOppWeapon,@CanBeDisarmed)
          {
             return FALSE;
          }
 
-         if Send(oTarget,@TryUnuseItem,#what=oOppWeapon)
+         if Send(what,@TryUnuseItem,#what=oOppWeapon)
          {
             % Currently, have 1/5th your percent plus your modifier chance to make opponent drop weapon.
-            iAbil = (iAbil + 1 + iModifier) / DISARM_FACTOR;
-            if (random(1,100) < iAbil) and (not Send(Send(oTarget,@GetOwner),@IsArena))
+            iAbil = (iAbil + 1 + iMod) / DISARM_FACTOR;
+            if (random(1,100) < iAbil) AND (NOT Send(Send(what,@GetOwner),@IsArena))
             {
                % Success!  They dropped it!
-               Send(oTarget,@DropItem,#droppedItem=oOppWeapon);
+               Send(what,@DropItem,#droppedItem=oOppWeapon);
                send(who,@MsgSendUser,#message_rsc=Disarm_dropped,
-                    #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
-               send(oTarget,@MsgSendUser,#message_rsc=Disarm_opp_dropped,
+                    #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+               send(what,@MsgSendUser,#message_rsc=Disarm_opp_dropped,
                     #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
             }
                else
             {
-               Send(oTarget,@UnuseItem,#what=oOppWeapon);
+               Send(what,@UnuseItem,#what=oOppWeapon);
                send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
-                    #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
-               send(oTarget,@MsgSendUser,#message_rsc=Disarm_opp_unwield,
+                    #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+               send(what,@MsgSendUser,#message_rsc=Disarm_opp_unwield,
                     #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
             }
             % Disarming players takes a bit more vigor than usual, about 5x more.
@@ -169,19 +156,19 @@ messages:
          % Monsters are stunned.
          oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
          % Don't stun held monsters...
-         if Send(oTarget,@IsEnchanted,#what=oHoldSpell)
+         if Send(what,@IsEnchanted,#what=oHoldSpell)
          {
             return FALSE;
          }
          
          send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
-              #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
               
          % The better you are, the better your weapon, the longer your stun is.
          % The bigger the monster is, the shorter the stun is.
          % Stun between 2 and 6 seconds.
-         iAbil = bound((iAbil + iModifier - Send(oTarget,@GetLevel)/2)/10,2,6);
-         Send(oHoldSpell,@DoHold,#what=who,#otarget=oTarget,#idurationsecs=iAbil,#report=FALSE);
+         iAbil = bound((iAbil + iMod - Send(what,@GetLevel)/2)/10,2,6);
+         Send(oHoldSpell,@DoHold,#what=who,#what=what,#idurationsecs=iAbil,#report=FALSE);
       }
 
       propagate;

@@ -374,11 +374,6 @@ messages:
    {
       if pbImmortal
       {
-         if stroke_obj <> $
-         {
-            Send(stroke_obj,@SendMissMessageToDefender,#who=self,#attacker=what);
-         }
-
          return 0;
       }
 

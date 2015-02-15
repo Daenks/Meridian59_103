@@ -55,23 +55,28 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
-   "Wielder has a 1% chance of twisting target with any hit."
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
+   "Wielder has a piEffect_Percent% chance of twisting target with any hit."
    {
       local oRoom;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if Random(1,100) <= piEffect_percent
       {
-         oRoom = Send(target,@GetOwner);
+         oRoom = Send(what,@GetOwner);
 
          if oRoom <> $
          {
-            Send(oRoom,@SomethingTurned,#what=target,#new_angle=random(0,MAX_ANGLE-1));
-            Send(target,@MsgSendUser,#message_rsc=weapatt_twister_victim_effect);
+            Send(oRoom,@SomethingTurned,#what=what,#new_angle=random(0,MAX_ANGLE-1));
+            Send(what,@MsgSendUser,#message_rsc=weapatt_twister_victim_effect);
          }
       }
 
-      return damage;
+      return 0;
    }
 
    IsMagicalEffect()

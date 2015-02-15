@@ -43,7 +43,7 @@ classvars:
    viMana = 10
    viSpellExertion = 4
 
-   viAttack_spell = ATCK_SPELL_ALL + ATCK_SPELL_UNHOLY
+   viSpellType = ATCK_SPELL_ALL + ATCK_SPELL_UNHOLY
 
    vrSucceed_wav = VampiricDrain_sound
 

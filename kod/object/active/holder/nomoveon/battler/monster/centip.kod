@@ -43,7 +43,7 @@ classvars:
    viTreasure_type = TID_WIMPY_MEDIUM
 
    viSpeed = SPEED_FAST
-   viAttack_type = ATCK_WEAP_BITE
+   viAttackType = ATCK_WEAP_BITE
 
    viLevel = 30
    viDifficulty = 5
@@ -70,6 +70,16 @@ messages:
                         [-ATCK_SPELL_SHOCK, -20] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    MonsterAttack(what = $)

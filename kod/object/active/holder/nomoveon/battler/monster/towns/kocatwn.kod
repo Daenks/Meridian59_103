@@ -65,7 +65,7 @@ messages:
             iShield = iShield + 1;
          }
 
-         if IsClass(i,&Armor)
+         if IsClass(i,&BodyArmor)
             AND NOT (IsClass(i,&Robe)
                OR IsClass(i,&LightRobe))
          {

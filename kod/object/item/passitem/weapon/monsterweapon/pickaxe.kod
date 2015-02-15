@@ -1,0 +1,38 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Pickaxe is MonsterWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   pickaxe_name_rsc = "pickaxe"
+
+classvars:
+
+   vrName = pickaxe_name_rsc
+
+   viStab = 0
+   viStrike = 120
+   viSlash = 80
+   viThrust = 80
+   viRange = 96
+
+   viAttackType = ATCK_WEAP_NONMAGIC + ATCK_WEAP_THRUST
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

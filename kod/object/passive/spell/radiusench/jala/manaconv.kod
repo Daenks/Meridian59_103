@@ -75,15 +75,14 @@ messages:
       return;
    }
 
-   ModifySpellPower(who=$,oSpell=$,state=$,iSpellPower=0)
+   SpellPowerPreHook(who=$,oSpell=$,caster=$,iPower=0)
    {
-      if state <> $
-         AND IsClass(oSpell,&AttackSpell)
+      if IsClass(oSpell,&AttackSpell)
       {
-         return iSpellPower + Nth(state,2);
+         return iPower;
       }
 
-      return iSpellPower;
+      return 0;
    }
 
 

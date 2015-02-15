@@ -82,7 +82,7 @@ messages:
          return False;
       }
 
-      if Send(oWeapon,@CheckTypeFlag,#flag=ATCK_WEAP_MAGIC) <> 0
+      if Send(oWeapon,@CheckAttackType,#flag=ATCK_WEAP_MAGIC) <> 0
          AND Send(oWeapon,@GetAttributeData,#ItemAtt=WA_ENCHANTED) = $
          AND Send(oWeapon,@GetAttributeData,#ItemAtt=WA_ATTACKSPELLTYPE) = $
       {

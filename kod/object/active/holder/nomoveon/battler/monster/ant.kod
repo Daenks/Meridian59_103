@@ -45,7 +45,7 @@ classvars:
    vrDead_name = ant_dead_name_rsc
 
    viSpeed = SPEED_SLOW
-   viAttack_type = ATCK_WEAP_BITE
+   viAttackType = ATCK_WEAP_BITE
    viLevel = 40
    viDifficulty = 4
    viVisionDistance = 14
@@ -73,6 +73,16 @@ messages:
       plResistances = [ [-ATCK_WEAP_ALL, -20] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    DoSpasm()

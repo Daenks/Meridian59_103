@@ -17,9 +17,16 @@ constants:
 resources:
    slash_name_rsc = "slash"
    slash_icon_rsc = slashico.bgf
-   slash_desc_rsc = "Slash is the most common weapon skill.  It helps you hit with melee weapons."
+   slash_desc_rsc = "A wide, slashing motion allows a warrior to assault targets "
+      "that are out of his immediate reach. Any melee weapon is suitable for slashing, "
+      "but some more so than others."
 
-   slash_skill_intro = "Weaponcraft Lv. 1: The most basic skill of armed combat. A must for those who live by the blade."
+   slash_skill_intro = "Weaponcraft Lv. 1: One of the most basic skills of armed "
+      "combat. A must for those who live by the blade."
+
+   slash_first_person = "slash at"
+   slash_third_person = "slashes at"
+   slash_action_noun = "slash"
 
 classvars:
 
@@ -28,6 +35,10 @@ classvars:
    vrDesc = slash_desc_rsc
 
    vrSkill_intro = slash_skill_intro
+
+   vrStroke_first_person = slash_first_person
+   vrStroke_third_person = slash_third_person
+   vrStroke_action_noun = slash_action_noun
 
    viIndefinite = ARTICLE_NONE
    viDefinite = ARTICLE_NONE
@@ -48,21 +59,6 @@ properties:
    piChanceToIncrease = 100
 
 messages:
-
-   GetAttackType(weapon_used=$)
-   {
-      local i;
-      
-      i= send(weapon_used,@GetAttackType);
-      
-      if (i & ATCK_WEAP_THRUST) AND NOT (i & ATCK_WEAP_SLASH)
-      {
-         i = i & (~ATCK_WEAP_THRUST);
-         i = (i | ATCK_WEAP_SLASH);
-      }
-      
-      return i;
-   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

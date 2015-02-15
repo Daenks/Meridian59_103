@@ -1205,7 +1205,7 @@ messages:
       if NOT Send(who,@PlayerIsIntriguing)
       {
          return 50;
-      }			  
+      }
     
       iBonus = Send(self,@CalcFactionBonus,#base=100,#faction=iFaction);
 
@@ -1269,7 +1269,7 @@ messages:
       if not Send(who,@PlayerIsIntriguing)
       {
          return 2;
-      }			  
+      }
  
       iBonus = Send(self,@CalcFactionBonus,#base=10,#faction=iFaction);
       
@@ -1315,8 +1315,8 @@ messages:
          Post(who,@MsgSendUser,#message_rsc=parliament_dam_up,
               #parm1=Send(self,@GetFactionLiege,#faction=iFaction));
       }
-      
-      return 2;
+
+      return bound(Send(self,@CalcFactionBonus,#base=100,#faction=iFaction),0,$);
    }
 
    GetFactionRegenBonus(who=$, hpregen=TRUE)

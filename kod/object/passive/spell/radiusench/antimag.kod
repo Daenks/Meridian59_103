@@ -103,20 +103,15 @@ messages:
       return iDuration;
    }
 
-   ModifySpellPower(who=$,oSpell=$,state=$,iSpellPower=0)
+   SpellPowerPreHook(who=$,oSpell=$,caster=$,iPower=0)
    {
       if IsClass(oSpell,&ManaConvergence)
       {
-         return iSpellPower;
-      }
-      
-      if state = $
-      {
-         return iSpellPower;
+         return 0;
       }
 
       % Subtract AMA's spellpower from the power of the spell being cast.
-      return iSpellPower - Nth(state,2);
+      return -iPower;
    }
 
 end

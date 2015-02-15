@@ -43,7 +43,7 @@ properties:
 messages:
 
    % Handles damage done to player
-   AssessDamage(what=$,damage=$,atype=0,aspell=0,stroke_obj=$,bonus=0,
+   AssessDamage(what=$,damage=$,attacktype=0,spelltype=0,stroke_obj=$,bonus=0,
                scalefactor=1000,report=TRUE,report_resistance=TRUE,
                absolute=FALSE)
    {

@@ -20,69 +20,6 @@ constants:
 
    WEAPON_TAKE_DAMAGE_PCT = 75
 
-   % Weapon tuning factors
-   %  Edit these constants to tune weapon power
-
-   % Hit modifiers
-   WEAPON_HITMOD_LOW  = 0
-   WEAPON_HITMOD_MID  = 75
-   WEAPON_HITMOD_HIGH = 125
-
-   % Damage, low to high range of damage.
-   WEAPON_DAMAGE_LOW_MIN  = 3
-   WEAPON_DAMAGE_LOW_MAX  = 8
-
-   WEAPON_DAMAGE_MID_MIN  = 4
-   WEAPON_DAMAGE_MID_MAX  = 8
-
-   WEAPON_DAMAGE_HIGH_MIN = 7
-   WEAPON_DAMAGE_HIGH_MAX = 13
-
-   % Disarm bonus
-   WEAPON_DISARM_LOW  = -5
-   WEAPON_DISARM_MID  = 0
-   WEAPON_DISARM_HIGH = 10
-
-   % Spell modifier, large negatives are bad.
-   WEAPON_SPELL_LOW  = -15
-   WEAPON_SPELL_MID  = -10
-   WEAPON_SPELL_HIGH = 0
-
-   % Range of reach
-   WEAPON_RANGE_LOW  = 2
-   WEAPON_RANGE_MID  = 2
-   WEAPON_RANGE_HIGH = 3
-
-   % Quality mods to number of hits
-   WEAPON_LOW_QUALITY_HITS  = -50
-   WEAPON_HIGH_QUALITY_HITS = 100
-   WEAPON_NERUDITE_HITS = 200
-
-   % Quality mods to hit modifier
-   WEAPON_LOW_QUALITY_HITMOD  = 0
-   WEAPON_HIGH_QUALITY_HITMOD = 50
-   WEAPON_NERUDITE_HITMOD = 25
-
-   % Quality mods to damage
-   WEAPON_LOW_QUALITY_DAMAGE  = -1
-   WEAPON_HIGH_QUALITY_DAMAGE = 1
-   WEAPON_NERUDITE_DAMAGE = 1
-
-   % Quality mods to disarming
-   WEAPON_LOW_QUALITY_DISARM  = -5
-   WEAPON_HIGH_QUALITY_DISARM = 5
-   WEAPON_NERUDITE_DISARM = 0
-
-   % Quality mods to spell modifier
-   WEAPON_LOW_QUALITY_SPELL  = 5
-   WEAPON_HIGH_QUALITY_SPELL = -5
-   WEAPON_NERUDITE_SPELL =  5
-
-   % Quality mod to range
-   WEAPON_LOW_QUALITY_RANGE  = 0
-   WEAPON_HIGH_QUALITY_RANGE = 0
-   WEAPON_NERUDITE_RANGE = 0
-
 resources:
 
    weapon_already_broken = "%s%s is broken; you can't use it!"
@@ -127,13 +64,10 @@ classvars:
    % Message when the weapon breaks.
    vrWeaponBroke = weapon_broken
    
-   viWeaponType = WEAPON_TYPE_THRUST
-   viWeaponQuality = WEAPON_QUALITY_NORMAL
-
    viProficiency_needed = SKID_PROFICIENCY_SWORD
 
-   viHits_init_min = 250
-   viHits_init_max = 300
+   viHits_init_min = 500
+   viHits_init_max = 500
 
    vbShow_condition = TRUE
    vrCondition_exc = weapon_condition_exc 
@@ -142,37 +76,443 @@ classvars:
    vrCondition_med = weapon_condition_med 
    vrCondition_poor = weapon_condition_poor 
    vrCondition_broken = weapon_condition_broken
+   
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % These are the default values for the properties below. piQuality          %
+   % is calculated based on deviations from these values.                      %
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % Self explanatory. Value inflated by a factor of 100 throughout damage
+   % calculations to reduce truncation issues to a minimum.
+   viDamage = 500
+   % The amount of damage that proficiency in the weapon can add.
+   viProficiencyBonus = 500
+   % This is directly added to offense rating in GetOffense.
+   viHitMod = 0
+   % The percentage of extra damage that the weapon's primary stat will add at 50.
+   viPrimaryScaling = 30
+   % The percentage of extra effect that the weapon's secondary stat will add at 50.
+   viSecondaryScaling = 30
+   % The percentage of damage the weapon will do with the respective stroke.
+   viStab = 100
+   viStrike = 100
+   viSlash = 100
+   viThrust = 100
+   viFire = 100
+   viTouch = 100
+   % The percentage by which the player's ability in the skill is modified.
+   viDisarmMod = 0
+   viParryMod = 0
+   % The amount of spellpower the weapon adds.
+   viSpellpowerMod = 0
+   % The range of the weapon in fine grain. One regular unit is split up into
+   % 64 fine grain units. 192 = 64 * 3
+   viRange = 192
 
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % These are the default values for the 'non power properties'.              %
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   viPrimaryStat = STAT_MIGHT
+   viSecondaryStat = STAT_MIGHT
+   viAttackType = 0
+   viSpellType = 0
+   viDeviation = 20
+   
 properties:
 
-   piAttack_type = 0
-   piAttack_spell = 0
-
-   piDamageBonus = 0
-   piHitBonus = 0
+   piDamage = 0
+   piProficiencyBonus = 0
+   piHitMod = 0
+   piPrimaryScaling = 0
+   piSecondaryScaling = 0
+   piStab = 0
+   piStrike = 0
+   piSlash = 0
+   piThrust = 0
+   piFire = 0
+   piTouch = 0
+   piDisarmMod = 0
+   piParryMod = 0
+   piSpellpowerMod = 0
+   piRange = 0
+   piPrimaryStat = 0
+   piSecondaryStat = 0
+   piAttackType = 0
+   piSpellType = 0
+   piDeviation = 0
+   piQuality = 100
 
    piUsed = UNUSED
 
 messages:
 
-   Constructed()
+   % Properties are set here and randomized later on in Constructed().
+   DefaultValues()
    {
-      % Modify the hits depending on the weapon's quality.
-      if viWeaponQuality = WEAPON_QUALITY_LOW
+      local i, oItemAtt;
+
+      piDamage = viDamage;
+      piProficiencyBonus = viProficiencyBonus;
+      piHitMod = viHitMod;
+      piPrimaryScaling = viPrimaryScaling;
+      piSecondaryScaling = viSecondaryScaling;
+      piStab = viStab;
+      piStrike = viStrike;
+      piSlash = viSlash;
+      piThrust = viThrust;
+      piFire = viFire;
+      piTouch = viTouch;
+      piDisarmMod = viDisarmMod;
+      piParryMod = viParryMod;
+      piSpellpowerMod = viSpellpowerMod;
+      piRange = viRange;
+      piPrimaryStat = viPrimaryStat;
+      piSecondaryStat = viSecondaryStat;
+      piAttackType = viAttackType;
+      piSpellType = viSpellType;
+      piDeviation = viDeviation;
+
+      % In case we have an item attribute that altered our spelltype, remove
+      % that as well.
+      for i in plItem_Attributes
       {
-         piHits_init = piHits_init + WEAPON_LOW_QUALITY_HITS;
-         piHits = piHits + WEAPON_LOW_QUALITY_HITS;
+         oItemAtt = Send(SYS,@FindItemAttByNum,#num=Send(self,@GetNumFromCompound,
+            #compound=First(i)));
+         if IsClass(oItemAtt,&WeapAttSpellType)
+         {
+            Send(oItemAtt,@RemoveFromItem,#oItem=self);
+         }
       }
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
+   
+      return;
+   }
+
+   % Constructor has not been provided with the weapon's stats and the weapon
+   % has been constructed from its default values instead. In this message, we 
+   % randomize stats based on the lower and upper bounds for deviation. Item 
+   % quality and durability are then figured from the average deviation.
+   Constructed(lower=0,upper=0)
+   {
+      local n, iDeviation, iQuality;
+
+      n = 0;
+      iQuality = 0;
+   
+      if piDamage <> 0
       {
-         piHits_init = piHits_init + WEAPON_HIGH_QUALITY_HITS;
-         piHits = piHits + WEAPON_HIGH_QUALITY_HITS;
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piDamage = piDamage*(100+iDeviation)/100;
       }
-      if viWeaponQuality = WEAPON_NERUDITE
+      if piProficiencyBonus <> 0
       {
-         piHits_init = piHits_init + WEAPON_NERUDITE_HITS;
-         piHits = piHits + WEAPON_NERUDITE_HITS;
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piProficiencyBonus = piProficiencyBonus*(100+iDeviation)/100;   
       }
+      if piHitMod > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piHitMod = piHitMod*(100+iDeviation)/100;   
+      }
+      if piHitMod < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piHitMod = piHitMod*(100+iDeviation)/100;   
+      }
+      if piPrimaryScaling <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piPrimaryScaling = piPrimaryScaling*(100+iDeviation)/100;   
+      }
+      if piSecondaryScaling <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piSecondaryScaling = piSecondaryScaling*(100+iDeviation)/100;   
+      }
+      if piStab <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piStab = piStab*(100+iDeviation)/100;   
+      }
+      if piStrike <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piStrike = piStrike*(100+iDeviation)/100;   
+      }
+      if piSlash <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piSlash = piSlash*(100+iDeviation)/100;   
+      }
+      if piThrust <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piThrust = piThrust*(100+iDeviation)/100;   
+      }
+      if piFire <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piFire = piFire*(100+iDeviation)/100;   
+      }
+      if piTouch <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piTouch = piTouch*(100+iDeviation)/100;   
+      }
+      if piDisarmMod <> 0 AND piDisarmMod <> $
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piDisarmMod = piDisarmMod*(100+iDeviation)/100;   
+      }
+      if piParryMod <> 0 AND piParryMod <> $
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piParryMod = piParryMod*(100+iDeviation)/100;   
+      }
+      if piSpellpowerMod > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piSpellpowerMod = piSpellpowerMod*(100+iDeviation)/100;   
+      }
+      if piSpellpowerMod < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piSpellpowerMod = piSpellpowerMod*(100+iDeviation)/100;   
+      }
+      if piRange <> 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piRange = piRange*(100+iDeviation)/100;   
+      }
+
+      if n > 0
+      {
+         iQuality = iQuality/n;
+      }
+
+      % Set the quality
+      piQuality = 100 + iQuality;
+
+      % Scale durability with quality.
+      piHits_init = bound(piHits_init * piQuality / 100,1,$);
+      piHits = bound(piHits * piQuality / 100,1,$);
+
+      propagate;
+   }
+
+   % Constructor has received a list of stats, which are now written to the
+   % item. Item quality and durability are figured by comparing the set stats to
+   % the item's default values.
+   SetStats(lstats=$)
+   {
+      local n, iDeviation, iQuality;
+
+      n = 0;
+      iQuality = 0;
+   
+      if viDamage <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*First(lstats)/viDamage - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piDamage = First(lstats);
+
+      if viProficiencyBonus <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,2)/viProficiencyBonus - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piProficiencyBonus = Nth(lstats,2);
+
+      if viHitMod > 0 AND Nth(lstats,3) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,3)/viHitMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      
+      if viHitMod < 0 AND Nth(lstats,3) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,3)/viHitMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piHitMod = Nth(lstats,3);
+
+      if viPrimaryScaling <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,4)/viPrimaryScaling - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piPrimaryScaling = Nth(lstats,4);
+
+      if viSecondaryScaling <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,5)/viSecondaryScaling - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piSecondaryScaling = Nth(lstats,5);
+
+      if viStab <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,6)/viStab - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piStab = Nth(lstats,6);
+
+      if viStrike <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,7)/viStrike - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piStrike = Nth(lstats,7);
+
+      if viSlash <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,8)/viSlash - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piSlash = Nth(lstats,8);
+
+      if viThrust <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,9)/viThrust - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piThrust = Nth(lstats,9);
+
+      if viFire <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,10)/viFire - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piFire = Nth(lstats,10);
+
+      if viTouch <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,11)/viTouch - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piTouch = Nth(lstats,11);
+
+      if viDisarmMod <> 0 AND viDisarmMod <> $
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,12)/viDisarmMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piDisarmMod = Nth(lstats,12);
+
+      if viParryMod <> 0 AND viParryMod <> $
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,13)/viParryMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piParryMod = Nth(lstats,13);
+
+      if viSpellpowerMod > 0 AND Nth(lstats,14) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,14)/viSpellpowerMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      
+      if viSpellpowerMod < 0 AND Nth(lstats,14) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,14)/viSpellpowerMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piSpellpowerMod = Nth(lstats,14);
+
+      if viRange <> 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,15)/viRange - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      piRange = Nth(lstats,15);
+
+      % These here need to be set as well, but don't factor into quality, since
+      % they don't affect the weapon's 'raw power'.
+      piPrimaryStat = Nth(lstats,16);
+      piSecondaryStat = Nth(lstats,17);
+      piAttackType = Nth(lstats,18);
+      piSpellType = Nth(lstats,19);
+      piDeviation = Nth(lstats,20);
+      
+      if n <> 0
+      {
+         iQuality = iQuality / n;
+      }
+
+
+      % Set the quality
+      piQuality = 100 + iQuality;
+
+      % Scale durability with quality.
+      piHits_init = bound(piHits_init * piQuality / 100,1,$);
+      piHits = bound(piHits * piQuality / 100,1,$);
 
       propagate;
    }
@@ -215,463 +555,155 @@ messages:
 
       propagate;
    }
-
-   %%% Hard Stats Functions
-   %%% (Range, hit chance, damage, etc)
-
-   % An explanation of how weapons work now:
-   % Weapons can now be described as a combination of two different aspects, type and quality.
-   % The three types of weapons are thrusting (swords), bludgeoning, and slashing (heavy weapons).
-   %  These three types of weapons have attributes as follows:
-
-   % Type      Hit Mod     Damage     Disarm     Spell    Range
-   % ----------------------------------------------------------
-   % Bludgeon   Mid         Mid        Low        High     Low
-   % Thrust     High        Low        High       Mid      High
-   % Slash      Low         High       Mid        Low      Mid
-
-   % These aspects are defined with the appropriate constants in Blakston.khd
-   % In general, High is desirable and Low is not.  So, a thrusting weapons hits
-   % more often than a slashing one does, but it does less damage, etc.
-   %
-   % Weapons can also have quality.  Current, the four types of quality are high, low,
-   % normal and nerudite.  These also have constants defined.  In general, the lower the
-   % quality, the worse it makes the weapon.  The exception is spell bonus; higher quality
-   % weapons actually give less bonus than lower quality weapons
-   %
-   % Nerudite isn't really comparable to the other qualities, but this was the best way to
-   % describe the weapon.
-   %
-   % So, now, all you should really do is define the type of weapons and its relative
-   % quality.  Weapon will handle the rest.
-
-   ModifyHitRoll(hit_roll = 0, target = $)
-   "When someone attacks with this weapon, they send us their attack value "
-   "and we change it based on quality of weapon"
+   
+   GetAttackName()
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
-
-      iBaseHit = hit_roll;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_MID;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_LOW;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iBaseHit = iBaseHit + WEAPON_LOW_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iBaseHit = iBaseHit + WEAPON_HIGH_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iBaseHit = iBaseHit + WEAPON_NERUDITE_HITMOD;
-      }
-
-      for i in plItem_Attributes
-      {
-         oWeapAtt = Send(SYS,@FindItemAttByNum,#num=Send(self,@GetNumFromCompound,#compound=First(i)));
-         if IsClass(oWeapAtt,&WeaponAttribute)
-         {
-            iBaseHit = Send(oWeapAtt,@ModifyHitRoll,#hitroll=iBaseHit,#wielder=poOwner,
-                              #target=target,#lData=i);
-         }
-      }
-
-      iBaseHit = iBaseHit + piHitBonus;
-
-      % Send(Send(poOwner,@getOwner),@someonesaid,#what=self,#type=SAY_RESOURCE,
-      %    #string=weapon_to_hit,#parm1=hit_roll,#parm2=iBaseHit,#parm3=iWeapHit);
-
-      return iBaseHit;
+      return vrName;
    }
 
-   GetHitBonus()
+   GetDamage(who=$,what=$)
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
+      local i, oWeapAtt, iBonus;
 
-      iBaseHit = 0;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_MID;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_LOW;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iBaseHit = iBaseHit + WEAPON_LOW_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iBaseHit = iBaseHit + WEAPON_HIGH_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iBaseHit = iBaseHit + WEAPON_NERUDITE_HITMOD;
-      }
-
-      iBaseHit = iBaseHit + piHitBonus;
-
-      return iBaseHit;
-   }
-
-   GetBaseDamage(who=$,target=$)
-   {
-      local iDamage;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iDamage = random(WEAPON_DAMAGE_MID_MIN, WEAPON_DAMAGE_MID_MAX);
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iDamage = random(WEAPON_DAMAGE_LOW_MIN, WEAPON_DAMAGE_LOW_MAX);
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iDamage = random(WEAPON_DAMAGE_HIGH_MIN, WEAPON_DAMAGE_HIGH_MAX);
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iDamage = iDamage + WEAPON_LOW_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iDamage = iDamage + WEAPON_HIGH_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iDamage = iDamage + WEAPON_NERUDITE_DAMAGE;
-      }
-
-      return iDamage;
-   }
-  
-   GetMinDamage()
-   {
-      local iDamage, oSkill;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iDamage = WEAPON_DAMAGE_MID_MIN;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iDamage = WEAPON_DAMAGE_LOW_MIN;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iDamage = WEAPON_DAMAGE_HIGH_MIN;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iDamage = iDamage + WEAPON_LOW_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iDamage = iDamage + WEAPON_HIGH_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iDamage = iDamage + WEAPON_NERUDITE_DAMAGE;
-      }
-
-      return iDamage + piDamageBonus;
-   }
-
-   GetMaxDamage()
-   {
-      local iDamage, oSkill;
+      iBonus = 0;
       
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iDamage = WEAPON_DAMAGE_MID_MAX;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iDamage = WEAPON_DAMAGE_LOW_MAX;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iDamage = WEAPON_DAMAGE_HIGH_MAX;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iDamage = iDamage + WEAPON_LOW_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iDamage = iDamage + WEAPON_HIGH_QUALITY_DAMAGE;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iDamage = iDamage + WEAPON_NERUDITE_DAMAGE;
-      }
-
-      return iDamage + piDamageBonus;
-   }
-
-   GetMinDamageWithOwnerStats()
-   {
-      local iDamage, oSkill;
-
-      iDamage = Send(self,@GetMinDamage)*100;
-
-      if poOwner <> $
-         AND IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-
-   GetMaxDamageWithOwnerStats()
-   {
-      local iDamage, oSkill;
-
-      iDamage = Send(self,@GetMaxDamage)*100;
-
-      if poOwner <> $
-         AND IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-
-   GetDamage(target=$)
-   {
-      local iDamage, i, oWeapAtt;
-
-      % First, get base damage.
-      iDamage = Send(self,@GetBaseDamage,#who=poOwner,#target=target);
-
-      % Then check weapon attributes
-      %  Weapon Attributes in general should only + or - damage - no multipliers!
       for i in plItem_Attributes
       {
          oWeapAtt = Send(SYS,@FindItemAttByNum,#num=Send(self,@GetNumFromCompound,#compound=First(i)));
          if IsClass(oWeapAtt,&WeaponAttribute)
          {
-            iDamage = Send(oWeapAtt,@ModifyDamage,#damage=iDamage,#wielder=poOwner,
-                           #target=target,#lData=i);
+            iBonus = iBonus + Send(oWeapAtt,@ModifyDamage,#who=poOwner,#what=what,#lData=i);
          }
       }
+      
+      return piDamage + iBonus;
+   }
 
-      iDamage = iDamage + piDamageBonus;
+   GetProficiencyBonus(who=$,what=$)
+   {
+      return piProficiencyBonus;
+   }
 
-      % Send(Send(poOwner,@getOwner),@SomeoneSaid,#what=self,#type=SAY_RESOURCE,
-      %      #string=weapon_do_damage,#parm1=iDamage,#parm2=baseDamage);
+   GetHitMod(who=$,what=$,stroke_obj=$)
+   {
+      local i, oWeapAtt, iBonus;
+      
+      iBonus = 0;
+      
+      for i in plItem_Attributes
+      {
+         oWeapAtt = Send(SYS,@FindItemAttByNum,#num=Send(self,@GetNumFromCompound,#compound=First(i)));
+         if IsClass(oWeapAtt,&WeaponAttribute)
+         {
+            iBonus = iBonus + Send(oWeapAtt,@GetHitMod,#who=poOwner,#what=what,#lData=i);
+         }
+      }
+      return piHitMod + iBonus;
+   }
 
-      return iDamage;
+   GetPrimaryScaling()
+   {
+      return piPrimaryScaling;
+   }
+
+   GetSecondaryScaling()
+   {
+      return piSecondaryScaling;
+   }
+
+   % This is called by the stroke to retrieve the relevant modifier.
+   GetStrokeMod(Skill_num=0)
+   {
+      if Skill_num = SKID_STAB {  return piStab; }
+      if Skill_num = SKID_STRIKE {  return piStrike; }
+      if Skill_num = SKID_SLASH {  return piSlash; }
+      if Skill_num = SKID_THRUST {  return piThrust; }
+      if Skill_num = SKID_FIRE {  return piFire; }
+      if Skill_num = SKID_TOUCH {  return piTouch; }
+      
+      return 100;
+   }
+
+   GetDisarmMod()
+   {
+      return piDisarmMod;
+   }
+
+   GetParryMod()
+   {
+      return piParryMod;
    }
 
    GetRange()
    {
-      local iRange;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iRange = WEAPON_RANGE_LOW;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iRange = WEAPON_RANGE_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iRange = WEAPON_RANGE_MID;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iRange = iRange + WEAPON_LOW_QUALITY_RANGE;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iRange = iRange + WEAPON_HIGH_QUALITY_RANGE;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iRange = iRange + WEAPON_NERUDITE_RANGE;
-      }
-
-      return iRange;
+      return piRange;
    }
 
-   GetDisarmBonus()
-   "Weapon's bonus to disarm attempts, roughly in percent"
+   GetPrimaryStat()
    {
-      local iDisarm;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iDisarm = WEAPON_DISARM_LOW;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iDisarm = WEAPON_DISARM_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iDisarm = WEAPON_DISARM_MID;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iDisarm = iDisarm + WEAPON_LOW_QUALITY_DISARM;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iDisarm = iDisarm + WEAPON_HIGH_QUALITY_DISARM;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iDisarm = iDisarm + WEAPON_NERUDITE_DISARM;
-      }
-
-      return iDisarm;
+      return piPrimaryStat;
    }
 
-   GetBaseSpellModifier()
+   GetSecondaryStat()
    {
-      local iModifier;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iModifier = WEAPON_SPELL_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iModifier = WEAPON_SPELL_MID;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iModifier = WEAPON_SPELL_LOW;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iModifier = iModifier + WEAPON_LOW_QUALITY_SPELL;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iModifier = iModifier + WEAPON_HIGH_QUALITY_SPELL;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iModifier = iModifier + WEAPON_NERUDITE_SPELL;
-      }
-
-      return iModifier;
+      return piSecondaryStat;
    }
 
-   %%%  Advancement functions (strokes and proficiencies)
-
-   GetProf(who=$)
+   GetAttackType()
    {
-      Send(who,@FlipSkillAtrophyFlag,#SKID=viProficiency_needed);
-
-      return Send(who,@GetSkillAbility,#skill_num=viProficiency_needed);
+      return piAttackType;
    }
 
-   GetProfNumber()
+   GetSpellType()
+   {
+      return piSpellType;
+   }
+
+   GetDeviation()
+   {
+      return piDeviation;
+   }
+
+   GetProfNum()
    {
       return viProficiency_needed;
    }
 
-   GetStroke(who=$)
+   GetStrokeNum(squareddistance=0)
    {
-      Send(who,@FlipSkillAtrophyFlag,#SKID=Send(self,@GetDefaultStrokeNumber));
+      if IsClass(self,&MartialWeapon)
+      {
+         return SKID_PUNCH;
+      }
 
-      return Send(who,@GetSkillAbility,#skill_num=Send(self,@GetDefaultStrokeNumber));
-   }
+      if IsClass(self,&MagicWeapon)
+      {
+         return SKID_TOUCH;
+      }
 
-   GetDefaultStrokeNumber()
-   {
-      return SKID_SLASH;
+      if IsClass(self,&RangedWeapon)
+      {
+         return SKID_FIRE;
+      }
+
+      if squareddistance < 9216
+      {
+         if piStrike > piStab
+         {
+            return SKID_STRIKE;
+         }
+         else
+         {
+            return SKID_STAB;         
+         }
+      }
+
+      if squareddistance < 25600
+      {
+         return SKID_SLASH;
+      }
+
+      return SKID_THRUST;
    }
 
    ImproveProficiency(who=$,target=$,bonus=0)
@@ -682,17 +714,51 @@ messages:
       return;
    }
 
-   % Return parry ability, include bonuses.
-   % TODO: Define standard bonuses for various weapon types.
-   GetParryAbility(who=$)
+   
+   %%% Attack Type Functions (Enchanted weapons, Qor weapons, burning blades, etc.)
+
+   SetAttackType(flag=0, value=FALSE)
    {
-      return Send(who,@GetSkillAbility,#skill_num=SKID_PARRY);
+      if value
+      {
+         piAttackType = piAttackType | flag;
+      }
+      else
+      {
+         piAttackType = piAttackType & ~flag;
+      }
+
+      return;
    }
 
-   % What is the weapon's name for use in the attack messages?
-   GetAttackName()
+   CheckAttackType(flag=0)
    {
-      return vrName;
+      return piAttackType & flag;
+   }
+
+   SetSpellType(flag=0, value=FALSE)
+   {
+      if value
+      {
+         piSpellType = piSpellType | flag;
+      }
+      else
+      {
+         piSpellType = piSpellType & ~flag;
+      }
+
+      return;
+   }
+
+   CheckSpellType(flag=0)
+   {
+      return piSpellType & flag;
+   }
+
+   % Weapons may do extra swings, usually depending on their secondary rating.
+   GetSwings(who=$)
+   {
+      return 1;
    }
 
    %%%  Infrastructure
@@ -716,7 +782,7 @@ messages:
       propagate;
    }
 
-   WeaponHitTarget()
+   DamageGear()
    {
       % 75% chance to be damaged, currently.
       if random(1,100) < WEAPON_TAKE_DAMAGE_PCT
@@ -732,7 +798,7 @@ messages:
       return;
    }
 
-   ReqWeaponAttack(what=$)
+   IsWeaponIntact()
    {
       if piHits <= 0
       {
@@ -743,15 +809,13 @@ messages:
          return FALSE;
       }
 
-      Send(self,@WeaponAttack,#what=what);
-
       return TRUE;
    }
 
    ReqUseAmmo(ammotype=$)
-   "At this point, a non-ranged weapon SHOULD never make it this far "
-   "(see ReqWeaponAttack above).  This is just to catch anything that "
-   "slips thru the cracks.  See ranged.kod for what this does."
+   "At this point, a non-ranged weapon SHOULD never make it this far. "
+   "This is just to catch anything that slips thru the cracks."
+   "See ranged.kod for what this does."
    {
       Debug("A non-ranged weapon called @ReqUseAmmo!");
 
@@ -779,8 +843,8 @@ messages:
       return;
    }
 
-   WeaponAttack(what=$)
-   "Called by ReqWeaponAttack when the weapon is actually used in an attack."
+   WeaponAttack()
+   "Called by DoSwing in player when the weapon is actually used in an attack."
    {
       piUsed = ATTACKING;
       
@@ -825,6 +889,8 @@ messages:
          Send(poOwner,@SetOverlay,#what=self);
       }
 
+      Send(self,@ActivateCombatMods);
+
       propagate;
    }
 
@@ -852,57 +918,33 @@ messages:
          Send(poOwner,@RemoveOverlay,#what=self);
       }
 
+      Send(self,@DeactivateCombatMods);
+
       propagate;
    }
 
-   %%% Attack Type Functions (Enchanted weapons, Qor weapons, burning blades, etc.)
-
-   GetAttackSpell()
+   ActivateCombatMods()
    {
-      return piAttack_spell;
-   }
-
-   GetAttackType()
-   {
-      return piAttack_type;
-   }
-
-   SetTypeFlag(flag=0, value=FALSE)
-   {
-      if value
-      {
-         piAttack_type = piAttack_type | flag;
-      }
-      else
-      {
-         piAttack_type = piAttack_type & ~flag;
-      }
+      Send(poOwner,@AddSpellpowerMod,#amount=piSpellpowerMod);
 
       return;
    }
 
-   CheckTypeFlag(flag=0)
+   DeactivateCombatMods()
    {
-      return (piAttack_type & flag);
-   }
-
-   SetSpellFlag(flag=0, value=FALSE)
-   {
-      if value
-      {
-         piAttack_spell = piAttack_spell | flag;
-      }
-      else
-      {
-         piAttack_spell = piAttack_spell & ~flag;
-      }
+      Send(poOwner,@AddSpellpowerMod,#amount=-piSpellpowerMod);
 
       return;
    }
 
-   CheckSpellFlag(flag=0)
+   % Weapons may have a special on hit effect that scales with the weapon's
+   % secondary stat. This effect may vary depending on the wielder, the target
+   % and the stroke. For example, bows may use arrows that can shatter on
+   % impact or do extra damage to undead targets. Swords may deal extra damage
+   % from behind or be especially lethal against murderers.
+   DoSpecialEffect(who=$,what=$,stroke_obj=$,power=0)
    {
-      return (piAttack_spell & flag);
+      return 0;
    }
 
    %%% Animation Functions
@@ -1142,8 +1184,8 @@ messages:
    {
       local i, oItemAtt, iSpell;
 
-      if piAttack_spell <> 0
-         OR Send(self,@CheckTypeFlag,#flag=ATCK_WEAP_MAGIC)
+      if piSpellType <> 0
+         OR Send(self,@CheckAttackType,#flag=ATCK_WEAP_MAGIC)
       {
          iSpell = Send(oSpell,@GetSpellNum);
          if iSpell = SID_HOLY_WEAPON or iSpell = SID_UNHOLY_WEAPON
@@ -1176,6 +1218,23 @@ messages:
    ReqRepair()
    {
       return TRUE;
+   }
+
+   CanBeDisarmed()
+   {
+      return TRUE;
+   }
+
+   %%%Description Related Messages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+   GetSpellpowerMod()
+   {
+      return piSpellpowerMod;
+   }
+
+   GetQuality()
+   {
+      return piQuality;
    }
 
 end

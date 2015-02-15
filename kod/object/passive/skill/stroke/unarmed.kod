@@ -34,13 +34,6 @@ classvars:
 
    viskillExertion = 10
 
-   viMin_Damage = 1
-   viMax_Damage = 3
-   viRange = 2
-
-   viAttack_type = 0
-   viSpell_type = 0
-
 properties:
 
    % Format of reagents:  Each element of plReagents is a list, describing a single reagent.
@@ -51,60 +44,6 @@ properties:
    piChanceToIncrease = 100
 
 messages:
-
-   ImproveStroke(who=$,Use_weapon=$,target=$)
-   {
-      if random(1,100) > 50 OR NOT send(who,@HasSkill,#num=SKID_BRAWLING)
-      {
-         send(self,@ImproveAbility,#who=who,#target=target);        
-      }
-      else
-      {
-         send(send(SYS,@FindSkillByNum,#num=SKID_BRAWLING),@ImproveAbility,#who=who,#target=target);
-      }
-
-     return;
-   }
-
-   GetAttackType(weapon_used=$)
-   {
-     return viAttack_Type;
-   }
-
-   GetAttackSpell(weapon_used=$)
-   {
-     return viSpell_type;
-   }
-
-   CheckWeaponAndDoAnimation(who=$)
-   "Unarmed strokes may be performed even with a weapon in hand."
-   "To be added, different animations for different attack types."
-   {
-      send(who,@DoFistAttack);
-
-      return TRUE;
-   }
-
-   GetRange()
-   "If the person is unarmed, then that person's range is determined solely"
-   "by his stroke.  This may vary from stroke to stroke."
-   {
-      return viRange;      
-   }
-
-   FindDamage(who=$)
-   "No weapon means we come up with the damage here, not modify a weapon's damage."
-   {
-      local damage, might;
-
-      % Convert to high precision.
-      damage = random(viMin_Damage, viMax_Damage)*100;
-
-      % Take various damage factors into consideration.
-      damage = send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=$);
-
-      return damage;
-   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

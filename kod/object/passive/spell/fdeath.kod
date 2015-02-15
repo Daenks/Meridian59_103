@@ -159,8 +159,6 @@ messages:
          }
       }
 
-      Send(who,@AddDefenseModifier,#what=self);      
-
       iRand = Random(1,100);
       if iRand > 3
       {
@@ -250,7 +248,6 @@ messages:
 
    RemoveEnchantmentEffects(who=$, state=$)
    {
-      send(who,@RemoveDefenseModifier,#what=self);
       send(who,@ResetPlayerIllusion);
       send(First(state),@Delete);
       
@@ -296,38 +293,6 @@ messages:
       Send(who,@SetTranceFlag);
       Send(who,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
       
-      return;
-   }
-
-   %%% Stuff we handle to be a defense modifier.
-
-   ModifyDefensePower(who = $, what = $, defense_power = 0)
-   {
-      local lState, iSpellpower;
-
-      lState = send(who,@GetEnchantedState,#what=self);
-
-      if lState <> $
-      {
-         iSpellpower = Nth(lState,2);
-      }
-      else
-      {
-         send(self,@EndEnchantment,#who=who,#state=lState);
-         
-         return defense_power;
-      }
-      
-      return (defense_power + (3 * iSpellpower));
-   }
-
-   ModifyDefenseDamage(who = $, what = $, damage = $)
-   {
-      return damage;
-   }
-
-   DefendingHit(who = $, what = $)
-   {
       return;
    }
 

@@ -43,7 +43,7 @@ classvars:
    viTreasure_type = TID_RAT
 
    viSpeed = SPEED_FAST
-   viAttack_type = ATCK_WEAP_CLAW
+   viAttackType = ATCK_WEAP_CLAW
    viAttributes = 0
    viLevel = 60
    viDifficulty = 4
@@ -69,6 +69,16 @@ messages:
                         [-ATCK_SPELL_COLD, 50 ] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    MonsterAttack(what = $)

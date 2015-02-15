@@ -45,7 +45,7 @@ classvars:
    viTreasure_type = TID_ORC
 
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = 0
    viLevel = 45
    viDifficulty = 6
@@ -57,6 +57,8 @@ classvars:
    viCashmax = 450
 
    viWimpy = 10
+
+   vbParry = TRUE
 
    vrSound_hit = orc_sound_hit
    vrSound_miss = orc_sound_miss
@@ -78,16 +80,9 @@ messages:
       propagate;
    }
 
-   % Used for defense messages
-   GetParryAbility(stroke_obj=$)
+   GetMonsterWeaponClass()
    {
-      if stroke_obj <> $
-         AND NOT Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-
-      return (viDifficulty*10)/2;
+      return &Scimitar;
    }
 
    MonsterAttack(what = $)

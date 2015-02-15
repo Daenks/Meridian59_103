@@ -14,8 +14,6 @@ constants:
 
    include blakston.khd
    include protocol.khd
-
-   ARMOR_TAKE_DAMAGE_PCT = 75
    
 resources:
 
@@ -149,548 +147,491 @@ messages:
       % This is special 'status' stuff, like the number of 
       %  number items you have left, or the condition of your 
       %  weapon.
-      local rItem_condition, iHit_percent, i, bFoundProperties, oSpell, iHigh_level, n,
-                             iFarenPower, iRiijaPower, iKraananPower, iJalaPower, iShalPower, iQorPower, iInstrumentPower;
+      local rItem_condition, iHit_percent, i, oSpell, oSkill,
+         iHigh_level, iFarenPower, iRiijaPower, iKraananPower, iJalaPower,
+         iShalPower, iQorPower, iPower, iInstrumentPower;
 
       for i in plObject_attributes
       {
          Send(i,@AttributeDesc);
       }
-      
-      % Describe special properties
-      bFoundProperties = FALSE;
-      if Send(self,@GetRange) <> 0
+
+      if IsClass(self,&Weapon)
       {
-         if NOT bFoundProperties
+         AppendTempString(special_properties_header);
+         if Send(self,@GetDamage) <> 0
          {
-            AppendTempString(special_properties_header);
+            Send(SYS,@IntToString,#num=Send(self,@GetDamage),
+               #decimals=2,#append=TRUE);
+            AppendTempString(" base wepon damage\n");
+         }
+         if Send(self,@GetProficiencyBonus) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetProficiencyBonus),
+               #decimals=2,#append=TRUE);
+            AppendTempString(" added damage from proficiency\n");
          }
 
-         AppendTempString(Send(self,@GetRange));
-         AppendTempString(" range");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetHitBonus) <> 0
-      {
-         if NOT bFoundProperties
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_STAB) <> 0
          {
-            AppendTempString(special_properties_header);
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_STAB));
+            AppendTempString(" \% damage when stabbing\n");
+         }
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_STRIKE) <> 0
+         {
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_STRIKE));
+            AppendTempString(" \% damage when striking\n");
+         }
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_SLASH) <> 0
+         {
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_SLASH));
+            AppendTempString(" \% damage when slashing\n");
+         }
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_THRUST) <> 0
+         {
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_THRUST));
+            AppendTempString(" \% damage when thrusting\n");
+         }
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_FIRE) <> 0
+         {
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_FIRE));
+            AppendTempString(" \% damage\n");
+         }
+         if Send(self,@GetStrokeMod,#Skill_num=SKID_TOUCH) <> 0
+         {
+            AppendTempString(Send(self,@GetStrokeMod,#Skill_num=SKID_TOUCH));
+            AppendTempString(" \% damage\n");
+         }
+         if Send(self,@GetPrimaryScaling) <> 0
+         {
+            AppendTempString(Send(self,@GetPrimaryScaling));
+            AppendTempString(" \% scaling with the weapon's primary stat\n");
+         }
+         if Send(self,@GetSecondaryScaling) <> 0
+         {
+            AppendTempString(Send(self,@GetSecondaryScaling));
+            AppendTempString(" \% scaling with the weapon's secondary stat\n");
+         }
+         if Send(self,@GetHitMod) <> 0
+         {
+            AppendTempString(Send(self,@GetHitMod));
+            AppendTempString(" offense rating\n");
          }
 
-         AppendTempString(Send(self,@GetHitBonus));
-         AppendTempString(" offense rating bonus");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetDamageReduction) <> 0
-      {
-         if NOT bFoundProperties
+         if Send(self,@GetDisarmMod) <> 0
          {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetDamageReduction));
-         AppendTempString(" armor");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetDefenseBonus) <> 0
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetDefenseBonus));
-         AppendTempString(" defense rating");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetMeleeDamageBonus) <> 0
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetMeleeDamageBonus));
-         AppendTempString(" melee damage bonus");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetMinDamage) <> 0
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetMinDamage));
-         If Send(self,@GetMaxDamage) <> Send(self,@GetMinDamage)
-         {
-            AppendTempString("-");
-            AppendTempString(Send(self,@GetMaxDamage));
-         }
-         AppendTempString(" base damage");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetMinDamageWithOwnerStats) <> 0
-         AND Send(self,@GetMinDamageWithOwnerStats) <> Send(self,@GetMinDamage)
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetMinDamageWithOwnerStats));
-         If Send(self,@GetMaxDamageWithOwnerStats) <> Send(self,@GetMinDamageWithOwnerStats)
-         {
-            AppendTempString("-");
-            AppendTempString(Send(self,@GetMaxDamageWithOwnerStats));
-         }
-         AppendTempString(" damage in owner's hands");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetMinSpecialDamage) <> 0
-         AND Send(self,@GetMinSpecialDamage) <> Send(self,@GetMinDamage)
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetMinSpecialDamage));
-         If Send(self,@GetMaxSpecialDamage) <> Send(self,@GetMinSpecialDamage)
-         {
-            AppendTempString("-");
-            AppendTempString(Send(self,@GetMaxSpecialDamage));
-         }
-         AppendTempString(" conditional base damage");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetMinSpecialDamageWithOwnerStats) <> 0
-         AND Send(self,@GetMinSpecialDamageWithOwnerStats) <> Send(self,@GetMinSpecialDamage)
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetMinSpecialDamageWithOwnerStats));
-         If Send(self,@GetMaxSpecialDamageWithOwnerStats) <> Send(self,@GetMinSpecialDamageWithOwnerStats)
-         {
-            AppendTempString("-");
-            AppendTempString(Send(self,@GetMaxSpecialDamageWithOwnerStats));
-         }
-         AppendTempString(" conditional damage in owner's hands");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetDamageBonus) <> 0
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
-         }
-
-         AppendTempString(Send(self,@GetDamageBonus));
-         AppendTempString(" damage bonus");
-         AppendTempString("\n");
-
-         bFoundProperties = TRUE;
-      }
-
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_LIGHT);
-      iFarenPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_BLINK);
-      iRiijaPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_BLESS);
-      iKraananPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_MIRTH);
-      iJalaPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_SEANCE);
-      iShalPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_DARKNESS);
-      iQorPower = Send(self,@GetSpellModifier,#oSpell=oSpell);
-
-      iInstrumentPower = 0;
-      If IsClass(self,&Instrument)
-      {
-         iInstrumentPower = Send(self,@GetInstrumentLevel);
-      }
-
-      if iFarenPower <> 0
-         OR iRiijaPower <> 0
-         OR iKraananPower <> 0
-         OR iJalaPower <> 0
-         OR iShalPower <> 0
-         OR iQorPower <> 0
-         OR iInstrumentPower <> 0
-      {
-         if iFarenPower = iRiijaPower
-            AND iRiijaPower = iKraananPower
-            AND iKraananPower = iJalaPower
-            AND iJalaPower = iShalPower
-            AND iShalPower = iQorPower
-            AND iFarenPower <> 0
-         {
-            if NOT bFoundProperties
+            if Send(self,@GetDisarmMod) <> $
             {
-               AppendTempString(special_properties_header);
-               bFoundProperties = TRUE;
+               AppendTempString(Send(self,@GetDisarmMod));
+               AppendTempString(" \% increased disarm ability\n");
             }
-         
-            AppendTempString(iFarenPower);
-            AppendTempString(" general spellpower\n");
-         }
-         else
-         {
-            if NOT bFoundProperties
+            else
             {
-               AppendTempString(special_properties_header);
-               bFoundProperties = TRUE;
-            }
-
-            if iFarenPower <> 0
-            {
-               AppendTempString(iFarenPower);
-               AppendTempString(" Faren spellpower\n");
-            }
-            if iRiijaPower <> 0
-            {
-               AppendTempString(iRiijaPower);
-               AppendTempString(" Riija spellpower\n");
-            }
-            if iKraananPower <> 0
-            {
-               AppendTempString(iKraananPower);
-               AppendTempString(" Kraanan spellpower\n");
-            }
-            if iJalaPower <> 0
-            {
-               AppendTempString(iJalaPower);
-               AppendTempString(" Jala spellpower\n");
-            }
-            if iShalPower <> 0
-            {
-               AppendTempString(iShalPower);
-               AppendTempString(" Shal'ille spellpower\n");
-            }
-            if iQorPower <> 0
-            {
-               AppendTempString(iQorPower);
-               AppendTempString(" Qor spellpower\n");
-            }
-
-            if iInstrumentPower <> 0
-            {
-               AppendTempString(iInstrumentPower);
-               AppendTempString(" Jala instrument power\n");
+               AppendTempString("is not suited for disarming\n");
             }
          }
-      }
-      
-      If Send(self,@GetCurrentResistances) <> $
-      {
-         if NOT bFoundProperties
+         if Send(self,@GetParryMod) <> 0
          {
-            AppendTempString(special_properties_header);
+            if Send(self,@GetDisarmMod) <> $
+            {
+               AppendTempString(Send(self,@GetParryMod));
+               AppendTempString(" \% increased parry ability\n");
+            }
+            else
+            {
+               AppendTempString("is not suited for parrying\n");
+            }
          }
-         
-         for i in Send(self,@GetCurrentResistances)
+         if Send(self,@GetDeviation) <> 0
          {
-            AppendTempString(Nth(i,2));
-            AppendTempString("\% ");
-            AppendTempString(Send(SYS,@GetResistanceName,#type=Nth(i,1)));
+            AppendTempString(Send(self,@GetDeviation));
+            AppendTempString(" \% damage spread\n");
+         }
+
+         if Send(self,@GetRange) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetRange)*100/64,
+               #decimals=2,#append=TRUE);
+            AppendTempString(" range\n\n");
+         }
+
+         if Send(self,@GetPrimaryStat) <> 0
+         {
+            AppendTempString("The primary stat for this weapon is ");
+            if Send(self,@GetPrimaryStat) = 1
+            {
+               AppendTempString("might.\n");
+            }
+            if Send(self,@GetPrimaryStat) = 2
+            {
+               AppendTempString("intellect.\n");
+            }
+            if Send(self,@GetPrimaryStat) = 3
+            {
+               AppendTempString("stamina.\n");
+            }
+            if Send(self,@GetPrimaryStat) = 4
+            {
+               AppendTempString("agility.\n");
+            }
+            if Send(self,@GetPrimaryStat) = 5
+            {
+               AppendTempString("mysticism.\n");
+            }
+            if Send(self,@GetPrimaryStat) = 6
+            {
+               AppendTempString("aim.\n");
+            }
+         }
+
+         if Send(self,@GetSecondaryStat) <> 0
+         {
+            AppendTempString("The secondary stat for this weapon is ");
+            if Send(self,@GetSecondaryStat) = 1
+            {
+               AppendTempString("might.\n\n");
+            }
+            if Send(self,@GetSecondaryStat) = 2
+            {
+               AppendTempString("intellect.\n\n");
+            }
+            if Send(self,@GetSecondaryStat) = 3
+            {
+               AppendTempString("stamina.\n\n");
+            }
+            if Send(self,@GetSecondaryStat) = 4
+            {
+               AppendTempString("agility.\n\n");
+            }
+            if Send(self,@GetSecondaryStat) = 5
+            {
+               AppendTempString("mysticism.\n\n");
+            }
+            if Send(self,@GetSecondaryStat) = 6
+            {
+               AppendTempString("aim.\n\n");
+            }
+         }
+
+         if Send(self,@GetAttackType) <> 0
+         {
+            for i in Send(SYS,@GetAttackTypeList)
+            {
+               if (Send(self,@GetAttackType) & i)
+               {
+                  AppendTempString("This weapon deals ");
+                  AppendTempString(Send(SYS,@GetAttackDamageTypeName,#type=i));
+                  AppendTempString(" damage.\n");
+               }
+            }
+         }
+
+         if Send(self,@GetSpellType) <> 0
+         {
+            for i in Send(SYS,@GetSpellTypeList)
+            {
+               if (Send(self,@GetSpellType) & i)
+               {
+                  AppendTempString("This weapon deals ");
+                  AppendTempString(Send(SYS,@GetSpellDamageTypeName,#type=i));
+                  AppendTempString(" damage.\n");
+               }
+            }
+         }
+
+         if Send(self,@GetSpellType) <> 0 OR Send(self,@GetAttackType) <> 0
+         {
             AppendTempString("\n");
          }
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetAttackType) <> 0
-      {
-         if NOT bFoundProperties
+
+         if Send(self,@GetAttributes) <> $
          {
-            AppendTempString(special_properties_header);
+            for i in Send(self,@GetAttributes)
+            {
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_PARALYZER
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i)) 
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("15\% chance to cast Hold on hit.\n");
+               }
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_BLINDER  
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("15\% chance to cast Blind on hit.\n");
+               }
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_BONKER
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("8\% chance to cast Bonk on hit.\n");
+               }
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_PURGER
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("15\% chance to cast Purge on hit.\n");
+               }
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_TWISTER
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("8\% chance to disorient victim on hit.\n");
+               }
+               if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_Vamper
+                  AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
+               {
+                  AppendTempString("This weapon has a ");
+                  AppendTempString("10\% chance to gain up to 8 health on hit.\n");
+               }
+            }
+            AppendTempString("\n");
+         }
+      }
+
+      if IsClass(self,&Armor)
+      {
+         AppendTempString(special_properties_header);
+         if Send(self,@GetPhysicalReductionFlat) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetPhysicalReductionFlat),
+               #decimals=2,#append=TRUE);
+            AppendTempString(" points of physical damage reduction\n");
          }
          
-         for i in Send(SYS,@GetAttackTypeList)
+         if Send(self,@GetMagicalReductionFlat) <> 0
          {
-            if (Send(self,@GetAttackType) & i)
-            {
-               AppendTempString("Deals ");
-               AppendTempString(Send(SYS,@GetAttackDamageTypeName,#type=i));
-               AppendTempString(" damage");
-               AppendTempString("\n");
-            }
-         }
-
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetAttackSpell) <> 0
-      {
-         if NOT bFoundProperties
-         {
-            AppendTempString(special_properties_header);
+            Send(SYS,@IntToString,#num=Send(self,@GetMagicalReductionFlat),
+               #decimals=2,#append=TRUE);
+            AppendTempString(" points of magical damage reduction\n");
          }
          
-         for i in Send(SYS,@GetSpellTypeList)
+         if Send(self,@GetPhysicalReductionFactor) <> 0
          {
-            if (Send(self,@GetAttackSpell) & i)
+            Send(SYS,@IntToString,#num=Send(self,@GetMagicalReductionFlat),
+               #decimals=1,#append=TRUE);
+            AppendTempString(" \% physical damage reduction\n");
+         }
+         
+         if Send(self,@GetMagicalReductionFactor) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetMagicalReductionFlat),
+               #decimals=1,#append=TRUE);
+            AppendTempString(" \% magical damage reduction\n");
+         }
+         
+         if Send(self,@GetCombatModDefense) <> 0
+         {
+            AppendTempString(Send(self,@GetCombatModDefense));
+            AppendTempString(" defense rating\n");
+         }
+
+         if Send(self,@GetCombatModOffense) <> 0
+         {
+            AppendTempString(Send(self,@GetCombatModOffense));
+            AppendTempString(" offense rating\n");
+         }
+
+         if Send(self,@GetCombatModMelee) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetCombatModMelee),
+               #decimals=1,#append=TRUE);
+            AppendTempString(" \% melee damage bonus\n");
+         }
+
+         if Send(self,@GetCombatModRanged) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetCombatModRanged),
+               #decimals=1,#append=TRUE);
+            AppendTempString(" \% ranged damage bonus\n");
+         }
+
+         if Send(self,@GetCombatModMagic) <> 0
+         {
+            Send(SYS,@IntToString,#num=Send(self,@GetCombatModMagic),
+               #decimals=1,#append=TRUE);
+            AppendTempString(" \% touch attack damage bonus\n");
+         }
+
+         if Send(self,@GetSkillmods) <> $
+         {
+            for i in Send(self,@GetSkillmods)
             {
-               AppendTempString("Deals ");
-               AppendTempString(Send(SYS,@GetSpellDamageTypeName,#type=i));
-               AppendTempString(" damage");
-               AppendTempString("\n");
+               oSkill = Send(SYS,@FindSkillByNum,#num=First(i));
+               AppendTempString("increases your ability in the skill ");
+               AppendTempString(Send(oSkill,@GetName));
+               AppendTempString(" by ");
+               AppendTempString(Nth(i,2));
+               AppendTempString(" points\n");
             }
          }
 
-         bFoundProperties = TRUE;
-      }
-      
-      if Send(self,@GetAttributes) <> $
-      {
-         for i in Send(self,@GetAttributes)
+         if Send(self,@GetSpellmods) <> $
          {
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_PARALYZER
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i)) 
+            for i in Send(self,@GetSpellmods)
             {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("15\% chance to cast Hold on hit");
-               AppendTempString("\n");
-            }
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_BLINDER  
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
-            {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("15\% chance to cast Blind on hit");
-               AppendTempString("\n");
-            }
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_BONKER
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
-            {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("8\% chance to cast Bonk on hit");
-               AppendTempString("\n");
-            }
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_PURGER
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
-            {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("15\% chance to cast Purge on hit");
-               AppendTempString("\n");
-            }
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_TWISTER
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
-            {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("8\% chance to disorient victim on hit");
-               AppendTempString("\n");
-            }
-            if Send(self,@GetNumFromCompound,#compound=First(i)) = WA_Vamper
-               AND Send(self,@GetIDStatusFromCompound,#compound=First(i))
-            {
-               if NOT bFoundProperties
-               {
-                  AppendTempString(special_properties_header);
-                  bFoundProperties = TRUE;
-               }
-
-               AppendTempString("10\% chance to gain up to 8 health on hit");
-               AppendTempString("\n");
+               oSpell = Send(SYS,@FindSpellByNum,#num=First(i));
+               AppendTempString("increases your ability in the spell ");
+               AppendTempString(Send(oSpell,@GetName));
+               AppendTempString(" by ");
+               AppendTempString(Nth(i,2));
+               AppendTempString(" points\n");
             }
          }
+         AppendTempString("\n");
       }
 
-      if vbShow_Condition
-         AND piHits_init > 0
+      if IsClass(self,&Armor) OR IsClass(self,&Weapon)
       {
-         rItem_condition = vrCondition_exc;
-      
-         iHit_Percent = (100 * piHits) / piHits_init;
-      
-         if iHit_Percent > 90
+         iPower = Send(self,@GetSpellpowerMod);
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_LIGHT);
+         iFarenPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_BLINK);
+         iRiijaPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_BLESS);
+         iKraananPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_MIRTH);
+         iJalaPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SEANCE);
+         iShalPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_DARKNESS);
+         iQorPower = Send(self,@SpellPowerHookForItems,#oSpell=oSpell)+iPower;
+
+         iInstrumentPower = 0;
+         If IsClass(self,&Instrument)
          {
-            % If item is worse than what can be found in the wild, describe it
-            %  as being "patched".
-            if piHits_init >= viHits_init_min
+            iInstrumentPower = Send(self,@GetInstrumentLevel);
+         }
+
+         if iFarenPower <> 0
+            OR iRiijaPower <> 0
+            OR iKraananPower <> 0
+            OR iJalaPower <> 0
+            OR iShalPower <> 0
+            OR iQorPower <> 0
+            OR iInstrumentPower <> 0
+         {
+            if iFarenPower = iRiijaPower
+               AND iRiijaPower = iKraananPower
+               AND iKraananPower = iJalaPower
+               AND iJalaPower = iShalPower
+               AND iShalPower = iQorPower
+               AND iFarenPower <> 0
+            {
+               AppendTempString(iFarenPower);
+               AppendTempString(" general spellpower\n");
+            }
+            else
+            {
+               if iFarenPower <> 0
+               {
+                  AppendTempString(iFarenPower);
+                  AppendTempString(" Faren spellpower\n");
+               }
+               if iRiijaPower <> 0
+               {
+                  AppendTempString(iRiijaPower);
+                  AppendTempString(" Riija spellpower\n");
+               }
+               if iKraananPower <> 0
+               {
+                  AppendTempString(iKraananPower);
+                  AppendTempString(" Kraanan spellpower\n");
+               }
+               if iJalaPower <> 0
+               {
+                  AppendTempString(iJalaPower);
+                  AppendTempString(" Jala spellpower\n");
+               }
+               if iShalPower <> 0
+               {
+                  AppendTempString(iShalPower);
+                  AppendTempString(" Shal'ille spellpower\n");
+               }
+               if iQorPower <> 0
+               {
+                  AppendTempString(iQorPower);
+                  AppendTempString(" Qor spellpower\n");
+               }
+
+               if iInstrumentPower <> 0
+               {
+                  AppendTempString(iInstrumentPower);
+                  AppendTempString(" Jala instrument power\n");
+               }
+            }
+            AppendTempString("\n");
+         }
+         
+         if Send(self,@GetCurrentResistances) <> $
+         {
+            for i in Send(self,@GetCurrentResistances)
+            {
+               AppendTempString(Nth(i,2));
+               AppendTempString("\% ");
+               AppendTempString(Send(SYS,@GetResistanceName,#type=Nth(i,1)));
+               AppendTempString("\n");
+            }
+            AppendTempString("\n");
+         }
+
+         if Send(self,@GetQuality) <> 0
+         {
+            AppendTempString("The overall quality level of this item is ");
+            AppendTempString(Send(self,@GetQuality));
+            AppendTempString(".\n\n");
+         }
+
+         if vbShow_Condition AND piHits_init > 0
+         {
+            rItem_condition = vrCondition_exc;
+         
+            iHit_Percent = (100 * piHits) / piHits_init;
+         
+            if iHit_Percent > 90
             {
                rItem_condition = vrCondition_exc;
             }
             else
-            {
-               rItem_condition = vrCondition_exc_mended;
-            }
-         }
-         else
-         { 
-            if iHit_Percent > 65
-            {
-               ritem_condition = vrCondition_good;
-            }
-            else
-            {
-               if iHit_Percent > 30
+            { 
+               if iHit_Percent > 65
                {
-                  ritem_condition = vrCondition_med;
+                  ritem_condition = vrCondition_good;
                }
                else
                {
-                  if piHits > 0
+                  if iHit_Percent > 30
                   {
-                     ritem_condition= vrCondition_poor;
+                     ritem_condition = vrCondition_med;
                   }
                   else
                   {
-                     ritem_condition= vrCondition_broken;
+                     if piHits > 0
+                     {
+                        ritem_condition= vrCondition_poor;
+                     }
+                     else
+                     {
+                        ritem_condition= vrCondition_broken;
+                     }
                   }
                }
             }
+
+            AppendTempString(vrPoss_Article);
+            AppendTempString(Send(self,@GetName));
+            AppendTempString(rItem_condition);
+            AppendTempString(" \(");
+            AppendTempString(piHits);
+            AppendTempString("/");
+            AppendTempString(piHits_init);
+            AppendTempString("\)");
          }
-      
-         AppendTempString("\n");
-         AppendTempString(vrPoss_Article);
-         AppendTempString(Send(self,@GetName));
-         AppendTempString(rItem_condition);
-         AppendTempString(" \(");
-         AppendTempString(piHits);
-         AppendTempString("/");
-         AppendTempString(piHits_init);
-         AppendTempString("\)");
       }
 
       return;
    }
-     
-   GetMinDamageWithOwnerStats()
-   {
-      return 0;
-   }
 
-   GetMaxDamageWithOwnerStats()
-   {
-      return 0;
-   }
-   
-   GetMinSpecialDamageWithOwnerStats()
-   {
-      return 0;
-   }
-   
-   GetMaxSpecialDamageWithOwnerStats()
-   {
-      return 0;
-   }
-   
-   GetAttackType()
-   {
-      return 0;
-   }
-   
-   GetAttackSpell()
-   {
-      return 0;
-   }
-   
-   GetMinDamage()
-   {
-      return 0;
-   }
-   
-   GetMaxDamage()
-   {
-      return 0;
-   }
-   
-   % Some weapons and spells have special conditions, like nerudite arrows that can shatter
-   GetMinSpecialDamage()
-   {
-      return 0;
-   }
-   
-   GetMaxSpecialDamage()
-   {
-      return 0;
-   }
-   
-   GetRange()
-   {
-      return 0;
-   }
-   
-   GetHitBonus()
-   {
-      return 0;
-   }
-   
-   GetDefenseBonus()
-   {
-      return 0;
-   }
-   
-   GetMeleeDamageBonus()
-   {
-      return 0;
-   }
-   
-   GetDamageBonus()
-   {
-      return 0;
-   }
-   
-   GetDamageReduction()
-   {
-      return 0;
-   }
-   
    GetAttributes()
    {
       return plItem_Attributes;
@@ -816,26 +757,8 @@ messages:
    {
       local iPercent, iValue, iFinal, i, oItemAtt, iNum;
 
-      % Okay, new way of figuring value, considering 
-      % max_hits, current_max_hits, and hits.
-      % The basic formula follows this curve:
-      %
-      %              Hits
-      %             Y   .8Y   .6Y   .4Y   .2Y
-      % Max_hits  -----------------------------            
-      %    Y        X   .80X  .60X  .40X  .20X
-      %   .8Y           .64X  .48X  .32X  .16X
-      %   .6Y                 .36X  .24X  .12X
-      %   .4Y                       .16X  .08X
-      %   .2Y                             .04X
-      %
-      %    Y = viHits_init_max (max_hits before casting 'mend')
-      %    X = viAverage_value
-      %
-      % Translated:  An item whose piInit_hits is 80% of viHits_init_max
-      %              and whose piHits is equal to that amount has a value equal
-      %              to 64% of its standard value.
-
+      % This factors in the item's quality squared since both current hits and
+      % maximum hits are scaled by quality.
       iPercent = (100*piHits_init*piHits)/(viHits_init_max*viHits_init_max);
       iValue = Send(self,@GetInitValue);
       
@@ -887,12 +810,84 @@ messages:
       return;
    }
 
+   %%% Dynamic Modification Hooks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % These messages hook into combat calculations at different locations and
+   % allow any equipped item to dynamically modify the respective message it
+   % hooks into.
+   
+   % Hooks into UserAttack and decides whether we can attack or not. Needs to
+   % provide the user with a reason why the attack was not executed.
+   AttackHook(who=$,what=$,use_weapon=$,stroke_obj=$)
+   {
+      return TRUE;
+   }
+   
+   % Hooks into GetDamage and can modify the damage bonus factor.
+   DamageHook(who=$,what=$,use_weapon=$,stroke_obj=$)
+   {
+      return 0;
+   }
+
+   % Hooks into GetDamageReduction and can modify the damage reduction factor.
+   DamageReductionHook(who=$,what=$,damage=0,attacktype=0,spelltype=0)
+   {
+      return 0;
+   }
+
+   % Hooks into GetOffense and can modify offense rating.
+   OffenseHook(who=$,what=$,use_weapon=$,stroke_obj=$)
+   {
+      return 0;
+   }
+
+   % Hooks into GetDefense and can modify defense rating.
+   DefenseHook(who=$,what=$,use_weapon=$,stroke_obj=$)
+   {
+      return 0;
+   }
+
+   % Hooks into GetSpellPower and can modify spellpower.
+   SpellPowerHook(oSpell=$)
+   {
+      return 0;
+   }
+
+   % This is a bit of a special case. Since items may have item and/or object
+   % attributes that may contribute to the item's power, we need to run through
+   % the list of attributes to check for spellpower modifications. To keep
+   % message names consistent, we ask the item for its conditional spellpower
+   % bonus with the standard SpellPowerHook before adding the attribute
+   % modifiers with this message, which spell.kod points to.
+   SpellPowerHookForItems(oSpell=$)
+   {
+      local oItemAtt, iModifier, i, iNum, oObjectAttribute;
+
+      iModifier = Send(self,@SpellPowerHook,#oSpell=oSpell);
+      for i in plItem_Attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         oItemAtt = Send(SYS,@FindItemAttByNum,#num=iNum);
+         iModifier = iModifier + Send(oItemAtt,@SpellPowerHook,#oSpell=oSpell,
+            #who=poOwner);
+      }
+      
+      for oObjectAttribute in plObject_attributes
+      {
+         iModifier = iModifier + Send(oObjectAttribute,@SpellPowerHook,
+            #oSpell=oSpell,#who=poOwner);
+      }
+      
+      return iModifier;
+   }
+   
+   % Infrastructure Messages
+
    NewOwner(what = $)
    {
       local lData;
 
       % If the person who is supposed to pick up an item picks up 
-      %  the item, then remove the corpsepointer.
+      % the item, then remove the corpsepointer.
           
       if poOwner <> $ AND Send(self,@HasAttribute,#ItemAtt=IA_CORPSEPOINTER)
       {  
@@ -1138,25 +1133,9 @@ messages:
       return FALSE;
    }
 
-   ModifyDefensePower(defense_power = 0)
-   "Gives the defensive bonus"
+   % Armor and weapon handle this independently.
+   DamageGear(damage=0,attacktype=0,spelltype=0)
    {
-      return defense_power;            
-   }
-
-   DefendingHit(who = $,what = $)
-   {
-      % Set to 75% currently
-      if random(1,100) < ARMOR_TAKE_DAMAGE_PCT   
-      {
-         piHits = piHits - 1;
-      }
-      
-      if piHits <= 0
-      {
-         Send(self,@ItemBrokenInBattle);
-      }
-      
       return;
    }
 
@@ -1379,7 +1358,7 @@ messages:
 
       if iSpell = SID_SHROUD
       AND (IsClass(self,&Weapon)
-         OR IsClass(self,&DefenseModifier))
+         OR IsClass(self,&Armor))
       {
          for i in plItem_Attributes
          {
@@ -1847,34 +1826,6 @@ messages:
       return tTimer;
    }
 
-   GetBaseSpellModifier(oSpell=$)
-   {
-      % Doing it this way, we can have different items give different bonuses
-      %  in different situations, while still giving itematt bonuses.
-      return viSpell_modifier;
-   }
-
-   GetSpellModifier(oSpell=$)
-   {
-      local oItemAtt, iModifier, i, iNum, oObjectAttribute;
-
-      iModifier = Send(self,@GetBaseSpellModifier,#oSpell=oSpell);
-      for i in plItem_Attributes
-      {
-         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
-         oItemAtt = Send(SYS,@FindItemAttByNum,#num=iNum);
-         iModifier = iModifier + Send(oItemAtt,@ItemGetSpellModifier,
-                                      #oSpell=oSpell,#oCaster=poOwner);
-      }
-      
-      for oObjectAttribute in plObject_attributes
-      {
-         iModifier = Send(oObjectAttribute,@ModifySpellPower,#iModifier=iModifier,#oSpell=oSpell,#oCaster=poOwner);
-      }
-      
-      return iModifier;
-   }
-   
    GetHeatDamage()
    "Only things worn at the armor position will be asked this, but "
    "just in case, default is 0."

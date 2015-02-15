@@ -123,8 +123,8 @@ messages:
 
       % After figuring damage, do an AssessDamage.  This will handle the necessary
       %  attack messages.
-      iDamage = Send(oTarget,@AssessDamage,#what=who,#damage=iDamage,#atype=viAttack_type,
-                     #aspell=viAttack_spell,#absolute=pbAbsolute,#precision=TRUE);
+      iDamage = Send(oTarget,@AssessDamage,#what=who,#damage=iDamage,#attacktype=viAttackType,
+                     #spelltype=viSpellType,#absolute=pbAbsolute,#precision=TRUE);
 
       Send(who,@AssessHit,#what=oTarget,#damage=iDamage,#use_weapon=self);
 
@@ -159,14 +159,14 @@ messages:
       return;
    }
 
-   GetAttackSpell()
+   GetSpellType()
    {
       if poRandomSpell = $
       {
          return $;
       }
       
-      return Send(poRandomSpell,@GetAttackSpell);
+      return Send(poRandomSpell,@GetSpellType);
    }
 
    % This is for the attack message infrastructure.

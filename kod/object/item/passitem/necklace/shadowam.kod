@@ -68,7 +68,8 @@ classvars:
    viDamage_min = 1
    viDamage_max = 5
 
-   viDefense_change = -150
+   viCombatModOffense = -150
+   viCombatModDefense = -150
    viLight_change = 50
 
 properties:
@@ -89,26 +90,10 @@ messages:
 
       send(poOwner,@MsgSendUser,#message_rsc=shadowAmulet_used_rsc);
       send(poOwner,@LoseLight,#amount=viLight_change);
-      send(what,@AddDefenseModifier,#what=self);
+      Send(poOwner,@AddCombatModDefense,#amount=viCombatModDefense);
+      Send(poOwner,@AddCombatModDefense,#amount=viCombatModOffense);
 
       propagate;
-   }
-
-   ModifyDefensePower(defense_power = 0)
-   "For the player's GetDefense procedure"
-   {
-      return defense_power + viDefense_change;
-   }
-
-   ModifyDefenseDamage(who = $,what = $,damage = $)
-   {
-      return damage;
-   }
-
-   DefendingHit(who = $, what = $)
-   "Also for the player's GetDefense procedure"
-   {
-      return;
    }
 
    ReqNewOwner(what=$)
@@ -171,7 +156,8 @@ messages:
       }
       
       send(poOwner,@GainLight,#amount=viLight_change);
-      send(what,@RemoveDefenseModifier,#what = self);
+      Send(poOwner,@AddCombatModDefense,#amount=-viCombatModDefense);
+      Send(poOwner,@AddCombatModDefense,#amount=-viCombatModOffense);
       
       propagate;
    }

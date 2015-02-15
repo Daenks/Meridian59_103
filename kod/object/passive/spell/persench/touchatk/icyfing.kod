@@ -64,20 +64,24 @@ classvars:
    viSpell_level = 2
    viMana = 6
 
-   viMin_Damage = 5         %% touch spells typically do good damage    
-   viMax_Damage = 8         %% but are unaffected by weapon or strength bonuses
-
-   % Max amount of damage that punch or 2*myst can add
-   viMaxProficiencyDamage = 7
-
-   viRange = 2              %% touch spell range can vary, but are typically good     
-
-   viSpellType = ATCK_SPELL_COLD + ATCK_SPELL_ALL
-   viStroke = STROKE_ICY_FINGERS
-
    vbAutomatic = FALSE
 
    vrSucceed_wav = icyfingers_sound
+
+   % The created weapon's defining stats.
+   viDamage = 700
+   viProficiencyBonus = 700
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viRange = 128
+
+   % The created weapon's defining types.
+   viPrimaryStat = STAT_MYSTICISM
+   viSecondaryStat = STAT_INTELLECT
+   viAttackType = 0
+   viSpellType = ATCK_SPELL_COLD + ATCK_SPELL_ALL    
+   viDeviation = 20
 
 properties:
 

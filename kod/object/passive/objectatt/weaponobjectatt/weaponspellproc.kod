@@ -172,6 +172,11 @@ messages:
    {
       local i, each_obj;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if poSpell <> $
          AND Random(1,100) <= piProcChance
       {

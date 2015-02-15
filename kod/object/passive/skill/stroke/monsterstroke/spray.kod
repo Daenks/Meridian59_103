@@ -1,0 +1,41 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Spray is MonsterStroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   spray_name_rsc = "attack"
+
+   spray_first_person = "spray"
+   spray_third_person = "sprays"
+   spray_action_noun = "assault"
+
+classvars:
+
+   vrName = spray_name_rsc
+
+   vrStroke_first_person = spray_first_person
+   vrStroke_third_person = spray_third_person
+   vrStroke_action_noun = spray_action_noun
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_SPRAY
+   viSkill_level = 50
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

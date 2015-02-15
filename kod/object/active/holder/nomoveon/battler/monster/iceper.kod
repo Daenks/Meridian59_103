@@ -49,8 +49,8 @@ classvars:
 
    viTreasure_type = TID_NONE
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_THRUST
-   viAttack_spell = ATCK_SPELL_COLD
+   viAttackType = ATCK_WEAP_THRUST
+   viSpellType = ATCK_SPELL_COLD
    viAttributes = 0
    viLevel = 75
    viDifficulty = 5
@@ -58,6 +58,9 @@ classvars:
    viKarma = -70
    viCashmin = 200
    viCashmax = 450
+
+   vbParry = TRUE
+
    vrSound_hit = iceperson_sound_hit
    vrSound_miss = iceperson_sound_miss
    vrSound_aware = iceperson_sound_aware
@@ -75,17 +78,6 @@ messages:
       plResistances = [ [-ATCK_SPELL_FIRE, -99 ],[ -ATCK_SPELL_COLD, 99 ]];
 
       propagate;
-   }
-
-   % Used for defense messages
-   GetParryAbility(stroke_obj=$)
-   {
-      if (stroke_obj <> $) AND NOT Send(stroke_obj,@CanParry)
-      {
-         return 0;
-      }
-
-      return (viDifficulty*10)/2;
    }
 
    MonsterAttack(what = $)

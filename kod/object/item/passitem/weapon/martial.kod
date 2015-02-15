@@ -1,0 +1,44 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Martial weapons have no physical shape and are created temporarily whenever
+% a player is not using any other weapon. They are used in lieu of an 
+% actual weapon, making the code more consistent and streamlined by creating a 
+% dummy weapon in cases where the weapon is not an item in the player's 
+% inventory but one of his body parts, such as his fist or his shin.
+% TLDR: Martial weapons are dummy weapons for handling unarmed combat.
+
+MartialWeapon is Weapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+messages:
+
+   % Fists don't break.
+   DamageGear()
+   {
+      return;
+   }
+
+   CanBeDisarmed()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

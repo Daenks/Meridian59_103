@@ -1,0 +1,64 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Strike is Stroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   strike_name_rsc = "strike"
+   strike_icon_rsc = slashico.bgf
+   strike_desc_rsc = "For most larger weapons, a striking motion is the most "
+      "efficient way to apply some serious pain to a close target."
+
+   strike_skill_intro = "Weaponcraft Lv. 1: The combat art of choice for warriors "
+      "that like to get right in the enemy's face.  The ideal way to handle heavy "
+      "weapons."
+
+   strike_first_person = "strike at"
+   strike_third_person = "strikes at"
+   strike_action_noun = "strike"
+
+classvars:
+
+   vrName = strike_name_rsc
+   vrIcon = strike_icon_rsc
+   vrDesc = strike_desc_rsc
+
+   vrStroke_first_person = strike_first_person
+   vrStroke_third_person = strike_third_person
+   vrStroke_action_noun = strike_action_noun
+
+   vrSkill_intro = strike_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_STRIKE
+   viSkill_level = 1
+   viChance_to_increase = 20
+   viMeditate_ratio = 30
+
+   viskillExertion = 2
+   vbCheck_exertion = FALSE
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

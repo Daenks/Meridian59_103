@@ -253,10 +253,8 @@ messages:
       return TRUE;
    }   
 
-   ItemGetSpellModifier(oCaster=$,oItem=$)
+   SpellPowerHook(who=$,oItem=$)
    {
-      %% this returns the amount added to an item's spell usage percentage.
-      %% for most itematts, this is 0.
       return 0;
    }
 

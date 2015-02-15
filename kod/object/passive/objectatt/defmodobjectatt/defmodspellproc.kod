@@ -163,7 +163,7 @@ messages:
       }
       
       if host_object <> $
-         AND IsClass(host_object,&Armor)
+         AND IsClass(host_object,&BodyArmor)
       {
          if iRandomSpell < 35
          {
@@ -292,7 +292,7 @@ messages:
       return piProcChance;
    }
    
-   ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
+   ModifyDefenseDamage(who = $,what = $,damage = $,attacktype = 0,spelltype = 0)
    {
       local i, each_obj;
 
@@ -358,7 +358,7 @@ messages:
          
          if piType = NO_TARGET_CAST_TYPE
             AND who <> $
-            AND NOT (aspell & ATCK_SPELL_QUAKE)
+            AND NOT (spelltype & ATCK_SPELL_QUAKE)
          {
             for i in Send(Send(who,@GetOwner),@GetHolderActive)
             {

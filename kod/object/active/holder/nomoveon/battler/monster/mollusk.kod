@@ -71,7 +71,7 @@ classvars:
    viTreasure_type = TID_MOLLUSK
    viSpeed = SPEED_FAST
    viDefault_behavior = AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_NEWBIESAFE
-   viAttack_type = ATCK_WEAP_BLUDGEON
+   viAttackType = ATCK_WEAP_BLUDGEON
 
    viAttributes = 0
    viLevel = 140
@@ -111,6 +111,11 @@ messages:
       }
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Secretions;
    }
 
    Delete()

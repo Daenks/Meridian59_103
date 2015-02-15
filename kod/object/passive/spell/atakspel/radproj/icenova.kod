@@ -56,7 +56,7 @@ classvars:
    viMeditate_ratio = 75
    vrSucceed_wav = icenova_sound
 
-   viAttack_spell = ATCK_SPELL_ALL+ATCK_SPELL_COLD
+   viSpellType = ATCK_SPELL_ALL+ATCK_SPELL_COLD
    viOutlaw = TRUE
    viHarmful = TRUE
    viNoNewbieOffense = TRUE

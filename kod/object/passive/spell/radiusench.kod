@@ -791,29 +791,9 @@ messages:
 
    %%%%% Effect Functions
 
-   ModifyDefensePower(attacker=$,iPower=0,caster=$,defense_power=0)
-   {
-      return defense_power;
-   }
-
-   ModifyResistance(attacker=$,atype=-ATCK_SPELL_ALL,iPower=0,caster=$,resistance=$)
+   ModifyResistance(attacker=$,attacktype=-ATCK_SPELL_ALL,iPower=0,caster=$,resistance=$)
    {
       return resistance;
-   }
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {
-      return hit_roll;
-   }
-
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      return damage;
-   }
-
-   ModifySpellPower(who=$,state=$,oSpell=$,iSpellPower=0)
-   {
-      return iSpellPower;
    }
 
    TryRuinShot(who=$,iSpellPower=0)

@@ -73,8 +73,8 @@ classvars:
    
    viIndefinite = ARTICLE_AN
    viTreasure_type = TID_AVAR_SHAMAN
-   viAttack_type = ATCK_WEAP_PIERCE
-   viAttack_spell = ATCK_SPELL_QUAKE
+   viAttackType = ATCK_WEAP_PIERCE
+   viSpellType = ATCK_SPELL_QUAKE
    viSpeed = SPEED_SLOW
    viDefault_behavior = \
       AI_FIGHT_AGGRESSIVE | AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_MONSTERS

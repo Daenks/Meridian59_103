@@ -54,31 +54,36 @@ messages:
 
    %%% Effect Functions
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder has a chance of paralyzing target with any hit."
    {
       local oSpell;
+
+      if what = $
+      {
+         return 0;
+      }
 
       if Random(1,100) <= piEffect_percent
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
 
          %% no duplicates
-         if NOT Send(target,@IsEnchanted,#what=oSpell)
+         if NOT Send(what,@IsEnchanted,#what=oSpell)
          {
-            Send(oSpell,@CastSpell,#who=self,#lTargets=[target],#iSpellPower=50,#bItemCast=TRUE);
-            Send(wielder,@MsgSendUser,#message_rsc=holder_worked,
-                  #parm1=Send(target,@GetCapDef),#parm2=Send(target,@GetName));
+            Send(oSpell,@CastSpell,#who=self,#lTargets=[what],#iSpellPower=50,#bItemCast=TRUE);
+            Send(who,@MsgSendUser,#message_rsc=holder_worked,
+                  #parm1=Send(what,@GetCapDef),#parm2=Send(what,@GetName));
          }
       }
 
-      return damage;
+      return 0;
    }
 
    ItemReqUse(oItem=$,oPlayer=$)
    {
       % A person needs 50% in the weapon's proficiency to use
-      if Send(oItem,@GetProf,#who=oPlayer) < 50
+      if Send(oPlayer,@GetSkillAbility,#skill_num=Send(oItem,@GetProfNum)) < 50
       {
          Send(oPlayer,@MsgSendUser,#message_rsc=paralyzer_fail_use,
             #parm1=Send(oItem,@GetDef),#parm2=Send(oItem,@GetName));

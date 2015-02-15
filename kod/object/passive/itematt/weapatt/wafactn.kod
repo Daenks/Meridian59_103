@@ -192,26 +192,31 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "If wielder is in the faction that matches the state of the weapon, "
    "and opponent is in a different faction (but not unfactioned), then "
    "do the damage bonus."
    {
       local iTargetFaction, iWielderFaction, iWeaponFaction, iPower;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if lData = $
       {
          Debug("This should definitely not happen! Weapon needs faction defined!");
 
-         return damage;
+         return 0;
       }
 
-      if target <> $
+      if what <> $
       {
-         iTargetFaction = Send(target,@GetFaction);
+         iTargetFaction = Send(what,@GetFaction);
       }
 
-      iWielderFaction = Send(wielder,@GetFaction);
+      iWielderFaction = Send(who,@GetFaction);
       iWeaponFaction = Nth(lData,3);
 
       if iWeaponFaction = iWielderFaction
@@ -226,32 +231,37 @@ messages:
             iPower = iPower / 2;
          }
 
-         return (damage + iPower); 
+         return iPower; 
       }
 
-      return damage;
+      return 0;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "If wielder is in the faction that matches the state of the weapon, "
    "and opponent is in a different faction (but not unfactioned), then "
    "do the damage bonus."
    {
       local iTargetFaction, iWielderFaction, iWeaponFaction, iPower;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if lData = $
       {
          Debug("This should definitely not happen! Weapon needs faction defined!");
 
-         return hitroll;
+         return 0;
       }
 
-      if target <> $
+      if what <> $
       {
-         iTargetFaction = Send(target,@GetFaction);
+         iTargetFaction = Send(what,@GetFaction);
       }
 
-      iWielderFaction = Send(wielder,@GetFaction);
+      iWielderFaction = Send(who,@GetFaction);
       iWeaponFaction = Nth(lData,3);
 
       if iWeaponFaction = iWielderFaction
@@ -266,10 +276,10 @@ messages:
             iPower = iPower / 2;
          }
 
-         return (hitroll + iPower); 
+         return iPower; 
       }
 
-      return hitroll;
+      return 0;
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -68,16 +68,6 @@ classvars:
    viSpell_level = 2
    viMana = 12
 
-   % It's alright if Holy Touch has high base damage.
-   % It gets no intrinsic proficiency damage, instead doing double base against undead.
-   viMin_Damage = 6
-   viMax_Damage = 10
-
-   viRange = 2
-
-   viSpellType = ATCK_SPELL_HOLY+ATCK_SPELL_ALL
-   viStroke = STROKE_HOLY_TOUCH
-
    viDifficulty = 1
 
    vbAutomatic = FALSE
@@ -85,6 +75,21 @@ classvars:
    vrSucceed_wav = holytouch_sound
 
    viEnchantmentLight = 10
+
+   % The created weapon's defining stats.
+   viDamage = 400
+   viProficiencyBonus = 400
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viRange = 128
+
+   % The created weapon's defining types.
+   viPrimaryStat = STAT_MYSTICISM
+   viSecondaryStat = STAT_INTELLECT
+   viAttackType = 0
+   viSpellType = ATCK_SPELL_HOLY + ATCK_SPELL_ALL    
+   viDeviation = 20
 
 properties:
 

@@ -40,61 +40,32 @@ classvars:
 
    viBulk = 4
    viWeight = 4
-   
-   viMinDamage = 2
-   viMaxDamage = 6
-   
-   viMiniceDamage = 3
-   viMaxiceDamage = 8
+
+   viMiniceDamage = 300
+   viMaxiceDamage = 800
 
 properties:
 
    piNumber = 10
-   piAttack_spell = ATCK_SPELL_COLD
+   piSpellType = ATCK_SPELL_COLD
 
 messages:
 
-   GetDamage(who=$,target=$)
+   % Ammo may add a special effect to bow shots.
+   DoSpecialEffect(who=$,what=$,stroke_obj=$,power=0)
    {
-      if target <> $ AND Random(1,100) <= 10
+      if what <> $ AND Random(1,100) <= power
       {
-         Send(who,@MsgSendUser,#message_rsc=ice_arrow_freezes);
-         if IsClass(target,&Player)
+         Post(who,@MsgSendUser,#message_rsc=ice_arrow_freezes);
+         if IsClass(what,&Player)
          {
-            Send(target,@MsgSendUser,#message_rsc=ice_arrow_freezes);
+            Post(what,@MsgSendUser,#message_rsc=ice_arrow_freezes);
          }
 
          return Random(viMiniceDamage,viMaxiceDamage);
       }
-
+      
       propagate;
-   }
-
-   GetMinSpecialDamage()
-   {
-      return viMiniceDamage;
-   }
-   
-   GetMaxSpecialDamage()
-   {
-      return viMaxiceDamage;
-   }
-
-   SendProjectileAnimation()
-   {
-      AddPacket(1,ANIMATE_NONE,2,1);
-
-      return;
-   }
-
-   GetProjectileSpeed()
-   {
-      return 7;
-   }
-
-   GetProjectileIcon()
-   {
-      return vrIcon;
    }
 
 end

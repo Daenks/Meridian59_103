@@ -48,7 +48,7 @@ classvars:
 
    viTreasure_type = TID_SPIDER_QUEEN
    viSpeed = SPEED_NONE
-   viAttack_type = ATCK_WEAP_BITE
+   viAttackType = ATCK_WEAP_BITE
    viAttributes = MOB_NOMOVE
    viLevel = 165
    viDifficulty = 9
@@ -82,6 +82,16 @@ messages:
                       ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    MonsterAttack(what = $)

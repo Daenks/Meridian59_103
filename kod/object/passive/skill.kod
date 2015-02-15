@@ -356,7 +356,8 @@ messages:
          return FALSE;
       }
 
-      if NOT Send(who,@HasSkill,#num=viskill_num)
+      % No advancing a skill that you don't have or that you have already maxed.
+      if NOT Send(who,@CanSkillAdvance,#num=viSkill_num)
       {
          return FALSE;
       }
@@ -372,12 +373,6 @@ messages:
       iRandom = random(1,100);
       
       if iRandom > iInitialChance
-      {
-         return FALSE;
-      }
-
-      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
-      if iAbility >= 99 OR iAbility < 1
       {
          return FALSE;
       }

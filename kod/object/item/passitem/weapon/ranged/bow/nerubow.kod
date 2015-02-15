@@ -33,10 +33,6 @@ classvars:
 
    vrWeaponBroke = NeruditeBow_shatters
 
-   viWeaponDamage = 3
-   viRange = 20
-   viHit_roll_modifier = 0
-   
    viValue_average = 3500
    viBulk = 100
    viWeight = 100
@@ -45,15 +41,33 @@ classvars:
    viHits_init_min = 100
    viHits_init_max = 150
 
-   viSpell_modifier = -30
+   viSpellpowerMod = -30
 
    % What's the basic color of the bow?
    viBaseXLAT = XLAT_TO_GREEN
 
+   viDamage = 200
+   viProficiencyBonus = 800
+   viHitMod = 100
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viStab = 0
+   viStrike = 0
+   viSlash = 0
+   viThrust = 0
+   viFire = 100
+   viTouch = 0
+   viDisarmMod = $
+   viParryMod = $
+   viSpellpowerMod = -30
+   viRange = 20
+
+   viPrimaryStat = STAT_MIGHT
+   viSecondaryStat = STAT_AIM
+   viDeviation = 20
+
 properties:
    
-   piAttack_Type = ATCK_WEAP_NERUDITE+ATCK_WEAP_PIERCE
-
 messages:
 
    DoShatter()
@@ -68,7 +82,7 @@ messages:
       if poOwner <> $ AND isClass(poOwner,&User)
       {
          if send(poOwner,@AssessDamage,#what=self,#damage=random(10,25),
-            #report=FALSE,#atype=ATCK_WEAP_NERUDITE) = $
+            #report=FALSE,#attacktype=ATCK_WEAP_NERUDITE) = $
          {
             Send(Send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);
             Send(poOwner,@Killed,#what=self);

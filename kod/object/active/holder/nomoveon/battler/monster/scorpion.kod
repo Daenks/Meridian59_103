@@ -43,7 +43,7 @@ classvars:
 
    viTreasure_type = TID_MEDIUM_TOUGH
    viSpeed = SPEED_FAST
-   viAttack_type = ATCK_WEAP_STING
+   viAttackType = ATCK_WEAP_STING
 
    viLevel = 65
    viDifficulty = 8
@@ -74,6 +74,16 @@ messages:
                         [ATCK_WEAP_BLUDGEON, -10 ] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Stinger;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    MonsterAttack(what = $)

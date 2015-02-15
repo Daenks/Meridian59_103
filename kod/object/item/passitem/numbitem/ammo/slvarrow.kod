@@ -44,59 +44,31 @@ classvars:
    viBulk = 4
    viWeight = 5
 
-   viMinDamage = 2
-   viMaxDamage = 6
+   viMinUndeadDamage = 600
+   viMaxUndeadDamage = 1200
 
-   viMinUndeadDamage = 5
-   viMaxUndeadDamage = 10
+   viAttackType = ATCK_WEAP_SILVER
 
 properties:
 
    piNumber = 10
-   piAttack_type = ATCK_WEAP_PIERCE + ATCK_WEAP_SILVER
 
 messages:
 
-   GetDamage(who=$,target=$)
+   % Ammo may add a special effect to bow shots.
+   DoSpecialEffect(who=$,what=$,stroke_obj=$,power=0)
    {
-      if (target <> $) AND Send(target,@IsUndead)
+      if (what <> $) AND Send(what,@IsUndead)
       {
-         if IsClass(target,&Player)
+         if IsClass(what,&Player)
          {
-            Send(target,@MsgSendUser,#message_rsc=silver_arrow_burns_you);
+            Post(what,@MsgSendUser,#message_rsc=silver_arrow_burns_you);
          }
 
-         return Random(viMinUndeadDamage,viMaxUndeadDamage);
+         return Random(viMinUndeadDamage,viMaxUndeadDamage)*power/100;
       }
 
       propagate;
-   }
-
-   GetMinSpecialDamage()
-   {
-      return viMinUndeadDamage;
-   }
-
-   GetMaxSpecialDamage()
-   {
-      return viMaxUndeadDamage;
-   }
-
-   SendProjectileAnimation()
-   {
-      AddPacket(1,ANIMATE_NONE,2,1);
-
-      return;
-   }
-
-   GetProjectileSpeed()
-   {
-      return 7;
-   }
-
-   GetProjectileIcon()
-   {
-      return vrIcon;
    }
 
 end

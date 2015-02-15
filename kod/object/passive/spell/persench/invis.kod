@@ -80,7 +80,6 @@ messages:
       }
 
       Send(First(lTargets),@ResetPlayerFlagList);
-      Send(First(lTargets),@AddDefenseModifier,#what=self);
 
       propagate;
    }
@@ -103,37 +102,14 @@ messages:
       return iDuration;
    }
 
-   GetStateValue(iSpellpower=$)
+   GetStateValue(who=$,iSpellPower=0,Target=$)
    {
-      return iSpellpower;
+      return iSpellPower+1;
    }
 
-   EndEnchantment(who=$,report=TRUE,state=0)
+   DefenseHook(who=$)
    {
-      Send(who,@RemoveDefenseModifier,#what=self);
-
-      propagate;
-   }
-
-   % Stuff we handle to be a defense modifier.
-
-   ModifyDefensePower(who=$,what=$,defense_power=0)
-   {
-      local iSpellpower;
-
-      iSpellpower = Send(who,@GetEnchantedState,#what=self);
-
-      return (defense_power + 25 + iSpellpower);
-   }
-
-   ModifyDefenseDamage(who=$,what=$,damage=$)
-   {
-      return damage;
-   }
-
-   DefendingHit(who=$,what=$)
-   {
-      return;
+      return Send(who,@GetEnchantedState,#what=self)+25;
    }
 
    IsIllusion()

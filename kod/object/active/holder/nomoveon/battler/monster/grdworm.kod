@@ -62,7 +62,7 @@ classvars:
 
    viTreasure_type = TID_TOUGH
    viSpeed = SPEED_FAST
-   viAttack_spell = ATCK_SPELL_ACID
+   viSpellType = ATCK_SPELL_ACID
    viAttributes = 0
    viLevel = 100
    viDifficulty = 5
@@ -100,6 +100,11 @@ messages:
                       ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Secretions;
    }
 
    MonsterAttack(what = $)

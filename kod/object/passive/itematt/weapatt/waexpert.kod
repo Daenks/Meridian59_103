@@ -66,13 +66,13 @@ messages:
 
    %%  Effect Functions
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder gets a damage bonus, equal to (proficiency/4) - 2."
    {
       local oWeapon, iProf, iPower;
 
-      oWeapon = Send(wielder,@LookUpPlayerWeapon);
-      iProf = Send(oWeapon,@GetProf,#who=wielder);
+      oWeapon = Send(who,@LookUpPlayerWeapon);
+      iProf = Send(who,@GetSkillAbility,#skill_num=Send(oWeapon,@GetProfNum));
 
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
@@ -82,29 +82,23 @@ messages:
          % If no proficiency, then give a penalty to damage.
          if iProf = 0
          {
-            return damage - 1;
+            return -1;
          }
 
          % Otherwise, no change in damage.
-         return damage;
+         return 0;
       }
 
-      Damage = damage - iPower;
-
-      % Results in proficiency percent of 2 * damage bonus
-      iProf = Bound(((iProf*(2*iPower))/100),1,$);
-      damage = damage + iProf;
-
-      return damage;
+      return iProf*2*iPower/100;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder gets a bonus, equal to (proficiency/4) - 2."
    {
       local oWeapon, iProf, iPower;
 
-      oWeapon = Send(wielder,@LookUpPlayerWeapon);
-      iProf = Send(oWeapon,@GetProf,#who=wielder);
+      oWeapon = Send(who,@LookUpPlayerWeapon);
+      iProf = Send(who,@GetSkillAbility,#skill_num=Send(oWeapon,@GetProfNum));
 
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherHitRollFromPower,#iPower=iPower);
@@ -114,20 +108,14 @@ messages:
          % If no proficiency, then give a penalty to-hit.
          if iProf = 0
          {
-            return hitroll - 100;
+            return -100;
          }
 
          % Otherwise, no change in to-hit.
-         return hitroll;
+         return 0;
       }
 
-      hitroll = hitroll - iPower;
-
-      % Results in proficiency percent of 2 * to-hit bonus
-      iProf = Bound(((iProf*(2*iPower))/100),10,$);
-      hitroll = hitroll + iProf;
-
-      return hitroll;
+      return iProf*2*iPower/100;
    }
 
    IsMagicalEffect()

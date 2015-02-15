@@ -320,7 +320,15 @@
    PT_FRST_WHT2      = 0x0075		
    PT_FRST_WHT3      = 0x0076       % Frosted White = Grading white from normal to PT_ALLWHITE
    PT_FRST_WHT4      = 0x0077
-   
+
+   %%% Player Stats
+   STAT_MIGHT = 1
+   STAT_INTELLECT = 2
+   STAT_STAMINA = 3
+   STAT_AGILITY = 4
+   STAT_MYSTICISM = 5
+   STAT_AIM = 6
+
    %%% Sound constants
 
    SOUND_LOOP = 1
@@ -1750,22 +1758,8 @@
 
    %%% Weapons
 
-   % Classes of weapon quality.
-   WEAPON_QUALITY_LOW = 0
-   WEAPON_QUALITY_NORMAL = 1
-   WEAPON_QUALITY_HIGH = 2
-   WEAPON_NERUDITE = 3
-
-   % General types of weapons.
-   %  Bludgeon weapons are blunt weapons.
-   WEAPON_TYPE_BLUDGEON = 0
-   %  Thrust weapons are swords.
-   WEAPON_TYPE_THRUST = 1
-   %  Slash weapons are the heavier weapons.
-   WEAPON_TYPE_SLASH = 2
-
    % How much range bonus do we get if a player target has moved recently?
-   RANGE_MOVEMENT_BONUS = 1
+   RANGE_MOVEMENT_BONUS = 64
 
    % Missile weapons ammo-type, determined by each missile weapon.
    AMMO_ARROW = 1
@@ -1793,7 +1787,6 @@
    ATCK_WEAP_CLAW        = 0x00200
    ATCK_WEAP_BITE        = 0x00400
    ATCK_WEAP_STING       = 0x00800
-   ATCK_WEAP_ACID        = 0x01000
 
    % Unarmed
    ATCK_WEAP_UNARMED     = 0x02000
@@ -1819,22 +1812,6 @@
    % For hunter swords
    ATCK_SPELL_HUNTERSWORD= 0x0100
 
-   % These are the ATTACK types sent by client.
-   STROKE_NORMAL = 1
-   STROKE_PUNCH = 2
-   STROKE_SLASH = 3
-   STROKE_THRUST = 4
-   STROKE_KICK = 5
-   STROKE_FIRE = 6
-
-   % Touch attack spells
-   STROKE_TOUCH_OF_FLAME = 20
-   STROKE_HOLY_TOUCH = 21
-   STROKE_VAMPIRIC_TOUCH = 22
-   STROKE_ZAP = 23
-   STROKE_ICY_FINGERS = 24
-   STROKE_ACID_TOUCH = 25
-
    %%% Unique skill constants
 
    SKID_DODGE = 401
@@ -1844,13 +1821,24 @@
    SKID_SECOND_WIND = 405
    SKID_DISARM = 406
 
+   % Monster attacks start here.
+   SKID_ATTACK = 410
+   SKID_REND = 411
+   SKID_TEAR = 412
+   SKID_SPRAY = 413
+
    % Melee weapon strokes start here.
    SKID_DEFAULT = 420
    SKID_SLASH = 421
    SKID_THRUST = 422
+   SKID_STRIKE = 423
+   SKID_STAB = 424
 
    % Missile weapon strokes here.
    SKID_FIRE = 425
+
+   % Magic weapon strokes start here.
+   SKID_TOUCH = 426
 
    % Unarmed combat moves start here.
    SKID_PUNCH = 430

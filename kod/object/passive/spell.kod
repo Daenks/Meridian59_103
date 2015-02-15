@@ -1746,8 +1746,8 @@ messages:
          return FALSE;
       }
 
-      % No advancing a spell you don't have.
-      if NOT Send(who,@HasSpell,#num=vispell_num)
+      % No advancing a spell that you don't have or that you have already maxed.
+      if NOT Send(who,@CanSpellAdvance,#num=vispell_num)
       {
          return FALSE;
       }
@@ -1768,12 +1768,6 @@ messages:
          return FALSE;
       }
 
-      iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-      if iAbility >= 99 or iAbility < 1
-      {
-         return FALSE;
-      }
- 
       % Start with the secondary chance to advance.
       increase_chance = Send(self,@GetSecondaryChance,#who=who,#target=target);
 
@@ -2129,13 +2123,6 @@ messages:
       return viOutlaw;
    }
 
-   WeaponHitTarget()
-   "This is needed by all the spells (such as bless and Killing Fields)"
-   "which offer an attack modifier."
-   {
-      return;
-   }
-
    IsPeriodic()
    "This is used by the logon/logoff enchantment keeping function.  "
    "Returns false for most enchantments."
@@ -2205,8 +2192,8 @@ messages:
    GetSpellPower(who=$)
    {
       local iSpellPower, i, iTerrain, oRoom, oModifierSpell, iAbilityLoss,
-            iAbilityGain, iItemModifier, iBase, iPrimaryBonus, iSecondaryBonus,
-            iPowerBonus, iShrines, lRadiusState;
+            iAbilityGain, iBase, iPrimaryBonus, iSecondaryBonus, iPowerBonus,
+            iModifier, iShrines, lRadiusState;
 
       oRoom = Send(who,@GetOwner);
 
@@ -2231,18 +2218,9 @@ messages:
       }
 
       % Spell power starts out as half the player's spell ability.
-      iBase = Send(who,@GetSpellAbility,#spell_num=viSpell_num)/2;      
+      iBase = Send(who,@GetSpellAbility,#spell_num=viSpell_num)/2;
 
-      % Check the player's in use items to see if they affect anything.
-      % Note that this also checks itematts.
-      iItemModifier = 0;
-      for i in Send(who,@GetPlayerUsing)
-      {
-         iItemModifier = iItemModifier + Send(i,@GetSpellModifier,
-                                              #oSpell=self);
-      }
-   
-      % Each school has a bonus for different things.
+      % Next, we add the school specific primary and secondary boni.
       iPrimaryBonus = 0;
       iSecondaryBonus = 0;
 
@@ -2314,12 +2292,6 @@ messages:
          iPrimaryBonus = Length(Send(oRoom,@GetHolderActive));
          % Kraanan also favors the healthy warrior.  Full hps = more bonus.
          iSecondaryBonus = (Send(who,@GetHealth)*10)/Send(who,@GetMaxHealth);
-
-         % Kraanan, being a combat school, doesn't take penalties from items as much.
-         if iItemModifier < 0
-         {
-            iItemModifier = iItemModifier/2;
-         }
       }
       
       if viSchool = SS_JALA
@@ -2334,9 +2306,6 @@ messages:
          iSecondaryBonus = Send(who,@GetBaseMaxHealth)/12;
       }
 
-      iPowerBonus = Send(Send(SYS,@GetParliament),@GetFactionSpellPowerBonus,
-                         #who=who,#theSpell=self);
-
       % Bind the bonuses to reasonable values.
       if viSchool <> SS_JALA
       {
@@ -2344,28 +2313,69 @@ messages:
       }
       iSecondaryBonus = bound(iSecondaryBonus,0,10);
 
-      iSpellPower = iPrimaryBonus + iSecondaryBonus + iPowerBonus + iBase;
+      % The last part of our "base rating" comes from the faction bonus.
+      iPowerBonus = Send(Send(SYS,@GetParliament),@GetFactionSpellPowerBonus,
+         #who=who,#theSpell=self);
 
-      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&AntiMagicAura);
+      % Add what we have so far to get our preliminary spellpower.
+      iSpellPower = iBase + iPrimaryBonus + iSecondaryBonus + iPowerBonus;
+      
+      % Now before any actual boni are taken into account, we allow AMA and MC
+      % to have a say in the matter.
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+         #byClass=&AntiMagicAura);
       if lRadiusState <> $
       {
-         iSpellPower = Send(Nth(lRadiusState,1),@ModifySpellpower,#who=who,#oSpell=self,#state=lRadiusState,#iSpellPower=iSpellPower);
+         iSpellPower = iSpellPower + Send(First(lRadiusState),@SpellPowerPreHook,
+            #who=who,#oSpell=self,#iPower=Nth(lRadiusState,2),
+            #caster=Nth(lRadiusState,3));
       }
 
-      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&ManaConvergence);
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+         #byClass=&ManaConvergence);
       if lRadiusState <> $
       {
-         iSpellPower = Send(Nth(lRadiusState,1),@ModifySpellpower,#who=who,#oSpell=self,#state=lRadiusState,#iSpellPower=iSpellPower);
+         iSpellPower = iSpellPower + Send(First(lRadiusState),@SpellPowerPreHook,
+            #who=who,#oSpell=self,#iPower=Nth(lRadiusState,2),
+            #caster=Nth(lRadiusState,3));
       }
 
       % Bound the lower end so that the stuff that follows is truly a bonus.
       iSpellPower = bound(iSpellPower,0,$);
+      
+      % Next, we retrieve the player's general spellpower bonus from items...
+      iModifier = Send(who,@GetSpellpowerMod);      
+
+      % ...as well as any spell, school or situational boni.
+      for i in Send(who,@GetPlayerUsing)
+      {
+         iModifier = iModifier + Send(i,@SpellPowerHookForItems,#oSpell=self);
+      }
+
+      % Kraanan does not care much for puny spellpower penalties from items.
+      if viSchool = SS_KRAANAN AND iModifier < 0
+      {
+         iModifier = iModifier/2;
+      }
+
+      % Allow personal, room and radius enchantments to factor in.
+      for i in Send(who,@GetEnchantmentList)
+      {
+         iModifier = iModifier + Send(Nth(i,2),@SpellPowerHook,#who=who,
+            #oSpell=self);
+      }
+
+      for i in Send(who,@GetRadiusEnchantments)
+      {
+         iModifier = iModifier + Send(First(i),@SpellPowerHook,#who=who,
+            #oSpell=self,#iPower=Nth(i,2),#caster=Nth(i,3));
+      }
 
       % This number is based on the number of shrines this god controls.
       iShrines = Send(SYS,@GetShrineBonus,#school=viSchool);
 
       % These bonuses (shrine, items) can boost spell power after all other modifiers.
-      iSpellPower = iSpellPower + iShrines + iItemModifier;
+      iSpellPower = iSpellPower + iShrines + iModifier;
 
       % Then, add bonus from the system object, set by admins
       iSpellPower = iSpellPower + Send(SYS,@GetBonusSpellpower,#school=viSchool);
@@ -2379,10 +2389,6 @@ messages:
          iSpellpower = iSpellpower - iAbilityLoss;
       }
 
-      % The personal universal modifier.
-      iSpellpower = iSpellpower
-                     + (iSpellpower*Send(who,@CheckPlayerFlag,#flagset=3)/100);
-         
       % Bound the result.
       iSpellPower = bound(iSpellPower,SPELLPOWER_MINIMUM,SPELLPOWER_MAXIMUM);
       
@@ -2592,6 +2598,49 @@ messages:
    {
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
+   }
+   
+   %%% Dynamic Modification Hooks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % These messages hook into combat calculations at different locations and
+   % allow any enchantment to dynamically modify the respective message it
+   % hooks into. #caster and #iPower are only relevant to radiusenchantments
+   % and are not available to personal or room enchantments.
+   
+   % Hooks into UserAttack and decides whether we can attack or not. Needs to
+   % provide the user with a reason why the attack was not executed.
+   AttackHook(who=$,what=$,use_weapon=$,stroke_obj=$,caster=$,iPower=0)
+   {
+      return TRUE;
+   }
+   
+   % Hooks into GetDamage and can modify the damage bonus factor.
+   DamageHook(who=$,what=$,use_weapon=$,stroke_obj=$,caster=$,iPower=0)
+   {
+      return 0;
+   }
+
+   % Hooks into GetDamageReduction and can modify the damage reduction factor.
+   DamageReductionHook(who=$,what=$,damage=0,attacktype=0,spelltype=0,caster=$,iPower=0)
+   {
+      return 0;
+   }
+
+   % Hooks into GetOffense and can modify offense rating.
+   OffenseHook(who=$,what=$,use_weapon=$,stroke_obj=$,caster=$,iPower=0)
+   {
+      return 0;
+   }
+
+   % Hooks into GetDefense and can modify defense rating.
+   DefenseHook(who=$,what=$,use_weapon=$,stroke_obj=$,caster=$,iPower=0)
+   {
+      return 0;
+   }
+
+   % Hooks into GetSpellPower and can modify spellpower.
+   SpellPowerHook(who=$,oSpell=$,caster=$,iPower=0)
+   {
+      return 0;
    }
 
 end

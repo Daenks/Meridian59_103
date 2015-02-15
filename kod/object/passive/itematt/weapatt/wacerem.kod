@@ -75,7 +75,7 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Give a +power bonus in the arena, but -power everywhere else."
    {
       local oRoom, iPower;
@@ -83,17 +83,17 @@ messages:
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherHitRollFromPower,#iPower=iPower);
 
-      oRoom = Send(wielder,@GetOwner);
+      oRoom = Send(who,@GetOwner);
 
       if Send(oRoom,@CheckRoomFlag,#flag=ROOM_SAFE_DEATH)
       {
-         return (hitroll + iPower);  
+         return iPower;  
       }
 
-      return (hitroll - iPower);
+      return -iPower;
    }
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Give a +power bonus in the arena, but -power everywhere else."
    {
       local oRoom, iPower;
@@ -101,14 +101,14 @@ messages:
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
 
-      oRoom = Send(wielder,@GetOwner);
+      oRoom = Send(who,@GetOwner);
 
       if Send(oRoom,@checkroomflag,#flag=ROOM_SAFE_DEATH)
       {
-         return (damage + iPower);
+         return iPower;
       }
 
-      return (damage - iPower);
+      return -iPower;
    }
 
    IsMagicalEffect()

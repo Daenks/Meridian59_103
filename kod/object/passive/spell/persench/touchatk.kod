@@ -60,30 +60,11 @@ classvars:
 
    viSchool = 0
    viSpell_num = 0
-   viStroke = 0
 
    viSpellExertion = 2
 
    viChance_To_Increase = 10
    viMeditate_ratio = 20
-
-   % Touch spells typically do good damage but are unaffected by typical weapon
-   %  bonuses. These base damages will have proficiency added to them,
-   %  and will then be increased by up to 40% depending on the caster's Mysticism.
-   viMin_Damage = 4
-   viMax_Damage = 8
-   
-   % Max amount of damage that Punch or 2*Myst can add
-   viMaxProficiencyDamage = 5
-
-   % Touch spell range can vary, but are typically good     
-   viRange = 2
-
-   % Touch spells are now linked to punch attacks, so make it do punch damage
-   %  for default.
-   viAttackType = ATCK_WEAP_UNARMED+ATCK_WEAP_PUNCH
-   % Touch spells typically DO have a spell type.
-   viSpellType = 0          
 
    viPostCast_time = 1
 
@@ -93,19 +74,27 @@ classvars:
    % The amount of light added to player's screen.
    viEnchantmentLight = 0
 
+   % The created weapon's defining stats.
+   viDamage = 500
+   viProficiencyBonus = 500
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viRange = 128
+
+   % The created weapon's defining types.
+   viPrimaryStat = STAT_MYSTICISM
+   viSecondaryStat = STAT_INTELLECT
+   viAttackType = 0
+   viSpellType = ATCK_SPELL_ALL + ATCK_SPELL_ALL    
+   viDeviation = 30
+
 properties:
 
    plPrerequisites = $
    plReagents = $
 
 messages:
-
-   ImproveStroke(who=$,target=$)
-   {
-      Send(self,@ImproveAbility,#who=who,#target=target);
-      
-      return;
-   }
 
    CanPayCosts(who = $, lTargets = $, iSpellPower = 0)
    {
@@ -117,322 +106,93 @@ messages:
       % Remove other touch attack spells.  Won't remove self, because
       %  we've checked for re-enchantment in CanPayCosts.
       Send(who,@RemoveEnchantmentClass,#class=&TouchAttackSpell);
-      
+
+      % Create the appropriate magic weapon.
+      Send(who,@CreateMagicWeapon,#cweapon=Send(self,@GetWeaponClass),
+      #who=who,#spellpower=iSpellPower,#lstats=Send(self,@GetWeaponStats));
+
       Send(who,@GainLight,#amount=viEnchantmentLight);
-      
+
       propagate;
    }
 
    EndEnchantment(who = $, report = TRUE, state = 0)
    {
       Send(who,@LoseLight,#amount=viEnchantmentLight);
+
+      % Delete the magic weapon again.
+      Send(who,@DeleteMagicWeapon);
       
       propagate;
+   }
+
+   GetWeaponClass()
+   {
+      if viSpell_num = SID_ACID_TOUCH { return &MagicWeaponAcid;}
+      if viSpell_num = SID_ZAP { return &MagicWeaponShock;}
+      if viSpell_num = SID_ICY_FINGERS { return &MagicWeaponCold;}
+      if viSpell_num = SID_TOUCH_OF_FLAME { return &MagicWeaponFire;}
+      if viSpell_num = SID_HOLY_TOUCH { return &MagicWeaponHoly;}
+      
+      return $;
+   }
+   
+   GetWeaponStats(who=$,spellpower=0)
+   {
+      local lstats;
+
+      lstats = [Send(self,@GetDamage),
+               Send(self,@GetProficiencyBonus),
+               Send(self,@GetHitMod),
+               Send(self,@GetPrimaryScaling),
+               Send(self,@GetSecondaryScaling),
+               0,
+               0,
+               0,
+               0,
+               0,
+               100,
+               0,
+               0,
+               0,
+               viRange,
+               viPrimaryStat,
+               viSecondaryStat,
+               viAttackType,
+               viSpellType,
+               viDeviation];
+
+      return lstats;
+   }
+
+   GetDamage()
+   {
+      return viDamage;
+   }
+  
+   GetProficiencyBonus()
+   {
+      return viProficiencyBonus;
+   }
+
+   GetHitMod()
+   {
+      return viHitMod;
+   }
+
+   GetPrimaryScaling()
+   {
+      return viPrimaryScaling;
+   }
+
+   GetSecondaryScaling()
+   {
+      return viSecondaryScaling;
    }
 
    GetNumSpellTargets()
    {
       return 0;
-   }
-
-   CheckWeaponAndDoAnimation(who=$,weapon_used=$,victim=$)
-   "Spell does not require a weapon, but a player may use this spell even"
-   "if they are armed."
-   "Also does the cast animation.  In future, may provide different grfx"
-   "for different touch spells."
-   {
-      Send(who,@DoCast);
-      
-      return TRUE;
-   }
-
-   ToHitImprovers(raw_hitroll=0)
-   "A weapon stroke may have IMPROVERS, which may boost the performance of "
-   "the stroke.  Example, if a player has renweed, that may boost his thrust "
-   "Default, return the hitroll raw."
-   {
-      return Raw_hitroll; 
-   }
-
-   DamageFactors(damage = 0, who = $)
-   "Attack spells typically are unaffected by strength, although they may "
-   "be affected by other factors."
-   {
-      local iDamage, iMysticism;
-
-      % Proficiency damage adjusted to high precision
-      iDamage = damage + (Send(self,@GetProf,#who=who)+1)*viMaxProficiencyDamage;
-      
-      % Get myst damage bonus.
-      iMysticism = Send(who,@GetMysticism);
-      iDamage = ((100+bound(iMysticism-25,0,40))*iDamage)/100;
-
-      return iDamage;
-   }
-
-   GetHitsound()
-   {
-      return touchattack_hit_sound;
-   }
-
-   %%% This section for combat
-
-   %%% These are the weapon functions
-
-   % What's the stroke number?
-   % Touch attacks are "backwards", they use Punch as the proficiency, or the
-   %  secondary bonus to hit.  Added bonus for "pure" mages, can substitute
-   %  2 * Mysticism instead of punch. 
-   GetProf(who=$)
-   {
-      local iProf, iMysticism;
-
-      iProf = Send(who,@GetSkillAbility,#skill_num=SKID_PUNCH);
-      Send(who,@FlipSkillAtrophyFlag,#SKID=SKID_PUNCH);
-      
-      iMysticism = (Send(who,@GetMysticism)*2);
-      
-      if iProf < iMysticism
-      {
-         iProf = iMysticism;
-      }
-
-      return bound(iProf,1,99);
-   }
-
-   GetStroke(who=$)
-   {
-      % Touch attacks are "backwards", they use the specialized spell as the
-      %  stroke, or primary bonus to hit.
-      Send(who,@FlipSpellAtrophyFlag,#SID=viSpell_num);
-
-      return Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-   }
-
-   GetAttackType(weapon_used=$)
-   {
-      return viAttackType;
-   }
-
-   GetAttackSpell(weapon_used=$)
-   {
-      return viSpellType;
-   }
-
-   GetParryAbility()
-   {
-      % Touch attacks have no parrying ability.
-      return 0;
-   }
-
-   %%% These are the stroke functions
-
-   % Can this touch attack be blocked?
-   CanBlock()
-   {
-      return TRUE;
-   }
-
-   % Can this touch attack be parried?
-   CanParry()
-   {
-      return TRUE;
-   }
-
-   % Can this touch attack be blocked?
-   CanDodge()
-   {
-      return TRUE;
-   }
-
-   % This returns the "weapon" name for combat attacks.
-   GetAttackName()
-   {
-      return vrName;
-   }
-
-   GetRange(weapon_used = $)
-   "This returns the range of the spell.  Usually, this hovers around 2-3."
-   {
-      return viRange;
-   }
-
-   CheckSpecial(who=$,victim=$)
-   "Checks to see if there are any special circumstances which prevents"
-   "the target player from performing this spell."
-   {
-      return TRUE;
-   }
-
-   FindMinDamage(who=$)
-   {
-      local damage, iAbility;
-
-      damage = viMin_Damage;
-      iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-      damage = (damage * (iAbility+1));
-      damage = Send(self,@DamageFactors,#damage=damage,#who=who)/100;
-      
-      return bound(damage,0,$);
-   }
-   
-   FindMaxDamage(who=$)
-   {
-      local damage, iAbility;
-
-      damage = viMax_Damage;
-      iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-      damage = (damage * (iAbility+1));
-      damage = Send(self,@DamageFactors,#damage=damage,#who=who)/100;
-      
-      return bound(damage,0,$);
-   }
-
-   FindDamage(weapon_used=$,who=$,victim=$)
-   "Damage for attack spells is determined largely by expertise in the spell."
-   {
-      local damage, iAbility;
-
-      % Base weapon damage adjusted to high precision
-      damage = random(viMin_Damage*100,viMax_damage*100);
-
-      % Rather than an active spellpower check, use the player's
-      % ability in the spell. This makes touch spells function
-      % more like a stroke, and gives them immunity to anti-magic effects.
-      iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-      
-      % Factor in the person's ability with the spell
-      % It's alright if damage here is low.
-      % Most players will get proficiency damage from punch or 2*Mysticism.
-      damage = (damage * (iAbility+1)) / 100;
-
-      % Myst boosts base damage
-      damage = Send(self,@DamageFactors,#damage=damage,#who=who,
-                    #victim=victim);
-      
-      return bound(damage,0,$);
-   }
-
-   PlayerWasHitMsg(who=$,attacker=$,damage=$)
-   "The stroke may choose it's own damage give or recieve message.  Otherwise "
-   "player.kod will just choose a default - which is true for most weapon-"
-   "based combat strokes (but not true for most punch strokes or touch spells."
-   {
-      if vrPlayer_was_hit = $
-      {
-         return FALSE;
-      }
-
-      Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_hit,
-           #parm1=Send(attacker,@GetCapDef),#parm2=Send(attacker,@GetName));
-           
-      return TRUE;
-   }
-
-   PlayerHitSomethingMsg(who=$,victim=$,damage=$,color_rsc=$)
-   "The stroke may choose it's own damage give or recieve message.  Otherwise "
-   "player.kod will just choose a default - which is true for most weapon-"
-   "based combat strokes (but not true for most punch strokes or touch spells."
-   {
-      if vrPlayer_hit_something = $
-      {
-         return FALSE;
-      }
-       
-      Send(who,@MsgSendUser,#message_rsc=vrPlayer_hit_something,
-           #parm1=color_rsc,#parm2=Send(victim,@GetDef),
-           #parm3=Send(victim,@GetName));
-          
-      return TRUE;
-   }
-
-   SendMissMessageToAttacker(who=$,victim=$,color_rsc=$)
-   {
-      local iRandom, rSound;
-      
-      % 'miss' sound
-      if vrMiss_Sound = $
-      {
-         % Play a random miss sound.
-         iRandom = random(1,3);
-         if iRandom = 1
-         {
-            rSound = TouchAttack_missed1_sound;
-         }
-         else
-         {
-            if iRandom = 2
-            {
-               rSound = TouchAttack_missed2_sound;
-            }
-            else
-            {
-               rSound = TouchAttack_missed3_sound;
-            }
-         }
-      }
-      else
-      {
-         rSound = vrMiss_Sound;
-      }
-      
-      Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=rSound);
-      
-      % Text messages
-      if vrMissed_Message_Attacker <> $
-      {
-         Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Attacker,
-              #parm1=color_rsc,#parm2=vrName,#parm3=Send(victim,@GetDef),
-              #parm4=Send(victim,@GetName));
-              
-         return TRUE;
-      }
-      
-      return;
-   }
-
-   SendMissMessageToDefender(who=$,attacker=$)
-   {
-      if vrMissed_message_Defender <> $
-      {
-         Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
-              #parm1=Send(attacker,@GetCapDef),#parm2=Send(attacker,@GetName),
-              #parm3=vrName);
-              
-         return TRUE;
-      }
-
-      return;
-   }
-
-   PlayerKilledSomethingMsg(who=$,victim=$,damage=$)
-   "The stroke may choose it's own damage give or recieve message.  Otherwise"
-   "player.kod will offer the default 'You killed the whatever' message."
-   {
-       if vrPlayer_killed_Something = $
-       {
-         return FALSE ;
-       }
-       
-       Send(who,@MsgSendUser,#message_rsc=vrPlayer_killed_something,
-            #parm1=Send(victim,@GetCapDef),#parm2=Send(victim,@GetName));
-                
-       return TRUE;
-   }
-
-   PlayerWasKilledMsg(who=$,attacker=$,damage=$)
-   "The stroke may choose it's own damage give or recieve message.  Otherwise"
-   "player.kod will just choose a default - as it does for most strokes."
-   {
-       if vrPlayer_was_hit = $
-       {
-         return FALSE ;
-       }
-       
-       Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
-            #parm1=Send(attacker,@GetDef),#parm2=Send(attacker,@GetName));
-            
-       return TRUE;
    }
 
    %%% Enchantment support
@@ -457,22 +217,6 @@ messages:
    "Allow mages to switch elements despite antagonistic conditions."
    {
       return TRUE;
-   }
-
-   EffectDesc(who=$)
-   {
-      AppendTempString("\n\n");
-      AppendTempString("Your current ");
-      AppendTempString(Send(self,@GetName));
-      AppendTempString(" enchantment will deal ");
-      AppendTempString(Send(self,@FindMinDamage,#who=who));
-      AppendTempString("-");
-      AppendTempString(Send(self,@FindMaxDamage,#who=who));
-      AppendTempString(" base ");
-      AppendTempString(Send(SYS,@GetSpellDamageTypeName,#type=(viSpellType & ~ATCK_SPELL_ALL)));
-      AppendTempString(" damage.");
-
-      propagate;
    }
 
 end

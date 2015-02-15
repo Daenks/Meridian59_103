@@ -1,0 +1,32 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MagicWeaponCold is MagicWeapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   magic_weapon_cold_name_rsc = "icy fingers"
+
+classvars:
+
+   vrName = magic_weapon_cold_name_rsc
+
+   viProficiency_needed = SID_ICY_FINGERS
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

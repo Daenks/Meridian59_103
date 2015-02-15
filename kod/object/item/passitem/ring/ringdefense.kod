@@ -37,7 +37,7 @@ classvars:
    
    viValue_average = 550
 
-   viDefense_bonus = 100
+   viCombatModDefense = 100
 
 properties:
 
@@ -50,8 +50,8 @@ messages:
    {
       if IsClass(what,&User)
       {
-         Send(what,@AddDefenseModifier,#what=self);
          Send(what,@MsgSendUser,#message_rsc=ringdefense_add_rsc);
+         Send(poOwner,@AddCombatModDefense,#amount=viCombatModDefense);
       }
 
       propagate;
@@ -61,34 +61,18 @@ messages:
    {
       if IsClass(what,&User)
       {
-         Send(what,@RemoveDefenseModifier,#what=self);
          Send(what,@MsgSendUser,#message_rsc=ringdefense_rem_rsc);
+         Send(poOwner,@AddCombatModDefense,#amount=-viCombatModDefense);
       }
 
       propagate;
    }
 
-   DefendingHit()
+   DamageGear()
    {
       % Return here so we don't damage the ring!
       return;
    }
-
-   ModifyDefensePower(who = $,what = $,defense_power = 0)
-   {
-      return defense_power + viDefense_bonus;
-   }
-
-   ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
-   {
-      return damage;
-   }
-  
-   GetDefenseBonus()
-   {
-      return viDefense_bonus;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

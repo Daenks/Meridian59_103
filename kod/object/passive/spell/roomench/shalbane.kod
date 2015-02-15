@@ -171,7 +171,7 @@ messages:
          iDamageAmt = (iSpellPower * shalSpellLevel * random(8,12))/300;
          
          if Send(shalCaster,@AssessDamage,#report=FALSE,#what=self,
-                 #damage=iDamageAmt,#aspell=ATCK_SPELL_UNHOLY) = $
+                 #damage=iDamageAmt,#spelltype=ATCK_SPELL_UNHOLY) = $
          {
             if IsClass(shalCaster,&Player)
             {

@@ -89,7 +89,7 @@ messages:
       % Global effects of the enchantment.
       Send(oRoom,@SomeoneSaid,#type=SAY_MESSAGE,#string=killingfields_on,#what=self);
 
-      Send(oRoom,@RoomStartEnchantment,#what=self,#state=$,
+      Send(oRoom,@RoomStartEnchantment,#what=self,#state=iSpellPower,
            #time=send(self,@GetDuration,#iSpellPower=iSpellPower));
       Send(oRoom,@EnchantAllOccupants,#what=self);
 
@@ -108,7 +108,12 @@ messages:
    StartEnchantment(who = $)
    "Starts enchantment effect on one player"
    {
-      Send(who,@AddAttackModifier,#what=self);
+      local iSpellpower;
+
+      iSpellpower = send(send(who,@GetOwner),@GetEnchantmentState,#what=self);
+      Send(who,@AddCombatModMelee,#amount=iSpellpower*2);
+      Send(who,@AddCombatModRanged,#amount=iSpellpower*2);
+      Send(who,@AddCombatModMagic,#amount=iSpellpower*2);
 
       return;
    }
@@ -125,7 +130,9 @@ messages:
    EndRoomEnchantment(who = $,state = $)
    "Remove enchantment effects on this occupant"
    {
-      Send(who,@RemoveAttackModifier,#what=self);
+      Send(who,@AddCombatModMelee,#amount=-state*2);
+      Send(who,@AddCombatModRanged,#amount=-state*2);
+      Send(who,@AddCombatModMagic,#amount=-state*2);
 
       return;
    }
@@ -140,18 +147,6 @@ messages:
       duration = duration * 1000;
 
       return duration;
-   }
-
-   % Stuff we handle to be an attack modifier.
-
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {
-      return hit_roll;
-   }
-   
-   ModifyDamage(who = $,what = $,damage = $)
-   {
-      return damage + Random(2,5);
    }
 
    EffectDesc(who=$)

@@ -33,7 +33,7 @@ classvars:
 
    viSpell_num = SID_LIGHTNING_BOLT
 
-   viAttack_spell = ATCK_SPELL_ALL+ATCK_SPELL_SHOCK
+   viSpellType = ATCK_SPELL_ALL+ATCK_SPELL_SHOCK
 
    viMana = 10
    viSchool = SS_FAREN

@@ -24,7 +24,7 @@ messages:
      
    ReqAddToObject(host_object=$)
    {
-      if NOT IsClass(host_object,&DefenseModifier)
+      if NOT IsClass(host_object,&Armor)
       {
          return 0;
       }

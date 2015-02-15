@@ -1,0 +1,56 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Magic weapons have no physical shape and are created temporarily and only
+% exist for the duration of an enchantment, such as a touchspell. They are
+% automatically used when the player is under the effect of such an enchantment
+% and is not using a different weapon already. They are used in lieu of an 
+% actual weapon, making the code more consistent and streamlined by creating a 
+% dummy weapon in cases where the weapon is not an item in the player's 
+% inventory but one of his body parts, such as his fist or his shin.
+% TLDR: Magic weapons are dummy weapons for handling touchspells.
+
+MagicWeapon is Weapon
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   magic_weapon_name_rsc = "palm"
+
+classvars:
+
+   vrName = magic_weapon_name_rsc
+
+properties:
+
+messages:
+
+   GetParryMod()
+   {
+      % Touch attacks have no parrying ability.
+      return $;
+   }
+
+   % Magic doesn't break.
+   DamageGear()
+   {
+      return;
+   }
+
+   CanBeDisarmed()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

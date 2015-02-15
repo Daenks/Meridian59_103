@@ -123,7 +123,7 @@ messages:
          % do some damage!
          if Send(apply_on,@AssessDamage,#report=FALSE,#what=what,
                  #damage=(viGoBadDamage*Random(8,12)/10),
-                 #aspell=ATCK_SPELL_ACID) = $
+                 #spelltype=ATCK_SPELL_ACID) = $
          {
             Send(what,@KilledSomething,#what=apply_on);
          }

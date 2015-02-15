@@ -69,22 +69,26 @@ classvars:
    viSpellExertion = 2
    viMana = 9
 
-   viMin_Damage = 4
-   viMax_Damage = 9
-
-   % Max amount of damage that punch or 2*myst can add
-   viMaxProficiencyDamage = 4
-
-   viRange = 2
-
-   viSpellType = ATCK_SPELL_FIRE + ATCK_SPELL_ALL
-   viStroke = STROKE_TOUCH_OF_FLAME
-
    vbAutomatic = FALSE
 
    vrSucceed_wav = TouchOfFlame_sound
 
    viEnchantmentLight = 20
+
+   % The created weapon's defining stats.
+   viDamage = 700
+   viProficiencyBonus = 700
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viRange = 128
+
+   % The created weapon's defining types.
+   viPrimaryStat = STAT_MYSTICISM
+   viSecondaryStat = STAT_INTELLECT
+   viAttackType = 0
+   viSpellType = ATCK_SPELL_FIRE + ATCK_SPELL_ALL    
+   viDeviation = 40
 
 properties:
 

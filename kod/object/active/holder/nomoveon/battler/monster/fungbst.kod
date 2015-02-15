@@ -82,6 +82,11 @@ messages:
       propagate;
    }
 
+   GetMonsterWeaponClass()
+   {
+      return &Secretions;
+   }
+
    MonsterAttack(what = $)
    {
       Send(self,@DoAttack);

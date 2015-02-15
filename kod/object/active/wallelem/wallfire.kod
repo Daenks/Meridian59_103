@@ -98,7 +98,7 @@ messages:
             % We technically don't have a damage type, but we count as spell damage.
             %  Also, don't lower damage based on resistances.
             iDamage = Send(what,@AssessDamage,#what=poCaster,#damage=Random(0,iDamage),
-                           #aspell=ATCK_SPELL_ALL,#absolute=TRUE,#report=FALSE,
+                           #spelltype=ATCK_SPELL_ALL,#absolute=TRUE,#report=FALSE,
                            #report_resistance=FALSE,#precision=TRUE);
             Send(what,@StartEnchantment,#what=oIllusWounds,#time=iDuration,#lastcall=TRUE,
                  #state=iDamage,#addicon=FALSE);
@@ -107,7 +107,7 @@ messages:
       else
       {
          iDamage = Send(what,@AssessDamage,#what=poCaster,#damage=Random(0,piMaxDamage),
-                        #aspell=ATCK_SPELL_ALL+ATCK_SPELL_FIRE,#report=FALSE,#report_resistance=FALSE);
+                        #spelltype=ATCK_SPELL_ALL+ATCK_SPELL_FIRE,#report=FALSE,#report_resistance=FALSE);
       }
 
       if iDamage = $

@@ -30,6 +30,10 @@ resources:
    fire_skill_intro = "Weaponcraft Lv. 4: Key to mastering any type of missile weapon."
    fire_no_ammo = "You have no ammunition for this weapon ready!"
 
+   fire_first_person = "fire at"
+   fire_third_person = "fires at"
+   fire_action_noun = "shot"
+
 classvars:
 
    vrName = fire_name_rsc
@@ -37,6 +41,10 @@ classvars:
    vrDesc = fire_desc_rsc
 
    vrSkill_intro = fire_skill_intro
+
+   vrStroke_first_person = fire_first_person
+   vrStroke_third_person = fire_third_person
+   vrStroke_action_noun = fire_action_noun
 
    viIndefinite = ARTICLE_NONE
    viDefinite = ARTICLE_NONE

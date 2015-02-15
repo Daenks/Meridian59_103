@@ -56,7 +56,7 @@ classvars:
    viMeditate_ratio = 100
    vrSucceed_wav = firestorm_sound
 
-   viAttack_spell = ATCK_SPELL_ALL+ATCK_SPELL_FIRE
+   viSpellType = ATCK_SPELL_ALL+ATCK_SPELL_FIRE
    viOutlaw = TRUE
    viHarmful = TRUE
    viNoNewbieOffense = TRUE

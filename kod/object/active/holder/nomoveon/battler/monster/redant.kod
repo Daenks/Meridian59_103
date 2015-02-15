@@ -43,7 +43,7 @@ classvars:
 
    viTreasure_type = TID_TOUGH
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_BITE
+   viAttackType = ATCK_WEAP_BITE
    viAttributes = MOB_SPASM
    viLevel = 65
    viDifficulty = 8
@@ -71,6 +71,16 @@ messages:
                         [ATCK_WEAP_MAGIC, -10] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    MonsterAttack(what = $)

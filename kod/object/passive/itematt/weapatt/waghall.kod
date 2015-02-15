@@ -132,7 +132,7 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "If wielder is in his own guild hall, which is also the chosen guild hall "
    "of the weapon, then wielder gets +power bonus."
    {
@@ -145,7 +145,7 @@ messages:
          return;
       }
 
-      oGuild = Send(wielder,@GetGuild);
+      oGuild = Send(who,@GetGuild);
       oRoom = Send(SYS,@FindRoomByNum,#num=Nth(lData,3));
 
       % Does this person's guild own the guild hall?
@@ -156,18 +156,18 @@ messages:
          iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
 
          % Only give half bonus if we're not actively defending a guild hall.
-         if Send(wielder,@GetOwner) <> oRoom
+         if Send(who,@GetOwner) <> oRoom
          {
             iPower = iPower/2;
          }
 
-         return (damage + iPower);  
+         return iPower;  
       }
 
-      return damage;
+      return 0;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData= $)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "If wielder is in his own guild hall, which is also the chosen guild hall "
    "of the weapon, then wielder gets +power bonus."
    {
@@ -180,7 +180,7 @@ messages:
          return;
       }
 
-      oGuild = Send(wielder,@GetGuild);
+      oGuild = Send(who,@GetGuild);
       oRoom = Send(SYS,@FindRoomByNum,#num=Nth(lData,3));
 
       % Does this person's guild own the guild hall?
@@ -191,15 +191,15 @@ messages:
          iPower = Send(self,@DecipherHitRollFromPower,#iPower=iPower);
 
          % Only give half bonus if we're not actively defending a guild hall.
-         if Send(wielder,@GetOwner) <> oRoom
+         if Send(who,@GetOwner) <> oRoom
          {
             iPower = iPower/2;
          }
 
-         return (hitroll + iPower);  
+         return iPower;  
       }
 
-      return hitroll;
+      return 0;
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

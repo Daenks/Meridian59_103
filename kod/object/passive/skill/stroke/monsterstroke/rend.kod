@@ -1,0 +1,41 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Rend is MonsterStroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   rend_name_rsc = "rend"
+
+   rend_first_person = "rend"
+   rend_third_person = "rends"
+   rend_action_noun = "assault"
+
+classvars:
+
+   vrName = rend_name_rsc
+
+   vrStroke_first_person = rend_first_person
+   vrStroke_third_person = rend_third_person
+   vrStroke_action_noun = rend_action_noun
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_REND
+   viSkill_level = 50
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -77,11 +77,12 @@ messages:
 
    CastSpell(who = $, lTargets = $,iSpellPower = $)
    {
-      local oSpiritualHammer, iLongevity, iToHitBonus;
+      local oSpiritualHammer, iLongevity, iLower, iUpper;
 
       iLongevity = send(self,@GetLongevity,#iSpellPower=iSpellPower);
-      iToHitBonus = (iSpellPower * 3) / 2;
-      oSpiritualHammer = Create(&SpiritualHammer,#iLongevity=iLongevity,#iToHitBonus=iToHitBonus);
+      iLower = -40+(iSpellpower*2/5);
+      iUpper = iSpellPower/5;
+      oSpiritualHammer = Create(&SpiritualHammer,#iLongevity=iLongevity,#lower=iLower,#upper=iUpper);
 
       if Send(who,@ReqNewHold,#what=oSpiritualHammer)
       {

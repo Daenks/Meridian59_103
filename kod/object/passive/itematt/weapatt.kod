@@ -233,16 +233,16 @@ messages:
 
    %%% Effect Functions
    
-   ModifyDamage(damage=0,target=$,wielder=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Item Attributes, in general, should only + or - damage."
    {
-      return damage;
+      return 0;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$)
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Item Attributes, in general, should only + or - damage."
    {
-      return hitroll;
+      return 0;
    }
 
    %%% Infrastructure (Adding and removing a ItemAtt from an item.)

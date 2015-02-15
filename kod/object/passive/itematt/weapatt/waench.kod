@@ -82,7 +82,7 @@ messages:
    "You currently cannot have two different spelltypes "
    "on a weapon at the same time."
    {
-      if Send(oItem,@GetAttackSpell) > 0
+      if Send(oItem,@GetSpellType) > 0
       {
          return FALSE;
       }
@@ -117,15 +117,15 @@ messages:
          return FALSE;
       }
 
-      if Send(oItem,@CheckTypeFlag,#flag=ATCK_WEAP_MAGIC)
+      if Send(oItem,@CheckAttackType,#flag=ATCK_WEAP_MAGIC)
       {
          Debug("This shouldn't have happened!  Adding effect already here!");
 
          return;
       }
 
-      Send(oItem,@SetTypeFlag,#flag=ATCK_WEAP_MAGIC,#value=True);
-      Send(oItem,@SetTypeFlag,#flag=ATCK_WEAP_NONMAGIC,#value=False);
+      Send(oItem,@SetAttackType,#flag=ATCK_WEAP_MAGIC,#value=True);
+      Send(oItem,@SetAttackType,#flag=ATCK_WEAP_NONMAGIC,#value=False);
 
       return;
    }
@@ -141,7 +141,7 @@ messages:
          return FALSE;
       }
    
-      if not Send(oItem,@CheckTypeFlag,#flag=ATCK_WEAP_MAGIC)
+      if not Send(oItem,@CheckAttackType,#flag=ATCK_WEAP_MAGIC)
       {
          Debug("This shouldn't have happened!  Removing effect not here!");
 
@@ -155,8 +155,8 @@ messages:
                #parm1=Send(oItem,@GetName));
       }
 
-      Send(oItem,@SetTypeFlag,#flag=ATCK_WEAP_MAGIC,#value=False);
-      Send(oItem,@SetTypeFlag,#flag=ATCK_WEAP_NONMAGIC,#value=True);
+      Send(oItem,@SetAttackType,#flag=ATCK_WEAP_MAGIC,#value=False);
+      Send(oItem,@SetAttackType,#flag=ATCK_WEAP_NONMAGIC,#value=True);
 
       return;
    }

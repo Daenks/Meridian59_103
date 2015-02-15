@@ -77,7 +77,7 @@ messages:
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder gets a -2*bonus to damage."
    {
       local iPower;
@@ -85,18 +85,18 @@ messages:
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
 
-      return (damage - (2*iPower));
+      return -2*iPower;
    }
 
-   ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
-   "Wielder gets a -2*bonus to damage."
+   GetHitMod(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
+   "Wielder gets a -2*bonus to hit."
    {
       local iPower;
 
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherHitrollFromPower,#iPower=iPower);
 
-      return (hitroll - (2*iPower));
+      return -2*iPower;
    }
 
    ItemReqUnuse(oItem=$)

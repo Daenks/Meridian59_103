@@ -18,11 +18,11 @@ WeapAttSpellType is WeaponAttribute
 % 
 %  Form is:
 %
-%      [WA_ATTACKSPELLTYPE, timer, spell_attack_type ]
+%      [WA_ATTACKSPELLTYPE, timer, spell_AttackType ]
 %
 %       timer::the length of time, from 1 to 25 realtime hours,
 %       that the enchantment lasts (depending on spell factors).
-%       spell_attack_type : as defined in blakston.khd.
+%       spell_AttackType : as defined in blakston.khd.
 %       examples: ATCK_SPELL_FIRE, ATCK_SPELL_UNHOLY, ATCK_SPELL_ACID
 %
 %  Note that if a weapon ends up permanently holy or unholy, then this
@@ -77,7 +77,7 @@ messages:
 
       if iFakeData = $
       {
-         iData = Send(oItem,@GetAttackSpell);
+         iData = Send(oItem,@GetSpellType);
       }
       else
       {
@@ -273,7 +273,7 @@ messages:
    ReqAddToItem(oItem=$)
    "You currently cannot have two different spelltypes on a weapon at the same time."
    {
-      if Send(oItem,@GetAttackSpell) > 0
+      if Send(oItem,@GetSpellType) > 0
       {
          return FALSE;
       }
@@ -332,14 +332,14 @@ messages:
          iSpellType = Nth(lData,2);
       }
 
-      if Send(oItem,@CheckSpellFlag,#flag=iSpellType)
+      if Send(oItem,@CheckSpellType,#flag=iSpellType)
       {
          Debug("This shouldn't have happened!  Adding effect already here!");
 
          return FALSE;
       }
 
-      Send(oItem,@SetSpellFlag,#flag=iSpellType,#value=TRUE);
+      Send(oItem,@SetSpellType,#flag=iSpellType,#value=TRUE);
 
       return;
    }
@@ -357,7 +357,7 @@ messages:
 
       iSpellType = Nth(lData,3);
 
-      if NOT Send(oItem,@CheckSpellFlag,#flag=iSpellType)
+      if NOT Send(oItem,@CheckSpellType,#flag=iSpellType)
       {
          Debug("This shouldn't have happened!  Removing effect not here!");
 
@@ -372,7 +372,7 @@ messages:
                #parm1=Send(oItem,@GetName));
       }
 
-      Send(oItem,@SetSpellFlag,#flag=iSpellType,#value=FALSE);
+      Send(oItem,@SetSpellType,#flag=iSpellType,#value=FALSE);
 
       return;
    }

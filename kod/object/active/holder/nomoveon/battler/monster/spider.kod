@@ -44,7 +44,7 @@ classvars:
 
    viTreasure_type = TID_MEDIUM_TOUGH
    viSpeed = SPEED_AVERAGE
-   viAttack_type =  ATCK_WEAP_BITE
+   viAttackType =  ATCK_WEAP_BITE
    viAttributes = MOB_SPASM
    viLevel = 50
    viDifficulty = 4
@@ -72,6 +72,16 @@ messages:
                         [ATCK_WEAP_NONMAGIC, -15 ] ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Fangs;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    DoSpasm()

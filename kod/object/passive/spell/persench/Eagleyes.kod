@@ -79,21 +79,9 @@ messages:
       return;
    }
 
-   GetStateValue(who=$,iSpellpower=$,target=$)
+   GetStateValue(iSpellpower=$)
    {
-      local iFactor;
-
-      Send(target,@AddAttackModifier,#what=self);
-      iFactor = Bound(iSpellPower+1,10,100);
-
-      return iFactor;
-   }
-
-   EndEnchantment(who=$,report=TRUE,state=$)
-   {
-      Send(who,@RemoveAttackModifier,#what=self);
-
-      propagate;
+      return iSpellpower+1;
    }
 
    GetDuration(iSpellpower=0)
@@ -161,38 +149,24 @@ messages:
       return iNewDuration;
    }
 
-   %%% Attack Modifier stuff
-
-   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   OffenseHook(who=$,use_weapon=$)
    {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
+      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
       {
-         return hit_roll + iFactor;
+         return Send(who,@GetEnchantedState,#what=self);
       }
 
-      return hit_roll;
+      return 0;
    }
 
-   ModifyDamage(who=$,what=$,damage=$)
+   DamageHook(who=$,use_weapon=$)
    {
-      local iFactor, oWeapon;
-
-      iFactor = Send(who,@GetEnchantedState,#what=self);
-
-      oWeapon = Send(who,@LookupPlayerWeapon);
-
-      if oWeapon <> $ AND IsClass(oWeapon,&RangedWeapon)
+      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
       {
-         return damage + 1;
+         return Send(who,@GetEnchantedState,#what=self);
       }
 
-      return damage;
+      return 0;
    }
 
    EffectDesc(who=$)

@@ -1,0 +1,665 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Armor is PassiveItem
+
+constants:
+
+   include blakston.khd
+
+   ARMOR_TAKE_DAMAGE_PCT = 100
+
+resources:
+
+   armor_broken = "Your %s falls to pieces."   
+   armor_broken_plural = "Your %s fall to pieces."   
+   armor_broken_plural_clothes = "Your %s collapse into unwearable tatters."
+
+classvars:
+
+   viItem_type = ITEMTYPE_ARMOR
+   vrItem_broken = armor_broken
+
+   % Layer represents clothing and gear that may override visually.
+   % Higher numbers override lower numbers.
+   viLayer = 0                      
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%% Combat Mods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % These are the default values for the properties listed below. See
+   % player.kod for a detailed description of what each value does.
+   viCombatModDefense = 0
+   viCombatModOffense = 0
+   viCombatModMelee = 0
+   viCombatModRanged = 0
+   viCombatModMagic = 0
+   viPhysicalReductionFactor = 0
+   viMagicalReductionFactor = 0
+   viPhysicalReductionFlat = 0
+   viMagicalReductionFlat = 0
+   viSpellpowerMod = 0
+
+properties:
+
+   piCombatModDefense = 0
+   piCombatModOffense = 0
+   piCombatModMelee = 0
+   piCombatModRanged = 0
+   piCombatModMagic = 0
+   piPhysicalReductionFactor = 0
+   piMagicalReductionFactor = 0
+   piPhysicalReductionFlat = 0
+   piMagicalReductionFlat = 0
+   piSpellpowerMod = 0
+   plSkillmods = $
+   plSpellmods = $
+   piQuality = 100
+
+messages:
+
+   ReqUseSomething(what = $)
+   {
+      if IsClass(what,&Armor)
+         AND (Send(what,@GetItemUseType) & Send(self,@GetItemUseType)
+              OR Send(self,@GetItemUseType) & Send(what,@GetItemUseType))
+         AND Send(what,@GetLayer) = Send(self,@GetLayer)
+      {
+         if Send(poOwner,@TryUnuseItem,#what=self)
+         {
+            propagate;
+         }
+         else
+         {
+            return FALSE;
+         }
+      }
+
+      propagate;
+   }
+
+   DefaultValues()
+   {
+      piCombatModDefense = viCombatModDefense;
+      piCombatModOffense = viCombatModOffense;
+      piCombatModMelee = viCombatModMelee;
+      piCombatModRanged = viCombatModRanged;
+      piCombatModMagic = viCombatModMagic;
+      piPhysicalReductionFactor = viPhysicalReductionFactor;
+      piMagicalReductionFactor = viMagicalReductionFactor;
+      piPhysicalReductionFlat = viPhysicalReductionFlat;
+      piMagicalReductionFlat = viMagicalReductionFlat;
+      piSpellpowerMod = viSpellpowerMod;
+
+      propagate;
+   }
+
+   Constructed(lower=0,upper=0)
+   {
+      local n, iDeviation, iQuality;
+
+      n = 0;
+      iQuality = 0;
+   
+      if piCombatModDefense > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piCombatModDefense = piCombatModDefense*(100+iDeviation)/100;   
+      }
+      if piCombatModDefense < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piCombatModDefense = piCombatModDefense*(100+iDeviation)/100;   
+      }
+      if piCombatModOffense > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piCombatModOffense = piCombatModOffense*(100+iDeviation)/100;   
+      }
+      if piCombatModOffense < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piCombatModOffense = piCombatModOffense*(100+iDeviation)/100;   
+      }
+      if piCombatModMelee > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piCombatModMelee = piCombatModMelee*(100+iDeviation)/100;   
+      }
+      if piCombatModMelee < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piCombatModMelee = piCombatModMelee*(100+iDeviation)/100;   
+      }
+      if piCombatModRanged > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piCombatModRanged = piCombatModRanged*(100+iDeviation)/100;   
+      }
+      if piCombatModRanged < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piCombatModRanged = piCombatModRanged*(100+iDeviation)/100;   
+      }
+      if piCombatModMagic > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piCombatModMagic = piCombatModMagic*(100+iDeviation)/100;   
+      }
+      if piCombatModMagic < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piCombatModMagic = piCombatModMagic*(100+iDeviation)/100;   
+      }
+      if piPhysicalReductionFactor > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piPhysicalReductionFactor = piPhysicalReductionFactor*(100+iDeviation)/100;   
+      }
+      if piPhysicalReductionFactor < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piPhysicalReductionFactor = piPhysicalReductionFactor*(100+iDeviation)/100;   
+      }
+      if piMagicalReductionFactor > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piMagicalReductionFactor = piMagicalReductionFactor*(100+iDeviation)/100;   
+      }
+      if piMagicalReductionFactor < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piMagicalReductionFactor = piMagicalReductionFactor*(100+iDeviation)/100;   
+      }
+      if piPhysicalReductionFlat > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piPhysicalReductionFlat = piPhysicalReductionFlat*(100+iDeviation)/100;   
+      }
+      if piPhysicalReductionFlat < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piPhysicalReductionFlat = piPhysicalReductionFlat*(100+iDeviation)/100;   
+      }
+      if piMagicalReductionFlat > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piMagicalReductionFlat = piMagicalReductionFlat*(100+iDeviation)/100;   
+      }
+      if piMagicalReductionFlat < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piMagicalReductionFlat = piMagicalReductionFlat*(100+iDeviation)/100;   
+      }
+      if piSpellpowerMod > 0
+      {
+         n = n + 1;
+         iDeviation = random(lower,upper);
+         iQuality = iQuality + iDeviation;
+         piSpellpowerMod = piSpellpowerMod*(100+iDeviation)/100;   
+      }
+      if piSpellpowerMod < 0
+      {
+         n = n + 1;
+         iDeviation = random(-upper,lower);
+         iQuality = iQuality - iDeviation;
+         piSpellpowerMod = piSpellpowerMod*(100+iDeviation)/100;   
+      }
+
+      if n > 0
+      {
+         iQuality = iQuality/n;
+      }
+
+      % Set the quality
+      piQuality = 100 + iQuality;
+
+      % Scale durability with quality.
+      piHits_init = bound(piHits_init * piQuality / 100,1,$);
+      piHits = bound(piHits * piQuality / 100,1,$);
+
+      propagate;
+   }
+
+   SetStats(lstats=$)
+   {
+      local n, iDeviation, iQuality;
+
+      n = 0;
+      iQuality = 0;
+   
+      if viCombatModDefense > 0 AND First(lstats) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*First(lstats)/viCombatModDefense - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viCombatModDefense < 0 AND First(lstats) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*First(lstats)/viCombatModDefense - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piCombatModDefense = First(lstats);
+
+      if viCombatModOffense > 0 AND Nth(lstats,2) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,2)/viCombatModOffense - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viCombatModOffense < 0 AND Nth(lstats,2) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,2)/viCombatModOffense - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piCombatModOffense = Nth(lstats,2);
+
+      if viCombatModMelee > 0 AND Nth(lstats,3) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,3)/viCombatModMelee - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viCombatModMelee < 0 AND Nth(lstats,3) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,3)/viCombatModMelee - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piCombatModMelee = Nth(lstats,3);
+
+      if viCombatModRanged > 0 AND Nth(lstats,4) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,4)/viCombatModRanged - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viCombatModRanged < 0 AND Nth(lstats,4) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,4)/viCombatModRanged - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piCombatModRanged = Nth(lstats,4);
+
+      if viCombatModMagic > 0 AND Nth(lstats,5) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,5)/viCombatModMagic - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viCombatModMagic < 0 AND Nth(lstats,5) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,5)/viCombatModMagic - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piCombatModMagic = Nth(lstats,5);
+
+      if viPhysicalReductionFactor > 0 AND Nth(lstats,6) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,6)/viPhysicalReductionFactor - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viPhysicalReductionFactor < 0 AND Nth(lstats,6) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,6)/viPhysicalReductionFactor - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piPhysicalReductionFactor = Nth(lstats,6);
+
+      if viMagicalReductionFactor > 0 AND Nth(lstats,7) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,7)/viMagicalReductionFactor - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viMagicalReductionFactor < 0 AND Nth(lstats,7) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,7)/viMagicalReductionFactor - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piMagicalReductionFactor = Nth(lstats,7);
+
+      if viPhysicalReductionFlat > 0 AND Nth(lstats,8) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,8)/viPhysicalReductionFlat - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viPhysicalReductionFlat < 0 AND Nth(lstats,8) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,8)/viPhysicalReductionFlat - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piPhysicalReductionFlat = Nth(lstats,8);
+
+      if viMagicalReductionFlat > 0 AND Nth(lstats,9) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,9)/viMagicalReductionFlat - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viMagicalReductionFlat < 0 AND Nth(lstats,9) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,9)/viMagicalReductionFlat - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piMagicalReductionFlat = Nth(lstats,9);
+
+      if viSpellpowerMod > 0 AND Nth(lstats,10) > 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,10)/viSpellpowerMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality + iDeviation;
+      }
+      if viSpellpowerMod < 0 AND Nth(lstats,10) < 0
+      {
+         n = n + 1;
+         iDeviation = 100*Nth(lstats,10)/viSpellpowerMod - 100;
+         iDeviation = bound(iDeviation,-100,100);
+         iQuality = iQuality - iDeviation;
+      }
+      piSpellpowerMod = Nth(lstats,10);
+
+      if n <> 0
+      {
+         iQuality = iQuality / n;
+      }
+
+      % Set the quality
+      piQuality = 100 + iQuality;
+
+      % Scale durability with quality.
+      piHits_init = bound(piHits_init * piQuality / 100,1,$);
+      piHits = bound(piHits * piQuality / 100,1,$);
+
+      propagate;
+   }
+
+   NewUsed(what = $)
+   {
+      Send(self,@ActivateCombatMods);
+      propagate;
+   }
+
+   NewUnused(what = $)
+   {
+      Send(self,@DeactivateCombatMods);
+      propagate;
+   }
+
+   ActivateCombatMods()
+   {
+      local i;
+      
+      Send(poOwner,@AddCombatModDefense,#amount=piCombatModDefense);
+      Send(poOwner,@AddCombatModOffense,#amount=piCombatModOffense);
+      Send(poOwner,@AddCombatModMelee,#amount=piCombatModMelee);
+      Send(poOwner,@AddCombatModRanged,#amount=piCombatModRanged);
+      Send(poOwner,@AddCombatModMagic,#amount=piCombatModMagic);
+      Send(poOwner,@AddPhysicalReductionFactor,#amount=piPhysicalReductionFactor);
+      Send(poOwner,@AddMagicalReductionFactor,#amount=piMagicalReductionFactor);
+      Send(poOwner,@AddPhysicalReductionFlat,#amount=piPhysicalReductionFlat);
+      Send(poOwner,@AddMagicalReductionFlat,#amount=piMagicalReductionFlat);
+      Send(poOwner,@AddSpellpowerMod,#amount=piSpellpowerMod);
+
+      for i in plSkillmods
+      {
+         Send(poOwner,@AddSkillmod,#num=First(i),#amount=Nth(i,2));
+      }
+
+      for i in plSpellmods
+      {
+         Send(poOwner,@AddSpellmod,#num=First(i),#amount=Nth(i,2));
+      }
+
+      return;
+   }
+
+   DeactivateCombatMods()
+   {
+      local i;
+      
+      Send(poOwner,@AddCombatModDefense,#amount=-piCombatModDefense);
+      Send(poOwner,@AddCombatModOffense,#amount=-piCombatModOffense);
+      Send(poOwner,@AddCombatModMelee,#amount=-piCombatModMelee);
+      Send(poOwner,@AddCombatModRanged,#amount=-piCombatModRanged);
+      Send(poOwner,@AddCombatModMagic,#amount=-piCombatModMagic);
+      Send(poOwner,@AddPhysicalReductionFactor,#amount=-piPhysicalReductionFactor);
+      Send(poOwner,@AddMagicalReductionFactor,#amount=-piMagicalReductionFactor);
+      Send(poOwner,@AddPhysicalReductionFlat,#amount=-piPhysicalReductionFlat);
+      Send(poOwner,@AddMagicalReductionFlat,#amount=-piMagicalReductionFlat);
+      Send(poOwner,@AddSpellpowerMod,#amount=-piSpellpowerMod);
+
+      for i in plSkillmods
+      {
+         Send(poOwner,@AddSkillmod,#num=First(i),#amount=-Nth(i,2));
+      }
+
+      for i in plSpellmods
+      {
+         Send(poOwner,@AddSpellmod,#num=First(i),#amount=-Nth(i,2));
+      }
+
+      return;
+   }
+
+   GetResistanceModifiers()
+   {
+      % format is [ [TYPE,resistance], [ATCK_WEAP_BLUDGEON,-20], ...]
+      return [];
+   }
+
+   DamageGear(damage=0,attacktype=0,spelltype=0)
+   {
+      local iChance;
+      
+      % Chance to take damage is based on the amount and type of damage taken.
+      iChance = ARMOR_TAKE_DAMAGE_PCT;
+
+      if damage < 1500
+      {
+         iChance = iChance * 3 / 4;
+      }
+
+      if damage < 1000
+      {
+         iChance = iChance * 1 / 2;
+      }
+
+      if damage < 500
+      {
+         iChance = iChance * 1 / 4;
+      }
+
+      if attacktype <> 0
+      {
+         iChance = iChance * 3 / 2;
+      }
+
+      if spelltype <> 0
+      {
+         iChance = iChance * 1 / 2;
+      }
+
+      if random(1,100) < iChance
+      {
+         piHits = piHits - 1;
+      }
+
+      if piHits <= 0
+      {
+         Send(self,@ItemBrokenInBattle);
+      }
+
+      return;
+   }
+
+   CanMend()
+   "For most armors (armor and shields), mend is true."
+   {   
+      local i, oItemAtt;
+      
+      for i in plItem_Attributes
+      {
+         oItemAtt = send(SYS,@FindItemAttByNum,#num=send(self,@GetNumFromCompound,#compound=first(i)));
+         
+         if oItemAtt = $
+         {
+            DEBUG("Illegal ItemAtt in list!");
+            
+            continue;
+         }
+         
+         if NOT send(oItemAtt,@ItemCanMend,#oItem=self)
+         {
+            return FALSE;
+         }
+      }
+      
+      return TRUE; 
+   }
+
+   GetLayer()
+   {
+      return viLayer;
+   }
+
+   %%%Description Related Messages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   GetCombatModDefense()
+   {
+      return piCombatModDefense;
+   }
+
+   GetCombatModOffense()
+   {
+      return piCombatModOffense;
+   }
+
+   GetCombatModMelee()
+   {
+      return piCombatModMelee;
+   }
+
+   GetCombatModRanged()
+   {
+      return piCombatModRanged;
+   }
+
+   GetCombatModMagic()
+   {
+      return piCombatModMagic;
+   }
+
+   GetPhysicalReductionFactor()
+   {
+      return piPhysicalReductionFactor;
+   }
+
+   GetMagicalReductionFactor()
+   {
+      return piMagicalReductionFactor;
+   }
+
+   GetPhysicalReductionFlat()
+   {
+      return piPhysicalReductionFlat;
+   }
+
+   GetMagicalReductionFlat()
+   {
+      return piMagicalReductionFlat;
+   }
+
+   GetSpellpowerMod()
+   {
+      return piSpellpowerMod;
+   }
+
+   GetSkillmods()
+   {
+      return plSkillmods;
+   }
+
+   GetSpellmods()
+   {
+      return plSpellmods;
+   }
+
+   GetQuality()
+   {
+      return piQuality;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

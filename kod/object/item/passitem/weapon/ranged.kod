@@ -37,42 +37,35 @@ classvars:
    viHits_init_min = 200
    viHits_init_max = 250
 
-
    viProficiency_Needed = SKID_PROFICIENCY_BOW
    viAmmo_type = AMMO_ARROW
-   viHit_roll_modifier = 0
-   viSpell_modifier = -25
    viUse_Amount = 2
 
    vrDesc = ranged_desc_rsc
 
-   viWeaponDamage = 0   % Mostly, damage is a factor of ammo, the random factor is 
-                        % in them.  viWeaponDamage is the bow's contribution to that,
-                        % due to things like stiffer bowstrings, harder wood, whatever.
+   viMinDamage = 500
+   viMaxDamage = 1000
+   viProficiencyBonus = 500
 
+   viStab = 0
+   viStrike = 0
+   viSlash = 0
+   viThrust = 0
+   viFire = 100
+   viTouch = 0
+   viDisarmMod = -100
+   viParryMod = -100
+   viSpellpowerMod = -25
+   % Note: We use rough grid for ranged weapons!
    viRange = 100
+   
+   viPrimaryStat = STAT_AIM
+   viSecondaryStat = STAT_MIGHT
+   viAttackType = ATCK_WEAP_PIERCE
 
 properties:
-   
-   piAttack_Type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_PIERCE
 
 messages:
-
-   % General combat messages:
-
-   % Overrides message from superclass.
-   % Ranged weapons provide NO parry bonus.
-   GetParryAbility(who=$)
-   {
-      return 0;
-   }
-
-   % General unsorted messages:
-
-   GetDefaultStrokeNumber()
-   {
-      return SKID_FIRE;
-   }
 
    GetAmmoType()
    {
@@ -99,7 +92,7 @@ messages:
             {
                if send(i,@GetAmmoType) = ammotype
                { 
-                 iAttackType = send(i,@GetAttackType);
+                  iAttackType = send(i,@GetAttackType);
                
                   break;
                }
@@ -107,21 +100,21 @@ messages:
          }
       }
       
-      iAttackType = iAttackType |  piAttack_Type;
+      iAttackType = iAttackType |  piAttackType;
 
       return iAttackType;
    }
 
-   GetAttackSpell()
+   GetSpellType()
    {
-      local iAttackType, ammotype, i;
+      local iSpellType, ammotype, i;
 
       if poOwner = $
       {
          return 0;
       }
 
-      iAttackType = 0;
+      iSpellType = 0;
       ammotype = send(self,@GetAmmoType);
 
       if IsClass(poOwner,&User)
@@ -132,7 +125,7 @@ messages:
             {
                if (send(i,@GetAmmoType) = ammotype)
                { 
-                  iAttackType = send(i,@GetAttackSpell);
+                  iSpellType = send(i,@GetSpellType);
                
                   break;
                }
@@ -140,431 +133,41 @@ messages:
          }
       }
       
-      iAttackType = iAttackType | piAttack_Spell;
+      iSpellType = iSpellType | piSpellType;
 
-      return iAttackType;
+      return iSpellType;
    }
 
-   ModifyHitRoll(hit_roll = 0, target = $)
-   "When someone attacks with this weapon, they send us their attack value "
-   "and we change it based on quality of weapon"
+   % For ranged weapons, we leave the special effects to ammo.
+   DoSpecialEffect(who=$,what=$,stroke_obj=$,power=0)
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
-
-      iBaseHit = hit_roll;
-
-      if viHit_roll_modifier < 0
-      {
-         hit_roll = hit_roll + (-viHit_Roll_modifier);
-      }
-      else
-      {
-         hit_roll = hit_roll + ((viHit_roll_modifier*piHits)/piHits_Init);
-      }
-      
-      iWeapHit = hit_roll;
-
-      for i in plItem_Attributes
-      {
-         oWeapAtt = send(SYS,@FindItemAttByNum,
-                         #num=send(self,@GetNumFromCompound,#compound=first(i)));
-         if isClass(oWeapAtt,&WeaponAttribute)
-         {
-            hit_roll = send(oWeapAtt,@ModifyHitRoll,#hitroll=hit_roll,#wielder=poOwner,
-                            #target=target,#lData=i);
-         }
-      }     
-      
-      return hit_roll;
-   }
-
-   GetBaseDamage(who=$,target=$)
-   {
-      local iDamage, ammotype, i;
+      local ammotype, i, iBonus;
 
       if poOwner = $
       {
          return 0;
       }
 
-      iDamage = 0;
+      ammotype = send(self,@GetAmmoType);
 
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
          for i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
                if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetDamage,#who=who,#target=target);
-                  break;
-               }
-            }
-         }
-      }
-	  
-	  iDamage = iDamage + viWeaponDamage;
-	  
-      return iDamage;
-   }
-
-   GetRange()
-   {
-      return viRange;
-   }   
-
-   % This returns the weapon's attack name.  For ranged weapons, return the ammo name.
-   GetAttackName()
-   {
-      return ranged_ammo_name;      
-   }
-     
-   GetHitBonus()
-   {
-      return viHit_roll_modifier + piHitBonus;
-   }
-   
-   GetMinDamage()
-   {
-      local iDamage, ammotype, i;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMinDamage);
+               { 
+                  iBonus = Send(i,@DoSpecialEffect,#who=who,#what=what,#stroke_obj=stroke_obj,#power=power);
+               
                   break;
                }
             }
          }
       }
 
-      iDamage = iDamage + viWeaponDamage;
-
-      return iDamage;
-   }
-   
-   GetMaxDamage()
-   {
-      local iDamage, ammotype, i;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMaxDamage);
-                  break;
-               }
-            }
-         }
-      }
-
-      iDamage = iDamage + viWeaponDamage;
-
-      return iDamage;
-   }
-   
-   GetMinDamageWithOwnerStats()
-   {
-      local iDamage, ammotype, i, oSkill;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMinDamage);
-                  break;
-               }
-            }
-         }
-      }
-
-      iDamage = (iDamage + viWeaponDamage)*100;
-      
-      If IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-
-   GetMaxDamageWithOwnerStats()
-   {
-      local iDamage, ammotype, i, oSkill;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMaxDamage);
-                  break;
-               }
-            }
-         }
-      }
-
-      iDamage = (iDamage + viWeaponDamage)*100;
-      
-      If IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-   
-   GetMinSpecialDamageWithOwnerStats()
-   {
-      local iDamage, ammotype, i, oSkill;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMinSpecialDamage);
-                  break;
-               }
-            }
-         }
-      }
-      
-      % No special ammo properties
-      if iDamage = 0
-      {
-         return 0;
-      }
-
-      iDamage = (iDamage + viWeaponDamage)*100;
-      
-      If IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-   
-   GetMaxSpecialDamageWithOwnerStats()
-   {
-      local iDamage, ammotype, i, oSkill;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMaxSpecialDamage);
-                  break;
-               }
-            }
-         }
-      }
-      
-      % No special ammo properties
-      if iDamage = 0
-      {
-         return 0;
-      }
-
-      iDamage = (iDamage + viWeaponDamage)*100;
-      
-      If IsClass(poOwner,&User)
-      {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
-      }
-      else
-      {
-         return 0;
-      }
-
-      return iDamage;
-   }
-   
-   % Some weapons and spells have special conditions, like nerudite arrows that can shatter
-   GetMinSpecialDamage()
-   {
-      local iDamage, ammotype, i;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMinSpecialDamage);
-                  break;
-               }
-            }
-         }
-      }
-      
-      % No special ammo properties
-      if iDamage = 0
-      {
-         return 0;
-      }
-
-      iDamage = iDamage + viWeaponDamage;
-
-      return iDamage;
-   }
-   
-   GetMaxSpecialDamage()
-   {
-      local iDamage, ammotype, i;
-
-      if poOwner = $
-      {
-         return 0;
-      }
-
-      iDamage = 0;
-
-
-      if IsClass(poOwner,&User)
-      {
-         ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
-         {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
-            {
-               if (send(i,@GetAmmoType) = ammotype)
-               {
-                  iDamage = send(i,@GetMaxSpecialDamage);
-                  break;
-               }
-            }
-         }
-      }
-      
-      % No special ammo properties
-      if iDamage = 0
-      {
-         return 0;
-      }
-
-      iDamage = iDamage + viWeaponDamage;
-
-      return iDamage;
-   }
-   
-   GetBaseSpellModifier()
-   {
-      return viSpell_modifier;
+      return iBonus;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
-

@@ -34,7 +34,7 @@ classvars:
    
    viSpell_num = SID_SHOCKING_FURY
 
-   viAttack_spell = ATCK_SPELL_ALL + ATCK_SPELL_SHOCK
+   viSpellType = ATCK_SPELL_ALL + ATCK_SPELL_SHOCK
 
    viSchool = SS_FAREN
    viSpell_level = 3

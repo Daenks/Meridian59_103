@@ -27,18 +27,32 @@ classvars:
    vrName = BattleBow_name_rsc
    vrDesc = BattleBow_desc_rsc
 
-   viWeaponDamage = 2
-   viRange = 17
-   viHit_roll_modifier = 0
-   
    viValue_average = 3000
    viBulk = 80
    viWeight = 70
 
-   viSpell_modifier = -30
-
    % What's the basic color of the wood?
    viBaseXLAT = XLAT_TO_SKIN4
+
+   viDamage = 400
+   viProficiencyBonus = 600
+   viHitMod = 0
+   viPrimaryScaling = 30
+   viSecondaryScaling = 30
+   viStab = 0
+   viStrike = 0
+   viSlash = 0
+   viThrust = 0
+   viFire = 100
+   viTouch = 0
+   viDisarmMod = $
+   viParryMod = $
+   viSpellpowerMod = -30
+   viRange = 17
+
+   viPrimaryStat = STAT_MIGHT
+   viSecondaryStat = STAT_AIM
+   viDeviation = 30
 
 properties:
 

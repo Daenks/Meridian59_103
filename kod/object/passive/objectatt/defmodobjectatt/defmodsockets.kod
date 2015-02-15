@@ -204,55 +204,6 @@ messages:
       return;
    }
 
-   ModifyDamage(damage=$)
-   {
-      local i;
-
-      for i in plSocketed
-      {
-         damage = Send(i,@ModifyDamage,#damage=damage);
-      }
-
-      return damage;
-   }
-
-   ModifyHitRoll(hit_roll=$)
-   {
-      local i;
-
-      for i in plSocketed
-      {
-         hit_roll = Send(i,@ModifyHitRoll,#hit_roll=hit_roll);
-      }
-
-      return hit_roll;
-   }
-
-   ModifyDefenseDamage(damage=$)
-   {
-      local i;
-
-      for i in plSocketed
-      {
-         damage = Send(i,@ModifyDefenseDamage,#damage=damage);
-      }
-
-      return damage;
-   }
-
-   ModifyDefensePower(defense_power=$)
-   {
-      local i;
-
-      for i in plSocketed
-      {
-         defense_power = Send(i,@ModifyDefensePower,
-                              #defense_power=defense_power);
-      }
-
-      return defense_power;
-   }
-
    ModifyResistance(resistance_list=$)
    {
       local i;
@@ -264,19 +215,6 @@ messages:
       }
 
       return resistance_list;
-   }
-
-   ModifySpellPower(iModifier=0,oSpell=$,oCaster=$)
-   {
-      local i;
-
-      for i in plSocketed
-      {
-         iModifier = Send(i,@ModifySpellPower,#iModifier=iModifier,
-                           #oSpell=oSpell,#oCaster=oCaster);
-      }
-
-      return iModifier;
    }
 
 end

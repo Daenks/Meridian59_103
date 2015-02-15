@@ -66,22 +66,27 @@ Constructor()
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   ModifyDamage(who=$,what=$,stroke_obj=$,use_weapon=$,lData=$)
    "Wielder has a chance of affecting the target with the given spell."
    {
       local oSpell;
 
+      if what = $
+      {
+         return 0;
+      }
+
       if (Random(1,100) <= ((100-Nth(lData,3))/10))
-         AND Send(wielder,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         AND Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
          oSpell = Nth(lData,2);
-         if Send(oSpell,@CanPayCosts,#who=self,#ltargets=[target],#ispellpower=Nth(lData,3))
+         if Send(oSpell,@CanPayCosts,#who=self,#ltargets=[what],#ispellpower=Nth(lData,3))
          {
-            Send(oSpell,@CastSpell,#who=wielder,#ltargets=[target],#ispellpower=Nth(lData,3),#bItemCast=TRUE);
+            Send(oSpell,@CastSpell,#who=who,#ltargets=[what],#ispellpower=Nth(lData,3),#bItemCast=TRUE);
          }
       }
 
-      return Damage;
+      return 0;
    }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

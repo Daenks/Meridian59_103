@@ -67,7 +67,7 @@ classvars:
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_AVERAGE
-   viAttack_type = ATCK_WEAP_PIERCE
+   viAttackType = ATCK_WEAP_PIERCE
    viLevel = 120
    viDifficulty = 6
    viVisionDistance = 18
@@ -103,6 +103,11 @@ messages:
                       ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Secretions;
    }
 
    MonsterAttack(what = $)

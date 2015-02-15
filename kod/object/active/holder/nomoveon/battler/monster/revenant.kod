@@ -57,7 +57,7 @@ classvars:
    vrIcon = revenant_icon_rsc
    vrDesc = revenant_desc_rsc
 
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viDefault_behavior = \
       AI_FIGHT_AGGRESSIVE | AI_FIGHT_SINGLEMINDED \
       | AI_MOVE_WALKTHROUGH_WALLS | AI_FIGHT_THROUGH_WALLS

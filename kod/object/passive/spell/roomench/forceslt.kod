@@ -75,9 +75,9 @@ messages:
       % check for enchantment already applied
       if Send(oRoom,@IsEnchanted,#what=self)
       {
-	      Send(who,@MsgSendUser,#message_rsc=forcesoflight_already_enchanted);
-	      
-	      return FALSE;
+         Send(who,@MsgSendUser,#message_rsc=forcesoflight_already_enchanted);
+
+         return FALSE;
       }
 
       propagate;
@@ -111,7 +111,6 @@ messages:
    {
       if Send(who,@GetKarma) > 0
       {
-         Send(who,@AddAttackModifier,#what=self);
          Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_on);
       }
       
@@ -130,27 +129,22 @@ messages:
    EndRoomEnchantment(who = $, state = $)
    "Remove enchantment effects on this occupant"
    {
-      Send(who,@RemoveAttackModifier,#what=self);
       Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_off);
       
       return;
    }
 
-   % stuff we handle to be an attack modifier
-
-   ModifyHitRoll(who = $, what = $, hit_roll = $)
+   OffenseHook(who=$)
    {
-      local iSpellpower,iHitMod;
+      local iSpellpower, iBonus;
 
-      iSpellpower = send(send(who,@GetOwner),@GetEnchantmentState,#what=self);
-      iHitMod = iSpellpower + 50;  %% 50 - 150
+      if Send(who,@GetKarma) > 0
+      {
+         iSpellpower = send(send(who,@GetOwner),@GetEnchantmentState,#what=self);
+         iBonus = 2*iSpellpower*Send(who,@GetKarma)/100;
+      }
       
-      return hit_roll + iHitMod;
-   }
-   
-   ModifyDamage(who = $, what = $, damage = $)
-   {
-      return damage;
+      return iBonus;
    }
 
    GetDuration(iSpellpower = $)

@@ -55,7 +55,7 @@ classvars:
    vrDead_name = brambles_dead_name_rsc
 
    viTreasure_type = TID_NONE
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
    viAttributes = MOB_NOMOVE | MOB_NOFIGHT | MOB_NOQUEST
    viMoveOn_type = MOVEON_NOTIFY
    viLevel = 25
@@ -233,7 +233,7 @@ messages:
          {
             iDamage = Send(what,@AssessDamage,#what=poCaster,
                            #damage=Random(0,piMaxDamage),
-                           #atype=ATCK_WEAP_SLASH,#report=FALSE,
+                           #attacktype=ATCK_WEAP_SLASH,#report=FALSE,
                            #report_resistance=FALSE);
          }
          else
@@ -241,7 +241,7 @@ messages:
             % Either there was no damage, or the caster is not a player.  No
             % caster means the wall was generated.  Either case, do max damage.
             iDamage = Send(what,@AssessDamage,#what=self,#damage=piMaxDamage,
-                           #atype=ATCK_WEAP_SLASH,#report=FALSE,
+                           #attacktype=ATCK_WEAP_SLASH,#report=FALSE,
                            #report_resistance=FALSE);
          }
       }

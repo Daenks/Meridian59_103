@@ -92,26 +92,6 @@ messages:
       return;
    }
    
-   ModifyDamage(damage=$)
-   {
-      return damage;
-   }
-   
-   ModifyHitRoll(hit_roll=$)
-   {
-      return hit_roll;
-   }
-   
-   ModifyDefenseDamage(damage=$)
-   {
-      return damage;
-   }
-   
-   ModifyDefensePower(defense_power=$)
-   {
-      return defense_power;
-   }
-   
    ModifyResistance(resistance_list=$)
    {
       return resistance_list;

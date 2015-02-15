@@ -1,0 +1,41 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Tear is MonsterStroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   tear_name_rsc = "tear"
+
+   tear_first_person = "tear at"
+   tear_third_person = "tears at"
+   tear_action_noun = "assault"
+
+classvars:
+
+   vrName = tear_name_rsc
+
+   vrStroke_first_person = tear_first_person
+   vrStroke_third_person = tear_third_person
+   vrStroke_action_noun = tear_action_noun
+
+   viSchool = SKS_FENCING
+   viSkill_Num = SKID_TEAR
+   viSkill_level = 50
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -993,7 +993,7 @@ messages:
    "It is dynamically allocated each time (wasting list nodes)."
    {
       local liClient_cmd, oWhat, oWhere, oRoom, iRow, iCol, iSay_type,
-            sStr_said, sStr_mailed, lDest_mail, iAttack_type, iGroup, lItems,
+            sStr_said, sStr_mailed, lDest_mail, iGroup, lItems,
             lUsers, oApply_on, iNid, sTitle, iAngle, sBody, iNum, iSpeed,
             lTargets;
 
@@ -1200,11 +1200,14 @@ messages:
          return;
       }
       
+      % It should be noted that the client also passes an attack type as its 2nd
+      % list entry, however, this functionality is entirely obsolete and its
+      % remnants have been removed from the kod code for this reason. (Morbus
+      % 2015-1-25)
       if liClient_cmd = BP_REQ_ATTACK
       {
-         iAttack_type = Nth(client_msg,2);
          oWhat = Nth(client_msg,3);
-         Send(self,@UserAttack,#type=iAttack_type,#what=oWhat);
+         Send(self,@UserAttack,#what=oWhat);
          
          return;
       }
@@ -3549,33 +3552,33 @@ messages:
       return;
    }
    
-   DamageTypeFlashEffect(aspell=0, duration=800)
+   DamageTypeFlashEffect(spelltype=0, duration=800)
    {
-      if aspell & ATCK_SPELL_QUAKE
+      if spelltype & ATCK_SPELL_QUAKE
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=65);
       }
-      if aspell & ATCK_SPELL_HOLY
+      if spelltype & ATCK_SPELL_HOLY
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=116);
       }
-      if aspell & ATCK_SPELL_UNHOLY
+      if spelltype & ATCK_SPELL_UNHOLY
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=112);
       }
-      if aspell & ATCK_SPELL_ACID
+      if spelltype & ATCK_SPELL_ACID
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=86);
       }
-      if aspell & ATCK_SPELL_COLD
+      if spelltype & ATCK_SPELL_COLD
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=85);
       }
-      if aspell & ATCK_SPELL_SHOCK
+      if spelltype & ATCK_SPELL_SHOCK
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=82);
       }
-      if aspell & ATCK_SPELL_FIRE
+      if spelltype & ATCK_SPELL_FIRE
       {
          Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=81);
       }
@@ -4970,22 +4973,42 @@ messages:
       return;
    }
 
-   UserAttack(type=STROKE_NORMAL,what=$)
+   UserAttack(what=$)
    {
-      local i, use_weapon, stroke_id, stroke_obj, is_spell;
+      local i, use_weapon, iRange, iSquaredDistance, iStroke, stroke_obj;
 
-      % User took an action!  Wake any AIs in the room to the user's presence!
-      % bitflag check instead of function for speed.
-      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
+      % Let's gather some basic information first:
+      % What weapon do we want to attack with?
+      use_weapon = Send(self,@GetWeapon);
+
+      iRange = Send(use_weapon,@GetRange);
+
+      % For melee weapons, we determine the weapon stroke based on our distance
+      % to the target. For greater accuracy, we use fine grid. This means that
+      % we have to make sure we are reasonably close to our target first. If we
+      % are further than 5 units away, feed GetStrokeNum max melee distance
+      % instead.
+      iSquaredDistance = Send(self,@SquaredDistanceTo,#what=what);
+      
+      if iSquaredDistance < 25
       {
-         Send(self,@NotifyMonstersOfPresence);
+         iSquaredDistance = Send(self,@SquaredFineDistanceTo,#what=what);
+      }
+      else
+      {
+         iSquaredDistance = 102400;
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_ATTACK);
-      }
+      % Ask our weapon for the stroke number based on the target's distance
+      % and the range of our weapon. Then get the actual stroke object.
+      iStroke = Send(use_weapon,@GetStrokeNum,#squareddistance=iSquaredDistance);
+      stroke_obj = Send(SYS,@FindSkillByNum,#num=iStroke);
 
+      % Now that that's out of the way, let's go through various checks to see
+      % whether we are actually eligible to attack our target. Please answer the
+      % following questions truthfully.
+
+      % Are we allowed to fight right now?
       if Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT)
       {
          Send(self,@MsgSendUser,#message_rsc=user_no_fight);
@@ -4993,74 +5016,135 @@ messages:
          return FALSE;
       }
 
-      % Get use_weapon
-      use_weapon = Send(self,@GetWeapon);
-      
-      % Convert type over to a stroke here.
-      if type = STROKE_NORMAL
+      % Are we even in the same room as our target?
+      if poOwner <> Send(what,@GetOwner) 
       {
-         % Kludgeish (at least sloppy code): If we have a spell-weapon,
-         %  we just use punch to pass the checks below.
-         if (use_weapon = $) OR IsClass(use_weapon,&Spell)
-         {
-            stroke_id = SKID_PUNCH;
-         }
-         else
-         {
-            stroke_id = Send(use_weapon,@GetDefaultStrokeNumber);
-         }
-      }
-      else
-      {
-         Debug("Non-normal stroke received.");
-
          return FALSE;
       }
 
-      % except for punch and slash, a player cannot use an attack type he
-      % doesn't have.  This in to prevent hacking.
-      if stroke_id <> SKID_PUNCH
-         AND stroke_ID <> SKID_SLASH
-         AND stroke_ID <> SKID_FIRE 
-      {
-         if NOT Send(self,@HasSkill,#num=stroke_id)
-         {
-            stroke_obj = Send(SYS,@FindSkillByNum,#num=stroke_ID);
-            Send(self,@MsgSendUser,#message_rsc=user_doesnt_know_stroke,
-                 #parm1=Send(stroke_obj,@GetName));
-                 
-            return FALSE;
-         }
-      }
-
-      % Get what's possible
+      % Is our target actually an attackable unit?
       if NOT IsClass(what,&Battler)
       {
-         % tell 'em
+         % If not, let them know.
          Send(self,@MsgSendUser,#message_rsc=user_cant_attack_non_battler,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
                
          return FALSE;
       }
 
-      % kludgish: If morphed, use punch as our stroke object, we use the
-      %  monster's stats for combat.
-      if Send(self,@IsEnchanted,#byClass=&Morph)
+      % We aren't trying to attack ourselves are we?
+      if what = self
       {
-         stroke_id = SKID_PUNCH;
-         use_weapon = $;
+         Send(self,@MsgSendUser,#message_rsc=player_no_target_self);
+         
+         return FALSE;
       }
 
-      if use_weapon = $ OR NOT IsClass(use_weapon,&Spell)
+      % Are we busy carrying a token?
+      if send(self,@FindHolding,#class=&Token) <> $
       {
-         stroke_obj = Send(SYS,@FindSkillByNum,#num=stroke_id);
+         return FALSE;
       }
-      else
+      
+      % Can we even afford to attack right now?
+      if IsClass(stroke_obj,&Skill)
+         AND NOT Send(stroke_obj,@CanPayCosts,#who=self,#oTarget=what)
       {
-         % Use the "weapon" (spell) as the stroke object.
-         stroke_obj = use_weapon;
+         return FALSE;
       }
 
+      % Is our weapon intact?
+      if NOT Send(use_weapon,@IsWeaponIntact)
+      {
+         return FALSE;
+      }
+
+      % Can we even hit our target from here?
+      if NOT Send(self,@TargetWithinSightAndRange,#oTarget=what,#iRange=iRange,
+                  #use_weapon=use_weapon,#stroke_obj=stroke_obj)
+      {
+         return FALSE;
+      }
+
+      % In case we are battling a monster, check whether it can be hit.
+      if IsClass(what,&Monster)
+      {
+         if NOT Send(what,@CanMonsterFight,#who=self,#oStroke=stroke_obj,
+                     #use_weapon=use_weapon)
+         {
+            return FALSE;
+         }
+
+         % Even if it is attackable, maybe we're not in a fighting mood cause 
+         % we're busy dancing.
+         else
+         {
+            if NOT Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Jig)
+            {
+               % Tell the monster this is a valid attack.
+               Send(what,@ValidAttack,#who=self);
+            }
+            else
+            {
+               Send(self,@MsgSendUser,#message_rsc=Jig_cannot_attack,
+                     #parm1=Send(what,@GetName));
+
+               return FALSE;
+            }
+         }
+      }
+
+      % AllowPlayerAttack handles the necessary PvP checks for us.
+      if NOT Send(self,@AllowPlayerAttack,#victim=what,#stroke_obj=stroke_obj,
+                  #use_weapon=use_weapon)
+      {
+         return FALSE;
+      }
+
+      % Almost done: Is it even time for another attack yet? We do this check
+      % last because we don't want to start a timer, only to have the check fail
+      % at a later stage.
+      if NOT Send(self,@IsOkayAttackTime)
+      {
+         return FALSE;
+      }
+
+      % Allow spells and items to hook in here.
+      for i in plUsing
+      {
+         if NOT Send(i,@AttackHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj)
+         {
+            return FALSE;
+         }
+      }
+      for i in plEnchantments
+      {
+         if NOT Send(Nth(i,2),@AttackHook,#who=self,#what=what,
+            #use_weapon=use_weapon,#stroke_obj=stroke_obj)
+         {
+            return FALSE;
+         }
+      }
+      for i in plRadiusEnchantments
+      {
+         if NOT Send(First(i),@AttackHook,#who=self,#what=what,#iPower=Nth(i,2),
+            #caster=Nth(i,3),#use_weapon=use_weapon,#stroke_obj=stroke_obj)
+         {
+            return FALSE;
+         }
+      }
+
+      % If we are wielding a Black Dagger, we're not doing an actual attack and
+      % let the assassin game handle the attack instead.
+      if IsClass(use_weapon,&BlackDagger)
+      {
+         % Let the assassin's game handle it
+         return Send(Send(SYS,@GetAssassinGame),@TryAssassinAttack,
+                     #attacker=self,#target=what,#dagger_obj=use_weapon);
+      }
+
+      % Well, all seems in order, let's do that attack already.
       return Send(self,@TryAttack,#what=what,#use_weapon=use_weapon,
                   #stroke_obj=stroke_obj);
    }
@@ -7324,9 +7408,12 @@ messages:
    
    SendStatOffense()
    {
-      local iOffense_send;
-      
-      iOffense_send = Send(self,@GetOffense);
+      local iOffense_send, oWeapon, stroke_obj;
+
+      oWeapon = Send(self,@GetWeapon);
+      stroke_obj = Send(SYS,@FindSkillByNum,#num=Send(oWeapon,@GetStrokeNum));
+      iOffense_send = Send(self,@GetOffense,#use_weapon=oWeapon,
+         #stroke_obj=stroke_obj);
       
       AddPacket(1,10, 4,user_stat_offense, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iOffense_send, 4,0, 4,1000, 4,iOffense_send);

@@ -64,7 +64,7 @@ classvars:
    vrDead_name = Kriipa_dead_name_rsc
  
    viTreasure_type = TID_KRIIPA
-   viAttack_type = ATCK_WEAP_SLASH
+   viAttackType = ATCK_WEAP_SLASH
 
    viSpeed = SPEED_FAST
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE
@@ -99,6 +99,16 @@ messages:
                       ];
 
       propagate;
+   }
+
+   GetMonsterWeaponClass()
+   {
+      return &Claws;
+   }
+
+   GetMonsterWeaponStats()
+   {
+      return $;
    }
 
    GetObjectFlags()
