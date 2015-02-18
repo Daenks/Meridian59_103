@@ -2222,6 +2222,7 @@
    PFLAG2_SQUELCHED_POSTS  = 0x001000
    % Sum of the other squelched flags.
    PFLAG2_SQUELCHED_ALL    = 0x001E00
+   PFLAG2_BETA_POTION      = 0x002000
 
    % Set of flags just for DM's
    % DM is completely invisible
