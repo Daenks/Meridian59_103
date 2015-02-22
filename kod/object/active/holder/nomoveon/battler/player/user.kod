@@ -351,7 +351,10 @@ resources:
    autoloot_off_msg = "You stop picking up treasure as it drops."
 
    phased_out_cant_drop = "You can't drop items while phased out of existence."
-                               
+
+   grouping_on = "You will start joining builder groups in your vicinity."
+   grouping_off = "You will no longer join builder groups in your vicinity."
+
    reagentbag_auto_on = "You start putting new reagents in your bag."
    reagentbag_auto_off = "You stop putting new reagents in your bag."
 
@@ -4252,6 +4255,20 @@ messages:
          {
             Send(self,@SetReagentBagAuto,#value=FALSE);
             Send(self,@MsgSendUser,#message_rsc=reagentbag_auto_off);
+            return;
+         }
+
+         If StringContain(String,"grouping off")
+         {
+            Send(self,@SetGrouping,#value=FALSE);
+            Send(self,@MsgSendUser,#message_rsc=grouping_off);
+            return;
+         }
+
+         If StringContain(String,"grouping on")
+         {
+            Send(self,@SetGrouping,#value=TRUE);
+            Send(self,@MsgSendUser,#message_rsc=grouping_on);
             return;
          }
       }
