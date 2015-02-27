@@ -3294,6 +3294,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_MEDITATE,#class=&Meditate);
       Send(self,@CreateOneSpellIfNew,#num=SID_SET,#class=&Set);
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
+      Send(self,@CreateOneSpellIfNew,#num=SID_RETRIEVE,#class=&Retrieve);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
 

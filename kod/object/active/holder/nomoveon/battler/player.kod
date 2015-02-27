@@ -788,6 +788,28 @@ resources:
       
    bad_line_of_sight = \
       "Your hindered line of sight makes a successful hit more difficult."
+   
+   player_already_vault_permitted = \
+      "That adventurer is already permitted to access your vault."
+   player_added_vault_permissions = \
+      "%s may now access your vault."
+   permissions_list_too_long = \
+      "You already have the maximum number of permissions allowed!"
+   player_too_many_accesses = \
+      "That adventurer already has the maximum number of accesses allowed!"
+   player_just_added_you_vault_permission = \
+      "%s has allowed you access to their vaults."
+   player_just_removed_you_vault_permission = \
+      "%s has removed your access to their vaults."
+   players_may_access_list_header = \
+      "The following adventurers are permitted to access your vaults:"
+   player_may_access = "%s"
+   you_may_access_list_header = \
+      "You may access the vaults belonging to:"
+   you_may_access = "%s"
+   conveyance_new_target = \
+      "You will now convey items to the vault of %s."
+   player_permission_removed = "Permission removed."
 
       
    pvp_notify_wav = gong.wav
@@ -1090,6 +1112,11 @@ properties:
 
    % Put new reagents in your bag
    pbReagentBagAuto = TRUE
+   
+   % Shared vault accesses and permissions
+   plVaultPermissions = $
+   plVaultAccesses = $
+   poConveyanceTarget = $
 
 messages:
 
@@ -1105,6 +1132,10 @@ messages:
    Delete()
    {
       local i;
+      
+      Send(self,@ClearVaultPermissionsList);
+      Send(self,@ClearVaultAccessList);
+      Send(self,@ChangeConveyanceTarget);
 
       Send(self,@QuitGuild);
       for i in Send(SYS,@GetGuilds)
@@ -14600,6 +14631,183 @@ messages:
          }
       }
 
+      return;
+   }
+   
+   GetVaultAccessList()
+   {
+      return plVaultAccesses;
+   }
+   
+   AddVaultAccess(who=$)
+   {
+      plVaultAccesses = Cons(who,plVaultAccesses);
+      return;
+   }
+   
+   RemoveVaultAccess(who=$)
+   {
+      plVaultAccesses = DelListElem(plVaultAccesses,who);
+      if poConveyanceTarget = who
+      {
+         Send(self,@ChangeConveyanceTarget);
+      }
+      return;
+   }
+   
+   GetVaultPermissionList()
+   {
+      return plVaultPermissions;
+   }
+   
+   AddVaultPermission(who=$)
+   {
+      if plVaultPermissions <> $
+         AND FindListElem(plVaultPermissions,who) <> 0
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_already_vault_permitted);
+         return;
+      }
+      
+      if plVaultPermissions <> $
+         AND Length(plVaultPermissions) >= 100
+      {
+         Send(self,@MsgSendUser,#message_rsc=permissions_list_too_long);
+         return;
+      }
+      
+      if Send(who,@GetVaultAccessList) <> $
+         AND Length(Send(who,@GetVaultAccessList)) >= 5
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_too_many_accesses);
+         return;
+      }
+      
+      if plVaultPermissions = $
+         OR FindListElem(plVaultPermissions,who) = 0
+      {
+         plVaultPermissions = Cons(who, plVaultPermissions);
+         Send(who,@AddVaultAccess,#who=self);
+         
+         if Send(who,@IsLoggedOn)
+         {
+            Send(who,@MsgSendUser,
+                     #message_rsc=player_just_added_you_vault_permission,
+                     #parm1=Send(self,@GetTrueName));
+         }
+
+         Send(self,@MsgSendUser,#message_rsc=player_added_vault_permissions,
+                                #parm1=Send(who,@GetTrueName));
+         return;
+      }
+      
+      return;
+   }
+   
+   RemoveVaultPermission(who=$)
+   {
+      if plVaultPermissions <> $
+         AND FindListElem(plVaultPermissions,who) <> 0
+      {
+         plVaultPermissions = DelListElem(plVaultPermissions,who);
+         Send(who,@RemoveVaultAccess,#who=self);
+         Send(who,@MsgSendUser,
+                  #message_rsc=player_just_removed_you_vault_permission);
+         Send(self,@MsgSendUser,#message_rsc=player_permission_removed);
+         return;
+      }
+      
+      return;
+   }
+   
+   RejectVaultPermission(who=$)
+   {
+      if plVaultAccesses <> $
+         AND FindListElem(plVaultAccesses,who) <> 0
+      {
+         Send(who,@RemoveVaultPermission,#who=self);
+      }
+
+      return;
+   }
+   
+   ShowVaultPermissionList()
+   {
+      local i;
+      
+      Send(self,@MsgSendUser,#message_rsc=players_may_access_list_header);
+      for i in plVaultPermissions
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_may_access,
+                                #parm1=Send(i,@GetTrueName));
+      }
+      
+      return;
+   }
+   
+   ShowVaultAccessList()
+   {
+      local i;
+      
+      Send(self,@MsgSendUser,#message_rsc=you_may_access_list_header);
+      for i in plVaultAccesses
+      {
+         Send(self,@MsgSendUser,#message_rsc=you_may_access,
+                                #parm1=Send(i,@GetTrueName));
+      }
+
+      return;
+   }
+   
+   ClearVaultAccessList()
+   {
+      local i;
+      
+      for i in plVaultAccesses
+      {
+         Send(self,@RejectVaultPermission,#who=i);
+      }
+      
+      plVaultAccesses = $;
+      
+      return;
+   }
+   
+   ClearVaultPermissionsList()
+   {
+      local i;
+      
+      for i in plVaultPermissions
+      {
+         Send(self,@RemoveVaultPermission,#who=i);
+      }
+      
+      plVaultPermissions = $;
+      
+      return;
+   }
+   
+   GetConveyanceTarget()
+   {
+      return poConveyanceTarget;
+   }
+   
+   ChangeConveyanceTarget(who=$)
+   {
+      if plVaultAccesses <> $
+         AND FindListElem(plVaultAccesses,who) <> 0
+      {
+         poConveyanceTarget = who;
+         Send(self,@MsgSendUser,#message_rsc=conveyance_new_target,
+                                #parm1=Send(who,@GetTrueName));
+         return;
+      }
+
+      if who = $
+      {
+         poConveyanceTarget = $;
+      }
+      
       return;
    }
 

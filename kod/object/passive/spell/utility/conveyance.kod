@@ -18,13 +18,17 @@ resources:
    Conveyance_name_rsc = "conveyance"
    Conveyance_icon_rsc = iboonint.bgf
    Conveyance_desc_rsc = \
-     "Sends a stack of items to your closest personal vault.  "
+     "Sends items to your closest personal vault.  "
 	 "Requires only the fee for depositing items."
  
    Conveyance_cant = "You cannot cast conveyance on %s%s."
-   Conveyance_not_enough_cash = "You don't have enough shillings to convey %s%s."
+   Conveyance_cant_unless_safe = \
+         "You need to be somewhere safe to focus on such a large item."
+   Conveyance_not_enough_cash = \
+         "You don't have enough shillings to convey %s%s."
    Conveyance_not_enough_space = "Your vault does not have enough space!"
-   Conveyance_not_holding = "You cannot cast conveyance on an item you are not holding!"
+   Conveyance_not_holding = \
+         "You cannot cast conveyance on an item you are not holding!"
 
    Conveyance_cast = "A small portal whips into existence, pulling %s%s to your vault."
      
@@ -61,12 +65,19 @@ messages:
 
    CastSpell(who = $, lTargets = $)
    {
-      local oTarget, oRoom, oVault, iFee, oMoney, iCash;
+      local oTarget, oRoom, oVault, iFee, oMoney, iCash, oTargetBoxOwner;
       
       oTarget = First(lTargets);
+      
+      if NOT IsClass(oTarget,&NumberItem)
+         AND (Send(who,@GetOwner) = $
+         OR NOT Send(Send(who,@GetOwner),@CheckRoomFlag,#flag=ROOM_NO_COMBAT))
+      {
+         Send(who,@MsgSendUser,#message_rsc=Conveyance_cant_unless_safe);
+         return;
+      }
    
-      if NOT isClass(oTarget,&NumberItem)
-         OR NOT Send(oTarget,@CanBeStoredInVault)
+      if NOT Send(oTarget,@CanBeStoredInVault)
          OR isClass(oTarget,&Money)
       {
          Send(who,@MsgSendUser,#message_rsc=conveyance_cant,
@@ -126,9 +137,19 @@ messages:
          return;
       }
 
-      if Send(oVault,@CanDepositItems,#lItems=lTargets,#who=who)
+      if Send(who,@GetConveyanceTarget) <> $
       {
-         Send(oVault,@DepositItems,#lItems=lTargets,#who=who);
+         oTargetBoxOwner = Send(who,@GetConveyanceTarget);
+      }
+      else
+      {
+         oTargetBoxOwner = who;
+      }
+
+      if Send(oVault,@CanDepositItems,#lItems=lTargets,#who=oTargetBoxOwner)
+      {
+         Send(oVault,@DepositItems,#lItems=lTargets,#who=who,
+                     #target_owner=oTargetBoxOwner);
          Send(who,@MsgSendUser,#message_rsc=Conveyance_cast,
                   #parm1=Send(First(lTargets),@GetDef),
                   #parm2=Send(First(lTargets),@GetName));

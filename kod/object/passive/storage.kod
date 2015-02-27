@@ -102,47 +102,59 @@ messages:
       return TRUE;
    }
 
-   DepositItems(lItems = $, who = $)
+   DepositItems(lItems = $, who = $, target_owner = $)
    "This procedure assumes that CanDepositItems has already been called and passed."
    "It actually puts items into that player's storage lockers, and creates a new one "
    "if none exists."
    {
-      local oIndexBox, oPlayerBox, oItem, oNewItem;
+      local oIndexBox, oPlayerBox, oItem, oNewItem, intended_owner;
+      
+      if target_owner = $
+      {
+         intended_owner = who;
+      }
+      else
+      {
+         intended_owner = target_owner;
+      }
       
       oPlayerBox = $;
       for oIndexBox in plStored
       {
-	 %% does the player have an account already?
-	 if send(oIndexBox,@GetSafeBoxOwner) = who
-	 {
-	    oPlayerBox = oIndexBox;
-	    break;
-	 }
-      }      
+         %% does the player have an account already?
+         if send(oIndexBox,@GetSafeBoxOwner) = intended_owner
+         {
+            oPlayerBox = oIndexBox;
+            break;
+         }
+      }
+
       if oPlayerBox = $
       {
-	 %% player has no account yet.  make a new one.	 
-	 oPlayerBox = Create(&SafetyDepositBox,#who=who,#vid=piVault_num);
-	 plStored= cons(oPlayerBox,plStored);
+         %% player has no account yet.  make a new one.	 
+         oPlayerBox = Create(&SafetyDepositBox,#who=intended_owner,
+                                               #vid=piVault_num);
+         plStored= cons(oPlayerBox,plStored);
       }
 
       %% take the items, put them in storage.  Assume reqnewhold has already 
       %% been passed.  Remove number items from that player's possession.
       for oItem in lItems
       {
-	 if isClass(oItem,&NumberItem)
-	 {  
-	    %% the number item will be deleted at the end of the ReqGive Call
-	    %% (in CleanUpCancelOffer).  Make a copy of the item and give that
-	    %% to the mob.
+         if isClass(oItem,&NumberItem)
+         {  
+            %% the number item will be deleted at the end of the ReqGive Call
+            %% (in CleanUpCancelOffer).  Make a copy of the item and give that
+            %% to the mob.
 
-	    oNewItem = Create(GetClass(oItem),#number=send(oItem,@GetNumber));
-	    send(oPlayerBox,@newhold,#what=oNewItem);
-	    send(who,@RemoveNumberItemFromPossession,#ToBeRemoved=oNewItem);  	    
-	 }		     
-	 else
-      	 {  send(oPlayerBox,@newhold,#what=oItem);  }
-
+            oNewItem = Create(GetClass(oItem),#number=send(oItem,@GetNumber));
+            send(oPlayerBox,@newhold,#what=oNewItem);
+            send(who,@RemoveNumberItemFromPossession,#ToBeRemoved=oNewItem);  	    
+         }		     
+         else
+         {
+            send(oPlayerBox,@newhold,#what=oItem);
+         }
       }
       return;
    }

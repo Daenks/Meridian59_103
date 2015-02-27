@@ -3049,7 +3049,8 @@ messages:
    "Takes the said string and if its from a user searches libraries for"
    "a response."
    {
-      local i,lActionList, oLibrary,iQuestID,iQuestType, oQuestNode;
+      local i,lActionList, oLibrary,iQuestID,iQuestType, oQuestNode,
+            sPermissionString, oPermissionTarget;
 
       % Are we supposed to hear things?
       if (NOT (viAttributes & MOB_LISTEN))
@@ -3064,6 +3065,109 @@ messages:
          if what = self OR NOT (viAttributes & MOB_LISTEN_MOB)
          {
             propagate;
+         }
+      }
+      
+      if type = SAY_NORMAL
+         AND (IsClass(self,&BarloqueVaultman)
+         OR IsClass(self,&KocatanVaultman))
+      {
+         if StringContain(string,"add vault permission for ")
+         {
+            sPermissionString = CreateString();
+            SetString(sPermissionString,string);
+            StringSubstitute(sPermissionString,"add vault permission for ","");
+            
+            oPermissionTarget = Send(SYS,@FindUserByString,
+                                         #string=sPermissionString);
+                                         
+            if oPermissionTarget = $
+            {
+               return;
+            }
+
+            Send(what,@AddVaultPermission,#who=oPermissionTarget);
+            
+            return;
+         }
+         
+         if StringContain(string,"remove vault permission for ")
+         {
+            sPermissionString = CreateString();
+            SetString(sPermissionString,string);
+            StringSubstitute(sPermissionString,
+                             "remove vault permission for ","");
+            
+            oPermissionTarget = Send(SYS,@FindUserByString,
+                                         #string=sPermissionString);
+                                         
+            if oPermissionTarget = $
+            {
+               return;
+            }
+
+            Send(what,@RemoveVaultPermission,#who=oPermissionTarget);
+                             
+            return;
+         }
+         
+         if StringContain(string,"reject vault permission from ")
+         {
+            sPermissionString = CreateString();
+            SetString(sPermissionString,string);
+            StringSubstitute(sPermissionString,
+                             "reject vault permission from ","");
+            
+            oPermissionTarget = Send(SYS,@FindUserByString,
+                                         #string=sPermissionString);
+                                         
+            if oPermissionTarget = $
+            {
+               return;
+            }
+
+            Send(what,@RejectVaultPermission,#who=oPermissionTarget);
+                             
+            return;
+         }
+         
+         if StringContain(string,"convey my items into the vault of ")
+         {
+            sPermissionString = CreateString();
+            SetString(sPermissionString,string);
+            StringSubstitute(sPermissionString,
+                             "convey my items into the vault of ","");
+            
+            oPermissionTarget = Send(SYS,@FindUserByString,
+                                         #string=sPermissionString);
+                                         
+            if oPermissionTarget = $
+            {
+               return;
+            }
+
+            Send(what,@ChangeConveyanceTarget,#who=oPermissionTarget);
+                             
+            return;
+         }
+         
+         if StringContain(string,"convey my items to my own vault")
+         {
+            Send(what,@ChangeConveyanceTarget,#who=$);
+                             
+            return;
+         }
+         
+         if StringContain(string,"show vault permission list")
+         {
+            Send(what,@ShowVaultPermissionList);
+            return;
+         }
+         
+         if StringContain(string,"show vault access list")
+         {
+            Send(what,@ShowVaultAccessList);
+            return;
          }
       }
 
