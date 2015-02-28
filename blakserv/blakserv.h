@@ -298,6 +298,7 @@ char * GetLastErrorStr();
 #include "database.h"
 
 #include "httpauth.h"
+#include "jansson.h"
 
 #endif
 
