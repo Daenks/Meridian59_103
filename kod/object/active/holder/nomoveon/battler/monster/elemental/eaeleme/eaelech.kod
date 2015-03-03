@@ -54,11 +54,16 @@ messages:
    {
       plSpellBook = [ [SID_EARTHQUAKE,3,100] ];
    
-      plResistances = [ [-ATCK_SPELL_COLD, -40 ],
-                        [-ATCK_SPELL_ACID, -70 ],
-                        [-ATCK_SPELL_ALL, 50 ],
-                        [ATCK_WEAP_BLUDGEON, -60],
-                        [ATCK_WEAP_ALL, 50 ] ];
+      if plResistances = $
+      {
+         plResistances = [ [-ATCK_SPELL_COLD, -50 ],
+                           [-ATCK_SPELL_FIRE, -50 ],
+                           [-ATCK_SPELL_HOLY, 0 ],
+                           [-ATCK_SPELL_UNHOLY, 0 ],
+                           [-ATCK_SPELL_ALL, 90 ],
+                           [ATCK_WEAP_BLUDGEON, -50],
+                           [ATCK_WEAP_ALL, 90 ] ];
+      }
 
       propagate;
    }
