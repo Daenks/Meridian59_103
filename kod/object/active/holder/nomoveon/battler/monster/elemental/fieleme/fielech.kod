@@ -51,11 +51,15 @@ messages:
    {
       plSpellBook = [ [SID_FIRE_STORM,3,100] ];
    
-      plResistances = [ [-ATCK_SPELL_COLD, -70 ],
-                        [-ATCK_SPELL_SHOCK, -40 ],
-                        [-ATCK_SPELL_ALL, 50 ],
-                        [ATCK_WEAP_THRUST, -60],
-                        [ATCK_WEAP_ALL, 50 ] ];
+      if plResistances = $
+      {
+         plResistances = [ [-ATCK_SPELL_COLD, -50 ],
+                           [-ATCK_SPELL_HOLY, 0 ],
+                           [-ATCK_SPELL_UNHOLY, 0 ],
+                           [-ATCK_SPELL_ALL, 90 ],
+                           [ATCK_WEAP_BLUDGEON, -50],
+                           [ATCK_WEAP_ALL, 90 ] ];
+      }
 
       propagate;
    }
