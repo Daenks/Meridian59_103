@@ -8,6 +8,7 @@ OUTDIR = .
 
 BGFS = neeleme.bgf \
        neelemeX.bgf \
+       dratmask.bgf \
 
 all: $(BGFS)
 	@-for %i in ($(BGFS)) do \
