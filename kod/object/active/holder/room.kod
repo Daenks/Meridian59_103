@@ -43,7 +43,6 @@ resources:
 
    room_no_teleport = "This room does not yet have teleport support."
    room_door_was_opened = "You open the door and walk through."
-   room_silenced_rsc = "Your words catch in your throat and you cannot speak."
 
    %  note that these 'stormy' skies are the normal skies,
    %     and the 'normal' skies are just flat colors (and we don't use them)...
@@ -1463,38 +1462,6 @@ messages:
 
    SpellCast(who = $,oSpell = $,lItems = $,bItemCast = FALSE)
    {
-      local state, school, roomench;
-
-      % Skip these if the spell is cast by an item.
-      if bItemCast
-      {
-         propagate;
-      }
-
-      school = Send(oSpell,@GetSchool);
-
-      if school = SS_SHALILLE
-      {
-         roomench = Send(SYS,@FindSpellByNum,#num=SID_SHALILLEBANE);
-         state = Send(self,@GetEnchantmentState,#what=roomench);
-         if state <> $
-         {
-            Post(roomench,@HurtCaster,#shalCaster=who,#iSpellPower=state,
-                 #shalSpellLevel=Send(oSpell,@GetLevel));
-         }
-      }
-
-      if school = SS_QOR
-      {
-         roomench = Send(SYS,@FindSpellByNum,#num=SID_QORBANE);
-         state = Send(self,@GetEnchantmentState,#what=roomench);
-         if state <> $
-         {
-            Post(roomench,@HurtCaster,#qorCaster=who,#iSpellPower=state,
-                 #qorSpellLevel=Send(oSpell,@GetLevel));
-         }
-      }
-
       propagate;
    }
 
@@ -3979,17 +3946,14 @@ messages:
 
    RoomReqCommunication(who=$,type=$,string=$)
    {
-      local oSpell;
+      local lRadiusState;
 
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_SILENCE);
-
-      if Send(self,@IsEnchanted,#what=oSpell) AND (NOT IsClass(who,&DM))
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&Silence);
+      if lRadiusState <> $
       {
-         Send(who,@MsgSendUser,#message_rsc=room_silenced_rsc);
-
-         return FALSE;
+         return Send(Nth(lRadiusState,1),@ReqCommunication,#who=who,#state=lRadiusState);
       }
-
+      
       return TRUE;
    }
 
@@ -4030,18 +3994,6 @@ messages:
          {
             lState = Nth(i,3);
             if who = Nth(lState,2)
-            {
-               bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,
-                              #state=lState,#location=self);
-            }
-         }
-
-         % It's a room enchantment! It's a trance spell! It's both!
-         %  It's Silence!  Handle the special case here.
-         if IsClass(oEnch,&Silence)
-         {
-            lState = Nth(i,3);
-            if who = First(lState)
             {
                bRetVal = Send(oEnch,@BreakTrance,#who=who,#event=event,
                               #state=lState,#location=self);

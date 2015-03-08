@@ -5,9 +5,9 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\roomench.bof
-BOFS = shalbane.bof qorbane.bof martyrs.bof \
+BOFS = martyrs.bof \
        darkness.bof \
        heat.bof killing.bof light.bof \
-       silence.bof forceslt.bof
+       forceslt.bof
 
 !include $(KODDIR)\kod.mak

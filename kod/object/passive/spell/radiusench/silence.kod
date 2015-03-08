@@ -1,0 +1,104 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Silence is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   Silence_name_rsc = "silence"
+   Silence_icon_rsc = isilence.bgf
+   Silence_desc_rsc = \
+      "Muffles speech, preventing all communication near the caster. "
+      "Requires purple mushrooms."
+   
+   Silence_unnecessary = "This area already is already silenced."
+
+   Silence_on = "A curtain of silence falls across the room."
+   Silence_off = "The curtain of silence is lifted."
+   Silence_new_entrant = "This place is strangely quiet."
+
+   Silence_cant_block_jala_caster = "Your spell fails to silence the singing bard in the area."
+   Silence_cant_block_jala_victim = "Your words ring through the silence spell covering the room."
+   Silence_blocked_jala_victim = "The silence spell muffles your song."
+
+   Silence_spell_intro = "Qor Level 3: Draws a curtain of Silence over the room, stirring the servants of Qor."
+
+   speech_silenced_rsc = "Your words catch in your throat and you cannot speak."
+   
+   Silence_cast = "A curtain of silence falls across the room."
+   Silence_starts = "%s summons a curtain of silence!"
+   Silence_ends = "The curtain of silence dissipates."
+   Silence_caster_ends = "Your curtain of silence dissipates."
+   Silence_caster_enter = "All speech stops."
+   Silence_enter = "A curtain of silence falls across you."
+   Silence_leave = "You feel yourself able to speak again."
+
+classvars:
+
+   radius_ench_cast = Silence_cast
+   radius_ench_starts = Silence_starts
+   radius_ench_ends = Silence_ends
+   radius_ench_caster_ends = Silence_caster_ends
+   radius_ench_caster_enter = Silence_caster_enter
+   radius_ench_enter = Silence_enter
+   radius_ench_leave = Silence_leave
+
+   vrName = Silence_name_rsc
+   vrIcon = Silence_icon_rsc
+   vrDesc = Silence_desc_rsc
+   vrSpell_intro = Silence_spell_intro
+
+   viSpell_num = SID_SILENCE
+   viSchool = SS_QOR
+   viMana = 10
+   viSpell_level = 3
+
+   viManaDrain = 5       % Drain is amount used every viDrainTime milliseconds
+   viDrainTime = 5000    % Drain some mana every viDrainTime milliseconds
+   viBaseRange = 10
+   viSpellExertion = 6    
+   
+   viChance_To_Increase = 10
+   viMeditate_ratio = 50
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
+   
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&PurpleMushroom,1],plReagents);
+
+      return;
+   }
+
+   ReqCommunication(who=$,state=$)
+   {
+      if who <> $
+         AND IsClass(who,&Player)
+         AND Random(0,100) < Nth(state,2)
+      {
+         Send(who,@MsgSendUser,#message_rsc=speech_silenced_rsc);
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

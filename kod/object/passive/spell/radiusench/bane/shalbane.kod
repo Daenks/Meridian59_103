@@ -1,0 +1,80 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShalilleBane is BaneEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ShalilleBane_name_rsc = "Shal'illebane"
+   ShalilleBane_icon_rsc = ishabane.bgf
+   ShalilleBane_desc_rsc = \
+      "Permeates an area with the unholy essence of Qor, harming any who "
+      "attempt to call on the holy energy of Shal'ille. "
+      "Requires yrxl sap and fairy wings to cast."
+
+   ShalilleBane_Hurt_Caster = "As you utter the final syllables of your spell,"
+                              " a bolt of unholy energy slams into your body."
+   ShalilleBane_Kills_You = "As you utter the final syllables of your spell, "
+                            "a bolt of unholy energy slams into your body, "
+                            "killing you instantly."
+
+   ShalilleBane_sound = qshalban.wav
+
+   ShalilleBane_cast = "A magical force enters the area, filling the air with "
+                  "an acrid odor. The shadows seem to deepen almost "
+                  "imperceptibly, and a chill creeps up your spine, "
+                  "making the hairs on your arms stand up."
+   ShalilleBane_starts = "%s summons an unholy swell of energy!"
+   ShalilleBane_ends = "The unholy field of energy dissipates."
+   ShalilleBane_caster_ends = "The unholy energy leaves the area around you."
+   ShalilleBane_caster_enter = "The unholy energy surrounds you, protecting "
+                               "you from good magics."
+   ShalilleBane_enter = "An unholy energy surrounds you."
+   ShalilleBane_leave = "The unholy energy around you dissipates."
+
+classvars:
+
+   radius_ench_cast = ShalilleBane_cast
+   radius_ench_starts = ShalilleBane_starts
+   radius_ench_ends = ShalilleBane_ends
+   radius_ench_caster_ends = ShalilleBane_caster_ends
+   radius_ench_caster_enter = ShalilleBane_caster_enter
+   radius_ench_enter = ShalilleBane_enter
+   radius_ench_leave = ShalilleBane_leave
+   
+   vrBaneHurt = ShalilleBane_Hurt_Caster
+   vrBaneKills = ShalilleBane_Kills_You
+
+   vrIcon = ShalilleBane_icon_rsc
+   vrDesc = ShalilleBane_desc_rsc
+   vrName = ShalilleBane_name_rsc   
+
+   viSpell_num = SID_SHALILLEBANE
+   viSchool = SS_QOR
+
+   vrSucceed_wav = ShalilleBane_sound
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
+   
+   viBanedSchool = SS_SHALILLE
+   viRetaliationDamageType = ATCK_SPELL_UNHOLY
+
+properties:
+
+messages:
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

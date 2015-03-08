@@ -1346,7 +1346,7 @@ messages:
    "half the exertion, and no reagents."
    {
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
-            iNumNeeded, oUserObject, oRoom;
+            iNumNeeded, oUserObject, oRoom, lRadiusState;
       
       oRoom = Send(who,@GetOwner);	  
       if NOT IsClass(who,&Player)
@@ -1437,7 +1437,7 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0, bItemCast=FALSE)
    {
-      local oTarget, oRoom;
+      local oTarget, oRoom, lRadiusState;
 
       if IsClass(who,&DM)
       {
@@ -1615,6 +1615,23 @@ messages:
 		
       % Count that this spell was cast successfully
       Send(Send(SYS, @GetStatistics), @SpellCast, #oSpell = self, #who = who);
+
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&QorBane);
+      if lRadiusState <> $
+      {
+         Post(Nth(lRadiusState,1),@SuccessfulCastTrigger,#who=who,#oSpell=self,
+                                 #state=lRadiusState,#iSpellPower=iSpellPower);
+      }
+
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&ShalilleBane);
+      if lRadiusState <> $
+      {
+         Post(Nth(lRadiusState,1),@SuccessfulCastTrigger,#who=who,#oSpell=self,
+                                 #state=lRadiusState,#iSpellPower=iSpellPower);
+      }
+      
       return;
    }
 

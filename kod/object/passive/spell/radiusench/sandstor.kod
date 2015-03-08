@@ -133,7 +133,7 @@ messages:
    
    PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
    {
-      local oBattler, bExhaustedMultiple;
+      local oBattler, bExhaustedMultiple, lRadiusState;
       
       % Sandstorm applies 1-4 slashing damage from the source of the spell.
       % It also drains 1-4 vigor. Both values are based on spellpower, and are not random.
@@ -148,6 +148,15 @@ messages:
             AND NOT Send(Send(oBattler,@GetOwner),@InFoyer,#who=oBattler)
          {
             continue;
+         }
+
+         lRadiusState = Send(oBattler,@GetMostPowerfulRadiusEnchantmentState,#byClass=&SandStorm);
+         if lRadiusState <> $
+         {
+            if Nth(lRadiusState,3) <> source
+            {
+               continue;
+            }
          }
          
          if IsClass(oBattler,&User)
