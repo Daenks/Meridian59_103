@@ -2266,6 +2266,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case RECORDSTAT : strcpy(c_name, "RecordStat"); break;
 		case GETSESSIONIP : strcpy(c_name, "GetSessionIP"); break;
 		case SETCLASSVAR : strcpy(c_name, "SetClassVar"); break;
+		case GETPROPERTY : strcpy(c_name, "GetProperty"); break;
 			
 		default : 
 			sprintf(c_name,"Unknown (%i)",max_index);

@@ -220,6 +220,7 @@ void InitBkodInterpret(void)
    ccall_table[GETTIME] = C_GetTime;
    ccall_table[GETTICKCOUNT] = C_GetTickCount;
    ccall_table[SETCLASSVAR] = C_SetClassVar;
+   ccall_table[GETPROPERTY] = C_GetProperty;
    
    ccall_table[CREATETABLE] = C_CreateTable;
    ccall_table[ADDTABLEENTRY] = C_AddTableEntry;

@@ -5233,3 +5233,88 @@ int C_SetClassVar(int object_id,local_var_type *local_vars,
 
    return ret_val.int_val;
 }
+
+int C_GetProperty(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[])
+{
+   // Uses the string name of a property to return the value of
+   // that property in the given class.
+   object_node *o;
+   val_type object_val, property_name;
+   int property_id;
+   const char *pStrConst;
+
+   object_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+                  normal_parm_array[0].value);
+   property_name = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
+                  normal_parm_array[1].value);
+
+   if (object_val.v.tag == TAG_INT && object_val.v.data == 0)
+   {
+      /* allowed to send to INT 0 rather than OBJECT 0
+         (obsolete but backwards compatible) */
+      object_val.v.data = GetSystemObjectID();
+      object_val.v.tag = TAG_OBJECT;
+   }
+
+   if (object_val.v.tag != TAG_OBJECT)
+   {
+      bprintf("C_GetProperty received non-object %i,%i\n",
+         object_val.v.tag,object_val.v.data);
+      return NIL;
+   }
+
+   o = GetObjectByID(object_val.v.data);
+   if (o == NULL)
+   {
+      bprintf("C_GetProperty can't find object %i\n",
+            object_val.v.data);
+      return NIL;
+   }
+
+   if (property_name.v.tag != TAG_DEBUGSTR)
+   {
+      bprintf("C_GetProperty passed bad property string, tag %i.\n",
+         property_name.v.tag);
+      return NIL;
+   }
+
+   kod_statistics *kstat = GetKodStats();
+   class_node *c = GetClassByID(kstat->interpreting_class);
+   if (c == NULL)
+   {
+      bprintf("C_GetProperty can't find class %i, can't get debug str\n",
+            kstat->interpreting_class);
+      return NIL;
+   }
+
+   if (property_name.v.data > c->dstrs->num_strings)
+   {
+      bprintf("C_GetProperty got invalid debug string id, %i %i\n",
+            c->class_id,property_name.v.data);
+      return NIL;
+   }
+
+   // Use the code from GetClassDebugStr (class.c) directly here.
+   // C_GetProperty is expected to be called a *lot*.
+   pStrConst = c->bof_base + ((int *) &c->dstrs->string_offsets)[property_name.v.data];
+   if (pStrConst == NULL)
+   {
+      bprintf("C_GetProperty: GetClassDebugStr returned NULL\n");
+      return NIL;
+   }
+
+   class_node *c2 = GetClassByID(o->class_id);
+   property_id = GetPropertyIDByName(c2, pStrConst);
+   if (property_id == INVALID_PROPERTY)
+   {
+      bprintf("C_GetProperty cannot find property named %s for object %i.\n",
+            pStrConst,object_val.v.data);
+      return NIL;
+   }
+
+   // Valid object, valid property ID. Return it to blakod.
+
+   return o->p[property_id].val.int_val;
+}
