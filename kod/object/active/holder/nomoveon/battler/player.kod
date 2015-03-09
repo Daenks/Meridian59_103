@@ -5269,7 +5269,7 @@ messages:
       precision=FALSE)
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
-            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken
+            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
             iCorrode, iCorrodeMultiple, iCorrodeReduction;
 
       if NOT precision
