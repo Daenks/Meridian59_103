@@ -325,7 +325,7 @@ messages:
       iHumbled = Send(self,@GetStatusEffect,#type=STATUS_HUMBLED);
       if iHumbled > 0
       {
-         iHumbledDivisor = SendSend(SYS,@GetSettings),@GetElementalMultiple,
+         iHumbledDivisor = Send(Send(SYS,@GetSettings),@GetElementalMultiple,
                            #type = STATUS_HUMBLED);
          
          for i in plCurrentResistances
@@ -1753,7 +1753,7 @@ messages:
    
    ClearAllStatusEffects()
    {
-      plStatusEffects = $
+      plStatusEffects = $;
       if ptStatusEffectTimer <> $
       {
          DeleteTimer(ptStatusEffectTimer);
