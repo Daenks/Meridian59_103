@@ -5497,7 +5497,7 @@ messages:
       {
          if aspell <> 0
          {
-            Send(self,@ApplyElementalStatusEffects,#damage=damage,
+            Send(self,@ApplyElementalStatusEffects,#damage=damage/100,
                       #aspell=aspell);
          }
       }
@@ -5506,7 +5506,7 @@ messages:
          % Apply only half the effects from partially magical attacks
          if aspell <> 0
          {
-            Send(self,@ApplyElementalStatusEffects,#damage=(damage/2),
+            Send(self,@ApplyElementalStatusEffects,#damage=(damage/100/2),
                       #aspell=aspell);
          }
       }
