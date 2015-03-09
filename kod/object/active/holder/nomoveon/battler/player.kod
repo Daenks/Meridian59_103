@@ -6291,7 +6291,7 @@ messages:
                while iChilledTotal > 100
                {
                   i = i + 100;
-                  iChilledTotal - 100;
+                  iChilledTotal = iChilledTotal - 100;
                }
             }
          }
