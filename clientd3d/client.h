@@ -41,18 +41,17 @@
 #include <tchar.h>
 #include "wininet.h"
 
-#include <d3d8.h>
-#include <dxerr8.h>
-#include <d3dx8tex.h>
+#include <d3d9.h>
+#include <DxErr.h>
 
 typedef unsigned char Bool;
 enum {False = 0, True = 1};
 
 #define MAJOR_REV 50   /* Major version of client program */
-#define MINOR_REV 16  /* Minor version of client program; must be in [0, 99] */
+#define MINOR_REV 22  /* Minor version of client program; must be in [0, 99] */
 
 #define MAXAMOUNT 9     /* Max # of digits in a server integer */
-#define MAXSTRINGLEN 255 /* Max length of a string loaded from string table */
+#define MAXSTRINGLEN 512 /* Max length of a string loaded from string table */
 
 /* Main window size & position */
 #define MAIN_DEF_LEFT     0

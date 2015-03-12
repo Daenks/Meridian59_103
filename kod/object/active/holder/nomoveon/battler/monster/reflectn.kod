@@ -55,7 +55,7 @@ classvars:
    viAttributes = 0
    viLevel = 45
    viDifficulty = 4
-
+   viDamagePercent = 50
    viVisionDistance = 60
 
    viKarma = 0
@@ -84,7 +84,7 @@ properties:
 
    piSpellpower = 1
    poArrow = $
-
+   piDamagePercent
    ptSomethingChanged = $
 
 messages:
@@ -99,7 +99,7 @@ messages:
       piSpellpower = iSpellpower;
       ptManaDrain = CreateTimer(self,@ManaDrainTimer,MANA_DRAIN_DELAY);
       poArrow = Create(&Arrow);
-
+      piDamagePercent = viDamagePercent;
       propagate;
    }
 
@@ -152,13 +152,17 @@ messages:
    {
       if poOriginal = $
       {
-         Send(self,@Delete);
+         return TRUE;
       }
-
-      if IsClass(poOriginal,&Player)
-         AND NOT Send(poOriginal,@IsLoggedOn)
+      else
       {
-         Send(self,@Delete);
+         if IsClass(poOriginal,&Player)
+            AND NOT Send(poOriginal,@IsLoggedOn)
+         {
+            Post(self,@Delete);
+
+            return TRUE;
+         }
       }
 
       propagate;
@@ -168,15 +172,16 @@ messages:
    {
       if poOriginal = $
       {
-         Send(self,@Delete);
+         return;
       }
-      else
+
+      if IsClass(poOriginal,&Player)
+         AND NOT Send(poOriginal,@IsLoggedOn)
       {
-         if IsClass(poOriginal,&Player)
-            and not Send(poOriginal,@IsLoggedOn)
-         {
-            Send(self,@Delete);
-         }
+         % This happens when the original leaves (i.e. logs off), and the
+         % reflection is deleted when it is removed from the system list.
+         % We don't need to delete it again here.
+         return;
       }
 
       propagate;
@@ -187,10 +192,61 @@ messages:
    {
       if victim = poOriginal
       {
-         post(self,@Delete);
+         Post(self,@Delete);
+
+         return;
       }
 
       propagate;
+   }
+
+   SetMaster(oMaster=$)
+   {
+      if oMaster = $
+      {
+         if poMaster <> $
+         {
+            % Reflections return to owner's control, attacking the player
+            % who stole them.
+
+            if poMaster = Send(self,@GetOriginal)
+            {
+               % Don't need to do anything.
+               return;
+            }
+
+            Send(poMaster,@RemoveControlledMinion,#what=self);
+            Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
+            poMaster = Send(self,@GetOriginal);
+            % Add ourselves back to master's control list.
+            Send(poMaster,@NewControlledMinion,#minion=self);
+            Send(self,@EnterStateChase);
+
+         }
+      }
+      else
+      {
+         poMaster = oMaster;
+
+         % Break target.
+         Send(self,@EnterStateWait);
+
+         % Uncomment this if post-capture attack behavior changes.
+         %if NOT Send(SYS,@IsPKAllowed)
+         %   AND (poTarget <> $
+         %      AND IsClass(poTarget,&Player))
+         %{
+         %   % Forget our target
+         %   Send(self,@EnterStateWait);
+         %}
+      }
+
+      if poOwner <> $
+      {
+         Post(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
    }
 
    ManaDrainTimer()
@@ -199,7 +255,7 @@ messages:
 
       if poOriginal = $
       {
-         Send(self,@Delete);
+         return;
       }
 
       % Ignore mana drain for non-players.
@@ -208,9 +264,10 @@ messages:
          return;
       }
 
-      if not Send(poOriginal,@IsLoggedOn)
+      if NOT Send(poOriginal,@IsLoggedOn)
       {
          Send(self,@Delete);
+
          return;
       }
 
@@ -235,7 +292,7 @@ messages:
 
       if poOwner <> $
          AND (IsClass(poOriginal,&Monster)
-            OR Send(poOriginal,@isLoggedOn))
+            OR Send(poOriginal,@IsLoggedOn))
       {
          Send(poOwner,@SomeoneSaid,#type=SAY_MESSAGE,#string=reflection_delete,
               #what=self,#parm1=Send(self,@GetDef,#cap=TRUE),
@@ -254,10 +311,21 @@ messages:
          ptSomethingChanged = $;
       }
 
-      poOriginal = $;
-      Send(poArrow,@Delete);
+      if poArrow <> $
+      {
+         Send(poArrow,@Delete);
+      }
+      poArrow = $;
+      Post(self,@RemoveOriginal);
 
       propagate;
+   }
+
+   RemoveOriginal()
+   {
+      poOriginal = $;
+
+      return;
    }
 
    GetOriginal()
@@ -274,19 +342,19 @@ messages:
    {
       if poOriginal = $
       {
-         Send(self,@Delete);
+         return;
       }
 
       if IsClass(poOriginal,&Player)
       {
          vrIcon = Send(poOriginal,@GetPlayerIcon);
-         piDrawfx = Send(poOriginal,@GetPlayerDrawfx);
+         piDrawfx = Send(poOriginal,@GetDrawingEffects);
          vrName = Send(poOriginal,@GetTrueName);
       }
       else
       {
          vrIcon = Send(poOriginal,@GetIcon);
-         piDrawfx = Send(poOriginal,@GetDrawfx);
+         piDrawfx = Send(poOriginal,@GetDrawingEffects);
          vrName = Send(poOriginal,@GetName);
       }
 
@@ -297,18 +365,42 @@ messages:
 
    GetObjectFlags()
    {
-      local iFlags;
-
       if poOriginal = $
       {
-         Post(self,@Delete);
-
          return 0;
       }
 
-      iFlags = Send(poOriginal,@GetObjectFlags);
+      return Send(poOriginal,@GetObjectFlags);
+   }
 
-      return iFlags;
+   GetDrawingEffects()
+   {
+      if poOriginal = $
+      {
+         return 0;
+      }
+
+      return Send(poOriginal,@GetDrawingEffects);
+   }
+
+   GetPlayerNameColor()
+   {
+      if poOriginal = $
+      {
+         return 0;
+      }
+
+      return Send(poOriginal,@GetPlayerNameColor);
+   }
+
+   GetClientObjectType()
+   {
+      if poOriginal = $
+      {
+         return 0;
+      }
+
+      return Send(poOriginal,@GetClientObjectType);
    }
 
    GetAttackRange()
@@ -317,7 +409,7 @@ messages:
 
       if poOriginal = $
       {
-         post(self,@Delete);
+         return 0;
       }
 
       if IsClass(poOriginal,&Player)
@@ -334,7 +426,7 @@ messages:
          return Send(poOriginal,@GetAttackRange);
       }
 
-      return 1;
+      return 64;
    }
 
    GetOffense(what=$,stroke_obj=$)
@@ -349,15 +441,21 @@ messages:
 
    GetDamage(what = $, stroke_obj=$)
    {
-      local oStroke;
+      local oStroke, iDamage;
+
+      if poOriginal = $
+      {
+         return 0;
+      }
 
       oStroke = stroke_obj;
       if IsClass(poOriginal,&Player)
       {
          oStroke = $;
       }
+      iDamage = Send(poOriginal,@GetDamage,#what=what,#stroke_obj=oStroke);
 
-      return Send(poOriginal,@GetDamage,#what=what,#stroke_obj=oStroke);
+      return iDamage * piDamagePercent / 100;
    }
 
    GetDamageType(what=$,use_weapon=$)
@@ -384,14 +482,14 @@ messages:
    {
       if poOriginal = $
       {
-         post(self,@Delete);
+         return;
       }
 
       % Our source object changed; tell everyone that we've changed, too.
       if (what = poOriginal)
          AND IsClass(poOriginal,&Player)
       {
-         piDrawfx = Send(poOriginal,@GetPlayerDrawfx);
+         piDrawfx = Send(poOriginal,@GetDrawingEffects);
 
          % Players report that if a character casts a lot of
          % reflections and then changes state, e.g. by putting on lots
@@ -411,10 +509,12 @@ messages:
    }
 
    SomethingChangedTimer()
-   "Tell room that we've changed.  This is on a timer to avoid tons of changes sent all at once."
+   "Tell room that we've changed.  This is on a timer to avoid tons "
+   "of changes sent all at once."
    {
       ptSomethingChanged = $;
-      if (poOwner <> $) 
+      if poOriginal <> $
+         AND poOwner <> $
       {
          Post(poOwner,@SomethingChanged,#what=self);
       }
@@ -428,10 +528,11 @@ messages:
       {
          Debug("Reflection called with invalid $ SetOriginal");
       }
+
       poOriginal = who;
       piMax_Hit_Points = piSpellpower / 3;
       piMax_hit_points = Bound(piMax_hit_points,15,40);
-      piHit_Points = piMax_Hit_Points;
+      piHit_Points = piMax_Hit_Points*100;
 
       Send(self,@GetOriginalInfo);
 
@@ -548,6 +649,11 @@ messages:
          return;
       }
 
+      if poOriginal = $
+      {
+         return;
+      }
+
       if IsClass(poOriginal,&Player)
       {
          if Send(poOriginal,@CheckPlayerFlag,#flag=PFLAG_INVISIBLE)
@@ -623,7 +729,7 @@ messages:
          OR IsClass(what,&Revenant)
          OR IsClass(what,&EvilTwin)
       {
-         return -100;
+         return -1000;
       }
 
       return 0;

@@ -51,7 +51,7 @@ classvars:
 
    % Base damage determined by ammo, but this can add to the bow's strength.
    viWeaponDamage = 0
-   viRange = 100
+   viRange = 100 * FINENESS
 
    viValue_average = 2500
    viBulk = 80
@@ -106,7 +106,6 @@ messages:
       % Here we are just concerned with shields and lutes.
       if (IsClass(what,&Shield)
          AND NOT IsClass(what,&SoldierShield))
-         OR IsClass(what,&JewelOfFroz)
          OR IsClass(what,&Book)
       {
          if Send(poOwner,@TryUnuseItem,#what=self)

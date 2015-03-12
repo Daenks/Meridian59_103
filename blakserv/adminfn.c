@@ -94,7 +94,7 @@ void AdminMail(int session_id,admin_parm_type parms[],
 void AdminPage(int session_id,admin_parm_type parms[],
                int num_blak_parm,parm_node blak_parm[]);
 
-void AdminShowStatus(int seFssion_id,admin_parm_type parms[],
+void AdminShowStatus(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
 void AdminShowMemory(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
@@ -209,6 +209,8 @@ void AdminCreateAutomated(int session_id,admin_parm_type parms[],
                           int num_blak_parm,parm_node blak_parm[]);
 void AdminRecreateAutomated(int session_id,admin_parm_type parms[],
                             int num_blak_parm,parm_node blak_parm[]);
+void AdminAddUserToEachAccount(int session_id,admin_parm_type parms[],
+							   int num_blak_parm,parm_node blak_parm[]);
 void AdminCreateUser(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
 void AdminCreateAdmin(int session_id,admin_parm_type parms[],
@@ -410,6 +412,7 @@ admin_table_type admin_create_table[] =
 	{ AdminCreateResource,{R,N},   F, A|M, NULL, 0, "resource","Create resource string" },
 	{ AdminCreateTimer,   {I,S,I,N},F,A|M, NULL, 0, "timer","Create timer for obj id, message, milli" },
 	{ AdminCreateUser,    {I,N},   F, A|M, NULL, 0, "user",    "Create user object by account id" },
+	{ AdminAddUserToEachAccount, {N},   F, A|M, NULL, 0, "useroneachaccount", "Add one user object to each account" }
 };
 #define LEN_ADMIN_CREATE_TABLE (sizeof(admin_create_table)/sizeof(admin_table_type))
 
@@ -2106,6 +2109,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case RECYCLEUSER : strcpy(c_name, "RecycleUser"); break;
 		case RANDOM : strcpy(c_name, "Random"); break;
 		case RECORDSTAT : strcpy(c_name, "RecordStat"); break;
+		case SETCLASSVAR : strcpy(c_name, "SetClassVar"); break;
 			
 		default : 
 			sprintf(c_name,"Unknown (%i)",max_index);
@@ -3511,6 +3515,12 @@ void AdminRecreateAutomated(int session_id,admin_parm_type parms[],
 	}
 	AdminShowOneUser(u);
 	
+}
+void AdminAddUserToEachAccount(int session_id,admin_parm_type parms[],
+							   int num_blak_parm,parm_node blak_parm[])                         
+{
+	ForEachAccount(CreateUseronAccount);
+	aprintf("Added one user to each account.\n");
 }
 
 void AdminCreateUser(int session_id,admin_parm_type parms[],

@@ -284,14 +284,14 @@ void WallChange(WORD wall_num, Animate *a, BYTE action)
 }
 /************************************************************************/
 /*
- * SectorChange:  Animate sector with given ID # in given way.
+ * SectorAnimate:  Animate sector with given ID # in given way.
  */
-void SectorChange(WORD sector_num, Animate *a, BYTE action)
+void SectorAnimate(WORD sector_num, Animate *a, BYTE action)
 {
    int i;
    Sector *s;
 
-   debug(("SectorChange got sector %d\n", (int) sector_num));
+   debug(("SectorAnimate got sector %d\n", (int) sector_num));
 
    // Adjust animation if user has it turned off
    if (!config.animate)
@@ -321,6 +321,61 @@ void SectorChange(WORD sector_num, Animate *a, BYTE action)
 	 RedrawAll();
       }
    }
+}
+/************************************************************************/
+/*
+ * SectorChange:  Change the animation properties and flags of the sector
+ *   with the given id number.
+ */
+void SectorChange(WORD sector_num, BYTE depth, BYTE scroll)
+{
+   int i;
+   Sector *s;
+   BYTE direction, floor, ceiling;
+
+   for (i=0; i < current_room.num_sectors; i++)
+   {
+      s = &current_room.sectors[i];
+      if (s->server_id != sector_num)
+         continue;
+
+      // Remove the current depth value and add the new one.
+      if (depth != CHANGE_OVERRIDE)
+      {
+         s->flags &= ~SectorDepth(s->flags);
+         s->flags |= depth;
+      }
+
+      // If we want to stop scrolling, remove all the scroll data.
+      if (scroll != CHANGE_OVERRIDE)
+      {
+         if (scroll == SCROLL_NONE)
+         {
+            s->flags &= ~0x000001FC;
+         }
+         else
+         {
+            // Save other flag values that occupy the same space. Note that
+            // if we're changing an already changed value, we'll be using those
+            // values here. Client gets redrawn to prevent any issues with this
+            // i.e. if the previous change was to delete them all.
+            direction = SectorScrollDirection(s->flags);
+            floor = s->flags & SF_SCROLL_FLOOR;
+            ceiling = s->flags & SF_SCROLL_CEILING;
+
+            s->flags &= ~0x000001FC;
+            s->flags |= scroll << 2;
+            // Replace the other ones.
+            if (direction != SCROLL_N)
+               s->flags |= direction << 4;
+            if (floor)
+               s->flags |= SF_SCROLL_FLOOR;
+            if (ceiling)
+               s->flags |= SF_SCROLL_CEILING;
+         }
+      }
+   }
+   RedrawAll();
 }
 /************************************************************************/
 /*
