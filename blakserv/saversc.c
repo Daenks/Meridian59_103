@@ -94,12 +94,12 @@ void SaveEachDynamicRsc(resource_node *r)
    if (written != LEN_RSC_TYPE)
       eprintf("SaveEachDynamicRsc 2 error writing to file!\n");
 
-   write_int = strlen(r->resource_val);
+   write_int = strlen(r->resource_eng_val);
    written = fwrite(&write_int, 1, LEN_RSC_LEN, rscfile);
    if (written != LEN_RSC_LEN)
       eprintf("SaveEachDynamicRsc 3 error writing to file!\n");
 
-   written = fwrite(r->resource_val, 1, strlen(r->resource_val), rscfile);
-   if (written != (int)strlen(r->resource_val))
+   written = fwrite(r->resource_eng_val, 1, strlen(r->resource_eng_val), rscfile);
+   if (written != (int)strlen(r->resource_eng_val))
       eprintf("SaveEachDynamicRsc 4 error writing to file!\n");
 }

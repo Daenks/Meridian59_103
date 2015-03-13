@@ -11,7 +11,9 @@
 
 typedef struct _Resource {
    int   number;
-   char *name;
+   char *eng;
+   char *deu;
+   char *kor;
    struct _Resource *next;
 } Resource;
 
@@ -107,8 +109,12 @@ bool SaveRscFile(char *filename)
       // Write out id #
       fwrite(&r->number, 4, 1, f);
 
-      // Write string
-      fwrite(r->name, strlen(r->name) + 1, 1, f);
+      // Write english string
+      fwrite(r->eng, strlen(r->eng) + 1, 1, f);
+      // Write german string
+      fwrite(r->deu, strlen(r->deu) + 1, 1, f);
+      // Write korean string
+      fwrite(r->kor, strlen(r->kor) + 1, 1, f);
    }
 
    fclose(f);
@@ -118,13 +124,15 @@ bool SaveRscFile(char *filename)
 /*
  * EachRscCallback:  Called for each resource that's loaded.
  */
-bool EachRscCallback(char *filename, int rsc, char *name)
+bool EachRscCallback(char *filename, int rsc, char *eng, char *deu, char *kor)
 {
    Resource *r;
 
    r = (Resource *) SafeMalloc(sizeof(Resource));
    r->number = rsc;
-   r->name = strdup(name);
+   r->eng = strdup(eng);
+   r->deu = strdup(deu);
+   r->kor = strdup(kor);
    r->next = resources;
    resources = r;
    return true;

@@ -291,7 +291,9 @@ int load_add_resource(char *resource_name, int resource_id)
    id->source = DBASE;
 
    r->lhs = id;
-   r->rhs = NULL;
+   r->eng = NULL;
+   r->deu = NULL;
+   r->kor = NULL;
 
    /* Add resource to resource list of current class */
    if (current_class == NULL)

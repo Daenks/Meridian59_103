@@ -74,9 +74,9 @@ int LoadRoomData(int resource_id)
       return NIL;
    }
 
-   if (!LoadRoomFile(r->resource_val,&file_info))
+   if (!LoadRoomFile(r->resource_eng_val,&file_info))
    {
-      bprintf("LoadRoomData couldn't open %s!!!\n",r->resource_val);
+      bprintf("LoadRoomData couldn't open %s!!!\n",r->resource_eng_val);
       return NIL;
    }
 

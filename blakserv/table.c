@@ -311,8 +311,8 @@ Bool EqualTableEntry(val_type s1_val,val_type s2_val)
 	 eprintf("%s\n",BlakodStackInfo());
 	 return False;
       }
-      s1 = r->resource_val;
-      len1 = strlen(r->resource_val);
+      s1 = r->resource_eng_val;
+      len1 = strlen(r->resource_eng_val);
       break;
 
    case TAG_STRING :
@@ -347,8 +347,8 @@ Bool EqualTableEntry(val_type s1_val,val_type s2_val)
 	 eprintf("%s\n",BlakodStackInfo());
 	 return False;
       }
-      s2 = r->resource_val;
-      len2 = strlen(r->resource_val);
+      s2 = r->resource_eng_val;
+      len2 = strlen(r->resource_eng_val);
       break;
 
    case TAG_STRING :
@@ -404,8 +404,8 @@ unsigned int GetTableHash(val_type val)
 	 eprintf("%s\n",BlakodStackInfo());
 	 return 0;
       }
-      s = r->resource_val;
-      len = strlen(r->resource_val);
+      s = r->resource_eng_val;
+      len = strlen(r->resource_eng_val);
       break;
 
    case TAG_STRING :

@@ -137,7 +137,9 @@ resource_list:
 	;
 
 resource:
-		id '=' resource_const EOL	{ $$ = make_resource($1, $3); }
+		id '=' resource_const ',' resource_const ',' resource_const EOL{ $$ = make_resource($1, $3, $5, $7); }
+	|	id '=' resource_const ',' resource_const EOL{ $$ = make_resource($1, $3, $5, NULL); }
+	|	id '=' resource_const EOL	{ $$ = make_resource($1, $3, NULL, NULL); }
 	|	error EOL			{ $$ = NULL; } 
 	;
 

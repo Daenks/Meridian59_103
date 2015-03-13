@@ -17,7 +17,7 @@
  * is loaded; if it returns false, loading of the file immediately stops and RscFileLoad
  * returns false.
  */
-typedef bool (*RscCallbackProc)(char *filename, int resource_num, char *string);
+typedef bool (*RscCallbackProc)(char *filename, int resource_num, char *eng, char *deu, char *kor);
 
 bool RscFileLoad(char *fname, RscCallbackProc callback);
 
