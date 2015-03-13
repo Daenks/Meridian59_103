@@ -224,6 +224,10 @@ void ChangeResource(ID res, char *value)
 	
 	entry->eng = (char *) SafeMalloc(strlen(value) + 1);
 	strcpy(entry->eng, value);
+	entry->deu = (char *) SafeMalloc(strlen(value) + 1);
+	strcpy(entry->deu, value);
+	entry->kor = (char *) SafeMalloc(strlen(value) + 1);
+	strcpy(entry->kor, value);
 	entry->idnum = res;
 	table_insert(t, entry, ResourceHash, ResourceCompare);
 }

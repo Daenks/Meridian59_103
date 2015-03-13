@@ -170,7 +170,17 @@ void ChangeDynamicResource(resource_node *r,char *data,int len_data)
 	r->resource_eng_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
 	memcpy(r->resource_eng_val,data,len_data);
 	r->resource_eng_val[len_data] = 0; /* null terminate */
-	
+
+	FreeMemory(MALLOC_ID_RESOURCE,r->resource_deu_val,strlen(r->resource_deu_val)+1);
+	r->resource_deu_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
+	memcpy(r->resource_deu_val,data,len_data);
+	r->resource_deu_val[len_data] = 0; /* null terminate */
+
+	FreeMemory(MALLOC_ID_RESOURCE,r->resource_kor_val,strlen(r->resource_kor_val)+1);
+	r->resource_kor_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
+	memcpy(r->resource_kor_val,data,len_data);
+	r->resource_kor_val[len_data] = 0; /* null terminate */
+
 	/* now notify everyone in game */
 	notify_r = r;
 	ForEachSession(DynamicResourceChangeNotify);
