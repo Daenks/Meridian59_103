@@ -1831,6 +1831,14 @@
    ATCK_SPELL_UNHOLY     = 0x0020
    ATCK_SPELL_ACID       = 0x0040
    ATCK_SPELL_QUAKE      = 0x0080
+   
+   % Elemental status effect types
+   STATUS_SHOCKED        = 1
+   STATUS_CHILLED        = 2
+   STATUS_BURNING        = 3
+   STATUS_CORRODE        = 4
+   STATUS_HUMBLED        = 5
+   STATUS_MANTLED        = 6
 
    % For hunter swords
    ATCK_SPELL_HUNTERSWORD= 0x0100

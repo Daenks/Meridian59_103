@@ -186,6 +186,11 @@ properties:
 
    % Mana regen timer.
    ptMana = $
+   
+   % Elemental status effects. Each element is [value, type]
+   % Timer removes a portion of status effect every period
+   plStatusEffects = $
+   ptStatusEffectTimer = $
 
 messages:
 
@@ -277,20 +282,24 @@ messages:
    }
    
    GetCurrentResistances()
-   "Object attributes, such as spells and items, can change resistances temporarily."
+   "Object attributes, such as spells and items, can change resistances."
    {
-      local oObjectAttribute, plCurrentResistances, oEquipment, oEnchantment;
+      local oObjectAttribute, plCurrentResistances, oEquipment, oEnchantment,
+            iHumbled, iHumbledDivisor, i;
       
-      plCurrentResistances = Send(SYS,@ListCopy,#source=Send(self,@GetBaseResistances));
+      plCurrentResistances = Send(SYS,@ListCopy,
+                               #source=Send(self,@GetBaseResistances));
       
       for oObjectAttribute in plObject_attributes
       {
-         plCurrentResistances = Send(oObjectAttribute,@ModifyResistance,#resistance_list=plCurrentResistances);
+         plCurrentResistances = Send(oObjectAttribute,@ModifyResistance,
+                                #resistance_list=plCurrentResistances);
       }
       
       for oEquipment in Send(self,@GetEquippedItems)
       {
-         plCurrentResistances = Send(oEquipment,@ModifyResistance,#resistance_list=plCurrentResistances);
+         plCurrentResistances = Send(oEquipment,@ModifyResistance,
+                                #resistance_list=plCurrentResistances);
       }
       
       If IsClass(self,&User)
@@ -299,14 +308,34 @@ messages:
          {
             if Length(oEnchantment) > 2
             {
-               plCurrentResistances = Send(Nth(oEnchantment,2),@ModifyResistance,#resistance_list=plCurrentResistances,#iState=Nth(oEnchantment,3));
+               plCurrentResistances = Send(Nth(oEnchantment,2),
+                                      @ModifyResistance,
+                                      #resistance_list=plCurrentResistances,
+                                      #iState=Nth(oEnchantment,3));
             }
             else
             {
-               plCurrentResistances = Send(Nth(oEnchantment,2),@ModifyResistance,#resistance_list=plCurrentResistances);
+               plCurrentResistances = Send(Nth(oEnchantment,2),
+                                      @ModifyResistance,
+                                      #resistance_list=plCurrentResistances);
             }
          }
       }
+      
+      iHumbled = Send(self,@GetStatusEffect,#type=STATUS_HUMBLED);
+      if iHumbled > 0
+      {
+         iHumbledDivisor = Send(Send(SYS,@GetSettings),@GetElementalMultiple,
+                           #type = STATUS_HUMBLED);
+         
+         for i in plCurrentResistances
+         {
+            if Nth(i,1) > 0
+            {
+               SetNth(i,1,bound(Nth(i,1) - (iHumbled/iHumbledDivisor),0,$));
+            }
+         }
+      } 
       
       return plCurrentResistances;
    }
@@ -1640,6 +1669,157 @@ messages:
 
       return;
    }
+   
+   AddStatusEffect(value=10,type=STATUS_SHOCKED)
+   {
+      local i;
+      
+      if ptStatusEffectTimer <> $
+      {
+         ptStatusEffectTimer = CreateTimer(self,@StatusEffectTimer,
+                                           Send(Send(SYS,@GetSettings),
+                                           @GetStatusEffectReductionTime));
+      }
+      
+      if type=STATUS_SHOCKED
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawDefense);
+      }
+      
+      if type=STATUS_CORRODE
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawArmor);
+      }
+      
+      if type=STATUS_HUMBLED
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawResistances);
+      }
+      
+      for i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            SetNth(i,1,Nth(i,1)+value);
+            return;
+         }
+      }
+
+      plStatusEffects = Cons([value,type],plStatusEffects);
+      return;
+   }
+   
+   GetStatusEffect(type=STATUS_SHOCKED)
+   {
+      local i;
+      
+      for i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            return Nth(i,1);
+         }
+      }
+      return 0;
+   }
+   
+   ClearStatusEffect(type=STATUS_SHOCKED)
+   {
+      local i;
+      
+      for i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            SetNth(i,1,0);
+            plStatusEffects = DelListElem(plStatusEffects,i);
+         }
+      }
+      
+      if plStatusEffects = $
+      {
+         if ptStatusEffectTimer <> $
+         {
+            DeleteTimer(ptStatusEffectTimer);
+            ptStatusEffectTimer = $;
+         }
+      }
+      
+      return;
+   }
+   
+   ClearAllStatusEffects()
+   {
+      plStatusEffects = $;
+      if ptStatusEffectTimer <> $
+      {
+         DeleteTimer(ptStatusEffectTimer);
+         ptStatusEffectTimer = $;
+      }
+      return;
+   }
+   
+   StatusEffectTimer(timer=$)
+   {
+      local i, iBurningDamage;
+      
+      ptStatusEffectTimer = $;
+      
+      for i in plStatusEffects
+      {
+         if Nth(i,2) = STATUS_SHOCKED
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawDefense);
+         }
+         if Nth(i,2) = STATUS_CORRODE
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawArmor);
+         }
+         if Nth(i,2) = STATUS_HUMBLED
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawResistances);
+         }
+
+         if Nth(i,2) = STATUS_BURNING
+         {
+            iBurningDamage = (Nth(i,1) / Send(Send(SYS,@GetSettings),
+                              @GetElementalMultiple,#type=STATUS_BURNING));
+            SetNth(i,1,0);
+            if iBurningDamage >= 1
+            {
+               Send(self,@AssessDamage,#what=self,
+                              #damage=iBurningDamage,
+                              #aspell=-ATCK_SPELL_FIRE);
+            }
+         }
+         else
+         {
+            SetNth(i,1,Nth(i,1) - Send(Send(SYS,@GetSettings),
+                                  @GetStatusEffectReductionAmount));
+         }
+
+         if Nth(i,1) <= 0
+         {
+            plStatusEffects = DelListElem(plStatusEffects,i);
+         }
+      }
+      
+      if plStatusEffects <> $
+      {
+         ptStatusEffectTimer = CreateTimer(self,@StatusEffectTimer,
+                                           Send(Send(SYS,@GetSettings),
+                                           @GetStatusEffectReductionTime));
+      }
+      
+      return;
+   }
+   
 
    GetBoostedLevel()
    {
