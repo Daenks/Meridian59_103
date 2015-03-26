@@ -60,7 +60,7 @@ constants:
 
    % Speedhack/cheating detection:
    % What's the maximum number of times we should log a violation?
-   MAX_LOGGED_THRESHOLD = 25
+   MAX_LOGGED_THRESHOLD = 50
 
 resources:
 
@@ -443,7 +443,7 @@ properties:
 
    % The ms tick we received last position update from user
    piLastMoveUpdateTime = 0
-   
+
    % The ms tick we last drained vigor
    piLastVigorDrainTime = 0
 
@@ -512,14 +512,14 @@ messages:
    {
       % Send a blank string if we're anonymous, if we're a blank or if we're
       %  a hidden admin.
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
+      if (piFlags & PFLAG_ANONYMOUS)
          OR vrIcon = admin_icon_blank
          OR (IsClass(self,&DM) AND Send(self,@IsHidden))
       {         
          return Send(self,@GetBlankName);
       }
 
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetName,#who=self);
@@ -530,7 +530,7 @@ messages:
 
    GetDef()
    {
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetDef,#who=self);
@@ -541,7 +541,7 @@ messages:
    
    GetCapDef()
    {
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetCapDef,#who=self);
@@ -552,7 +552,7 @@ messages:
 
    GetIndef()
    {
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetIndef,#who=self);
@@ -563,7 +563,7 @@ messages:
 
    GetHisHer()
    {
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetHisHer,#who=self);
@@ -574,7 +574,7 @@ messages:
 
    GetCapIndef()
    {
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
          return Send(poIllusion_set,@IllusionGetCapIndef,#who=self);
@@ -587,13 +587,13 @@ messages:
    {
       local rName;
       
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
-      {            
+      {
          return Send(poIllusion_set,@IllusionGetName,#who=self);
       }
 
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
+      if (piFlags & PFLAG_ANONYMOUS)
       {
          if cap
          {
@@ -1684,9 +1684,9 @@ messages:
          {
             Send(self,@SetPlayerFlag,#flag=PFLAG_TEMP_SAFETY,#value=TRUE);
 
-            if Send(self,@GetBaseMaxHealth) > 99
-               OR Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
-               OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+            if piBase_max_health > 99
+               OR (piFlags & PFLAG_MURDERER)
+               OR (piFlags & PFLAG_OUTLAW)
                OR Send(self,@FindUsing,#class=&SoldierShield) <> $
             {
                Send(self,@MsgSendUser,#message_rsc=user_temp_safe_invalid);
@@ -1700,9 +1700,9 @@ messages:
          {
             Send(self,@SetPlayerFlag,#flag=PFLAG_TEMP_SAFETY,#value=FALSE);
 
-            if Send(self,@GetBaseMaxHealth) > 99
-               OR Send(self,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
-               OR Send(self,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+            if piBase_max_health > 99
+               OR (piFlags & PFLAG_MURDERER)
+               OR (piFlags & PFLAG_OUTLAW)
                OR Send(self,@FindUsing,#class=&SoldierShield) <> $
             {
                Send(self,@MsgSendUser,#message_rsc=user_temp_safe_invalid);
@@ -2493,7 +2493,7 @@ messages:
       iFlags = Send(what,@GetObjectFlags);
       % If we can see the invisible object, remove its invis drawing flag
       % and set it to flash instead (in object flags).
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG2_DETECT_INVIS,#flagset=2)
+      if (piFlags2 & PFLAG2_DETECT_INVIS)
          AND (iDrawingFlags & DRAWFX_MASK) = DRAWFX_INVISIBLE
       {
          iDrawingFlags = (iDrawingFlags & (~DRAWFX_MASK));
@@ -2506,7 +2506,7 @@ messages:
          iEnemyKarma = Send(what,@GetKarma,#detect=TRUE);
          iSelfKarma = Send(self,@GetKarma);
 
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_DETECT_EVIL,#flagset=2)
+         if (piFlags2 & PFLAG2_DETECT_EVIL)
             AND iSelfKarma > 0
             AND iEnemyKarma < -10
             AND (IsClass(what,&Player)
@@ -2516,7 +2516,7 @@ messages:
             iFlags = (iFlags | OF_FLASHING);
          }
 
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_DETECT_GOOD,#flagset=2)
+         if (piFlags2 & PFLAG2_DETECT_GOOD)
             AND iSelfKarma < 0
             AND iEnemyKarma > 10
             AND (IsClass(what,&Player)
@@ -3198,7 +3198,7 @@ messages:
       % 2. Do not allow any moves if player is marked as not allowed to move
       %
 
-      if Send(self,@CheckPlayerflag,#flag=PFLAG_NO_MOVE)
+      if (piFlags & PFLAG_NO_MOVE)
       {
          % Reset position
          Send(SYS,@UtilGoNearSquare,#what=self,#where=poOwner,
@@ -3224,31 +3224,31 @@ messages:
 
       %
       % 3.3 Bound time-deltas
-      %   These must not be too big for the calculations blow
+      %   These must not be too big for the calculations below
       %
-      iDelta = bound(iDelta,0,2000);
+      iDelta = Bound(iDelta,0,2000);
       iDeltaVigor = bound(iDeltaVigor,0,2000);
-	  
+
       %
       % 4.1 Calculate the squared movesize for running in this dt.
       %   USER_RUNNING_SPEED is defined as # of big squares per 10000ms
       %   The unit here is fine upscaled by another *16 (same is done below in 4.5)
       %
-      iMaxMoveRun = (USER_RUNNING_SPEED * FINENESS * 16 * iDelta) / 10000;
+      iMaxMoveRun = (Bound(speed,0,50) * FINENESS * 16 * iDelta) / 10000;
       iMaxMoveRun = (iMaxMoveRun * iMaxMoveRun);
-  
+
       %
       % 4.2 Fill up the movement bucket with tokens
       %   for the squared distance one could have travelled at maximum.
       %
-      piMovementBucket = piMovementBucket + iMaxMoveRun;        
+      piMovementBucket = piMovementBucket + iMaxMoveRun;
 
       %
       % 4.3 Bound the maximum bucketsize
       %
-      piMovementBucket = bound(piMovementBucket, 0, Send(Send(SYS, @GetSettings), @GetMovementBucketMax));
+      piMovementBucket = Bound(piMovementBucket, 0, Send(Send(SYS,@GetSettings),@GetMovementBucketMax));
       %Debug("Bucket before move:",piMovementBucket);
-			
+
       %
       % 4.4 Get move-deltas in FINENESS units
       %
@@ -3306,13 +3306,33 @@ messages:
       }
 
       %
-      % 5.2 This move is bigger than walking allows.
-      % Right now: Still use the transmitted speed
+      % 5.2 Double check the user's speed. USER_WALKING_SPEED should
+      % be 25, USER_RUNNING_SPEED should be 50. If the speed we've
+      % received is less than 25, make it 50 and log that we've
+      % changed it.
+      %
+
+      if speed < USER_WALKING_SPEED
+         OR speed > USER_RUNNING_SPEED
+      {
+         % Make a log entry
+         if piCheaterLogs < MAX_LOGGED_THRESHOLD
+         {
+            piCheaterLogs = piCheaterLogs + 1;
+            Debug("ALERT! ",Send(self,@GetTrueName),self,
+                  " had transmitted speed changed from ",speed, "to ",
+                  USER_RUNNING_SPEED);
+         }
+         speed = USER_RUNNING_SPEED;
+      }
+
+      %
+      % 5.3 This move is bigger than walking allows.
       %
       if (speed > USER_WALKING_SPEED)
       {
          % Disallow run with low vigor
-         if Send(self,@GetVigor) < VIGOR_RUN_THRESHOLD
+         if piVigor < VIGOR_RUN_THRESHOLD
          {
             % Reset position
             Send(SYS,@UtilGoNearSquare,#what=self,#where=poOwner,
@@ -3340,14 +3360,14 @@ messages:
          }
 
          % Stop dance
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_DANCING,#flagset=2)
+         if (piFlags2 & PFLAG2_DANCING)
          {
             Send(self,@StopDancing);
          }
       }
 
       %
-      % 5.3 Manual move checks in some rooms
+      % 5.4 Manual move checks in some rooms
       %
       iRoomNum = Send(poOwner,@GetRoomNum);
       if iRoomNum = RID_CAVE2
@@ -3385,10 +3405,10 @@ messages:
          iExertion = iExertion * iExertion;
          iExertion = EXERTION_PER_MOVE * iExertion;
 
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG2_HASTED,#flagset=2)
+         if (piFlags2 & PFLAG2_HASTED)
          {
             iHasteLevel = Send(self,@GetEnchantedState,
-                               #what=Send(SYS,@FindSpellByNum,#num=SID_HASTE));
+                              #what=Send(SYS,@FindSpellByNum,#num=SID_HASTE));
 
             if iHasteLevel <> $
             {
@@ -3400,7 +3420,6 @@ messages:
 
          % Save vigor drain tick
          piLastVigorDrainTime = iCurrentTime;
-
       }
 
       %
@@ -3414,11 +3433,12 @@ messages:
       %
       % 8. Save this move tick for next execution
       % and subtract the move tokens we have consumed.
+      %
       piLastMoveUpdateTime = iCurrentTime;
       piMovementBucket = piMovementBucket - iMoveLength;
       %Debug("Bucket after:",piMovementBucket);
 
-	  %
+      %
       % 9. Process the move
       %
       Send(poOwner,@SomethingMoved,#what=self,
@@ -3459,7 +3479,7 @@ messages:
       }
 
       % Do not allow angle changes while we are immobile.
-      if Send(self,@CheckPlayerflag,#flag=PFLAG_NO_MOVE)
+      if (piFlags & PFLAG_NO_MOVE)
          AND ((NOT Send(self,@IsResting))
               OR Send(self,@IsEnchanted,#byClass=&Hold))
       {
@@ -4359,7 +4379,7 @@ messages:
 
       % A room can completely block a piece of communication if it chooses.
       % An excellent example is Out Of Grace, which blocks all tells to 
-      %  non-DMs, as well as Guild Tells and Broadcasts
+      % non-DMs, as well as Guild Tells and Broadcasts
 
       % User took an action!  Wake any AIs in the room to the user's presence!
       % bitflag check instead of function for speed.
@@ -4370,42 +4390,47 @@ messages:
 
       if type = SAY_NORMAL
       {
-         If StringContain(String,"start solo survival")
+         if StringContain(String,"start solo survival")
          {
             lSurvivalOptions = $;
             if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
                OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
                return;
             }
 
-            Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
-                      #who=self);
+            Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,#who=self);
+
             return;
          }
 
-         If StringContain(String,"start guild survival")
+         if StringContain(String,"start guild survival")
          {
             lSurvivalOptions = $;
-            if Send(self,@GetGuild) = $
+            if poGuild = $
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_no_guild);
+
                return;
             }
-            
+
             if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
                OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
                return;
             }
-            
+
             if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindRoomByGuild,
-                     #oGuild=Send(self,@GetGuild)) = $
+                     #oGuild=poGuild) = $
             {
                Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
-                         #who=self,#guild_survival=TRUE);
+                     #who=self,#guild_survival=TRUE);
             }
             else
             {
@@ -4415,17 +4440,19 @@ messages:
             return;
          }
 
-         If StringContain(String,"start public survival")
+         if StringContain(String,"start public survival")
          {
             lSurvivalOptions = $;
             if (NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
-               OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD)
-               AND NOT IsClass(self,&DM)
+               OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1)
+               AND NOT IsClass(self,&Admin)
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
                return;
             }
-            
+
             poForceBaseRoom = $;
             if IsClass(self,&DM)
             {
@@ -4439,137 +4466,156 @@ messages:
                }
                if StringContain(String,"--thisbase")
                {
-                 poForceBaseRoom = poOwner;
+                  poForceBaseRoom = poOwner;
                }
+            }
+
+            if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindPublicRoom) = $
+            {
+               Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
+                     #who=self,#iPublic=TRUE,#sString=string,
+                     #lSurvivalOptions=lSurvivalOptions,
+                     #poForceBaseRoom=poForceBaseRoom);
             }
             
             if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindPublicRoom) = $
             {
                Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
-                         #who=self,#iPublic=TRUE,
-                         #lSurvivalOptions=lSurvivalOptions,
-                         #poForceBaseRoom=poForceBaseRoom);
+                     #who=self,#iPublic=TRUE,
+                     #lSurvivalOptions=lSurvivalOptions,
+                     #poForceBaseRoom=poForceBaseRoom);
             }
             else
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_already_public);
             }
-            
+
             return;
          }
 
-         If StringEqual(String,"join guild survival")
+         if StringEqual(String,"join guild survival")
          {
-            if Send(self,@GetGuild) = $
+            if poGuild = $
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_no_guild);
+
                return;
             }
 
             if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
                OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
                return;
             }
-            
+
             if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindRoomByGuild,
-                     #oGuild=Send(self,@GetGuild)) = $
+                     #oGuild=poGuild) = $
             {
                Send(self,@MsgSendUser,#message_rsc=survival_no_guild_rooms);
+
                return;
             }
 
             if Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
-                    @FindRoomByGuild,#oGuild=Send(self,@GetGuild)),
-                    @GetAllowJoins)
+                     @FindRoomByGuild,#oGuild=poGuild),@GetAllowJoins)
             {
                Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
-                    @FindRoomByGuild,#oGuild=Send(self,@GetGuild)),
-                    @Teleport,#what=self);
+                     @FindRoomByGuild,#oGuild=poGuild),@Teleport,#what=self);
             }
             else
             {
                Send(self,@MsgSendUser,#message_rsc=guild_survival_too_late);
             }
+
             return;
          }
 
-         If StringEqual(String,"join public survival")
+         if StringEqual(String,"join public survival")
          {
             if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
                OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1
             {
                Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
                return;
             }
             
             if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindPublicRoom) = $
             {
                Send(self,@MsgSendUser,#message_rsc=survival_no_public_rooms);
+
                return;
             }
 
             if Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
-                    @FindPublicRoom),
-                    @GetAllowJoins)
+                     @FindPublicRoom),@GetAllowJoins)
             {
                Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
-                    @FindPublicRoom),
-                    @Teleport,#what=self);
+                     @FindPublicRoom),@Teleport,#what=self);
             }
             else
             {
                Send(self,@MsgSendUser,#message_rsc=public_survival_too_late);
             }
+
             return;
          }
-         
-         If StringContain(String,"autocombine on")
+
+         if StringContain(String,"autocombine on")
             AND NOT Send(self,@IsAutoCombining)
          {
             Send(self,@SetAutoCombine,#value=TRUE);
             Send(self,@MsgSendUser,#message_rsc=autocombine_on_msg);
+
             return;
          }
 
-         If StringContain(String,"autocombine off")
+         if StringContain(String,"autocombine off")
             AND Send(self,@IsAutoCombining)
          {
             Send(self,@SetAutoCombine,#value=FALSE);
             Send(self,@MsgSendUser,#message_rsc=autocombine_off_msg);
+
             return;
          }
 
-         If StringContain(String,"autoloot on")
+         if StringContain(String,"autoloot on")
             AND NOT Send(self,@IsAutolooting)
          {
             Send(self,@SetAutoloot,#value=TRUE);
             Send(self,@MsgSendUser,#message_rsc=autoloot_on_msg);
+
             return;
          }
 
-         If StringContain(String,"autoloot off")
+         if StringContain(String,"autoloot off")
             AND Send(self,@IsAutolooting)
          {
             Send(self,@SetAutoloot,#value=FALSE);
             Send(self,@MsgSendUser,#message_rsc=autoloot_off_msg);
+
             return;
          }
 
-         If StringContain(String,"reagentbag on")
+         if StringContain(String,"reagentbag on")
             AND NOT Send(self,@GetReagentBagAuto)
          {
             Send(self,@SetReagentBagAuto,#value=TRUE);
             Send(self,@MsgSendUser,#message_rsc=reagentbag_auto_on);
+
             return;
          }
 
-         If StringContain(String,"reagentbag off")
+         if StringContain(String,"reagentbag off")
             AND Send(self,@GetReagentBagAuto)
          {
             Send(self,@SetReagentBagAuto,#value=FALSE);
             Send(self,@MsgSendUser,#message_rsc=reagentbag_auto_off);
+
             return;
          }
       }
@@ -4583,20 +4629,22 @@ messages:
       if type = SAY_GUILD
       {
          if StringContain(string,guild_motd_command)
-            AND Send(self,@GetGuild) <> $
-            AND (Send(Send(self,@GetGuild),@GetRank,#who=self) = RANK_MASTER
-                OR Send(Send(self,@GetGuild),@GetRank,#who=self) = RANK_LIEUTENANT)
+            AND poGuild <> $
+            AND (Send(poGuild,@GetRank,#who=self) = RANK_MASTER
+               OR Send(poGuild,@GetRank,#who=self) = RANK_LIEUTENANT)
          {
-            Send(Send(self,@GetGuild),@SetGuildMOTD,#who=self,#string=string);
+            Send(poGuild,@SetGuildMOTD,#who=self,#string=string);
+
             return;
          }
          if StringContain(string,guild_clear_motd_command)
-            AND Send(self,@GetGuild) <> $
-            AND Send(Send(self,@GetGuild),@GetGuildMaster) = self
-            AND (Send(Send(self,@GetGuild),@GetRank,#who=self) = RANK_MASTER
-                OR Send(Send(self,@GetGuild),@GetRank,#who=self) = RANK_LIEUTENANT)
+            AND poGuild <> $
+            AND Send(poGuild,@GetGuildMaster) = self
+            AND (Send(poGuild,@GetRank,#who=self) = RANK_MASTER
+               OR Send(poGuild,@GetRank,#who=self) = RANK_LIEUTENANT)
          {
-            Send(Send(self,@GetGuild),@SetGuildMOTD,#who=self,#string=$);
+            Send(poGuild,@SetGuildMOTD,#who=self,#string=$);
+
             return;
          }
 
@@ -4615,7 +4663,7 @@ messages:
          OR type = SAY_EMOTE
          OR type = SAY_DM
       {
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG_TRANCE)
+         if (piFlags & PFLAG_TRANCE)
          {
             % See if the trance spell does anything special 
             %  with says.  Note that the 'say' will still go off.
@@ -5304,7 +5352,7 @@ messages:
          Send(self,@BreakTrance,#event=EVENT_ATTACK);
       }
 
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT)
+      if (piFlags & PFLAG_NO_FIGHT)
       {
          Send(self,@MsgSendUser,#message_rsc=user_no_fight);
 
@@ -5406,7 +5454,7 @@ messages:
          Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
       }
 
-      if (Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_MAGIC)
+      if ((piFlags & PFLAG_NO_MAGIC)
          OR Send(self,@IsInCannotInteractMode))
          AND NOT IsClass(oSpell,&Phase)
       {
@@ -6300,7 +6348,7 @@ messages:
    {
       local bCanGo;
 
-      if Send(self,@CheckPlayerflag,#flag=PFLAG_NO_MOVE)
+      if (piFlags & PFLAG_NO_MOVE)
          OR Send(self,@IsEnchanted,#byClass=&Blind)
       {         
          Send(self,@MsgSendUser,#message_rsc=user_cant_go);
@@ -6741,7 +6789,7 @@ messages:
       %  one, then tell him he's safe again.  Ignore during chaos night.
 
       if NOT Send(SYS,@GetChaosNight)
-         AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         AND NOT (piFlags & PFLAG_PKILL_ENABLE)
       {
          if Send(what,@CheckRoomFlag,#flag=ROOM_KILL_ZONE)
             AND (poOwner = $
@@ -6806,7 +6854,7 @@ messages:
       % This is intended to protect players from wall spells stacked on entrances. It will clear
       % out a small space when they enter the zone, so that they don't appear in the middle of a wall spell.
       if old <> $
-         AND Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         AND (piFlags & PFLAG_PKILL_ENABLE)
          AND Send(poOwner,@AllowGuildAttack,#what=self)
          AND NOT IsClass(self,&DM)
       {
@@ -7291,7 +7339,7 @@ messages:
       }
 
       if what = self
-         AND Send(self,@CheckPlayerFlag,#flag=PFLAG2_DANCING,#Flagset=2)
+         AND (piFlags2 & PFLAG2_DANCING)
       {
          Send(self,@StopDancing);
       }
@@ -8606,7 +8654,7 @@ messages:
       }
 
       % Angeled characters cannot block other players.
-      if NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+      if NOT (piFlags & PFLAG_PKILL_ENABLE)
       {
          iFlags = (iFlags & ~MOVEON_NO);
       }
@@ -8667,7 +8715,7 @@ messages:
       oIllusion = Send(self,@GetIllusionForm);
 
       % If we're morphed, get rid of any "player" flags
-      if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
+      if (piFlags & PFLAG_MORPHED)
          AND oIllusion <> $
          AND IsClass(oIllusion,&Monster)
       {
@@ -9127,7 +9175,7 @@ messages:
       % We're not moving if it's been more than 2 seconds since we moved
       %   OR if we're flagged as unable to move.
       if (GetTime() - piLastMoveUpdateTime) > 2
-         OR Send(self,@CheckPlayerFlag,#flag=PFLAG_NO_MOVE)
+         OR (piFlags & PFLAG_NO_MOVE)
       {
          return FALSE;
       }

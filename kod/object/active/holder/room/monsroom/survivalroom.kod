@@ -958,6 +958,7 @@ messages:
 
          if plParticipants <> $
             AND Length(plParticipants) = 1
+            AND plLevelGoals <> $
          {
             % Finish it up if only one guy remains in a public room.
             if piPublic
@@ -968,21 +969,24 @@ messages:
                   if IsClass(oMonster,&Monster)
                      AND (NOT Send(oMonster,@IsOwnedByPlayer))
                      AND oMonster <> victim
+                     AND Random(1,2) = 1
+                     AND plParticipants <> $ % Sometimes $ by this stage?
                   {
                      oTarget = First(plParticipants);
-                     Send(oMonster,@TargetSwitch,#what=oTarget,#iHatred=100);
-                     Send(oMonster,@EnterStateChase,#target=oTarget,#actnow=True);
+                     if oTarget <> $
+                     {
+                        Send(oMonster,@TargetSwitch,#what=oTarget,#iHatred=100);
+                        Send(oMonster,@EnterStateChase,#target=oTarget,
+                              #actnow=True);
+                     }
                   }
                }
             }
             else
             {
                % Aggro one mob on the player.
-               if plLevelGoals <> $
-               {
-                  Send(self,@AggroOne,#who=(First(plParticipants)),
-                        #victim=victim);
-               }
+               Send(self,@AggroOne,#who=(First(plParticipants)),
+                     #victim=victim);
             }
          }
       }
@@ -1109,7 +1113,7 @@ messages:
                
                plParticipants = Cons(what,plParticipants);
                
-               Send(self,@AggroSome,#who=what);
+               Post(self,@AggroSome,#who=what);
 
                propagate;
             }
