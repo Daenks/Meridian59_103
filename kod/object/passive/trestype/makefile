@@ -14,6 +14,6 @@ BOFS = wimptres.bof notres.bof spquent.bof med-tght.bof wmp-medt.bof \
    dethspdt.bof skel2t.bof skel3t.bof skel4t.bof narthylt.bof \
    wrmlarvt.bof wrmquent.bof dangelt.bof newbietrs.bof thrasht.bof \
    statuet.bof kriipat.bof molluskt.bof shadowbeastt.bof ratktres.bof \
-   earthelet.bof fireelet.bof iceelet.bof neruelet.bof
+   earthelet.bof fireelet.bof iceelet.bof neruelet.bof avarchtpoi.bof
 
 !include $(KODDIR)\kod.mak
