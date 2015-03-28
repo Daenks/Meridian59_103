@@ -38,7 +38,7 @@ static Bool  ResourceCompare(void *r1, void *r2);
 static DWORD IdHash(void *idnum, DWORD tablesize);
 static Bool  IdResourceCompare(void *idnum, void *r1);
 static void  FreeRsc(void *entry);
-static bool  RscAddCallback(char *fname, int res, char *string);
+static bool  RscAddCallback(char *fname, int res, char *eng, char *deu, char *kor);
 static Bool  LoadRscFiles(char *filespec);
 static Bool  LoadRscFilesSorted(char *filespec);
 /******************************************************************************/
@@ -105,12 +105,12 @@ Bool LoadResources(void)
 	rsc_loaded = LoadRscFiles(rsc_spec);
 	
 	// Built-in resources for About box
-	RscAddCallback("", ABOUT_RSC, "aarmor.bgf");
-	RscAddCallback("", ABOUT_RSC1, "c1.bgf");
-	RscAddCallback("", ABOUT_RSC2, "c2.bgf");
-	RscAddCallback("", ABOUT_RSC3, "c3.bgf");
-	RscAddCallback("", LAGBOXICON_RSC, "ilagbox.bgf");
-	RscAddCallback("", LAGBOXNAME_RSC, "Latency");
+	RscAddCallback("", ABOUT_RSC, "aarmor.bgf","aarmor.bgf","aarmor.bgf");
+	RscAddCallback("", ABOUT_RSC1, "c1.bgf","c1.bgf","c1.bgf");
+	RscAddCallback("", ABOUT_RSC2, "c2.bgf","c2.bgf","c2.bgf");
+	RscAddCallback("", ABOUT_RSC3, "c3.bgf","c3.bgf","c3.bgf");
+	RscAddCallback("", LAGBOXICON_RSC, "ilagbox.bgf","ilagbox.bgf","ilagbox.bgf");
+	RscAddCallback("", LAGBOXNAME_RSC, "Latency","Latency","Latency");
 	
 	ignore_duplicates = False;
 	
@@ -148,7 +148,7 @@ Bool LoadRscFiles(char *filespec)
 			/* Add subdirectory name, using file_load_path as temporary */
 			sprintf(file_load_path, "%s%s\\%s", game_path, resource_dir, file_info.cFileName);  
 			_RPT1(_CRT_WARN,"Loading File : %s\n",file_load_path); 
-			if (!RscFileLoad(file_load_path, RscAddCallback))
+			if (!RscFileLoad((char *) file_load_path, RscAddCallback))
 				debug(("Can't load resource file %s\n", file_info.cFileName));
 		}
 		
@@ -212,7 +212,7 @@ void ChangeResource(ID res, char *value)
 {
 	resource_type r, entry;
 	
-	//   debug(("got new resource %d, type = %d, value = %s\n", res, type, value));
+	   debug(("got new resource %d, value = %s\n", res, value));
 	r = (resource_type) table_lookup(t, &res, IdHash, IdResourceCompare);
 	if (r != NULL)
 	{
@@ -222,8 +222,12 @@ void ChangeResource(ID res, char *value)
 	
 	entry = (resource_type) SafeMalloc(sizeof(resource_struct));
 	
-	entry->data = (char *) SafeMalloc(strlen(value) + 1);
-	strcpy(entry->data, value);
+	entry->eng = (char *) SafeMalloc(strlen(value) + 1);
+	strcpy(entry->eng, value);
+	entry->deu = (char *) SafeMalloc(strlen(value) + 1);
+	strcpy(entry->deu, value);
+	entry->kor = (char *) SafeMalloc(strlen(value) + 1);
+	strcpy(entry->kor, value);
 	entry->idnum = res;
 	table_insert(t, entry, ResourceHash, ResourceCompare);
 }
@@ -240,15 +244,19 @@ void FreeResources(void)
 * RscAddCallback:  Called for each new resource that's loaded from a file.
 *   Add given resource to table.
 */
-bool RscAddCallback(char *fname, int res, char *string)
+bool RscAddCallback(char *fname, int res, char *eng, char *deu, char *kor)
 {
 	resource_type entry, r;
 	
 	entry = (resource_type) SafeMalloc(sizeof(resource_struct));
 	
 	entry->idnum = res;
-	entry->data = (char *) SafeMalloc(strlen(string) + 1);
-	strcpy(entry->data, string);
+	entry->eng = (char *) SafeMalloc(strlen(eng) + 1);
+	strcpy(entry->eng, eng);
+	entry->deu = (char *) SafeMalloc(strlen(deu) + 1);
+	strcpy(entry->deu, deu);
+	entry->kor = (char *) SafeMalloc(strlen(kor) + 1);
+	strcpy(entry->kor, kor);
 	
 	if (table_insert(t, entry, ResourceHash, ResourceCompare) != 0)
 	{
@@ -279,20 +287,27 @@ bool RscAddCallback(char *fname, int res, char *string)
 */
 char *LookupRsc(ID idnum)
 {
-	resource_type r;
-	r = (resource_type) table_lookup(t, &idnum, IdHash, IdResourceCompare);
-	if (r == NULL)
-	{
-		debug(("Missing resource %d\n", idnum));
-		/* Ask if user wants to redownload */
-		// We post this message to the main window, which then calls MissingResource.
-		// This avoids problems with the animation timer going off with the redownload
-		// dialog going off, which causes a crash for an unknown reason.
-		PostMessage(hMain, BK_NORESOURCE, 0, 0);
-		return NULL;
-	}
-	
-	return r->data;
+   resource_type r;
+   r = (resource_type) table_lookup(t, &idnum, IdHash, IdResourceCompare);
+   if (r == NULL)
+   {
+      debug(("Missing resource %d\n", idnum));
+      /* Ask if user wants to redownload */
+      // We post this message to the main window, which then calls MissingResource.
+      // This avoids problems with the animation timer going off with the redownload
+      // dialog going off, which causes a crash for an unknown reason.
+      PostMessage(hMain, BK_NORESOURCE, 0, 0);
+      return NULL;
+   }
+   if (config.language == 0)
+      return r->eng;
+   if (config.language == 1)
+      return r->deu;
+   if (config.language == 2)
+      return r->kor;
+
+   // In case there's some error with the language config.
+   return r->eng;
 }
 /******************************************************************************/
 /*
@@ -320,7 +335,7 @@ char *LookupRscNoError(ID idnum)
 		debug(("Missing resource %d\n", idnum));
 		return GetString(hInst, IDS_UNKNOWN);
 	}
-	return r->data;
+	return r->deu;
 }
 /******************************************************************************/
 /* 
@@ -329,7 +344,9 @@ char *LookupRscNoError(ID idnum)
 void FreeRsc(void *entry)
 {
 	resource_type typecast_entry = (resource_type) entry;
-	SafeFree(typecast_entry->data);
+	SafeFree(typecast_entry->eng);
+	SafeFree(typecast_entry->deu);
+	SafeFree(typecast_entry->kor);
 	SafeFree(typecast_entry);
 }
 /******************************************************************************/

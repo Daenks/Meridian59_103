@@ -72,7 +72,7 @@ void ResetResource(void)
 	resource_name_map = CreateSIHash(ConfigInt(MEMORY_SIZE_RESOURCE_NAME_HASH));
 }
 
-void AddResource(int id,char *str_value)
+void AddResource(int id,char *eng,char *deu,char *kor)
 {
 	int hash_num;
 	resource_node *new_node;
@@ -82,7 +82,7 @@ void AddResource(int id,char *str_value)
 	
 	if (GetResourceByID(id) != NULL)
 	{
-		eprintf("AddResource can't add resource num %i because it already exists! (%s)\n",id,str_value);
+		eprintf("AddResource can't add resource num %i because it already exists! (%s)\n",id,eng);
 		return;
 	}
 	
@@ -96,9 +96,15 @@ void AddResource(int id,char *str_value)
 	
 	new_node = (resource_node *)AllocateMemory(MALLOC_ID_RESOURCE,sizeof(resource_node));
 	new_node->resource_id = id;
-	new_node->resource_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,strlen(str_value)+1);
-	strcpy(new_node->resource_val,str_value);
-	
+	new_node->resource_eng_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,strlen(eng)+1);
+	strcpy(new_node->resource_eng_val,eng);
+
+	new_node->resource_deu_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,strlen(deu)+1);
+	strcpy(new_node->resource_deu_val,deu);
+
+	new_node->resource_kor_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,strlen(kor)+1);
+	strcpy(new_node->resource_kor_val,kor);
+
 	new_node->resource_name = NULL;
 	
 	/* add to resources table */
@@ -132,7 +138,7 @@ int AddDynamicResource(char *str_value)
 	resource_node *r;
 	
 	new_rsc_id = next_dynamic_rsc;
-	AddResource(new_rsc_id,str_value);
+	AddResource(new_rsc_id,str_value, str_value, str_value);
 	
 	r = GetResourceByID(new_rsc_id);
 	if (r == NULL)
@@ -160,11 +166,21 @@ void ChangeDynamicResource(resource_node *r,char *data,int len_data)
 		return;
 	}
 	
-	FreeMemory(MALLOC_ID_RESOURCE,r->resource_val,strlen(r->resource_val)+1);
-	r->resource_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
-	memcpy(r->resource_val,data,len_data);
-	r->resource_val[len_data] = 0; /* null terminate */
-	
+	FreeMemory(MALLOC_ID_RESOURCE,r->resource_eng_val,strlen(r->resource_eng_val)+1);
+	r->resource_eng_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
+	memcpy(r->resource_eng_val,data,len_data);
+	r->resource_eng_val[len_data] = 0; /* null terminate */
+
+	FreeMemory(MALLOC_ID_RESOURCE,r->resource_deu_val,strlen(r->resource_deu_val)+1);
+	r->resource_deu_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
+	memcpy(r->resource_deu_val,data,len_data);
+	r->resource_deu_val[len_data] = 0; /* null terminate */
+
+	FreeMemory(MALLOC_ID_RESOURCE,r->resource_kor_val,strlen(r->resource_kor_val)+1);
+	r->resource_kor_val = (char *)AllocateMemory(MALLOC_ID_RESOURCE,len_data+1);
+	memcpy(r->resource_kor_val,data,len_data);
+	r->resource_kor_val[len_data] = 0; /* null terminate */
+
 	/* now notify everyone in game */
 	notify_r = r;
 	ForEachSession(DynamicResourceChangeNotify);
@@ -176,7 +192,7 @@ void DynamicResourceChangeNotify(session_node *s)
 	{
 		AddByteToPacket(BP_CHANGE_RESOURCE);
 		AddIntToPacket(notify_r->resource_id);
-		AddStringToPacket(strlen(notify_r->resource_val),notify_r->resource_val);
+		AddStringToPacket(strlen(notify_r->resource_eng_val),notify_r->resource_eng_val);
 		SendPacket(s->session_id);
 	}
 }

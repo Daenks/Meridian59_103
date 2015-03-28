@@ -571,8 +571,8 @@ void GameStartUser(session_node *s,user_node *u)
    name_val.int_val = SendTopLevelBlakodMessage(s->game->object_id,USER_NAME_MSG,0,NULL);
    r = GetResourceByID(name_val.v.data);
 
-   if (r && r->resource_val)
-     MySQLRecordPlayerLogin(s->account->name,r->resource_val,s->conn.name);
+   if (r && r->resource_eng_val)
+     MySQLRecordPlayerLogin(s->account->name,r->resource_eng_val,s->conn.name);
 
    SetSessionTimer(s,ConfigInt(CREDIT_DRAIN_TIME));
 }
@@ -635,7 +635,7 @@ void GameSendEachUserChoice(user_node *u)
 		 name_val.v.data);
 	    return;
       }
-      AddStringToPacket(strlen(r->resource_val),r->resource_val);
+      AddStringToPacket(strlen(r->resource_eng_val),r->resource_eng_val);
    }
 
    num_val.int_val = SendTopLevelBlakodMessage(u->object_id,IS_FIRST_TIME_MSG,0,NULL);
@@ -764,8 +764,8 @@ void UpdateSecurityRedbook()
 
    if (r)
    {
-      if (!old || (r->resource_val && 0 != strcmp(old,r->resource_val)))
-	 _redbookstring = strdup(r->resource_val);
+      if (!old || (r->resource_eng_val && 0 != strcmp(old,r->resource_eng_val)))
+	 _redbookstring = strdup(r->resource_eng_val);
       else
 	 _redbookstring = old;
       _redbookid = r->resource_id;

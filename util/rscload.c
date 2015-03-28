@@ -58,24 +58,49 @@ bool RscFileRead(char *fname, FILE *f, RscCallbackProc callback)
       if (fread(&rsc_num, 1, 4, f) != 4)
          return false;
 
-      char rsc[MAX_RSC_LEN];
+      char eng[MAX_RSC_LEN];
       int pos = 0;
-      while (!feof(f) && fread(&rsc[pos], 1, 1, f) == 1)
+      while (!feof(f) && fread(&eng[pos], 1, 1, f) == 1)
       {
          // Too big for buffer?
          if (pos == MAX_RSC_LEN - 1)
             return false;
          
          // Reached end of string?
-         if (rsc[pos] == 0)
+         if (eng[pos] == 0)
             break;
          pos++;
       }
-      
-      if (!(*callback)(fname, rsc_num, rsc))
+      char deu[MAX_RSC_LEN];
+      pos = 0;
+      while (!feof(f) && fread(&deu[pos], 1, 1, f) == 1)
+      {
+         // Too big for buffer?
+         if (pos == MAX_RSC_LEN - 1)
+            return false;
+         
+         // Reached end of string?
+         if (deu[pos] == 0)
+            break;
+         pos++;
+      }
+      char kor[MAX_RSC_LEN];
+      pos = 0;
+      while (!feof(f) && fread(&kor[pos], 1, 1, f) == 1)
+      {
+         // Too big for buffer?
+         if (pos == MAX_RSC_LEN - 1)
+            return false;
+         
+         // Reached end of string?
+         if (kor[pos] == 0)
+            break;
+         pos++;
+      }
+
+      if (!(*callback)(fname, rsc_num, eng, deu, kor))
          return false;
    }
 
    return true;
 }
-

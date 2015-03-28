@@ -402,6 +402,9 @@
 #define IDC_WEATHER                     1208
 #define IDC_TEMPSAFE                    1209
 #define IDC_GROUPING                    1210
+#define IDC_ENGLISH                     1211
+#define IDC_GERMAN                      1212
+#define IDC_KOREAN                      1213
 #define ID_GAME_EXIT                    3002
 #define ID_FONT_MAIL                    3014
 #define ID_FONT_LIST                    3015

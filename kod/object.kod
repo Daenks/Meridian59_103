@@ -20,7 +20,7 @@ resources:
    object_icon_rsc = somethin.bgf
    object_desc_rsc = "You are looking at an object"
 
-   object_article_the_rsc = "the "
+   object_article_the_rsc = "the ","test","test"
    object_article_none_rsc = ""
    object_article_a_rsc = "a "
    object_article_an_rsc = "an "

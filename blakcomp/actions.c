@@ -346,6 +346,8 @@ const_type make_string_constant(char *str)
 /************************************************************************/
 const_type make_string_resource(char *str)
 {
+   if (str == NULL)
+      return NULL;
    const_type c = (const_type) SafeMalloc(sizeof(const_struct));
 
    c->type = C_STRING;
@@ -809,7 +811,7 @@ property_type make_property(id_type id, expr_type e)
    return p;   
 }
 /************************************************************************/
-resource_type make_resource(id_type id, const_type c)
+resource_type make_resource(id_type id, const_type c, const_type c2, const_type c3)
 {
    resource_type r = (resource_type) SafeMalloc(sizeof(resource_struct));
    id_type old_id;
@@ -827,9 +829,9 @@ resource_type make_resource(id_type id, const_type c)
    case I_RESOURCE:
       /* Allow redefinition of resources listed in database file */
       if (id->source == COMPILE)
-	 action_error("Resource %s is defined twice", id->name);
+         action_error("Resource %s is defined twice", id->name);
       else
-	 old_id->source = COMPILE;
+         old_id->source = COMPILE;
 
       id->source = COMPILE;
       break;
@@ -839,7 +841,18 @@ resource_type make_resource(id_type id, const_type c)
    }
 
    r->lhs = id;
-   r->rhs = c;
+   r->eng = c;
+
+   if (c2 == NULL)
+      r->deu = c;
+   else
+      r->deu = c2;
+
+   if (c3 == NULL)
+      r->kor = c;
+   else
+      r->kor = c3;
+
    return r;
 }
 /************************************************************************/

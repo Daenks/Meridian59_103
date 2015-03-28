@@ -18,7 +18,9 @@
 
 typedef struct {
    ID    idnum;
-   char *data;
+   char *eng;
+   char *deu;
+   char *kor;
 } *resource_type, resource_struct;
 
 #ifdef __cplusplus

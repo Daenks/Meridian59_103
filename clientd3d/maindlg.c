@@ -189,6 +189,8 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       CheckDlgButton(hDlg, IDC_DRAWMAP, config.drawmap);
       CheckDlgButton(hDlg, IDC_MAP_ANNOTATIONS, config.map_annotations);
 
+      CheckRadioButton(hDlg, IDC_ENGLISH, IDC_KOREAN, config.language + IDC_ENGLISH);
+
       CheckDlgButton(hDlg, IDC_MUSIC, config.play_music);
       CheckDlgButton(hDlg, IDC_SOUNDFX, config.play_sound);
       CheckDlgButton(hDlg, IDC_LOOPSOUNDS, config.play_loop_sounds);
@@ -277,7 +279,14 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          temp                 = IsDlgButtonChecked(hDlg, IDS_LATENCY0);
          lagbox_changed = (temp != config.lagbox);
          config.lagbox = temp;
-         
+
+         if( IsDlgButtonChecked( hDlg, IDC_ENGLISH ) == BST_CHECKED )
+            config.language = 0;
+         else if( IsDlgButtonChecked( hDlg, IDC_GERMAN ) == BST_CHECKED )
+            config.language = 1;
+         else
+            config.language = 2;
+
          if (IsDlgButtonChecked(hDlg, IDC_MUSIC) != config.play_music)
             UserToggleMusic(config.play_music);
          config.play_music = IsDlgButtonChecked(hDlg, IDC_MUSIC);

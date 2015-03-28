@@ -93,7 +93,9 @@ typedef struct {
 
 typedef struct {
    id_type lhs;
-   const_type rhs;
+   const_type eng;
+   const_type deu;
+   const_type kor;
 } *resource_type, resource_struct;
 
 enum { E_BINARY_OP, E_UNARY_OP, E_IDENTIFIER, E_CONSTANT, E_CALL, };
@@ -284,7 +286,7 @@ id_type make_constant_id(id_type, expr_type);
 param_type make_parameter(id_type, expr_type);
 classvar_type make_classvar(id_type, expr_type);
 property_type make_property(id_type, expr_type);
-resource_type make_resource(id_type, const_type);
+resource_type make_resource(id_type, const_type, const_type, const_type);
 
 void check_break(void);
 void check_continue(void);

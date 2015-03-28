@@ -13,7 +13,9 @@
 static const int RSC_VERSION = 4;
 static char rsc_magic[] = {0x52, 0x53, 0x43, 0x01};
 
-char *GetStringFromResource(resource_type r);
+char *GetEnglishStringFromResource(resource_type r);
+char *GetGermanStringFromResource(resource_type r);
+char *GetKoreanStringFromResource(resource_type r);
 /******************************************************************************/
 /*
  * write_resources: Write out resources to a .rsc file.  fname should be the 
@@ -73,8 +75,14 @@ void write_resources(char *fname)
             // Write out id #
             fwrite(&r->lhs->idnum, 4, 1, f);
             
-            // Write string
-            str = GetStringFromResource(r);
+            // Write English string
+            str = GetEnglishStringFromResource(r);
+            fwrite(str, strlen(str) + 1, 1, f);
+            // Write German string
+            str = GetGermanStringFromResource(r);
+            fwrite(str, strlen(str) + 1, 1, f);
+            // Write Korean string
+            str = GetKoreanStringFromResource(r);
             fwrite(str, strlen(str) + 1, 1, f);
          }
    }
@@ -82,18 +90,48 @@ void write_resources(char *fname)
    fclose(f);
 }
 /***************************************************************************/
-char *GetStringFromResource(resource_type r)
+char *GetEnglishStringFromResource(resource_type r)
 {
-   switch (r->rhs->type)
+   switch (r->eng->type)
    {
-   case C_STRING:
-      return r->rhs->value.stringval;
-
-   case C_FNAME:
-      return r->rhs->value.fnameval;
-
-   default:
-      simple_error("Unknown resource type (%d) encountered", r->rhs->type);
-      return NULL;
+      case C_STRING:
+         return r->eng->value.stringval;
+      case C_FNAME:
+         return r->eng->value.fnameval;
+      default:
+         simple_error("Unknown resource type (%d) encountered", r->eng->type);
+         return NULL;
+   }
+}
+/***************************************************************************/
+char *GetGermanStringFromResource(resource_type r)
+{
+   switch (r->deu->type)
+   {
+      case C_STRING:
+         return r->deu->value.stringval;
+      case C_FNAME:
+         return r->deu->value.fnameval;
+      case C_NIL:
+         return GetEnglishStringFromResource(r);
+      default:
+         simple_error("Unknown resource type (%d) encountered", r->deu->type);
+         return NULL;
+   }
+}
+/***************************************************************************/
+char *GetKoreanStringFromResource(resource_type r)
+{
+   switch (r->kor->type)
+   {
+      case C_STRING:
+         return r->kor->value.stringval;
+      case C_FNAME:
+         return r->kor->value.fnameval;
+      case C_NIL:
+         return GetEnglishStringFromResource(r);
+      default:
+         simple_error("Unknown resource type (%d) encountered", r->kor->type);
+         return NULL;
    }
 }
