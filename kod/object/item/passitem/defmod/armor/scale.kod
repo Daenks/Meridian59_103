@@ -45,7 +45,8 @@ classvars:
    vrIcon_female = scalearmor_female_icon_rsc
 
    viDefense_base = -100
-   viDamage_base = 4
+   viDamage_base = 6
+   viMagicDamage_base = 2
 
 properties:
 
@@ -54,12 +55,6 @@ messages:
    ShowShirt()
    {
       return TRUE;
-   }
-
-   GetResistanceModifiers()
-   {
-      return [ [ATCK_WEAP_BLUDGEON,10]
-             ];
    }
 
    GetHeatDamage()

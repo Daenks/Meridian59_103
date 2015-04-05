@@ -30,6 +30,7 @@ classvars:
 
    viDefense_base = 0               % This is the default value for piDefense_bonus
    viDamage_base = 0                % This is the default value for piDamage_reduce
+   viMagicDamage_base = 0           % This is the default value for piMagicDamage_reduce
    
    viLayer = 0                      % Layer represents clothing and gear that may override visually
                                     % Higher numbers override lower numbers
@@ -38,6 +39,7 @@ properties:
 
    piDefense_bonus = 0              %% piDefense_bonus adds to player's defense. Ranges from 1 to 50
    piDamage_reduce = 0              %% piDamage_reduce is the maximum amount of damage that will be reduced.
+   piMagicDamage_reduce = 0         %% piMagicDamage_reduce is the maximum amount of magic damage that will be reduced.
 
 messages:
 
@@ -65,6 +67,7 @@ messages:
    {
       piDefense_bonus = viDefense_base;
       piDamage_reduce = viDamage_base;
+      piMagicDamage_reduce = viMagicDamage_base;
 
       propagate;
    }
@@ -103,18 +106,11 @@ messages:
    ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
    "Increase or decrease damage done to defender."
    {
-      local iDamageReduce, oAttribute;
+      local oAttribute;
 
       for oAttribute in plObject_attributes
       {
          damage = Send(oAttribute,@ModifyDefenseDamage,#who=who,#what=what,#damage=damage,#atype=atype,#aspell=aspell);
-      }
-
-      iDamageReduce = 0;
-      if piDamage_reduce <> 0
-      {
-         iDamageReduce = random(piDamage_reduce*33,piDamage_reduce*100);
-         iDamageReduce = bound(iDamageReduce,0,(damage-100));
       }
 
       if aspell <> 0
@@ -122,18 +118,21 @@ messages:
          % Reduce damage if part of the damage is spell
          if atype <> 0
          {
-            % Only 2/3 of the damage reduction if we're doing both weapon
-            % and spell damage types.
-            iDamageReduce = iDamageReduce * 2 / 3;
+            % If partially magical attack, both armor types reduce at half effectiveness.
+            damage = damage - (piDamage_reduce/2) - (piMagicDamage_reduce/2);
          }
          else
          {
-            % If we're doing pure spell damage, we get no reduction.
-            iDamageReduce = 0;
+            % If we're doing pure spell damage, only magic damage reduction helps.
+            damage = damage - piMagicDamage_reduce;
          }
       }
+      else
+      {
+         damage = damage - piDamage_reduce;
+      }
       
-      return damage - iDamageReduce;
+      return bound(damage,1,$);
    }
 
    % This assumes that none of the superclasses define a message for "defending hit" to do anything special.
@@ -182,6 +181,11 @@ messages:
    GetDamageReduction()
    {
       return piDamage_reduce;
+   }
+   
+   GetMagicDamageReduction()
+   {
+      return piMagicDamage_reduce;
    }
   
    GetDefenseBonus()

@@ -282,14 +282,6 @@ messages:
       propagate;
    }
 
-   GetResistanceModifiers()
-   {
-      return [ [ ATCK_WEAP_ALL, -10],
-               [-ATCK_SPELL_FIRE,-20],
-               [-ATCK_SPELL_SHOCK,15]
-             ];
-   }
-
    GetOverlay()
    {
       if send(poOwner,@GetGender) = GENDER_MALE

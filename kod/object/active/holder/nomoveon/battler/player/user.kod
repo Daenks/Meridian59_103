@@ -146,6 +146,7 @@ resources:
    user_stat_offense = "Offense"
    user_stat_defense = "Defense"
    user_stat_armor = "Armor"
+   user_stat_warding = "Warding"
    user_stat_training = "Training Pts"
    user_stat_hpgainchance = exp.bgf
    user_resist_magic = "Magic Resist"
@@ -2960,6 +2961,7 @@ messages:
          Send(self,@SendStatOffense);
          Send(self,@SendStatDefense);
          Send(self,@SendStatArmor);
+         Send(self,@SendStatWarding);
          
          i = 1;
          lCurrentResistances = Send(self,@GetCurrentResistances);
@@ -7782,6 +7784,30 @@ messages:
 
       return;
    }
+   
+   DrawWarding()
+   {
+      if pbLogged_on
+      {
+         AddPacket(1,BP_STAT,1,2);
+         Send(self,@SendStatWarding);
+         SendPacket(poSession);
+      }
+
+      return;
+   }
+   
+   SendStatWarding()
+   {
+      local iWarding_send;
+      
+      iWarding_send = Send(self,@SumMagicDamageReduction);
+      
+      AddPacket(1,13, 4,user_stat_warding, 1,STAT_VALUE, 1,STAT_INTEGER,
+                4,iWarding_send, 4,0, 4,15, 4,iWarding_send);
+
+      return;
+   }
 
    SendStatResistances(num=1,lCurrentResistances=$)
    {
@@ -7823,13 +7849,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_THRUST
             {
-               AddPacket(1,16, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponThrust = TRUE;
             }
          }
          if NOT bWeaponThrust
          {
-            AddPacket(1,16, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 3

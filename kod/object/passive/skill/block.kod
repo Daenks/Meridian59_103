@@ -49,5 +49,21 @@ properties:
 
 messages:
 
+   SuccessChance(who=$,modifier=0)
+   {
+      local iRequisiteStat,iAbility,num;
+
+      iRequisiteStat = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      num = bound(iAbility + iRequisiteStat, 10, 100);
+
+      if random(1,100) > num
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -73,7 +73,7 @@ classvars:
    prShield_emblem_drop = RebelShield_emblem_drop
    prShield_emblem_back = RebelShield_emblem_back
 
-   viDamage_base = 2                % This is the default value for piDamage_reduce
+   viDamage_base = 0                % This is the default value for piDamage_reduce
 
    viFaction = FACTION_REBEL
    viColor = XLAT_TO_RED
@@ -153,7 +153,7 @@ messages:
    ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
    "Sets piDamage_reduce for damage reduction in the superclass."
    {
-      % This ranges from 2-4.  At low end, we absorb 0-2 damage.  At high end, 1-4.
+      % This ranges from 0-2. 
       piDamage_reduce = viDamage_base + ((piFactionRank/3) - 1);
 
       propagate;

@@ -5795,6 +5795,12 @@ messages:
                {
                   tokengen = FALSE;
                }
+            
+           %    if IsClass(oTreasure,&Armor)
+        %          AND Send(self,@GetLevel) > 100
+          %     {
+          %        Send(oTreasure_type,@GenerateSockets,#oDefenseModifier=oTreasure);
+          %     }
 
                lTreasureItems = cons(oTreasure, lTreasureItems);
             

@@ -43,8 +43,8 @@ classvars:
    viChance_To_Increase = 30
    viMeditate_ratio = 50
    viFlash = FLASH_GOOD_SELF
-
    viResistanceType = -ATCK_SPELL_ALL
+
    vrAlreadyEnchanted = resistmagic_already_enchanted
    vrEnchantment_On = resistmagic_on
    vrEnchantment_Off = resistmagic_off
@@ -60,12 +60,20 @@ messages:
       plReagents = Cons([&BlueDragonScale,1],plReagents);
 
       return;
-   }	 
+   }
 
    GetResistanceStrength(iSpellpower = 0)
    {
-      %% strength varies from 5 to 25
-      return (iSpellPower+1)/5 + 5;
+      %% strength varies from 5 to 20
+      return bound((iSpellPower+1)/5,5,20);
+   }
+
+   GetDuration(iSpellPower = 0)
+   {
+      local iDuration;	   %%% 3 to 13 minutes
+      iDuration = 180 + iSpellPower * 6;
+      iDuration = iDuration * 1000;	  %% translate to milliseconds
+      return iDuration;
    }
 
    GetDuration(iSpellPower = 0)
@@ -84,7 +92,6 @@ messages:
    {
       RETURN &ResistMagicPotion;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
