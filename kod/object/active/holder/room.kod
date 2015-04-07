@@ -729,7 +729,14 @@ messages:
 
    SomethingKilled(what=$,victim=$)
    {
+      local oRoomAttribute;
+      
       Send(self,@SetGroupTime,#victim=victim);
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         Send(oRoomAttribute,@SomethingKilled,#what=what,#victim=victim);
+      }
 
       propagate;
    }
@@ -1265,7 +1272,7 @@ messages:
 
    ReqSomethingAttack(what = $,victim = $,use_weapon = $,report = TRUE)
    {
-      local oWatcher;
+      local oWatcher, oRoomAttribute;
 
       if what <> $
          AND IsClass(what,&Player)
@@ -1308,6 +1315,18 @@ messages:
 
          % Anything else is legal in the Arena.
          return TRUE;
+      }
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if NOT Send(oRoomAttribute,@ReqSomethingAttack,
+                                    #what=what,
+                                    #victim=victim,
+                                    #use_weapon=use_weapon,
+                                    #report=report)
+         {
+            return FALSE;
+         }
       }
       
       if (piRoom_flags & ROOM_NO_MOB_COMBAT)
@@ -1436,6 +1455,8 @@ messages:
 
    ReqSpellCast(who = $, oSpell = $, lItems = $)
    {
+      local oRoomAttribute;
+
       if (piRoom_flags & ROOM_NO_MAGIC)
       {
          Send(who,@MsgSendUser,#message_rsc=room_no_magic_allowed);
@@ -1456,6 +1477,17 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=room_no_attack);
 
          return FALSE;
+      }
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if NOT Send(oRoomAttribute,@ReqSpellCast,
+                                    #who=who,
+                                    #oSpell=oSpell,
+                                    #lItems=lItems)
+         {
+            return FALSE;
+         }
       }
 
       propagate;
@@ -1700,6 +1732,18 @@ messages:
    "Doing this this way allows us to have some zones, such as Ko'catan, have "
    "different skies."
    {
+      local oRoomAttribute;
+
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@ModifiesRoomBackground)
+         {
+            prBackground = Send(oRoomAttribute,@ModifyRoomBackground,
+                                     #rBackground=prBackground);
+            return;
+         }
+      }
+
       prBackground = background_night_sky;
       if Send(self,@GetRegion) = RID_KOCATAN
       {
@@ -1894,7 +1938,7 @@ messages:
 
    NewHoldObject(what = $,new_pos = $)
    {
-      local iTimeLeft, i, each_obj;
+      local iTimeLeft, i, each_obj, oRoomAttribute;
 
       % The object still thinks it's with it's old owner.  If it's an item from
       %   a player, then make sure the items don't disappear immediately.
@@ -1945,6 +1989,11 @@ messages:
             Send(each_obj,@StartEnchantmentNewOccupant,#who=what,
                  #state=(Nth(i,3)));
          }
+      }
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         Send(oRoomAttribute,@NewHoldObject,#what=what,#new_pos=new_pos);
       }
 
       return;
@@ -2096,7 +2145,12 @@ messages:
 
    LeaveHold(what = $)
    {
-      local i,each_obj;
+      local i,each_obj, oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         Send(oRoomAttribute,@LeaveHold,#what=what);
+      }
 
       if NOT IsClass(what,&User)
       {
@@ -2718,7 +2772,12 @@ messages:
 
    FirstUserEntered()
    {
-      local iTime;
+      local iTime, oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         Send(oRoomAttribute,@FirstUserEntered);
+      }
 
       pbUser_in_room = TRUE;
 
@@ -2732,8 +2791,15 @@ messages:
       propagate;
    }
 
-   LastUserLeft()
+   LastUserLeft(what=$)
    {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         Send(oRoomAttribute,@LastUserLeft,#what=what);
+      }
+
       pbUser_in_room = FALSE;
 
       if (ptPeriodic_sounds <> $)
@@ -4871,22 +4937,174 @@ messages:
    
    OverridesDeathFunction()
    {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesDeathFunction)
+         {
+            return TRUE;
+         }
+      }
+      
       return piOverridesDeathFunction;
    }
    
    OverrideDeathFunction(who=$,what=$)
    {
+      local oRoomAttribute, bOverrides;
+
+      % We only reach here by propagation if the room
+      % didn't completely override deaths lower down.
+      
+      % All Room Attributes receive OverrideDeathFunction message.
+      % Make sure different types don't conflict.
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesDeathFunction)
+         {
+            Send(oRoomAttribute,@OverrideDeathFunction,
+                                #who=who,
+                                #what=what);
+         }
+      }
+      
       return;
    }
    
    GetChaosZone()
    {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@GetChaosZone)
+         {
+            return TRUE;
+         }
+      }
+      
       return piChaosZone;
    }
    
    GetGenerators()
    {
       return $;
+   }
+   
+   GetPlayers()
+   {
+      local i, lPlayers;
+      
+      lPlayers = $;
+      
+      for i in plActive
+      {
+         if IsClass(First(i),&Player)
+         {
+            lPlayers = Cons(First(i),lPlayers);
+         }
+      }
+
+      return lPlayers;
+   }
+   
+   GetActivePlayers()
+   {
+      local i, lPlayers;
+      
+      lPlayers = $;
+      
+      for i in plActive
+      {
+         if IsClass(First(i),&Player)
+            AND NOT Send(First(i),@IsInCannotInteractMode)
+         {
+            lPlayers = Cons(First(i),lPlayers);
+         }
+      }
+
+      return lPlayers;
+   }
+   
+   GetMonsters()
+   {
+      local i, lMonsters;
+      
+      lMonsters = $;
+      
+      for i in plActive
+      {
+         if IsClass(First(i),&Monster)
+         {
+            lMonsters = Cons(First(i),lMonsters);
+         }
+      }
+
+      return lMonsters;
+   }
+   
+   OverridesPlayerDots()
+   {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesPlayerDots)
+         {
+            return TRUE;
+         }
+      }
+      
+      return FALSE;
+   }
+   
+   OverridePlayerDots(what=$,who=$)
+   {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesPlayerDots)
+         {
+            return Send(oRoomAttribute,@OverridePlayerDots,
+                                       #what=what,#who=who);
+         }
+      }
+      
+      return MM_NONE;
+   }
+   
+   OverridesMonsterDots()
+   {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesMonsterDots)
+         {
+            return TRUE;
+         }
+      }
+      
+      return FALSE;
+   }
+   
+   OverrideMonsterDots(what=$,who=$)
+   {
+      local oRoomAttribute;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if Send(oRoomAttribute,@OverridesMonsterDots)
+         {
+            return Send(oRoomAttribute,@OverrideMonsterDots,
+                                       #what=what,#who=who);
+         }
+      }
+      
+      return MM_NONE;
    }
       
 end

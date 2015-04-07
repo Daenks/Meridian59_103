@@ -1,0 +1,126 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RatInvasion is InvasionRoomAttribute
+
+% This is a standard event invasion by rats.
+
+constants:
+
+   include blakston.khd
+   
+   REWARD_MONEY = 1
+   REWARD_ITEM = 2
+   REWARD_TOUGHER = 3
+
+resources:
+      
+   ratinvasionatt_beginning_in_location = \
+      "~BA rat king and other denizens of the forests are preparing "
+      "to attack at %s. Shal'ille calls for the aid of all adventurers!"
+   
+   ratinvasionatt_happening_in_location = \
+      "The rat king and his vermin rally and attack %s once more!"
+
+   ratinvasionatt_ended = \
+      "The forces of the rat king have been defeated!"
+
+   ratinvasionatt_boss_goal_msg = \
+      "Slay the rat king himself!"
+   ratinvasionatt_minibosses_goal_msg = \
+      "Slay the lieutenants of the rat king."
+      
+   ratinvasionatt_boss_slain_goal_msg = \
+      "~BThe rat king has been slain!"
+   
+   ratinvasionatt_minibosses_slain_goal_msg = \
+      "The lieutenants of the rat king have fallen!"
+
+   ratinvasionatt_broadcast_victory = \
+      "With Shal'ille's aid, the brave adventurers of the land have staved off "
+      "the rat king invasion at %s."
+      
+classvars:
+
+   invasionatt_beginning_in_location = ratinvasionatt_beginning_in_location
+   invasionatt_happening_in_location = ratinvasionatt_happening_in_location
+   invasionatt_ended = ratinvasionatt_ended
+   invasionatt_boss_goal_msg = ratinvasionatt_boss_goal_msg
+   invasionatt_minibosses_goal_msg = ratinvasionatt_minibosses_goal_msg
+
+   invasionatt_boss_slain_goal_msg = ratinvasionatt_boss_slain_goal_msg
+   invasionatt_minibosses_slain_goal_msg = ratinvasionatt_minibosses_slain_goal_msg
+   invasionatt_broadcast_victory = ratinvasionatt_broadcast_victory
+
+properties:
+
+   piFinalLevel = 4
+   
+   % Enemies rise by this many levels per wave
+   % Boss is finallevel * boost
+   % Miniboss is finallevel-1 * boost
+   piBoostMultiplier = 2
+   piBossBoostMultiplier = 4
+   piMiniBossBoostMultiplier = 3
+
+messages:
+
+   Constructed()
+   {
+      local i;
+      
+      plVictoryRewards = [[1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER]];
+
+      plBosses = [&RatKing];
+      plMinibosses = [&Spider];
+      plFixedRewards = [[&MysticSword,3]];
+
+      propagate;
+   }
+
+   InitiateNextLevel(timer=$)
+   {
+      if piLevel = 1
+      {
+         plMonsters = [[&Centipede,20],[&GiantRat,80]];
+      }
+
+      if piLevel = 2
+      {
+         plMonsters = [[&Ant,5],[&Centipede,40],[&GiantRat,60]];
+      }
+
+      if piLevel = 3
+      {
+         plMonsters = [[&Ant,15],[&GiantRat,30],[&Centipede,60]];
+      }
+
+      if piLevel = piFinalLevel
+      {
+         plMonsters = [[&Ant,40],
+                       [&GiantRat,30],
+                       [&Centipede,30]];
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,148 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AvarInvasion is InvasionRoomAttribute
+
+% This is a standard event invasion by avars.
+
+constants:
+
+   include blakston.khd
+   
+   REWARD_MONEY = 1
+   REWARD_ITEM = 2
+   REWARD_TOUGHER = 3
+
+resources:
+      
+   avarinvasionatt_beginning_in_location = \
+      "~BAn avar chieftain and other denizens of the jungle are preparing "
+      "to attack at %s. Shal'ille calls for the aid of all adventurers!"
+   
+   avarinvasionatt_happening_in_location = \
+      "The avar chieftain and his wild allies rally and attack %s once more!"
+
+   avarinvasionatt_ended = \
+      "The forces of the avar chieftain have been defeated!"
+
+   avarinvasionatt_boss_goal_msg = \
+      "Slay the avar chieftain himself!"
+   avarinvasionatt_minibosses_goal_msg = \
+      "Slay the shaman servants of the avar chieftain."
+      
+   avarinvasionatt_boss_slain_goal_msg = \
+      "~BThe avar chieftain has been slain!"
+   
+   avarinvasionatt_minibosses_slain_goal_msg = \
+      "The lieutenants of the avar chieftain have fallen!"
+
+   avarinvasionatt_broadcast_victory = \
+      "With Shal'ille's aid, the brave adventurers of the land have staved off "
+      "the avar invasion at %s."
+      
+classvars:
+
+   invasionatt_beginning_in_location = avarinvasionatt_beginning_in_location
+   invasionatt_happening_in_location = avarinvasionatt_happening_in_location
+   invasionatt_ended = avarinvasionatt_ended
+   invasionatt_boss_goal_msg = avarinvasionatt_boss_goal_msg
+   invasionatt_minibosses_goal_msg = avarinvasionatt_minibosses_goal_msg
+
+   invasionatt_boss_slain_goal_msg = avarinvasionatt_boss_slain_goal_msg
+   invasionatt_minibosses_slain_goal_msg = avarinvasionatt_minibosses_slain_goal_msg
+   invasionatt_broadcast_victory = avarinvasionatt_broadcast_victory
+
+properties:
+
+   piFinalLevel = 8
+   
+   % Enemies rise by this many levels per wave
+   % Boss is finallevel * boost
+   % Miniboss is finallevel-1 * boost
+   piBoostMultiplier = 2
+   piBossBoostMultiplier = 8
+   piMiniBossBoostMultiplier = 5
+
+messages:
+
+   Constructed()
+   {
+      local i;
+      
+      plVictoryRewards = [[5,REWARD_TOUGHER],
+                          [4,REWARD_TOUGHER],
+                          [3,REWARD_TOUGHER],
+                          [2,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [100000,REWARD_MONEY],
+                          [90000,REWARD_MONEY],
+                          [80000,REWARD_MONEY],
+                          [70000,REWARD_MONEY],
+                          [60000,REWARD_MONEY],
+                          [50000,REWARD_MONEY]];
+
+      plBosses = [&AvarChieftain];
+      plMinibosses = [&AvarShaman];
+      plFixedRewards = [[&Rose,5],
+                        [&Prism,7]];
+
+      propagate;
+   }
+
+   InitiateNextLevel(timer=$)
+   {
+      if piLevel = 1
+      {
+         plMonsters = [[&Dragonfly,20],[&Avar,80]];
+      }
+
+      if piLevel = 2
+      {
+         plMonsters = [[&Kriipa,5],[&Dragonfly,40],[&Avar,60]];
+      }
+
+      if piLevel = 3
+      {
+         plMonsters = [[&Kriipa,15],[&Dragonfly,30],[&Avar,60]];
+      }
+
+      if piLevel = 4
+      {
+         plMonsters = [[&Kriipa,15],[&Dragonfly,30],[&Avar,60]];
+      }
+
+      if piLevel = 5
+      {
+         plMonsters = [[&Avar,100]];
+      }
+
+      if piLevel = 6
+      {
+         plMonsters = [[&Dragonfly,100]];
+      }
+
+      if piLevel = 7
+      {
+         plMonsters = [[&Kriipa,100]];
+      }
+
+      if piLevel = piFinalLevel
+      {
+         plMonsters = [[&Shadowbeast,20],
+                       [&Kriipa,25],
+                       [&Dragonfly,30],
+                       [&Avar,30]];
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

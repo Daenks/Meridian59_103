@@ -1,0 +1,1092 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+InvasionRoomAttribute is RoomAttribute
+
+% This is a standard event invasion by mobs.
+
+constants:
+
+   include blakston.khd
+   
+   REWARD_MONEY = 1
+   REWARD_ITEM = 2
+   REWARD_TOUGHER = 3
+   
+   GOAL_KILLS = 1
+   GOAL_BOSS = 2
+   GOAL_MINIBOSSES = 3
+   
+   % 1 minute to begin other survivals
+   DEFLT_START_TIME = 60000
+   
+   % Report goals every 1 minute
+   REPORT_TIME = 60000
+
+   % Starts when Miniboss is killed
+   RESPAWN_MINIBOSS_TIME = 60000
+
+resources:
+
+   invasionatt_welcome_message = \
+      "As you enter this place, you feel Shal'ille's holy support fill you. "
+      "You will need it to defeat the forces of evil that have gathered here."
+      
+   definvasionatt_beginning_in_location = \
+      "~BThe forces of evil are preparing to attack at %s. Shal'ille calls "
+      "for the aid of all adventurers!"
+   
+   definvasionatt_happening_in_location = \
+      "Shal'ille calls for the aid of all adventurers at %s!"
+      
+   invasionatt_beginning_in_sixty = \
+      "You sense approaching doom."
+   
+   invasionatt_has_begun = \
+      "Shal'ille bolsters you with her holy support even as the forces of "
+      "evil flood the area!"
+   
+   definvasionatt_ended = \
+      "The forces of evil have been defeated!"
+   
+   invasionatt_cant_pvp = \
+      "Shal'ille refuses to allow you to attack another player. The forces of "
+      "evil must be defeated at all costs!"
+   
+   invasionatt_begin_level = \
+      "The forces of evil rally and surge!"
+   
+   invasionatt_survival_no_cast_rsc = \
+      "The forces of evil prevent your %s spell!"
+
+   invasionatt_goals_header = \
+      "To defeat the forces of evil and save the land, you must:"
+   invasionatt_kill_goal_msg = \
+      "Defeat %i of the attacking monsters."
+   definvasionatt_boss_goal_msg = \
+      "Slay the boss himself!"
+   definvasionatt_minibosses_goal_msg = \
+      "Slay the lieutenants of the boss."
+      
+   definvasionatt_boss_slain_goal_msg = \
+      "~BThe boss has been slain!"
+   
+   definvasionatt_minibosses_slain_goal_msg = \
+      "The lieutenants of the boss have fallen!"
+      
+   invasionatt_kills_remaining = \
+      "There are %i monsters remaining in this offensive."
+      
+   invasionatt_fixed_reward_msg = \
+      "You see the glimmer of a %s somewhere on the battlefield."
+      
+   invasionatt_next_level_in_seconds = \
+      "The enemy will rally in %i seconds."
+      
+   victory_message = \
+      "The battle was hard-fought, but the thrill of victory brings "
+      "its own rewards."
+      
+   reward_money_msg = \
+      "You find and loot %i shillings."
+   reward_item_msg = \
+      "You find and loot one %s."
+   reward_improve_maxhealth = \
+      "You know you'll feel stronger once you heal from today's battle."
+      
+   definvasionatt_broadcast_victory = \
+      "With Shal'ille's aid, the brave adventurers of the land have staved off "
+      "evil at %s."
+      
+   reward_tougher_wav_rsc = tougher.wav
+
+   invasion_room_begin_wav = gong.wav
+
+   background_invasion_sky = 3sky.bgf
+      
+classvars:
+
+   invasionatt_beginning_in_location = definvasionatt_beginning_in_location
+   invasionatt_happening_in_location = definvasionatt_happening_in_location
+   invasionatt_ended = definvasionatt_ended
+   invasionatt_boss_goal_msg = definvasionatt_boss_goal_msg
+   invasionatt_minibosses_goal_msg = definvasionatt_minibosses_goal_msg
+
+   invasionatt_boss_slain_goal_msg = definvasionatt_boss_slain_goal_msg
+   invasionatt_minibosses_slain_goal_msg = definvasionatt_minibosses_slain_goal_msg
+   invasionatt_broadcast_victory = definvasionatt_broadcast_victory
+
+properties:
+
+   plVictoryRewards = $
+
+   plGenerators = $
+   
+   plLevelGoals = $
+   plBosses = $
+   plMinibosses = $
+   plMonsters = $
+   
+   piLevel = 1
+   piFinalLevel = 5
+   
+   piRegroupTime = 15000
+   ptNextLevelTimer = $
+   
+   pbSpawnWaves = FALSE
+   
+   plFixedRewards = $
+   
+   piSpawnedBossThisRound = FALSE
+   
+   ptReportGoalsTimer = $
+   ptRespawnMiniBossTimer = $
+   
+   % Boolean for resource restoration on level completion.
+   pbRestoreResources = TRUE
+   
+   % This keeps track of [player, kills, rounds participated]
+   plRewardPoints = $
+   
+   % Enemies rise by this many levels per wave
+   % Boss is finallevel * boost
+   % Miniboss is finallevel-1 * boost
+   piBoostMultiplier = 5
+   piBossBoostMultiplier = 10
+   piMiniBossBoostMultiplier = 10
+
+messages:
+
+   Constructed()
+   {
+      local i;
+
+      plGenerators = Send(poHostObject,@GetGenerators);
+      ptNextLevelTimer = CreateTimer(self,@InitiateNextLevel,DEFLT_START_TIME);
+
+      for i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_beginning_in_location,
+                             #parm1=Send(poHostObject,@GetName));
+      }
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_beginning_in_sixty);
+      }
+      
+      for i in Send(poHostObject,@GetMonsters)
+      {
+         if IsClass(i,&Monster)
+         {
+            Send(i,@Delete);
+         }
+      }
+      
+      Post(poHostObject,@RecalcLightAndWeather);
+
+      propagate;
+   }
+
+   InitiateNextLevel(timer=$)
+   {
+      local i, n, p;
+
+      if piLevel = piFinalLevel - 1
+      {
+         Send(self,@SpawnMiniboss);
+         Send(self,@SpawnMiniboss);
+      }
+
+      if piLevel = piFinalLevel
+      {
+         Send(self,@SpawnBoss);
+      }
+
+      ptNextLevelTimer = $;
+      pbSpawnWaves = TRUE;
+      
+      ptReportGoalsTimer = CreateTimer(self,@ReportGoalsTrigger,REPORT_TIME);
+      
+      for i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_happening_in_location,
+                             #parm1=Send(poHostObject,@GetName));
+      }
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_begin_level);
+      }
+
+      plLevelGoals = $;
+      Send(self,@ChooseGoals);
+      
+      Send(self,@ReportGoals);
+      
+      Send(poHostObject,@SomethingWaveRoom,#wave_rsc=invasion_room_begin_wav);
+
+      return;
+   }
+   
+   ReportGoalsTrigger(timer=$)
+   {
+      ptReportGoalsTimer = $;
+      
+      Send(self,@ReportGoals);
+      ptReportGoalsTimer = CreateTimer(self,@ReportGoalsTrigger,REPORT_TIME);
+      
+      return;
+   }
+   
+   ReportGoals()
+   {
+      local i, n;
+   
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_goals_header);
+         for n in plLevelGoals
+         {
+            if Nth(n,1) = GOAL_KILLS
+            {
+               Send(i,@MsgSendUser,#message_rsc=invasionatt_kill_goal_msg,
+                                   #parm1=Nth(n,2));
+            }
+            if Nth(n,1) = GOAL_MINIBOSSES
+            {
+               Send(i,@MsgSendUser,#message_rsc=invasionatt_minibosses_goal_msg,
+                                   #parm1=Nth(n,2));
+            }
+            if Nth(n,1) = GOAL_BOSS
+            {
+               Send(i,@MsgSendUser,#message_rsc=invasionatt_boss_goal_msg);
+            }
+         }
+      }
+      return;
+   }
+
+   LevelComplete()
+   {
+      local i, n, lFixedReward, oReward, iRewardTime, lRandomSpawnPoint,
+            bFoundPlayerInRewards;
+
+      iRewardTime = 0;
+
+      % Prevent multi-level completion
+      if NOT pbSpawnWaves
+         OR ptNextLevelTimer <> $
+      {
+         return;
+      }
+
+      pbSpawnWaves = FALSE;
+      piSpawnedBossThisRound = FALSE;
+      
+      for i in Send(poHostObject,@GetMonsters)
+      {
+         if Send(i,@GetMaster) = $
+         {
+            Send(i,@Delete);
+         }
+      }
+      
+      if ptReportGoalsTimer <> $
+      {
+         DeleteTimer(ptReportGoalsTimer);
+         ptReportGoalsTimer = $;
+      }
+      if ptRespawnMiniBossTimer <> $
+      {
+         DeleteTimer(ptRespawnMiniBossTimer);
+         ptRespawnMiniBossTimer = $;
+      }
+
+      for lFixedReward in plFixedRewards
+      {
+         if Nth(lFixedReward,2) = piLevel
+         {
+            oReward = Create(Nth(lFixedReward,1));
+            for i in Send(poHostObject,@GetPlayers)
+            {
+               Send(i,@MsgSendUser,#message_rsc=invasionatt_fixed_reward_msg,
+                                   #parm1=Send(oReward,@GetName));
+            }
+            
+            if plGenerators <> $
+            {
+               lRandomSpawnPoint = Nth(plGenerators,
+                                       Random(1,Length(plGenerators)));
+            }
+            else
+            {
+               lRandomSpawnPoint = [Send(poHostObject,@GetTeleportRow),
+                                    Send(poHostObject,@GetTeleportCol)];
+            }
+            
+            Send(poHostObject,@NewHold,#what=oReward,
+                               #new_row=Nth(lRandomSpawnPoint,1),
+                               #new_col=Nth(lRandomSpawnPoint,2));
+            iRewardTime = iRewardTime + 45000;
+         }
+      }
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         if pbRestoreResources
+            AND NOT Send(i,@IsInCannotInteractMode)
+         {
+            Send(i,@SetHealth,#amount=Send(i,@GetMaxHealth));
+            Send(i,@EatSomething,#nutrition=200);
+            if NOT Send(i,@IsCrystalizeManaSurging)
+            {
+               Send(i,@GainMana,#amount=Send(i,@GetMaxMana),
+                  #bCapped=TRUE);
+            }
+            Send(i,@RechargeAllRods,#alternate_recharge=TRUE);
+         }
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_next_level_in_seconds,
+                             #parm1 = (piRegroupTime + iRewardTime)/1000);
+
+         bFoundPlayerInRewards = FALSE;
+         for n in plRewardPoints
+         {
+            if Nth(n,1) = i
+            {
+               SetNth(n,3,Nth(n,3)+1);
+               bFoundPlayerInRewards = TRUE;
+            }
+         }
+         
+         if NOT bFoundPlayerInRewards
+         {
+            plRewardPoints = Cons([i,0,1],plRewardPoints);
+         }
+      }
+
+      piLevel = piLevel + 1;
+      
+      if piLevel > piFinalLevel
+      {
+         Send(self,@Victory);
+         return;
+      }
+
+      ptNextLevelTimer = CreateTimer(self,@InitiateNextLevel,
+                              piRegroupTime + iRewardTime);
+      
+      return;
+   }
+   
+   ChooseGoals()
+   {
+      local iRand,plBosses,iTotalParticipants,plParticipants;
+      
+      plParticipants = Send(poHostObject,@GetActivePlayers);
+      
+      if plParticipants <> $
+      {
+        iTotalParticipants = Length(plParticipants);
+      }
+      else
+      {
+         iTotalParticipants = 0;
+      }
+
+      iRand = Random((iTotalParticipants)*5,
+                     (iTotalParticipants)*15);
+                     
+      iRand = Bound(iRand,15,150);
+
+      plLevelGoals = Cons([GOAL_KILLS,iRand],plLevelGoals);
+
+      if piLevel = piFinalLevel - 1
+      {
+         plLevelGoals = Cons([GOAL_MINIBOSSES,2],plLevelGoals);
+      }
+
+      if piLevel = piFinalLevel
+      {
+         plLevelGoals = Cons([GOAL_BOSS,1],plLevelGoals);
+      }
+      
+      return;
+   }
+   
+   SpawnBoss()
+   {
+      local cBoss;
+
+      cBoss = Nth(plBosses,Random(1,Length(plBosses)));
+      Send(poHostObject,@GenerateMonster,#oMonster=Create(cBoss),#bStack=TRUE,
+                                    #piSurvivalLevel=piLevel*piBossBoostMultiplier);
+      piSpawnedBossThisRound = TRUE;
+
+      return;
+   }
+   
+   RespawnMiniboss(timer=$)
+   {
+      ptRespawnMiniBossTimer = $;
+      Send(self,@SpawnMiniboss);
+
+      return;
+   }
+   
+   SpawnMiniboss()
+   {
+      local cMiniboss;
+
+      cMiniboss = Nth(plMinibosses,Random(1,Length(plMinibosses)));
+      Send(poHostObject,@GenerateMonster,#oMonster=Create(cMiniboss),#bStack=TRUE,
+                                 #piSurvivalLevel=piLevel*piMiniBossBoostMultiplier);
+      return;
+   }
+   
+   SomethingKilled(what=$,victim=$)
+   {
+      local i, n, p, cDeadClass, respawnCheck, oTarget, mob, oMonster, plParticipants,
+            bPlayerFoundInRewardPoints, iPointsMultiplier;
+      
+      if IsClass(victim,&User)
+      {
+         return;
+      }
+
+      if IsClass(victim,&Monster)
+      {
+         % These kills don't count towards the room goals.
+         if Send(victim,@IsMinion)
+            OR IsClass(victim,&Brambles)
+         {
+            return;
+         }
+
+         cDeadClass = GetClass(victim);
+         
+         % Measure players' contributions
+         if IsClass(what,&Player)
+         {
+            if plRewardPoints = $
+            {
+               plRewardPoints = Cons([what,0,0],plRewardPoints);
+            }
+            
+            iPointsMultiplier = 1;
+            if Send(what,@GetBaseMaxHealth) < 100
+            {
+               iPointsMultiplier = 2;
+            }
+            if Send(what,@GetBaseMaxHealth) < 50
+            {
+               iPointsMultiplier = 3;
+            }
+
+            bPlayerFoundInRewardPoints = FALSE;
+            for i in plRewardPoints
+            {
+               if Nth(i,1) = what
+               {
+                  SetNth(i,2,Nth(i,2)+
+                             (Send(self,@GetWorth,#mob=victim)*
+                              iPointsMultiplier));
+                  bPlayerFoundInRewardPoints = TRUE;
+               }
+            }
+            
+            if NOT bPlayerFoundInRewardPoints
+            {
+               plRewardPoints = Cons([what,
+                                      (Send(self,@GetWorth,#mob=victim)*
+                                      iPointsMultiplier),0],
+                                      plRewardPoints);
+            }
+         }
+         
+         for respawnCheck in plMinibosses
+         {
+            if respawnCheck = cDeadClass
+               AND ptRespawnMiniBossTimer = $
+            {
+               ptRespawnMiniBossTimer = 
+                    CreateTimer(self,@RespawnMiniboss,RESPAWN_MINIBOSS_TIME);
+            }
+         }
+         
+         for i in plLevelGoals
+         {
+            if Nth(i,1) = GOAL_KILLS
+            {
+               SetNth(i,2,Nth(i,2)-1);
+               
+               for p in Send(poHostObject,@GetPlayers)
+               {
+                  Send(p,@MsgSendUser,#message_rsc=invasionatt_kills_remaining,
+                                      #parm1=Nth(i,2));
+               }
+            }
+            
+            if Nth(i,1) = GOAL_BOSS
+            {
+               for n in plBosses
+               {
+                  if n = cDeadClass
+                  {
+                     SetNth(i,2,Nth(i,2)-1);
+                  }
+               }
+            }
+            
+            if Nth(i,1) = GOAL_MINIBOSSES
+            {
+               for n in plMinibosses
+               {
+                  if n = cDeadClass
+                  {
+                     SetNth(i,2,Nth(i,2)-1);
+                  }
+               }
+            }
+         }
+      }
+      
+      for i in plLevelGoals
+      {
+         plParticipants = Send(poHostObject,@GetActivePlayers);
+         
+         if Nth(i,2) <= 0
+         {
+            if Nth(i,1) = GOAL_KILLS
+            {
+               Post(self,@AggroBosses,#victim=victim);
+            }
+            if Nth(i,1) = GOAL_BOSS
+            {
+               for n in plParticipants
+               {
+                  Send(n,@MsgSendUser,
+                         #message_rsc=invasionatt_boss_slain_goal_msg);
+               }
+            }
+            if Nth(i,1) = GOAL_MINIBOSSES
+            {
+               for n in plParticipants
+               {
+                  Send(n,@MsgSendUser,
+                       #message_rsc=invasionatt_minibosses_slain_goal_msg);
+               }
+            }
+
+            plLevelGoals = DelListElem(plLevelGoals,i);
+         }
+
+         if plParticipants <> $
+            AND Length(plParticipants) = 1
+            AND plLevelGoals <> $
+         {
+            for mob in Send(poHostObject,@GetMonsters)
+            {
+               if NOT Send(mob,@IsOwnedByPlayer)
+                  AND mob <> victim
+                  AND Random(1,2) = 1
+               {
+                  oTarget = First(plParticipants);
+                  if oTarget <> $
+                  {
+                     Send(mob,@TargetSwitch,#what=oTarget,#iHatred=100);
+                     Send(mob,@EnterStateChase,#target=oTarget,#actnow=True);
+                  }
+               }
+            }
+         }
+      }
+
+      if plLevelGoals = $
+      {
+         Send(self,@LevelComplete);
+      }
+
+      return;
+   }
+   
+   GetWorth(mob=$)
+   {
+      local i;
+      
+      for i in plMiniBosses
+      {
+         if i = GetClass(mob)
+         {
+            return 50;
+         }
+      }
+      
+      for i in plBosses
+      {
+         if i = GetClass(mob)
+         {
+            return 100;
+         }
+      }
+      
+      if Send(mob,@GetLevel) >= 100
+      {
+         return 3;
+      }
+      
+      if Send(mob,@GetLevel) >= 50
+      {
+         return 2;
+      }
+      
+      return 1;
+   }
+
+   AggroBosses(victim = $)
+   {
+      local oTarget, i, n, z, each_obj, count, plParticipants;
+      
+      plParticipants = Send(poHostObject,@GetActivePlayers);
+
+      if plParticipants = $
+         OR plLevelGoals = $
+      {
+         return;
+      }
+
+      for i in Send(poHostObject,@GetMonsters)
+      {
+         if victim <> $
+            AND victim = i
+         {
+            continue;
+         }
+
+         for z in [plBosses,plMiniBosses]
+         {
+            for n in z
+            {
+               if GetClass(i) = n
+               {
+                  if Length(plParticipants) = 1
+                  {
+                     oTarget = First(plParticipants);
+                  }
+                  else
+                  {
+                     oTarget = Nth(plParticipants,
+                                   Random(1,Length(plParticipants)));
+                     count = 0;
+                     while (oTarget = $
+                        OR ((IsClass(oTarget,&DM)
+                           AND Send(oTarget,@PlayerIsImmortal))
+                        OR Send(oTarget,@IsInCannotInteractMode)))
+                     {
+                        oTarget = Nth(plParticipants,Random(1,
+                                      Length(plParticipants)));
+                        count = count + 1;
+                        if count > 10
+                        {
+                           break;
+                        }
+                     }
+                  }
+                  Send(i,@TargetSwitch,#what=oTarget,#iHatred=100);
+                  Send(i,@EnterStateChase,#target=oTarget,#actnow=True);
+               }
+            }
+         }
+      }
+
+      return;
+   }
+
+   NewHoldObject(what=$)
+   {
+      local oTarget, i, count, plParticipants;
+      
+      if IsClass(what,&User)
+      {
+         Post(self,@AggroSome,#who=what);
+         Post(what,@MsgSendUser,#message_rsc=invasionatt_welcome_message);
+         return;
+      }
+
+      if IsClass(what,&Monster)
+         AND (plBosses = $
+            OR (plBosses <> $
+               AND FindListElem(plBosses,GetClass(what)) = 0))
+         AND (plMiniBosses = $
+            OR (plMinibosses <> $
+               AND FindListElem(plMinibosses,GetClass(what)) = 0))
+      {
+         plParticipants = Send(poHostObject,@GetActivePlayers);
+         
+         if plParticipants = $
+            OR Send(what,@IsMinion)
+         {
+            return;
+         }
+
+         if Length(plParticipants) = 1
+         {
+            oTarget = First(plParticipants);
+         }
+         else
+         {
+            oTarget = Nth(plParticipants,Random(1,Length(plParticipants)));
+            count = 0;
+            while (oTarget = $
+               OR ((IsClass(oTarget,&DM)
+                     AND Send(oTarget,@PlayerIsImmortal))
+                  OR Send(oTarget,@IsInCannotInteractMode)))
+            {
+               oTarget = Nth(plParticipants,Random(1,Length(plParticipants)));
+               count = count + 1;
+               if count > 10
+               {
+                  break;
+               }
+            }
+         }
+
+         if Length(plParticipants) = 1
+         {
+            % Cut aggro to 1/5th in solo. Post these so they
+            % run after mob is set up in room.
+            if Random(1,5) = 1
+            {
+               Post(what,@TargetSwitch,#what=oTarget,#iHatred=100);
+               Post(what,@EnterStateChase,#target=oTarget,
+                     #actnow=True);
+            }
+         }
+         else
+         {
+            % Public arenas get full aggro. Post these so they
+            % run after mob is set up in room.
+            Post(what,@TargetSwitch,#what=oTarget,#iHatred=100);
+            Post(what,@EnterStateChase,#target=oTarget,#actnow=True);
+         }
+      }
+
+      return;
+   }
+
+   AggroOne(who = $,victim = $)
+   {
+      local i, iCount, oMonster;
+
+      if (IsClass(who,&DM)
+            AND Send(who,@PlayerIsImmortal))
+         OR Send(who,@IsInCannotInteractMode)
+      {
+         return;
+      }
+
+      iCount = 0;
+
+      for oMonster in Send(poHostObject,@GetMonsters)
+      {
+         if NOT Send(oMonster,@IsOwnedByPlayer)
+            AND Random(1,5) = 1
+         {
+            % If this is called from SomethingKilled, don't aggro
+            % the mob that was just killed.
+            if victim <> $
+               AND oMonster = victim
+            {
+               continue;
+            }
+            Send(oMonster,@TargetSwitch,#what=who,#iHatred=100);
+            Send(oMonster,@EnterStateChase,#target=who,#actnow=True);
+            iCount = iCount + 1;
+            
+            if iCount >= 1
+            {
+               return;
+            }
+         }
+      }
+
+      return;
+   }
+
+   AggroSome(who=$)
+   {
+      local i, iCount;
+
+      if (IsClass(who,&DM)
+            AND Send(who,@PlayerIsImmortal))
+         OR Send(who,@IsInCannotInteractMode)
+      {
+         return;
+      }
+
+      iCount = 0;
+
+      for i in Send(poHostObject,@GetMonsters)
+      {
+         if NOT Send(i,@IsOwnedByPlayer)
+            AND Random(1,5) = 1
+         {
+            Send(i,@TargetSwitch,#what=who,#iHatred=100);
+            Send(i,@EnterStateChase,#target=who,#actnow=True);
+            iCount = iCount + 1;
+            
+            if iCount >= 5
+            {
+               return;
+            }
+         }
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+      
+      for i in Send(poHostObject,@GetMonsters)
+      {
+         if IsClass(i,&Monster)
+         {
+            Send(i,@Delete);
+         }
+      }
+      
+      plRewardPoints = $;
+      
+      if ptNextLevelTimer <> $
+      {
+         DeleteTimer(ptNextLevelTimer);
+         ptNextLevelTimer = $;
+      }
+      if ptReportGoalsTimer <> $
+      {
+         DeleteTimer(ptReportGoalsTimer);
+         ptReportGoalsTimer = $;
+      }
+      if ptRespawnMiniBossTimer <> $
+      {
+         DeleteTimer(ptRespawnMiniBossTimer);
+         ptRespawnMiniBossTimer = $;
+      }
+
+      propagate;
+   }
+
+   GetLevel()
+   {
+      return piLevel;
+   }
+
+   ReqSpellCast(who = $, oSpell = $, lItems = $)
+   {
+      if IsClass(oSpell,&Truce)
+         OR IsClass(oSpell,&Jig)
+      {
+         % We have to provide the fail message here.
+         Send(who,@MsgSendUser,#message_rsc=invasionatt_survival_no_cast_rsc,
+               #parm1=Send(oSpell,@GetName));
+
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   IsBoss(what=$)
+   {
+      local i, cMob;
+
+      if what <> $
+      {
+         cMob = GetClass(what);
+         for i in plBosses
+         {
+            if cMob = i
+            {
+               return TRUE;
+            }
+         }
+      }
+
+      return FALSE;
+   }
+
+   IsMiniBoss(what=$)
+   {
+      local i, cMob;
+
+      if what <> $
+      {
+         cMob = GetClass(what);
+         for i in plMiniBosses
+         {
+            if cMob = i
+            {
+               return TRUE;
+            }
+         }
+      }
+
+      return FALSE;
+   }
+   
+   OverridesMonsterGeneration()
+   {
+      return TRUE;
+   }
+   
+   AllowTryCreateMonster()
+   {
+      if NOT pbSpawnWaves
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   GetMonsters()
+   {
+      return plMonsters;
+   }
+
+   ModifiesRoomBackground()
+   {
+      return TRUE;
+   }
+   
+   ModifyRoomBackground(rBackground=$)
+   {
+      return background_invasion_sky;
+   }
+   
+   OverridesMonsterDots()
+   {
+      return TRUE;
+   }
+   
+   OverrideMonsterDots(what=$,who=$)
+   {
+      if Send(self,@IsMiniBoss,#what=what)
+      {
+         return MM_MINIBOSS;
+      }
+      
+      if Send(self,@IsBoss,#what=what)
+      {
+         return MM_BOSS;
+      }
+
+      return MM_MONSTER;
+   }
+   
+   ModifyMonsterGenTime(iTime=0)
+   {
+      return 1000;
+   }
+   
+   BoostsMonsters()
+   {
+      return TRUE;
+   }
+   
+   BoostMonster(boost_val=0)
+   {
+      return boost_val + (piLevel*piBoostMultiplier);
+   }
+   
+   Victory()
+   {
+      local i, n, z, lRanking, iHighestPoints, oHighestPlayer, oTreasure;
+
+      for i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Send(i,@MsgSendUser,#message_rsc=invasionatt_broadcast_victory,
+                             #parm1=Send(poHostObject,@GetName));
+      }
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=victory_message);
+         
+         for n in plRewardPoints
+         {
+            if Nth(n,1) = i
+            {
+               lRanking = Cons([i,Nth(n,2)*Nth(n,3)],lRanking);
+            }
+         }
+      }
+      
+      for i in plVictoryRewards
+      {
+         for n in lRanking
+         {
+            iHighestPoints = 0;
+            oHighestPlayer = $;
+            if Nth(n,2) > iHighestPoints
+            {
+               oHighestPlayer = Nth(n,1);
+               iHighestPoints = Nth(n,2);
+            }
+         }
+         
+         if oHighestPlayer <> $
+         {
+            if Nth(i,2) = REWARD_MONEY
+            {
+               oTreasure = Create(&Money,#amount=Nth(i,1));
+               Send(oHighestPlayer,@MsgSendUser,#message_rsc=reward_money_msg,
+                                   #parm1=Nth(i,1));
+               Send(oHighestPlayer,@NewHold,#what=oTreasure);
+            }
+            if Nth(i,2) = REWARD_ITEM
+            {
+               oTreasure = Create(Nth(i,1));
+               Send(oHighestPlayer,@MsgSendUser,#message_rsc=reward_item_msg,
+                                   #parm1=Send(oTreasure,@GetName));
+               Send(oHighestPlayer,@NewHold,#what=oTreasure);
+            }
+            if Nth(i,2) = REWARD_TOUGHER
+            {
+               Send(oHighestPlayer,@GainBaseMaxHealth,#amount = Nth(i,1));
+
+               Send(oHighestPlayer,@evaluatepkstatus);
+
+               Send(oHighestPlayer,@MsgSendUser,#message_rsc=reward_improve_maxhealth);
+               Send(oHighestPlayer,@WaveSendUser,#what=oHighestPlayer,
+                     #wave_rsc=reward_tougher_wav_rsc);
+               Send(oHighestPlayer,@DrawHealth);
+               Post(oHighestPlayer,@DrawOffense);
+               Post(oHighestPlayer,@DrawDefense);
+            }
+            
+            % Been rewarded, remove from rankings
+            for n in lRanking
+            {
+               if Nth(n,1) = oHighestPlayer
+               {
+                  lRanking = DelListElem(lRanking,n);
+               }
+            }
+            oHighestPlayer = $;
+         }
+      }
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

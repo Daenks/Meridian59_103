@@ -1,0 +1,180 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RoomAttribute is ObjectAttribute
+
+constants:
+
+   include blakston.khd   
+
+resources:
+      
+classvars:
+
+
+properties:
+   
+   % How long do we last? If piDuration is 0, no natural expiration.
+   ptDurationTimer = $
+   piDuration = 0
+
+messages:
+
+   Constructor(oRoom = $, iDuration = 0)
+   {
+      piDuration = iDuration;
+
+      propagate;
+   }
+   
+   Constructed()
+   {
+      if piDuration > 0
+      {
+         ptDurationTimer = CreateTimer(self,@Expire,piDuration);
+      }
+
+      propagate;
+   }
+   
+   Expire()
+   {
+      ptDurationTimer = $;
+      Post(self,@Delete);
+      return;
+   }
+   
+   Delete()
+   {
+      if ptDurationTimer <> $
+      {
+         DeleteTimer(ptDurationTimer);
+         ptDurationTimer = $;
+      }
+
+      if Send(self,@ModifiesRoomBackground)
+      {
+         Post(poHostObject,@RecalcLightAndWeather);
+      }
+
+      propagate;
+   }
+     
+   ReqAddToObject(host_object=$)
+   {
+      if NOT IsClass(host_object,&Room)
+      {
+         return 0;
+      }
+      return 1;
+   }
+   
+   GetChaosZone()
+   {
+      return FALSE;
+   }
+   
+   OverridesDeathFunction()
+   {
+      return FALSE;
+   }
+   
+   OverrideDeathFunction(who=$,what=$)
+   {
+      return;
+   }
+
+   LeaveHold(what=$)
+   {
+      return;
+   }
+   
+   AllowTryCreateMonster()
+   {
+      return TRUE;
+   }
+   
+   OverridesMonsterGeneration()
+   {
+      return TRUE;
+   }
+
+   GetMonsters()
+   {
+      return $;
+   }
+
+   BoostMonster(boost_val=0)
+   {
+      return boost_val;
+   }
+
+   FirstUserEntered()
+   {
+      return;
+   }
+   
+   LastUserLeft(what=$)
+   {
+      return;
+   }
+   
+   ModifiesRoomBackground()
+   {
+      return FALSE;
+   }
+   
+   ModifyRoomBackground(rBackground=$)
+   {
+      return rBackground;
+   }
+   
+   SomethingKilled(what=$,victim=$)
+   {
+      return;
+   }
+   
+   OverridesPlayerDots()
+   {
+      return FALSE;
+   }
+   
+   OverridePlayerDots(what=$,who=$)
+   {
+      return MM_NONE;
+   }
+   
+   SetSpellPlayerFlag(who=$)
+   {
+      return;
+   }
+   
+   OverridesMonsterDots()
+   {
+      return FALSE;
+   }
+   
+   OverrideMonsterDots(what=$,who=$)
+   {
+      return MM_NONE;
+   }
+   
+   ModifyMonsterGenTime(iTime=0)
+   {
+      return iTime;
+   }
+   
+   ReqSomethingAttack(what = $,victim = $,use_weapon = $,report = TRUE)
+   {
+      return TRUE;
+   }
+   
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

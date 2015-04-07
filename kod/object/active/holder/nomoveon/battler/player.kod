@@ -767,6 +767,8 @@ resources:
       "charge from the released energy of your kill."
    rods_fully_recharged_by_safe_place_msg = \
       "This place of safety has recharged your magical rods."
+   rods_fully_recharged_msg = \
+      "Your rods have been recharged."
 
    player_truced = "Shal'ille's magic compels you to respect the truce."
 
@@ -1339,10 +1341,12 @@ messages:
          {
             Send(Nth(i,2),@SetSpellPlayerFlag,#who=self,#state=Nth(i,3));
          }
-      }
-
-      if poOwner <> $
-      {
+         
+         for i in Send(poOwner,@GetObjectAttributes)
+         {
+            Send(i,@SetSpellPlayerFlag,#who=self);
+         }
+         
          Send(poOwner,@SomethingChanged,#what=self);
       }
 
@@ -4019,6 +4023,11 @@ messages:
       {
          return FALSE;
       }
+      
+      if Send(oRoom,@GetChaosZone)
+      {
+         return TRUE;
+      }
 
       % Make sure room allows the attack. Check if room has
       % special combat affects.
@@ -4040,11 +4049,6 @@ messages:
 
       % If we're in an arena and it let us attack, then it's a legal attack.
       if Send(oRoom,@IsArena)
-      {
-         return TRUE;
-      }
-      
-      if Send(oRoom,@GetChaosZone)
       {
          return TRUE;
       }
@@ -14262,7 +14266,7 @@ messages:
       return ptCrystalizeManaSurgeTimer;
    }
 
-   RechargeAllRods()
+   RechargeAllRods(alternate_recharge=FALSE)
    {
       local i, bResult, bGainedCharges;
 
@@ -14283,7 +14287,14 @@ messages:
 
       if bGainedCharges
       {
-         Send(self,@MsgSendUser,#message_rsc=rods_fully_recharged_by_safe_place_msg);
+         if alternate_recharge
+         {
+            Send(self,@MsgSendUser,#message_rsc=rods_fully_recharged_msg);
+         }
+         else
+         {
+            Send(self,@MsgSendUser,#message_rsc=rods_fully_recharged_by_safe_place_msg);
+         }
       }
 
       return;

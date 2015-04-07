@@ -92,7 +92,7 @@ messages:
 
    GetMonsterGenTime()
    {
-      local iWaitTime, iNumberOfPlayers, iMaxPlayers;
+      local iWaitTime, iNumberOfPlayers, iMaxPlayers, oRoomAttribute;
       % GetSpawnRate =  100
       % iWaitTime = (20000 * (100 / 100));
       % iWaitTime = 20000
@@ -120,6 +120,12 @@ messages:
          iNumberOfPlayers = iMaxPlayers;
       }
       iWaitTime = iWaitTime / iNumberOfPlayers;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         iWaitTime = Send(oRoomAttribute,@ModifyMonsterGenTime,
+                                         #iTime=iWaitTime);
+      }
 
       return iWaitTime;
    }
@@ -146,12 +152,28 @@ messages:
    "Will try to create a monster in the room.  Initroom=TRUE means it's"
    "being called when first player enters."
    {
-      local oMonster,iRoll,iTotal,lMonster_info,iRow,iCol,lPos;
+      local oMonster,iRoll,iTotal,lMonster_info,iRow,iCol,lPos,
+            oRoomAttribute, lMonsterList, iBoostedLevel;
 
       if NOT Send(self,@IsMonsterCountBelowMax)
          OR NOT pbGenerateMonsters
       {
          return;
+      }
+      
+      lMonsterList = plMonsters;
+      
+      for oRoomAttribute in plObject_attributes
+      {
+         if NOT Send(oRoomAttribute,@AllowTryCreateMonster)
+         {
+            return;
+         }
+         
+         if Send(oRoomAttribute,@OverridesMonsterGeneration)
+         {
+            lMonsterList = Send(oRoomAttribute,@GetMonsters);
+         }
       }
 
       iRoll = Random(1,100);
@@ -170,19 +192,27 @@ messages:
       }
 
       iTotal = 0;
-      for lMonster_info in plMonsters
+      for lMonster_info in lMonsterList
       {
          iTotal = iTotal + Nth(lMonster_info,2);
 
          if iRoll <= iTotal
          {
+            iBoostedLevel = 0;
+            for oRoomAttribute in plObject_attributes
+            {
+               iBoostedLevel = Send(oRoomAttribute,@BoostMonster,
+                                                   #boost_val=iBoostedLevel);
+            }
+
             if IsClass(self,&SurvivalRoom)
             {
                oMonster = Create(First(lMonster_info),#piSurvivalLevel=piLevel);
             }
             else
             {
-               oMonster = Create(First(lMonster_info));
+               oMonster = Create(First(lMonster_info),
+                                 #piSurvivalLevel=iBoostedLevel);
             }
 
             if NOT Send(self,@GenerateMonster,#oMonster=oMonster)

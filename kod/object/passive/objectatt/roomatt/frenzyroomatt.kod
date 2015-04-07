@@ -1,0 +1,191 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FrenzyRoomAttribute is RoomAttribute
+
+% This turns a pre-existing room into a mini-frenzy.
+
+constants:
+
+   include blakston.khd
+   
+   DEFLT_START_TIME = 60000
+
+resources:
+
+   frenzyatt_welcome_message = \
+      "~BAs you enter this place, you feel the eyes of Qor upon you. "
+      "Death has no meaning here, good has become pain, and bloodshed "
+      "has become the natural order."
+      
+   frenzyatt_beginning_in_sixty = \
+      "~BYou feel something ominous approaching."
+   
+   frenzyatt_has_begun = \
+      "~BThe eyes of Qor fall upon you. All the world's virtues burn "
+      "away, and evil surges through this place. Qor's ally, Death, "
+      "turns a blind eye to you who have been forsaken."
+   
+   frenzyatt_ended = \
+      "The skies return to normal as the natural order shrugs off "
+      "Qor's bloodlust."
+      
+   frenzyatt_qor_reward_kill = \
+      "Qor gleefully rewards you with energy for your brutal slaying of %s!"
+
+   frenzyatt_killed_by_player = \
+      "~B~U~k[###]~n ~B~v%s was just slain under the blood skies at "
+      "%s by %s."
+
+   frenzy_room_begin_wav = chaosup.wav
+   background_frenzyatt = redsky.bgf
+      
+classvars:
+
+properties:
+
+   ptInitiateTimer = $
+   piHasBegun = FALSE
+
+messages:
+
+   Constructed()
+   {
+      local i;
+
+      ptInitiateTimer = CreateTimer(self,@InitiateFrenzyAtt,DEFLT_START_TIME);
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=frenzyatt_beginning_in_sixty);
+      }
+
+      propagate;
+   }
+   
+   InitiateFrenzyAtt()
+   {
+      local i;
+
+      ptInitiateTimer = $;
+      piHasBegun = TRUE;
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Post(i,@MsgSendUser,#message_rsc=frenzyatt_has_begun);
+         Post(i,@WaveSendUser,#what=i,#wave_rsc=frenzy_room_begin_wav);
+      }
+      
+      Post(poHostObject,@RecalcLightAndWeather);
+
+      return;
+   }
+   
+   ModifiesRoomBackground()
+   {
+      return piHasBegun;
+   }
+   
+   ModifyRoomBackground(rBackground=$)
+   {
+      if piHasBegun
+      {
+         return background_frenzyatt;
+      }
+
+      return rBackground;
+   }
+   
+   SomethingKilled(what=$,victim=$)
+   {
+      % Give successful killers a boost.
+
+      if IsClass(victim,&Player)
+         AND IsClass(what,&Player)
+         AND piHasBegun
+      {
+         Send(what,@SetHealth,#amount=Send(what,@GetMaxHealth));
+         Send(what,@EatSomething,#nutrition=20);
+         if NOT Send(what,@IsCrystalizeManaSurging)
+         {
+            Send(what,@GainMana,#amount=Send(what,@GetMaxMana),
+               #bCapped=TRUE);
+         }
+         Send(what,@RechargeAllRods,#alternate_recharge=TRUE);
+         Post(what,@MsgSendUser,#message_rsc=frenzyatt_qor_reward_kill,
+                                #parm1=Send(victim,@GetTrueName));
+      }
+
+      return;
+   }
+
+   NewHoldObject(what=$)
+   {
+      if IsClass(what,&User)
+         AND piHasBegun
+      {
+         Post(what,@MsgSendUser,#message_rsc=frenzyatt_welcome_message);
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+
+      if ptInitiateTimer <> $
+      {
+         DeleteTimer(ptInitiateTimer);
+         ptInitiateTimer = $;
+         propagate;
+      }
+
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=frenzyatt_ended);
+         if NOT Send(i,@IsInCannotInteractMode)
+         {
+            Send(i,@SetHealth,#amount=Send(i,@GetMaxHealth));
+         }
+      }
+
+      propagate;
+   }
+   
+   GetChaosZone()
+   {
+      return piHasBegun;
+   }
+   
+   OverridesDeathFunction()
+   {
+      return piHasBegun;
+   }
+   
+   OverrideDeathFunction(who=$,what=$)
+   {
+      local i;
+
+      for i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Post(i,@MsgSendUser,#message_rsc=frenzyatt_killed_by_player,
+                                #parm1=Send(who,@GetTrueName),
+                                #parm2=Send(poHostObject,@GetName),
+                                #parm3=Send(what,@GetTrueName));
+      }
+
+      Post(who,@AdminGoToLastSafeRoom);
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

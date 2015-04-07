@@ -102,6 +102,9 @@ messages:
          Send(self,@RemoveFromObject,#host_object=poHostObject);
       }
       Send(SYS,@RemoveObjectAttributeFromMasterList,#attribute=self);
+      
+      poHostObject = $;
+
       propagate;
    }
    

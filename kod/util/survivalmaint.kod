@@ -466,6 +466,235 @@ messages:
 
       return plSurvivalRooms;
    }
+   
+   GetRoundOneMonsters()
+   {
+      return [[&GiantRat, 14],
+              [&SpiderBaby, 14],
+              [&Centipede, 21],
+              [&EvilFairy, 7],
+              [&FungusBeast, 16],
+              [&SpectralMummy, 14],
+              [&Slime, 14]];
+   }
+   
+   GetRoundTwoMonsters()
+   {
+      return [[&GiantRat, 6],
+              [&SpiderBaby, 6],
+              [&Centipede, 6],
+              [&EvilFairy, 3],
+              [&FungusBeast, 9],
+              [&SpectralMummy, 6],
+              [&Slime, 9],
+              [&Zombie, 11],
+              [&Spider, 6],
+              [&Scorpion, 9],
+              [&BatteredSkeleton, 11],
+              [&Skeleton, 3],
+              [&RedAnt, 6],
+              [&Frogman, 6],
+              [&Troll, 3]];
+   }
+   
+   GetRoundThreeMonsters()
+   {
+      return [[&GiantRat, 3],
+              [&SpiderBaby, 3],
+              [&Centipede, 3],
+              [&EvilFairy, 3],
+              [&FungusBeast, 6],
+                            [&SpectralMummy, 6],
+                            [&Slime, 9],
+                            [&Zombie, 11],
+                            [&Spider, 6],
+                            [&Scorpion, 6],
+                            [&BatteredSkeleton, 11],
+                            [&Skeleton, 3],
+                            [&RedAnt, 3],
+                            [&Frogman, 6],
+                            [&Troll, 3],
+                            [&GroundWorm, 3],
+                            [&CaveOrc, 6],
+                            [&OrcWizard, 6],
+                            [&SnowRat, 3]];
+   }
+   
+   GetRoundFourMonsters()
+   {
+      return [[&GiantRat, 3],
+              [&SpiderBaby, 3],
+              [&Centipede, 3],
+              [&EvilFairy, 3],
+              [&FungusBeast, 3],
+              [&SpectralMummy, 3],
+              [&Slime, 6],
+              [&Zombie, 3],
+              [&Spider, 3],
+              [&Scorpion, 6],
+              [&BatteredSkeleton, 11],
+              [&Skeleton, 3],
+              [&RedAnt, 3],
+              [&Frogman, 6],
+              [&Troll, 3],
+              [&GroundWorm, 3],
+              [&CaveOrc, 6],
+              [&OrcWizard, 6],
+              [&SnowRat, 3],
+              [&TuskedSkeleton, 11],
+              [&Lupogg, 3],
+              [&DeathSpider, 3],
+              [&DragonFly, 3],
+              [&Avar, 3]];
+   }
+   
+   GetRoundFiveMonsters()
+   {
+      return [[&GiantRat, 3],
+              [&SpiderBaby, 3],
+              [&Centipede, 3],
+              [&EvilFairy, 3],
+              [&FungusBeast, 3],
+              [&SpectralMummy, 3],
+              [&Slime, 6],
+              [&Zombie, 3],
+              [&Spider, 3],
+              [&Scorpion, 6],
+              [&BatteredSkeleton, 5],
+              [&Skeleton, 3],
+              [&RedAnt, 3],
+              [&Frogman, 6],
+              [&Troll, 3],
+              [&GroundWorm, 3],
+              [&CaveOrc, 6],
+              [&OrcWizard, 6],
+              [&SnowRat, 3],
+              [&TuskedSkeleton, 5],
+              [&Lupogg, 3],
+              [&DeathSpider, 3],
+              [&DragonFly, 3],
+              [&Avar, 3],
+              [&AvarShaman, 3],
+              [&DuskRat, 3],
+              [&EvilEnt, 3],
+              [&Iceperson, 3]];
+   }
+   
+   GetRoundSixMonsters()
+   {
+      return [[&GiantRat, 3],
+              [&SpiderBaby, 3],
+              [&Centipede, 3],
+              [&EvilFairy, 3],
+              [&FungusBeast, 3],
+              [&SpectralMummy, 3],
+              [&Slime, 3],
+              [&Zombie, 3],
+              [&Spider, 3],
+              [&Scorpion, 6],
+              [&BatteredSkeleton, 5],
+              [&Skeleton, 3],
+              [&RedAnt, 3],
+              [&Frogman, 6],
+              [&Troll, 3],
+              [&GroundWorm, 3],
+              [&CaveOrc, 3],
+              [&OrcWizard, 3],
+              [&SnowRat, 3],
+              [&TuskedSkeleton, 5],
+              [&Lupogg, 3],
+              [&DeathSpider, 3],
+              [&DragonFly, 3],
+              [&Avar, 3],
+              [&AvarShaman, 3],
+              [&DuskRat, 3],
+              [&EvilEnt, 3],
+              [&Iceperson, 3],
+              [&MolluskMonster, 3],
+              [&NarthylWorm, 3],
+              [&DaemonSkeleton, 3]];
+   }
+   
+   GetAllMonsters()
+   {
+      return [[&GiantRat, 3],
+              [&SpiderBaby, 2],
+              [&Centipede, 3],
+              [&EvilFairy, 2],
+              [&FungusBeast, 3],
+              [&SpectralMummy, 3],
+              [&Slime, 3],
+              [&Zombie, 3],
+              [&Spider, 3],
+              [&Scorpion, 3],
+              [&BatteredSkeleton, 3],
+              [&Skeleton, 3],
+              [&RedAnt, 3],
+              [&Frogman, 3],
+              [&Troll, 3],
+              [&GroundWorm, 3],
+              [&CaveOrc, 3],
+              [&OrcWizard, 3],
+              [&SnowRat, 3],
+              [&TuskedSkeleton, 3],
+              [&Lupogg, 3],
+              [&DeathSpider, 3],
+              [&DragonFly, 3],
+              [&Avar, 3],
+              [&AvarShaman, 3],
+              [&DuskRat, 3],
+              [&EvilEnt, 3],
+              [&Iceperson, 3],
+              [&MolluskMonster, 3],
+              [&NarthylWorm, 3],
+              [&DaemonSkeleton, 3],
+              [&AvarChieftain, 3],
+              [&Kriipa, 3],
+              [&StoneTroll, 3]];
+   }
+   
+   GetBosses()
+   {
+      return [&LupoggKing,
+              &EarthElementalChampion,
+              &FireElementalChampion,
+              &IceElementalChampion,
+              &NeruElementalChampion,
+              &GiantRatKing,
+              &DarkAngel,
+              &Thrasher,
+              &Ghost];
+   }
+   
+   GetMiniBosses()
+   {
+      return [&GroundWormQueen,
+              &OrcPitBoss,
+              &DragonFlyQueen,
+              &Shadowbeast,
+              &SpiderQueen,
+              &Yeti,
+              &EarthElemental,
+              &FireElemental,
+              &IceElemental,
+              &NeruElemental];
+   }
+   
+   GetFixedRewards()
+   {
+      return [[&AntMask,10],
+              [&RatMask,15],
+              [&MummyMask,20],
+              [&SkullMask,25],
+              [&TrollMask,30],
+              [&ShrunkenHeadMask,35],
+              [&DaemonMask,40],
+              [&FeyMask,45],
+              [&XeoMask,50],
+              [&KriipaMask,55],
+              [&CowMask,75],
+              [&KraananCharm,100]];
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -395,6 +395,9 @@ resources:
 
    user_logon_delay = \
       "You take a moment to recollect your senses."
+      
+   real_survival_found = \
+      "Adventurers are undertaking Kraanan's challenge at %q."
 
 classvars:
 
@@ -2599,6 +2602,56 @@ messages:
          }
       }
 
+      if IsClass(what,&Monster)
+         AND NOT (IsClass(what,&Reflection)
+            OR IsClass(what,&EvilTwin))
+      {
+         if Send(what,@GetMaster) <> $
+         {
+            if (Send(what,@GetMaster) = self)
+            {
+               return MM_MINION_SELF;
+            }
+            else
+            {
+               return MM_MINION_OTHER;
+            }
+         }
+         else
+         {
+            % Draw dots for NPCs.
+            if Send(what,@GetBehavior) & AI_NPC
+            {
+               return MM_NPC;
+            }
+            else
+            {
+               if Send(poOwner,@OverridesMonsterDots)
+               {
+                  return Send(poOwner,@OverrideMonsterDots,#what=what,#who=self);
+               }
+
+               % Survival room specific dots.
+               if IsClass(poOwner,&SurvivalRoom)
+               {
+                  if Send(poOwner,@IsMiniBoss,#what=what)
+                  {
+                     return MM_MINIBOSS;
+                  }
+                  else
+                  {
+                     if Send(poOwner,@IsBoss,#what=what)
+                     {
+                        return MM_BOSS;
+                     }
+                  }
+               }
+
+               return MM_MONSTER;
+            }
+         }
+      }
+
       if IsClass(what,&Player)
       {
          if Send(what,@IsInCannotInteractMode)
@@ -2612,6 +2665,11 @@ messages:
             OR oIllusion = $
             OR NOT IsClass(oIllusion,&Monster)
          {
+            if Send(poOwner,@OverridesPlayerDots)
+            {
+               return Send(poOwner,@OverridePlayerDots,#what=what,#who=self);
+            }
+
             if Send(Send(SYS,@GetWarEvent),@IsActive)
             {
                if Send(Send(SYS,@GetWarEvent),@IsSameSide,#player1=self,#player2=what)
@@ -2664,51 +2722,6 @@ messages:
          {
 
             iFlags = (iFlags | MM_MONSTER);
-         }
-      }
-
-      if IsClass(what,&Monster)
-         AND NOT (IsClass(what,&Reflection)
-            OR IsClass(what,&EvilTwin))
-      {
-         if Send(what,@GetMaster) <> $
-         {
-            if (Send(what,@GetMaster) = self)
-            {
-               return MM_MINION_SELF;
-            }
-            else
-            {
-               return MM_MINION_OTHER;
-            }
-         }
-         else
-         {
-            % Draw dots for NPCs.
-            if Send(what,@GetBehavior) & AI_NPC
-            {
-               return MM_NPC;
-            }
-            else
-            {
-               % Survival room specific dots.
-               if IsClass(poOwner,&SurvivalRoom)
-               {
-                  if Send(poOwner,@IsMiniBoss,#what=what)
-                  {
-                     return MM_MINIBOSS;
-                  }
-                  else
-                  {
-                     if Send(poOwner,@IsBoss,#what=what)
-                     {
-                        return MM_BOSS;
-                     }
-                  }
-               }
-
-               return MM_MONSTER;
-            }
          }
       }
 
@@ -4375,7 +4388,7 @@ messages:
    UserSay(type=$,string=$)
    {
       local i, oSpell, lEnchantData, bTranceBlocksSay, lSurvivalOptions,
-            poForceBaseRoom;
+            poForceBaseRoom, bFoundRealSurvival;
 
       % A room can completely block a piece of communication if it chooses.
       % An excellent example is Out Of Grace, which blocks all tells to 
@@ -4546,6 +4559,23 @@ messages:
             
             if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindPublicRoom) = $
             {
+               bFoundRealSurvival = FALSE;
+               for i in Send(SYS,@GetObjectAttributeMasterList)
+               {
+                  if IsClass(i,&SurvivalRoomAttribute)
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=real_survival_found,
+                              #parm1=Send(Send(i,@GetHostObject),@GetName));
+                     
+                     bFoundRealSurvival = TRUE;
+                  }
+               }
+               
+               if bFoundRealSurvival
+               {
+                  return;
+               }
+               
                Send(self,@MsgSendUser,#message_rsc=survival_no_public_rooms);
 
                return;

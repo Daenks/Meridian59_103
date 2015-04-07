@@ -7303,6 +7303,11 @@ messages:
        
        return lDamageTypes;
     }
+    
+   GetObjectAttributeMasterList()
+   {
+      return plObject_attributes_master;
+   }
 
    AddObjectAttributeToMasterList(attribute=$)
    {

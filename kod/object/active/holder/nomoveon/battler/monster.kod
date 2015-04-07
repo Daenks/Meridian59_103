@@ -5706,7 +5706,7 @@ messages:
       
       % A survival mob
       if poOwner <> $
-         AND IsClass(poOwner,&SurvivalRoom)
+         AND piBoostedLevel > 0
       {
          return 0;
       }

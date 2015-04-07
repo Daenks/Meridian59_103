@@ -1,0 +1,158 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChaosRoomAttribute is RoomAttribute
+
+% This allows anyone to fight anyone.
+% No change to penalties.
+
+constants:
+
+   include blakston.khd
+   
+   DEFLT_START_TIME = 60000
+
+resources:
+
+   chaosatt_welcome_message = \
+      "~BAs you enter this place, you feel the gaze of Faren upon you. "
+      "The natural order reigns supreme. It is kill or be killed."
+      
+   chaosatt_beginning_in_sixty = \
+      "~BYou feel the order of law fading away."
+   
+   chaosatt_has_begun = \
+      "~BThe gaze of Faren falls upon you. Suddenly, civilization falls "
+      "away, and you know that no artificial law can trump that of nature. "
+      "Life and death are intertwined - it is kill or be killed."
+   
+   chaosatt_ended = \
+      "Civilized behavior returns as Faren's surging ferocity fades."
+
+   chaosatt_killed_by_player = \
+      "~B~U~k[###]~n ~B~v%s was just slain in the furious wilds at "
+      "%s by %s."
+
+   chaos_room_begin_wav = chaosup.wav
+   background_chaosatt = 1skyc.bgf
+      
+classvars:
+
+properties:
+
+   ptInitiateTimer = $
+   piHasBegun = FALSE
+
+messages:
+
+   Constructed()
+   {
+      local i;
+
+      ptInitiateTimer = CreateTimer(self,@InitiateChaosAtt,DEFLT_START_TIME);
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=chaosatt_beginning_in_sixty);
+      }
+
+      propagate;
+   }
+   
+   InitiateChaosAtt()
+   {
+      local i;
+
+      ptInitiateTimer = $;
+      piHasBegun = TRUE;
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Post(i,@MsgSendUser,#message_rsc=chaosatt_has_begun);
+         Post(i,@WaveSendUser,#what=i,#wave_rsc=chaos_room_begin_wav);
+      }
+      
+      Post(poHostObject,@RecalcLightAndWeather);
+
+      return;
+   }
+   
+   ModifiesRoomBackground()
+   {
+      return piHasBegun;
+   }
+   
+   ModifyRoomBackground(rBackground=$)
+   {
+      if piHasBegun
+      {
+         return background_chaosatt;
+      }
+
+      return rBackground;
+   }
+
+   NewHoldObject(what=$)
+   {
+      if IsClass(what,&User)
+         AND piHasBegun
+      {
+         Post(what,@MsgSendUser,#message_rsc=chaosatt_welcome_message);
+      }
+
+      return;
+   }
+   
+   SomethingKilled(what=$,victim=$)
+   {
+      local i;
+      
+      if IsClass(what,&Player)
+         AND IsClass(victim,&Player)
+         AND piHasBegun
+      {
+         for i in Send(SYS,@GetUsersLoggedOn)
+         {
+            Post(i,@MsgSendUser,#message_rsc=chaosatt_killed_by_player,
+                                   #parm1=Send(victim,@GetTrueName),
+                                   #parm2=Send(poHostObject,@GetName),
+                                   #parm3=Send(what,@GetTrueName));
+         }
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+
+      if ptInitiateTimer <> $
+      {
+         DeleteTimer(ptInitiateTimer);
+         ptInitiateTimer = $;
+         propagate;
+      }
+
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=chaosatt_ended);
+      }
+
+      propagate;
+   }
+   
+   GetChaosZone()
+   {
+      return piHasBegun;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,221 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AnonymousRoomAttribute is RoomAttribute
+
+% This renders everyone in the room anonymous.
+% All player dots are red halo (attackable).
+% Descriptions can't be clicked.
+% This allows anyone to fight anyone, assuming you can figure out who they are.
+% No change to penalties.
+
+constants:
+
+   include blakston.khd
+   
+   DEFLT_START_TIME = 60000
+
+resources:
+
+   anonatt_welcome_message = \
+      "~IAs you enter this place, you feel Riija's mocking smile upon you. "
+      "The trickster god's prank has made things... complicated."
+      
+   anonatt_beginning_in_sixty = \
+      "~IYou're starting to feel a little weird."
+   
+   anonatt_has_begun = \
+      "~IThe mocking smile of Riija falls upon you. You blink, yawn once, "
+      "and then... wait, that can't be right..."
+   
+   anonatt_ended = \
+      "Bored of mortal affairs, Riija moves on."
+      
+   anonatt_no_cast_rsc = \
+      "If you obscure your obfuscation, how will you ever "
+      "unobfuscate yourself?"
+
+   anonatt_killed_by_player = \
+      "~B~U~k[###]~n ~B~v%s was just slain in the confusion at "
+      "%s by %s."
+
+   background_anonatt = 1skyd.bgf
+      
+classvars:
+
+properties:
+
+   ptInitiateTimer = $
+   piHasBegun = FALSE
+
+messages:
+
+   Constructed()
+   {
+      local i;
+
+      ptInitiateTimer = CreateTimer(self,@InitiateAnonAtt,DEFLT_START_TIME);
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=anonatt_beginning_in_sixty);
+      }
+
+      propagate;
+   }
+   
+   InitiateAnonAtt()
+   {
+      local i;
+
+      ptInitiateTimer = $;
+      piHasBegun = TRUE;
+      
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Post(i,@MsgSendUser,#message_rsc=anonatt_has_begun);
+         Post(i,@RemoveEnchantment,
+                  #what=Send(SYS,@FindSpellByNum,#num=SID_ANONYMITY));
+         Post(i,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
+         Post(i,@SetPlayerDrawFX,#drawfx=DRAWFX_BLACK,
+                                   #SendSomethingChanged=TRUE);
+      }
+      
+      Post(poHostObject,@RecalcLightAndWeather);
+
+      return;
+   }
+   
+   ModifiesRoomBackground()
+   {
+      return piHasBegun;
+   }
+   
+   ModifyRoomBackground(rBackground=$)
+   {
+      if piHasBegun
+      {
+         return background_anonatt;
+      }
+
+      return rBackground;
+   }
+
+   NewHoldObject(what=$)
+   {
+      if IsClass(what,&User)
+         AND piHasBegun
+      {
+         Post(what,@MsgSendUser,#message_rsc=anonatt_welcome_message);
+         Post(what,@RemoveEnchantment,
+                  #what=Send(SYS,@FindSpellByNum,#num=SID_ANONYMITY));
+         Post(what,@RemoveEnchantment,
+                  #what=Send(SYS,@FindSpellByNum,#num=SID_SHADOW_FORM));
+         Post(what,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
+         Post(what,@SetPlayerDrawFX,#drawfx=DRAWFX_BLACK,
+                                   #SendSomethingChanged=TRUE);
+      }
+
+      return;
+   }
+   
+   SetSpellPlayerFlag(who=$)
+   {
+      if piHasBegun
+      {
+         Send(who,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
+         Send(who,@SetPlayerDrawFX,#drawfx=DRAWFX_BLACK,
+                                   #SendSomethingChanged=TRUE);
+      }
+
+      return;
+   }
+
+   LeaveHold(what=$)
+   {
+      if IsClass(what,&User)
+         AND piHasBegun
+      {
+         Post(what,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=FALSE);
+         Post(what,@ResetPlayerDrawfx);
+      }
+
+      return;
+   }
+
+   ReqSpellCast(who = $, oSpell = $, lItems = $)
+   {
+      if (IsClass(oSpell,&Anonymity)
+         OR IsClass(oSpell,&ShadowForm))
+         AND piHasBegun
+      {
+         % We have to provide the fail message here.
+         Send(who,@MsgSendUser,#message_rsc=anonatt_no_cast_rsc,
+               #parm1=Send(oSpell,@GetName));
+
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+   
+   SomethingKilled(what=$,victim=$)
+   {
+      local i;
+      
+      if IsClass(what,&Player)
+         AND IsClass(victim,&Player)
+         AND piHasBegun
+      {
+         for i in Send(SYS,@GetUsersLoggedOn)
+         {
+            Post(i,@MsgSendUser,#message_rsc=anonatt_killed_by_player,
+                                   #parm1=Send(victim,@GetTrueName),
+                                   #parm2=Send(poHostObject,@GetName),
+                                   #parm3=Send(what,@GetTrueName));
+         }
+      }
+
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+
+      if ptInitiateTimer <> $
+      {
+         DeleteTimer(ptInitiateTimer);
+         ptInitiateTimer = $;
+         propagate;
+      }
+
+      for i in Send(poHostObject,@GetPlayers)
+      {
+         Send(i,@MsgSendUser,#message_rsc=anonatt_ended);
+         Post(i,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=FALSE);
+         Post(i,@ResetPlayerDrawfx);
+      }
+
+      propagate;
+   }
+   
+   OverridesPlayerDots()
+   {
+      return piHasBegun;
+   }
+   
+   OverridePlayerDots(what=$,who=$)
+   {
+      return (MM_PLAYER | MM_PLAYER_IS_ENEMY);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,119 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+OrcInvasion is InvasionRoomAttribute
+
+% This is a standard event invasion by orcs.
+
+constants:
+
+   include blakston.khd
+   
+   REWARD_MONEY = 1
+   REWARD_ITEM = 2
+   REWARD_TOUGHER = 3
+
+resources:
+      
+   orcinvasionatt_beginning_in_location = \
+      "~BThe orc pit boss and other denizens of the caves are preparing "
+      "to attack at %s. Shal'ille calls for the aid of all adventurers!"
+   
+   orcinvasionatt_happening_in_location = \
+      "The forces of the orc pit boss rally and attack %s once more!"
+   
+   orcinvasionatt_ended = \
+      "The forces of the orc pit boss have been defeated!"
+
+   orcinvasionatt_boss_goal_msg = \
+      "Slay the evil orc pit boss himself!"
+   orcinvasionatt_minibosses_goal_msg = \
+      "Slay the wizard servants of the evil orc pit boss."
+      
+   orcinvasionatt_boss_slain_goal_msg = \
+      "~BThe orc pit boss has been slain!"
+   
+   orcinvasionatt_minibosses_slain_goal_msg = \
+      "The lieutenants of the orc pit boss have fallen!"
+
+   orcinvasionatt_broadcast_victory = \
+      "With Shal'ille's aid, the brave adventurers of the land have staved off "
+      "the orc invasion at %s."
+      
+classvars:
+
+   invasionatt_beginning_in_location = orcinvasionatt_beginning_in_location
+   invasionatt_happening_in_location = orcinvasionatt_happening_in_location
+   invasionatt_ended = orcinvasionatt_ended
+   invasionatt_boss_goal_msg = orcinvasionatt_boss_goal_msg
+   invasionatt_minibosses_goal_msg = orcinvasionatt_minibosses_goal_msg
+
+   invasionatt_boss_slain_goal_msg = orcinvasionatt_boss_slain_goal_msg
+   invasionatt_minibosses_slain_goal_msg = orcinvasionatt_minibosses_slain_goal_msg
+   invasionatt_broadcast_victory = orcinvasionatt_broadcast_victory
+
+properties:
+
+messages:
+
+   Constructed()
+   {
+      local i;
+      
+      plVictoryRewards = [[2,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [1,REWARD_TOUGHER],
+                          [&Rose,REWARD_ITEM],
+                          [5000,REWARD_MONEY],
+                          [4000,REWARD_MONEY],
+                          [3000,REWARD_MONEY],
+                          [2000,REWARD_MONEY]];
+
+      plBosses = [&OrcPitBoss];
+      plMinibosses = [&OrcWizard];
+      plFixedRewards = [[&RingInvisibility,3]];
+
+      propagate;
+   }
+
+   InitiateNextLevel(timer=$)
+   {
+      if piLevel = 1
+      {
+         plMonsters = [[&CaveOrc,20],[&Orc,80]];
+      }
+
+      if piLevel = 2
+      {
+         plMonsters = [[&CaveOrc,40],[&Orc,60]];
+      }
+
+      if piLevel = 3
+      {
+         plMonsters = [[&CaveOrc,60],[&Orc,40]];
+      }
+
+      if piLevel = 4
+      {
+         plMonsters = [[&CaveOrc,80],[&Orc,20]];
+      }
+
+      if piLevel = piFinalLevel
+      {
+         plMonsters = [[&CaveOrc,90],[&Shadowbeast,10]];
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
