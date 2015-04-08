@@ -118,14 +118,20 @@ messages:
       %  we've checked for re-enchantment in CanPayCosts.
       Send(who,@RemoveEnchantmentClass,#class=&TouchAttackSpell);
       
-      Send(who,@GainLight,#amount=viEnchantmentLight);
+      if IsClass(who,&Player)
+      {
+         Send(who,@GainLight,#amount=viEnchantmentLight);
+      }
       
       propagate;
    }
 
    EndEnchantment(who = $, report = TRUE, state = 0)
    {
-      Send(who,@LoseLight,#amount=viEnchantmentLight);
+      if IsClass(who,&Player)
+      {
+         Send(who,@LoseLight,#amount=viEnchantmentLight);
+      }
       
       propagate;
    }

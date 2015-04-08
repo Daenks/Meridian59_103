@@ -104,7 +104,8 @@ messages:
 
    EndEnchantment(who=$,report=TRUE,state=0)
    {
-      if Send(who,@IsLoggedOn)
+      if IsClass(who,&Player)
+         AND Send(who,@IsLoggedOn)
       {
          % Must post this so it's after the flag being removed.
          Post(who,@ToCliRoomContents);

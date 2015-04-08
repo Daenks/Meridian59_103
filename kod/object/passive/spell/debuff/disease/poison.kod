@@ -74,34 +74,39 @@ messages:
    {
       local i, oSpell;
 
-      if not isClass(who,&Player)
-      {
-         return;
-      }
-
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_RESIST_POISON);
       if Send(who,@IsEnchanted,#what=oSpell)
       {
-         % Give players a decent chance to improve the spell!
-         for i in Send(who,@GetPassiveImprovementList)
+         if IsClass(who,&Player)
          {
-            if First(i) = oSpell
+            % Give players a decent chance to improve the spell!
+            for i in Send(who,@GetPassiveImprovementList)
             {
-               Post(First(i),@ImproveAbility,#who=who);
+               if First(i) = oSpell
+               {
+                  Post(First(i),@ImproveAbility,#who=who);
+               }
             }
          }
 
          if (Random(1,100) < Send(who,@GetEnchantedState,#what=oSpell))
          {
-            Send(who,@MsgSendUser,#message_rsc=poison_kraanan);
+            if IsClass(who,&Player)
+            {
+               Send(who,@MsgSendUser,#message_rsc=poison_kraanan);
+            }
             return;
          }
       }
 
       Send(who,@AddPoison,#strength=lossrate);
       Send(who,@StartEnchantment,#what=self,#time=duration,#state=lossrate);
-      Send(who,@MsgSendUser,#message_rsc=poison_start);
-      Send(who,@WaveSendUser,#wave_rsc=poison_sound);
+      
+      if IsClass(who,&Player)
+      {
+         Send(who,@MsgSendUser,#message_rsc=poison_start);
+         Send(who,@WaveSendUser,#wave_rsc=poison_sound);
+      }
 
       return;
    }
@@ -110,6 +115,7 @@ messages:
    {
       Send(who,@RemovePoison,#strength=state);
       if report
+         AND IsClass(who,&Player)
       {
          Send(who,@MsgSendUser,#message_rsc=poison_stop);
       }

@@ -113,11 +113,14 @@ messages:
 
    EndEnchantment(who = $, report=TRUE)
    {
-      Send(who,@ClearTranceFlag);
-      Send(who,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
-      if report
+      if IsClass(who,&Player)
       {
-         Send(who,@MsgSendUser,#message_rsc=fade_off);
+         Send(who,@ClearTranceFlag);
+         Send(who,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
+         if report
+         {
+            Send(who,@MsgSendUser,#message_rsc=fade_off);
+         }
       }
         
       return;

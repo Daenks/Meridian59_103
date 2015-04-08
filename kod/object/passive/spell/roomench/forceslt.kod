@@ -112,7 +112,11 @@ messages:
       if Send(who,@GetKarma) > 0
       {
          Send(who,@AddAttackModifier,#what=self);
-         Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_on);
+
+         if IsClass(who,&Player)
+         {
+            Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_on);
+         }
       }
       
       return;
@@ -131,7 +135,11 @@ messages:
    "Remove enchantment effects on this occupant"
    {
       Send(who,@RemoveAttackModifier,#what=self);
-      Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_off);
+      
+      if IsClass(who,&Player)
+      {
+         Send(who,@MsgSendUser,#message_rsc=forcesoflight_player_off);
+      }
       
       return;
    }

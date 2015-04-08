@@ -58,7 +58,7 @@ classvars:
    vbCanCastOnOthers = TRUE
 
    % Overwrite to allow monster casts.
-   vbCanCastonMonsters = FALSE 
+   vbCanCastonMonsters = TRUE 
 
    viPersonal_ench = TRUE
 

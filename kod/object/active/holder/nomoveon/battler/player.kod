@@ -119,9 +119,6 @@ constants:
    %  with higher hps.
    MAX_DAMAGE_PER_HIT = 30
 
-   % What's the maximum stat we can have after modification?
-   MAXIMUM_STAT = 70
-
    % how long to wait before sending another pvp notify sound (seconds)
    PVP_NOTIFY_DECAY = 5 * 60
    
@@ -880,61 +877,19 @@ properties:
 
    piLast_restart_time = 0
 
-   % Permanent character base stats.
-   piMight = 0
-   piIntellect = 0
-   piStamina = 0
-   piAgility = 0
-   piMysticism = 0
-   piAim = 0
-
-   % Modifiers to those base stats.
-   piMightMod = 0
-   piIntellectMod = 0
-   piStaminaMod = 0
-   piAgilityMod = 0
-   piMysticismMod = 0
-   piAimMod = 0
-
-   %%% Variable character values.
-
-   % The player sees piMax_Health in their client.
-   % piBase_Max_Health is their base without any modifiers
-   % IMPORTANT NOTE: For higher accuracy, a battler's current health 
-   %(and only current health) is inflated by a factor of 100. Doing so 
-   % avoids truncation errors but is not revealed to users in any way.
-   piHealth = 2000
-   piMax_Health = 20
-   piBase_Max_Health = 20
-
-   piMax_Mana = 20
-   piMana = 20
-
    % piKarma is measured in hundredths of karma units
    piKarma = 0
 
    % Percent stomach is full.
    piStomach = 0
 
-   % Governs health and mana replacement rates
-   piVigor = 100
-   % Accumulates small vigor debits from attacks, etc.
-   piExertion = 0
-
    % This replaces a timer
    piTimeLastStomachUpdate = 0
-
-   % stuff in use
-   plUsing = $
 
    % Timers 
    ptHealth = $
    ptAdvancement = $
    ptRest = $
-
-   % Poison info
-   ptPoison = $
-   piPoisonStrength = 0
 
    % List of objects adding overlays to us.
    plOverlays = $
@@ -964,12 +919,6 @@ properties:
    % Light source at player.
    % Default strength of light source at player is 5
    piLight = 5
-
-   % Attack modifiers to attack roll & damage (includes items & spells)
-   plAttack_modifiers = $
-
-   % Defense modifiers to defense roll & damage (includes items & spells)
-   plDefense_modifiers = $
 
    % Gear preferences for 'set' and 'loadout'
    plLoadout_list = $
@@ -1068,9 +1017,6 @@ properties:
    pbDeath_rift = FALSE
    ptDeathRiftTimer = $
 
-   % This list keeps track of selfcast buffs for passive improvement.
-   plPassiveImprovement = $
-
    % Crystalize Mana Surge data
    ptCrystalizeManaSurgeTimer = $
    piCrystalizeManaSurging = FALSE
@@ -1121,12 +1067,6 @@ messages:
       {
          DeleteTimer(ptMana);
          ptMana = $;
-      }
-
-      if ptPoison <> $
-      {
-         DeleteTimer(ptPoison);
-         ptPoison = $;
       }
 
       if ptAdvancement <> $
@@ -2931,16 +2871,6 @@ messages:
       return piGender;
    }
 
-   GetMaxHealth()
-   {
-      return piMax_health;
-   }
-
-   GetBaseMaxHealth()
-   {
-      return piBase_max_health;
-   }
-
    GetLevel()
    {
       return Send(self,@GetBaseMaxHealth);
@@ -3150,22 +3080,6 @@ messages:
       }
 
       plPassiveImprovement = $;
-
-      return;
-   }
-
-   RemoveAllRadiusEnchantments(report=TRUE)
-   "Remove all current radius enchantments."
-   {
-      local i;
-
-      for i in plRadiusEnchantments
-      {
-         Send(self,@RemoveRadiusEnchantment,#what=Nth(i,1),
-               #iPower=Nth(i,2),#caster=Nth(i,3),#report=report);
-      }
-
-      plRadiusEnchantments = $;
 
       return;
    }
@@ -4556,7 +4470,7 @@ messages:
 
    TryAttack(what = $,use_weapon = $,stroke_obj=$)
    {
-      local i, iRange, lWindsState, lSandstormState;
+      local i, iRange;
 
       % Can't target self.
       if what = self
@@ -4688,30 +4602,6 @@ messages:
       if IsClass(stroke_obj,&Skill)
       {
          Send(stroke_obj,@PayCosts,#who=self);
-      }
-
-      % Special case:  Ranged weapons in windy room.
-      %  Do this after paying the costs so that the arrow is used.
-      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
-      {
-         lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                              #byClass=&Winds);
-         lSandStormState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                                 #byClass=&SandStorm);
-
-         if lWindsState <> $
-            AND Send(Nth(lWindsState,1),@TryRuinShot,#who=self,
-                     #iSpellPower=Nth(lWindsState,2))
-         {
-            return FALSE;
-         }
-
-         if lSandStormState <> $
-            AND Send(Nth(lSandStormState,1),@TryRuinShot,#who=self,
-                     #iSpellPower=Nth(lSandStormState,2))
-         {
-            return FALSE;
-         }
       }
 
       Send(poOwner,@SomethingAttacked,#what=self,#victim=what,
@@ -5525,29 +5415,6 @@ messages:
       }
 
       return;
-   }
-
-   % Returns weapon used.
-   GetWeapon()
-   {
-      local oWeapon;
-
-      oWeapon = Send(self,@LookupPlayerWeapon);
-      % If there is no wielded melee weapon, then see if we
-      % have a touch attack active.
-      if oWeapon = $
-      {
-         % This will return $ if there's no Touch Attacks enchanting player.
-         oWeapon = Send(self,@GetEnchantmentsByClass,
-               #EnchClass=&TouchAttackSpell);
-         if oWeapon <> $
-         {
-            % The spell object is the second element of the list. Get that.
-            oWeapon = Nth(first(oWeapon),2);
-         }
-      }
-
-      return oWeapon;
    }
 
    % The next three functions deal with weapon improvement.
@@ -6642,42 +6509,6 @@ messages:
       return;
    }
 
-   GainHealthNormal(amount = $, precision = FALSE)
-   "Don't add beyond piMax_health"
-   {
-      local iOldhealth;
-
-      if NOT precision
-      {
-         amount = amount*100;
-      }
-
-      iOldhealth = piHealth;
-
-      if amount < 0
-      {
-         return;
-      }
-
-      if piHealth > piMax_health*100
-      {
-         return 0;
-      }
-
-      if NOT Send(self,@IsInCannotInteractMode)
-      {
-         pihealth = piHealth + amount;
-         if piHealth > piMax_health*100
-         {
-            piHealth = piMax_health*100;
-         }
-      }
-
-      Send(self,@NewHealth);
-
-      return (piHealth - iOldhealth);
-   }
-
    NewHealth()
    {
       if piHealth < 0
@@ -7158,98 +6989,6 @@ messages:
    GetSkillList()
    {
       return plSkills;
-   }
-
-   GetHealth()
-   {
-      return piHealth/100;
-   }
-
-   GetExactHealth()
-   {
-      return piHealth;
-   }
-
-   SetHealth(amount=$)
-   {
-      if amount <> $
-      {
-         piHealth = bound(amount*100,0,$);
-      }
-
-      Send(self,@DrawHealth);
-
-      return;
-   }
-
-   SetExactHealth(amount=$)
-   {
-      if amount <> $
-      {
-         piHealth = bound(amount,0,$);
-      }
-      
-      return;
-   }
-
-   GetMight()
-   {
-      return bound((piMight + piMightMod),1,MAXIMUM_STAT);
-   }
-
-   GetIntellect()
-   {
-      return bound((piIntellect + piIntellectMod),1,MAXIMUM_STAT);
-   }
-
-   GetAgility()
-   {
-      return bound((piAgility + piAgilityMod),1,MAXIMUM_STAT);
-   }
-
-   GetAim()
-   {
-      return bound((piAim + piAimMod),1,MAXIMUM_STAT);
-   }
-
-   GetStamina()
-   {
-      return bound((piStamina + piStaminaMod),1,MAXIMUM_STAT);
-   }
-
-   GetMysticism()
-   {
-      return bound((piMysticism + piMysticismMod),1,MAXIMUM_STAT);
-   }
-
-   GetRawMight()
-   {
-      return bound(piMight,1,50);
-   }
-
-   GetRawIntellect()
-   {
-      return bound(piIntellect,1,50);
-   }
-
-   GetRawAgility()
-   {
-      return bound(piAgility,1,50);
-   }
-
-   GetRawAim()
-   {
-      return bound(piAim,1,50);
-   }
-
-   GetRawStamina()
-   {
-      return bound(piStamina,1,50);
-   }
-
-   GetRawMysticism()
-   {
-      return bound(piMysticism,1,50);
    }
 
    GetKarma()
@@ -11015,192 +10754,6 @@ messages:
       return player_was_hit;
    }
 
-   AddPoison(strength = 0, bVigorLoss = TRUE)
-   {
-      if ptPoison = $
-      {
-         ptPoison = CreateTimer(self,@PoisonTimer,10000);
-      }
-
-      piPoisonStrength = piPoisonStrength + strength;
-
-      if bVigorLoss
-      {
-         piVigor = piVigor - 20;
-         Send(self,@NewVigor);
-      }
-
-      return;
-   }
-
-   RemovePoison(strength = 0)
-   {
-      piPoisonStrength = piPoisonStrength - strength;
-
-      return;
-   }
-
-   PoisonTimer()
-   {
-      ptPoison = $;
-
-      % For safety's sake
-      if piPoisonStrength <= 0
-      {
-         piPoisonStrength = 0;
-
-         return;
-      }
-
-      if poOwner <> $
-      {
-         ptPoison = CreateTimer(self,@PoisonTimer,10000);
-      }
-
-      if poOwner = $
-      {
-         return;
-      }
-
-      if Send(self,@IsInCannotInteractMode)
-      {
-         return;
-      }
-
-      if NOT Send(poOwner,@SafePlayerAttack)
-         OR Send(poOwner,@IsValidTarget,#who=self)
-      {
-         % Poison only hurts you in the arena if you are a combatant.
-         piHealth = piHealth - piPoisonStrength / 10;
-         if piHealth < 1
-         {
-            piHealth = 1;
-         }
-
-         Send(self,@NewHealth);
-      }
-
-      return;
-   }
-
-   AddMight(points = 0, bAbsolute = TRUE)
-   "Returns signed change to might (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigMight;
-
-      iOrigMight = piMightMod;
-      piMightMod = piMightMod + points;
-
-      if NOT bAbsolute
-      {
-         piMightMod = bound(piMightMod,-piMight,(MAXIMUM_STAT-piMight));
-      }
-
-      Send(self,@DrawMight);
-      Post(self,@DrawCapacity);
-
-      return piMightMod - iOrigMight;
-   }
-
-   AddIntellect(points = 0, bAbsolute = TRUE)
-   "Returns signed change to intellect (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigIntellect;
-
-      iOrigIntellect = piIntellectMod;
-      piIntellectMod = piIntellectMod + points;
-
-      if NOT bAbsolute
-      {
-         piIntellectMod = bound(piIntellectMod,-piIntellect,(MAXIMUM_STAT-piIntellect));
-      }
-
-      Send(self,@DrawIntellect);
-
-      return piIntellectMod - iOrigIntellect;
-   }
-
-   AddAim(points = 0, bAbsolute = TRUE)
-   "Returns signed change to aim (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigAim;
-
-      iOrigAim = piAimMod;
-      piAimMod = piAimMod + points;
-
-      if NOT bAbsolute
-      {
-         piAimMod = bound(piAimMod,-piAim,(MAXIMUM_STAT-piAim));
-      }
-
-      Send(self,@DrawAim);
-      Post(self,@DrawOffense);
-
-      return piAimMod - iOrigAim;
-   }
-
-   AddStamina(points = 0, bAbsolute = TRUE)
-   "Returns signed change to stamina (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigStamina;
-
-      iOrigStamina = piStaminaMod;
-      piStaminaMod = piStaminaMod + points;
-
-      if NOT bAbsolute
-      {
-         piStaminaMod = bound(piStaminaMod,-piStamina,(MAXIMUM_STAT-piStamina));
-      }
-
-      Send(self,@DrawStamina);
-
-      return piStaminaMod - iOrigStamina;
-   }
-
-   AddAgility(points = 0, bAbsolute = TRUE)
-   "Returns signed change to agility (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigAgility;
-
-      iOrigAgility = piAgilityMod;
-      piAgilityMod = piAgilityMod + points;
-
-      if NOT bAbsolute
-      {
-         piAgilityMod = Bound(piAgilityMod,-piAgility,(MAXIMUM_STAT-piAgility));
-      }
-
-      Send(self,@DrawAgility);
-      Post(self,@DrawDefense);
-
-      return piAgilityMod - iOrigAgility;
-   }
-
-   AddMysticism(points = 0, bAbsolute = TRUE)
-   "Returns signed change to agility (negative means decrease)"
-   "If restore = TRUE, ignore the bounds check and add the amount anyway."
-   {
-      local iOrigMysticism;
-
-      iOrigMysticism = piMysticismMod;
-      piMysticismMod = piMysticismMod + points;
-
-      if NOT bAbsolute
-      {
-         piMysticismMod = Bound(piMysticismMod,-piMysticism,(MAXIMUM_STAT-piMysticism));
-      }
-
-      Send(self,@DrawMysticism);
-      Send(self,@ComputeMaxMana);
-
-      return piMysticismMod - iOrigMysticism;
-   }
-
    StartResting()
    {
       if ptRest <> $
@@ -12969,19 +12522,6 @@ messages:
       }
 
       return iPower;
-   }
-
-   ZeroMods()
-   "Should NOT be called before removing all potential stat-modifying things"
-   {
-      piMightMod = 0;
-      piIntellectMod = 0;
-      piMysticismMod = 0;
-      piAgilityMod = 0;
-      piStaminaMod = 0;
-      piAimMod = 0;
-
-      return;
    }
 
    CheckLog()

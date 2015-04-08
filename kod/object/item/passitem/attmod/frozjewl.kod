@@ -148,6 +148,7 @@ messages:
 
       if stroke_obj <> $
          AND IsClass(stroke_obj,&Spell)
+         AND IsClass(who,&Player)
       {
          Send(self,@DoFlash);
       }

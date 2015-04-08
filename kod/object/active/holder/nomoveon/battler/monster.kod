@@ -339,12 +339,6 @@ properties:
    ptRandom = $
    ptSpasm = $
 
-   % IMPORTANT NOTE: For higher accuracy, a battler's current health 
-   %(and only current health) is inflated by a factor of 100. Doing so 
-   % avoids truncation errors but is not revealed to users in any way.
-   piHit_points = 1
-   piMax_hit_points = 1
-
    % Who we are dealing with.
    poCustomer = $
 
@@ -370,9 +364,6 @@ properties:
    % Timer to expire turning.
    ptUnturn = $
    piHatred = 0
-   % Emulates agility and aim for monsters based on difficulty.
-   piAgility = 25
-   piAim = 25
 
    piEnch_flags = 0
 
@@ -441,9 +432,10 @@ messages:
    {
       local iStatPoints, iMin, iMax;
 
-      piMax_Hit_points = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints))
+      piBase_max_health = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints))
                          + piSurvivalLevel*viDifficulty;
-      piHit_points = piMax_hit_points*100;
+      piMax_health = piBase_max_health;
+      piHealth = piMax_health*100;
       piMana = piMax_mana;
       piAttackRange = viAttackRange;
       piSpellChance = viSpellChance;
@@ -707,7 +699,10 @@ messages:
 
       plSpellBook = $;
 
+      Send(self,@UnuseAllItems);
       Send(self,@RemoveAllEnchantments);
+      plDefense_modifiers = $;
+      plAttack_modifiers = $;
       poMaster = $;
       poHolySymbolCaster = $;
       if ptUnturn <> $
@@ -1334,7 +1329,7 @@ messages:
       }
 
       % Perhaps we heal this chase moment.
-      if piHit_points < piMax_hit_points*100 AND Random(0,18) < 2
+      if piHealth < piMax_Health*100 AND Random(0,18) < 2
       {
          Send(self,@HealHitPoint);
       }
@@ -1385,7 +1380,7 @@ messages:
       }
 
       % Perhaps we heal this movement tick.
-      if piHit_points < piMax_hit_points*100 AND Random(1,8) = 1
+      if piHealth < piMax_Health*100 AND Random(1,8) = 1
       {
          Send(self,@HealHitPoint);
       }
@@ -1462,24 +1457,12 @@ messages:
 
    AddMonsterAim(points=0)
    {
-      local iOrigAim;
-
-      iOrigAim = piAim;
-      piAim = piAim + points;
-      piAim = Bound(piAim,1,50);
-
-      return piAim - iOrigAim;
+      return Send(self,@AddAim,#points=points);
    }
 
    AddMonsterAgility(points=0)
    {
-      local iOrigAgil;
-
-      iOrigAgil = piAgility;
-      piAgility = piAgility + points;
-      piAgility = Bound(piAgility,1,50);
-
-      return piAgility - iOrigAgil;
+      return Send(self,@AddAgility,#points=points);
    }
 
    StartPalsy()
@@ -1560,7 +1543,7 @@ messages:
 
       % The bigger/tougher I am, the less likely I'm interested in milling
       %  around.
-      if Random(1,140) < piHit_points/100
+      if Random(1,140) < piHealth/100
       {
          return;
       }
@@ -1790,38 +1773,78 @@ messages:
    GetOffense(what = $, stroke_obj=$)
    "This returns the battler's ability to-hit.  Ranges from 1 to 2000."
    {
-      local iAttack;
+      local iOffense, i, lRadiusState;
 
       if piOffense = $
       {
-         iAttack = 4*viLevel + 8*piAim;
+         iOffense = 4*viLevel + 8*Send(self,@GetAim);
       }
       else
       {
-         iAttack = piOffense;
+         iOffense = piOffense;
+      }
+
+      % List of items and spells that affect chance-to-hit
+      for i in plAttack_modifiers
+      {
+         iOffense = Send(i,@ModifyHitRoll,#who=self,#what=what,
+                        #hit_roll=iOffense,#stroke_obj=stroke_obj);
+      }
+
+      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
+      {
+         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+               #byClass=&Mirth);
+         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
+                        #hit_roll=iOffense,#lRadiusState=lRadiusState);
+      }
+
+      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+      {
+         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+               #byClass=&Melancholy);
+         iOffense = Send(Nth(lRadiusState,1),@ModifyHitRoll,#who=self,#what=what,
+                        #hit_roll=iOffense,#lRadiusState=lRadiusState);
       }
 
       if piEnch_flags & ENCH_PALSY
       {
-         iAttack = iAttack * 3 / 4;
+         iOffense = iOffense * 3 / 4;
       }
 
-      return Bound(iAttack,1,2000);
+      return Bound(iOffense,1,2000);
    }
 
    GetDefense(what = $, stroke_obj=$)
    "This returns the battler's ability to avoid being hit.  Ranges from "
    "1 to 2000."
    {
-      local iDefense;
+      local iDefense, i, iParry, iBlock, iDodge;
 
       if piDefense = $
       {
-         iDefense = 4*viLevel + 8*piAgility;
+         iDefense = 4*viLevel + 8*Send(self,@GetAgility);
+         iParry = Send(self,@GetParryAbility);
+         iBlock = Send(self,@GetBlockAbility);
+         iDodge = Send(self,@GetDodgeAbility);
+         
+         iDefense = iDefense + iParry + iBlock + iDodge;
       }
       else
       {
          iDefense = piDefense;
+      }
+
+      for i in plDefense_modifiers
+      {
+         iDefense = Send(i,@ModifyDefensePower,#who=self,
+                           #what=what,#defense_power=iDefense);
+      }
+
+      for i in plRadiusEnchantments
+      {
+         iDefense = Send(Nth(i,1),@ModifyDefensePower,#attacker=what,
+                     #iPower=Nth(i,2),#caster=Nth(i,3),#defense_power=iDefense);
       }
 
       return Bound(iDefense,1,2000);
@@ -1844,7 +1867,7 @@ messages:
    % This returns the damage done to target "what"
    GetDamage(what = $, stroke_obj=$)
    {
-      local iDamage;
+      local iDamage, iDamageBonus, iModBonus, lRadiusState, i;
 
       if piMinDamage = $ and piMaxDamage = $
       {
@@ -1862,6 +1885,42 @@ messages:
          }
          iDamage = random(piMinDamage*100,piMaxDamage*100);
       }
+         
+      % Give monsters a bonus to base damage based on might
+      % However, most monsters have low might since damage
+      %   is often directly set elsewhere
+      % 0 might means no bonus
+      iDamage = (iDamage * (100+Send(self,@GetMight)))/100;
+
+      % Spells and attmods that modify damage
+      iDamageBonus = 0;
+      for i in plAttack_modifiers
+      {
+         % Attack modifiers return the total damage, subtract out the original
+         %  damage to get the damage bonus.
+         iModBonus = Send(i,@ModifyDamage,#who=self,#what=what,#damage=iDamage,
+                          #stroke_obj=oStroke);
+         iDamageBonus = iDamageBonus + (iModBonus - iDamage);
+
+         Send(i,@WeaponHitTarget);
+      }
+
+      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Melancholy)
+      {
+         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&Melancholy);
+         iDamageBonus = Send(Nth(lRadiusState,1),@ModifyDamage,#who=self,
+                              #what=what,#damage=iDamageBonus);
+      }
+      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Mirth)
+      {
+         lRadiusState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&Mirth);
+         iDamageBonus = Send(Nth(lRadiusState,1),@ModifyDamage,#who=self,
+                              #what=what,#damage=iDamageBonus);
+      }
+
+      iDamage = iDamage + iDamageBonus;
 
       if piEnch_flags & ENCH_PALSY
       {
@@ -1874,13 +1933,45 @@ messages:
    % This is the type of damage done.
    GetDamageType(what = $)
    {
-      return viAttack_type;
+      local i, iAttackType;
+      
+      iAttackType = viAttack_type;
+      
+      for i in plEnchantments
+      {
+         iAttackType = Send(i,@ModifyAttackType,#who=self,#type=iAttackType);
+      }
+
+      for i in plRadiusEnchantments
+      {
+         iAttackType = Send(Nth(i,1),@ModifyAttackType,#what=self,
+               #iPower=Nth(i,2),
+               #caster=Nth(i,3),#atype=iAttackType);
+      }
+      
+      return iAttackType;
    }
 
    % This is the magical type of damage done.
-   GetSpellType(what = $)
+   GetSpellType()
    {
-      return viAttack_spell;
+      local i, iSpellType;
+      
+      iSpellType = viAttack_spell;
+      
+      for i in plEnchantments
+      {
+         iSpellType = Send(i,@ModifySpellType,#who=self,#atype=iSpellType);
+      }
+
+      for i in plRadiusEnchantments
+      {
+         iSpellType = Send(Nth(i,1),@ModifySpellType,#what=self,
+               #iPower=Nth(i,2),
+               #caster=Nth(i,3),#aspell=iSpellType);
+      }
+      
+      return iSpellType;
    }
 
    IsRangedAttack()
@@ -1901,7 +1992,7 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage,iResist,iPercentClass,i,each_obj;
+      local iDamage,iResist,iPercentClass,i,each_obj, oGort;
 
       if NOT precision
       {
@@ -1922,9 +2013,35 @@ messages:
 
       if NOT absolute
       {
+         iDamage = damage;
+         % Armor of Gort has a special effect that must go first
+         oGort = Send(SYS,@FindSpellByNum,#Num=SID_ARMOR_OF_GORT);
+         if Send(self,@IsEnchanted,#what=oGort)
+         {
+            iDamage = Send(oGort,@PriorityModifyDefenseDamage,#who=self,
+                           #what=what,#damage=iDamage,
+                           #atype=atype,#aspell=aspell);
+         }
+         
+         for i in plDefense_modifiers
+         {
+            iDamage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,
+                           #damage=iDamage,#atype=atype,#aspell=aspell,
+                           #report_resistance=report_resistance);
+            Send(i,@DefendingHit,#who=self,#what=what);
+         }
+
          iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,
-            #aspell=aspell,#damage=damage);
+            #aspell=aspell,#damage=iDamage);
          iResist = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
+
+         for i in plRadiusEnchantments
+         {
+            iResist = Send(Nth(i,1),@ModifyResistance,#attacker=what,
+                  #atype=atype,#iPower=Nth(i,2),
+                  #caster=Nth(i,3),#resistance=iResist);
+         }
+
          iDamage = Send(self,@GetDamageFromResistance,#what=iDamage,#value=iResist);
          iDamage = iDamage + bonus;
          iDamage = iDamage * scalefactor / 1000;
@@ -1935,7 +2052,7 @@ messages:
       }
 
       % Set a predamage mark... we'll compare to it to see if threshold crossed.
-      iPercentClass = piHit_points/(piMax_hit_points*20);
+      iPercentClass = piHealth/(piMax_Health*20);
 
       % Make sure we don't deal negative damage.
       iDamage = Bound(iDamage,0,$);
@@ -1947,14 +2064,14 @@ messages:
          piHatred = piHatred + 1;
       }
 
-      piHit_points = piHit_points - iDamage;
+      piHealth = piHealth - iDamage;
       
       if poOwner = $
       {
          return 0;
       }
       
-      if piHit_points <= 0 
+      if piHealth <= 0 
       {
          for i in Send(poOwner,@GetHolderActive)
          {
@@ -1974,7 +2091,7 @@ messages:
       }
 
       % Check to see if we crossed a threshold due to the damage.
-      if iPercentClass <> (piHit_points/(piMax_hit_points*20))
+      if iPercentClass <> (piHealth/(piMax_Health*20))
       {
          Send(self,@HitPointThreshold);
       }
@@ -4449,7 +4566,7 @@ messages:
          amount = amount * 100;
       }
 
-      piHit_points = Bound(piHit_points+amount,1,piMax_hit_points*100);
+      piHealth = Bound(piHealth+amount,1,piMax_Health*100);
 
       return;
    }
@@ -4556,7 +4673,7 @@ messages:
 
          % See if we can cast the spell here.
          if Send(oSpell,@CanPayMonsterCosts,#who=self,#lTargets=lTargets,
-                  #iSpellPower=piSpellPower)
+                #iSpellPower=Bound(piSpellPower+Send(self,@GetIntellect),0,99))
             AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,
                      #lItems=lTargets)
          {
@@ -4565,7 +4682,7 @@ messages:
 
             % Cast the spell.
             Send(oSpell,@CastSpell,#who=self,#lTargets=lTargets,
-                  #iSpellPower=piSpellPower);
+               #iSpellPower=Bound(piSpellPower+Send(self,@GetIntellect),0,99));
          }
 
          return TRUE;
@@ -4588,7 +4705,7 @@ messages:
    {
       local i, iThreshold, rDamage_report, each_obj;
 
-      iThreshold = piHit_points / (piMax_hit_points *20);
+      iThreshold = piHealth / (piMax_Health *20);
 
       if iThreshold >= 4
       {
@@ -4637,15 +4754,15 @@ messages:
    {
       local iPercentClass,i,each_obj;
 
-      if piHit_points >= piMax_Hit_points*100
+      if piHealth >= piMax_Health*100
       {
          return;
       }
 
       % We set a mark to see if the healing changes our threshold
-      iPercentClass = piHit_points/(piMax_Hit_points*20);
-      piHit_points = piHit_points+100;
-      if iPercentClass <> (piHit_points/(piMax_Hit_points*20))
+      iPercentClass = piHealth/(piMax_Health*20);
+      piHealth = piHealth+100;
+      if iPercentClass <> (piHealth/(piMax_Health*20))
       {
          for i in Send(poOwner,@GetHolderActive)
          {
@@ -4720,7 +4837,7 @@ messages:
 
       if iHitPoint_Percent = $
       {
-         iHit_Percent = piHit_points / piMax_hit_points;
+         iHit_Percent = piHealth / piMax_Health;
       }
       else
       {
@@ -4765,6 +4882,35 @@ messages:
 
       return;
    }
+   
+   GetMaxHealth()
+   {
+      if viLevel < 40
+      {
+         return viLevel;
+      }
+
+      return ((120 * viLevel) / 100);
+   }
+   
+   ReturnMaxHealth()
+   {
+      return piMax_health;
+   }
+   
+   ReturnBaseMaxHealth()
+   {
+      return piBase_max_health;
+   }
+
+   SetMaxHealth(amount=$)
+   {
+      piBase_max_health = amount;
+      piMax_health = amount;
+      piHealth = amount*100;
+
+      return;
+   }
 
    GetMaxHitPoints()
    "Right now this returns the level. It is used to create the hp at "
@@ -4781,13 +4927,13 @@ messages:
    
    ReturnMaxHitPoints()
    {
-      return piMax_hit_points;
+      return piMax_Health;
    }
 
    SetMaxHitPoints(amount=$)
    {
-      piMax_hit_points = amount;
-      piHit_points = amount*100;
+      piMax_Health = amount;
+      piHealth = amount*100;
 
       return;
    }
@@ -4795,12 +4941,12 @@ messages:
    % Returns the number of remaining hit points.
    GetHealth()
    {
-      return piHit_points/100;
+      return piHealth/100;
    }
 
    GetExactHealth()
    {
-      return piHit_points;
+      return piHealth;
    }
 
    IsFullTalk()
@@ -6493,7 +6639,7 @@ messages:
       
       % If wimpy is set at 50, monster will flee once his health is at 49% of
       %  max.
-      if (piHit_points/ piMax_Hit_points) < viWimpy
+      if (piHealth/ piMax_Health) < viWimpy
       {
          return TRUE;
       }
@@ -6895,6 +7041,63 @@ messages:
    GetBoostedLevel()
    {
       return piBoostedLevel;
+   }
+   
+   UnuseAllItems()
+   {
+      return;
+   }
+   
+   MsgSendUser()
+   {
+      return;
+   }
+   
+   WaveSendUser()
+   {
+      return;
+   }
+   
+   IsPhasedOut()
+   {
+      return FALSE;
+   }
+   
+   IsLoggedOn()
+   {
+      return TRUE;
+   }
+
+   % Returns wielded Melee/Ranged weapon.
+   LookupMonsterWeapon()
+   {
+      local i;
+
+      for i in plUsing
+      {
+         if IsClass(i,&Weapon)
+         {
+            return i;
+         }
+      }
+
+      return self;
+   }
+
+   LookupMonsterShield()
+   {
+      local i;
+
+      for i in plUsing
+      {
+         if IsClass(i,&Shield)
+            AND Send(i,@GetBlockAbility,#who=self) > 0
+         {
+            return i;
+         }
+      }
+
+      return $;
    }
 
 end
