@@ -2900,6 +2900,7 @@
    QST_ID_DUKE_SOLDIER           = 72
    QST_ID_PRINCESS_SOLDIER       = 73
    QST_ID_REBEL_SOLDIER          = 74
+   QST_ID_RAISE_LICH             = 75
 
    % Quest misc constants
 
@@ -3014,6 +3015,7 @@
    QN_PRIZETYPE_SCHEDULE_QUEST            = 0x10      % Schedule a quest of this type
    QN_PRIZETYPE_ESTABLISH_NECROGUILD      = 0x11      % Form the Order of Necromancers
    QN_PRIZETYPE_OUTLAW                    = 0x12      % Make the player an outlaw
+   QN_PRIZETYPE_RECEIVE_LICH              = 0x13      % Raise lich and have it kill the raisers
 
    % Quest node prize statistic types
    QN_PRIZE_STAT_MIGHT    = 0x0

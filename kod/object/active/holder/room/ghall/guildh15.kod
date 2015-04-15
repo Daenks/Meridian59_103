@@ -200,6 +200,48 @@ messages:
       propagate;
    }
 
+   DeleteWallsAroundBattler(who=$)
+   "Deletes walls in a small radius around target battler."   
+   {
+      local i, each_obj;
+
+      % Relies on SquaredDistanceTo, a function descended from nomoveon.
+      if NOT IsClass(who,&Battler)
+      {
+         return;
+      }
+
+      % Check each active element, tell the object to delete if it is a wall and too close
+      for i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if (IsClass(each_obj,&ActiveWallElement)
+            or IsClass(each_obj,&Brambles))
+            AND NOT IsClass(each_obj,&Web)
+         {
+            if Send(who,@SquaredDistanceTo,#what=each_obj) <= (9)
+            {
+               Post(each_obj,@Delete);
+            }
+         }
+      }
+      
+      % Separate check through plPassive for passive wall elements
+      for i in plPassive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&PassiveWallofFire)
+            OR IsClass(each_obj,&PassiveWallofLightning)
+         {
+            if Send(who,@SquaredDistanceTo,#what=each_obj) <= (9)
+            {
+               Post(each_obj,@Delete);
+            }
+         }
+      }
+      return;
+   }
+
    OpenEntranceDoor()
    {
       if ptEntrance = $
