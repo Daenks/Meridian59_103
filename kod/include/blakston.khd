@@ -1887,6 +1887,13 @@
    SKID_PROFICIENCY_SHORT_SWORD = 457
    % Duplicate, for the easily confused.
    SKID_PROFICIENCY_SHORTSWORD = 457
+   
+   % Sorcery skills
+   SKID_LINK_ONE = 480
+   SKID_LINK_TWO = 481
+   SKID_LINK_THREE = 482
+   SKID_LINK_FOUR = 483
+   SKID_LINK_FIVE = 484
 
    %%% Unique spell constants
 
@@ -2152,6 +2159,7 @@
    SKS_BRAWLING = 11
    SKS_TELEPATHY = 12
    SKS_THIEVERY = 13
+   SKS_SORCERY = 14
 
    % Enchantment icon showing
    ENCHANTMENT_SHOW_NONE = 0

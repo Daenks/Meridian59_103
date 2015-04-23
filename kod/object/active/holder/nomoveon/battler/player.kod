@@ -1091,6 +1091,9 @@ properties:
    % Spectator mode?
    pbSpectatorMode = FALSE
 
+   % Spells reserved on mana. Format [spell, mana reserved, state]
+   plReservedSpells = $
+
 messages:
 
    Constructor()
@@ -1174,6 +1177,7 @@ messages:
       }
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
+      Send(self,@UnReserveAllSpells);
 
       Send(&SwordShard,@ForgetQuester,#quester=self);
       Send(&RiijaSword,@ForgetQuester,#quester=self);
@@ -2779,6 +2783,7 @@ messages:
       % Remove the guy from the Assassin's game.
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
+      Send(self,@UnReserveAllSpells);
       piLight = 5;
 
       % Be sure they aren't declared a 'former member' by any existing guilds.
@@ -3273,6 +3278,8 @@ messages:
             Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
          }
       }
+      
+      Send(self,@UnReserveAllSpells);
 
       plPassiveImprovement = $;
 
@@ -3313,6 +3320,8 @@ messages:
             removedSomething = TRUE;
          }
       }
+      
+      Send(self,@UnReserveAllSpells);
 
       % Just to be sure, reset the player's flag list.
       % this should remove any excess flags like invis or shadowform.
@@ -3452,6 +3461,14 @@ messages:
             Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
          }
       }
+      
+      for i in plReservedSpells
+      {
+         if Send(First(i),@IsIllusion)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
 
       % Kludgy, but oh well.  Not like any other code from this era is
       % exactly well-engineered or even "good", really.
@@ -3477,6 +3494,14 @@ messages:
          if Send(oSpell,@GetSchool) = school
          {
             Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
+      }
+      
+      for i in plReservedSpells
+      {
+         if Send(First(i),@GetSchool) = school
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
          }
       }
 
@@ -3539,6 +3564,14 @@ messages:
             plPassiveImprovement = DelListElem(plPassiveImprovement,i);
          }
       }
+      
+      for i in plReservedSpells
+      {
+         if First(i) = what
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
 
       return;
    }
@@ -3583,6 +3616,14 @@ messages:
             plPassiveImprovement = DelListElem(plPassiveImprovement,i);
          }
       }
+      
+      for i in plReservedSpells
+      {
+         if IsClass(First(i),class)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
 
       return removedSomething;
    }
@@ -3608,6 +3649,12 @@ messages:
             Send(self,@ShowAddEnchantment,#what=each_obj,
                   #type=ENCHANTMENT_PLAYER);
          }
+      }
+      
+      for i in plReservedSpells
+      {
+         Send(self,@ShowAddEnchantment,#what=Nth(i,1),
+                                       #type=ENCHANTMENT_PLAYER);
       }
 
       if ptSecondWind <> $
@@ -7138,7 +7185,8 @@ messages:
 
    ComputeMaxMana()
    {
-      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility;
+      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility,
+            iSumPercentReduction;
 
       index = 1;
       iNodelist = piNodelist;
@@ -7188,6 +7236,15 @@ messages:
       {
          piMax_mana = Send(self, @GetInitialMaxMana);
       }
+      
+      iSumPercentReduction = 0;
+      for i in plReservedSpells
+      {
+         iSumPercentReduction = iSumPercentReduction + Nth(i,2);
+      }
+      iSumPercentReduction = Bound(iSumPercentReduction,0,100);
+      
+      piMax_mana = piMax_mana - (piMax_mana * iSumPercentReduction)/100;
 
       Send(self,@NewMana);
 
@@ -11673,6 +11730,7 @@ messages:
 
       Send(self,@UnuseAllItems);
       Send(self,@RemoveAllEnchantments);
+      Send(self,@UnReserveAllSpells);
       Send(self,@RecalcBulkAndWeight);
       Send(self,@ResetPlayerFlagList);
 
@@ -14862,6 +14920,222 @@ messages:
       if Send(self,@IsInCannotInteractMode)
       {
          return FALSE;
+      }
+
+      propagate;
+   }
+   
+   ReserveSpell(oSpell=$,iPercentManaReserved=0,iSpellPower=0)
+   {
+      local iState;
+      
+      iState=Send(oSpell,@GetStateValue,
+                        #iSpellpower=iSpellpower,
+                        #who=self,
+                        #target=self);
+
+      if oSpell <> $
+         AND NOT Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         plReservedSpells = 
+            Cons([oSpell,iPercentManaReserved,iState],plReservedSpells);
+         Post(self,@ComputeMaxMana);
+         Send(self,@ShowAddEnchantment,#what=oSpell,#type=ENCHANTMENT_PLAYER);
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+   
+   UnReserveSpell(oSpell=$)
+   {
+      local i;
+
+      if oSpell <> $
+         AND Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         for i in plReservedSpells
+         {
+            if First(i) = oSpell
+            {
+               Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+               Post(self,@ComputeMaxMana);
+               plReservedSpells = DelListElem(plReservedSpells,i);
+               Send(self,@ShowRemoveEnchantment,#what=oSpell,
+                                                #type=ENCHANTMENT_PLAYER);
+               return TRUE;
+            }
+         }
+      }
+      return FALSE;
+   }
+   
+   UnReserveAllSpells()
+   {
+      local i;
+
+      for i in plReservedSpells
+      {
+         Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+         Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),
+                                          #type=ENCHANTMENT_PLAYER);
+         plReservedSpells = DelListElem(plReservedSpells,i);
+      }
+      Post(self,@ComputeMaxMana);
+
+      return;
+   }
+   
+   GetPercentManaReserved(oSpell=$)
+   {
+      local i;
+      
+      for i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetPercentReservedManaTotal()
+   {
+      local i, iPercentReservedTotal;
+      
+      iPercentReservedTotal = 0;
+      
+      for i in plReservedSpells
+      {
+         iPercentReservedTotal = iPercentReservedTotal + Nth(i,2);
+      }
+      
+      return iPercentReservedTotal;
+   }
+   
+   HasReservedSpell(oSpell=$)
+   {
+      local i;
+      
+      for i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+   
+   ReservesForThisLevel(iLevel=0)
+   {
+      if iLevel = 1
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_ONE);
+      }
+      if iLevel = 2
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_TWO);
+      }
+      if iLevel = 3
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_THREE);
+      }
+      if iLevel = 4
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FOUR);
+      }
+      if iLevel = 5
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FIVE);
+      }
+      return FALSE;
+   }
+   
+   UseReserveSkill(oSpell=$,iSpellPower=0)
+   {
+      local iLevel;
+      
+      iLevel = Send(oSpell,@GetLevel);
+      
+      if iLevel = 1
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_ONE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 2
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_TWO),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 3
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_THREE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 4
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FOUR),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 5
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FIVE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      return;
+   }
+   
+   IsEnchanted(what=$,byClass=&Spell)
+   {
+      local i;
+      
+      for i in plReservedSpells
+      {
+         if (what = $
+            AND IsClass(First(i),byClass))
+            OR First(i) = what
+         {
+            return TRUE;
+         }
+      }
+      
+      propagate;
+   }
+
+   GetEnchantedState(what=$)
+   {
+      local i;
+
+      for i in plReservedSpells
+      {
+         if Nth(i,1) = what
+         {
+            return Nth(i,3);
+         }
       }
 
       propagate;

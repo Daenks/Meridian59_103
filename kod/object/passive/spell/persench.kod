@@ -65,13 +65,22 @@ classvars:
    viDefensive = FALSE
    viOffensive = FALSE
    viResistanceType = 0
+   
+   vbCanBeReserved = TRUE
+   viPercentManaReserved = 10
 
 properties:
 
 messages:
 
-   GetNumSpellTargets()
+   GetNumSpellTargets(who=$)
    {
+      if who <> $
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return 0;
+      }
+
       if vbCanCastonOthers
       {
          return 1;
@@ -159,10 +168,29 @@ messages:
       propagate;
    }
 
+   GetTargets(who=$,lTargets=$)
+   {
+      if Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return [who];
+      }
+
+      return lTargets;
+   }
+
    CastSpell(who=$,iSpellPower=0,lTargets=$,bItemCast=FALSE)
    {
 
       local oTarget, lType;
+
+      if NOT bItemCast
+         AND vbCanBeReserved
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         Send(who,@UseReserveSkill,#oSpell=self,
+                                   #iSpellPower=iSpellPower);
+         propagate;
+      }
 
       lType = [self,viDefensive,viOffensive,viResistanceType];
 
@@ -275,6 +303,8 @@ messages:
       oSpell = GetClass(self);
       oList = Send(who,@GetEnchantmentList);
       
+      iDuration = $;
+
       for i in oList
       {
          if Nth(i,2) = self
@@ -293,6 +323,16 @@ messages:
 
       if iDuration = $
       {
+         if Send(who,@HasReservedSpell,#oSpell=self)
+         {
+            AppendTempString("\n\n");
+            AppendTempString("Your current ");
+            AppendTempString(Send(self,@GetName));
+            AppendTempString(" enchantment is reserving ");
+            AppendTempString(Send(who,@GetPercentManaReserved,#oSpell=self));
+            AppendTempString(" percent of your maximum mana.");
+         }
+
          return;
       }
 
@@ -342,6 +382,16 @@ messages:
       Send(self,@CreateStatsDesc,#who=who);
 
       return GetTempString();
+   }
+   
+   GetPercentManaReserved()
+   {
+      return viPercentManaReserved;
+   }
+   
+   CanBeReserved()
+   {
+      return vbCanBeReserved;
    }
 
 end

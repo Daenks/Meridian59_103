@@ -341,6 +341,7 @@ messages:
          }
 
          if piMeditate_ratio = 0
+            OR Send(who,@GetSpellAbility,#spell_num=viSpell_num) = 99
          {
             AddPacket(4,spell_desc_no_train_rsc, 4,rSchool, 4,viSpell_Level, 4,vrDesc,4,rOutlaw, 4,rExtra,4,rStats);
          }
@@ -1104,7 +1105,7 @@ messages:
             if lFinalTargets = $
                OR length(lFinalTargets) = 0
             {
-               if Send(self,@GetNumSpellTargets) <> 1
+               if Send(self,@GetNumSpellTargets,#who=who) <> 1
                {
                   Send(who,@MsgSendUser,#message_rsc=spell_no_targets,
                        #parm1=Send(self,@GetName));
@@ -1202,7 +1203,7 @@ messages:
          % - Target not in same room
          % - Target is in an Arena and not a valid target
          % - The attacker can't attack the target
-         if (i = who AND Send(self,@GetNumSpellTargets) <> 1)
+         if (i = who AND Send(self,@GetNumSpellTargets,#who=who) <> 1)
             OR NOT IsClass(i,&Battler)
             OR (IsClass(i,&Monster)
                 AND NOT Send(i,@CanMonsterFight,#who=who,#oStroke=self))
@@ -1298,7 +1299,7 @@ messages:
       num = bound(num,5,99);
 
       if lTargets <> $
-         AND Send(self,@GetNumSpellTargets) = 1
+         AND Send(self,@GetNumSpellTargets,#who=who) = 1
          AND IsClass(first(lTargets),&Battler)
          AND NOT Send(Send(who,@GetOwner),@LineOfSight,#obj1=who,
                       #obj2=first(lTargets))
@@ -2077,8 +2078,8 @@ messages:
       {
          return;
       }
-        
-      if Send(self,@GetNumSpellTargets) <> 1
+
+      if Send(self,@GetNumSpellTargets,#who=caster) <> 1
       {
          Send(hearer,@MsgSendUser,#message_rsc=spell_gesture_third,
               #parm1=Send(caster,@GetCapDef),

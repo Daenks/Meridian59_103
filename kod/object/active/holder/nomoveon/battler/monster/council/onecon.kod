@@ -113,7 +113,13 @@ messages:
 
    SetForSale()
    {
-      plFor_Sale = [$,$,[SID_SHADOW_FORM]];
+      plFor_Sale = [$,[ SKID_SECOND_WIND,
+                        SKID_LINK_ONE,
+                        SKID_LINK_TWO,
+                        SKID_LINK_THREE,
+                        SKID_LINK_FOUR,
+                        SKID_LINK_FIVE],
+                      [SID_SHADOW_FORM]];
 
       return;
    }
