@@ -753,6 +753,18 @@ messages:
             {
                return TRUE;
             }
+            
+            % We've failed. Let's try blood magic.
+            if Send(who,@GetSkillAbility,#Skill_num=SKID_BLOOD_MAGIC) > 0
+            {
+               if Send(who,@AttemptBloodSacrifice,
+                               #who=who,
+                               #oSpell=self,
+                               #iSpellPower=iSpellPower)
+               {
+                  return TRUE;
+               }
+            }
 
             Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
             Send(who,@MsgSendUser,#message_rsc=spell_insufficient_reagent,

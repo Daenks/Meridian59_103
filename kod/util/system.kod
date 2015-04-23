@@ -3551,6 +3551,7 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_THREE,#class=&LinkThree);
        Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FOUR,#class=&LinkFour);
        Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FIVE,#class=&LinkFive);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_MAGIC,#class=&BloodMagic);
 
        return;
    }

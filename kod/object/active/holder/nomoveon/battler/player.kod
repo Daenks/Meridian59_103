@@ -1093,6 +1093,7 @@ properties:
 
    % Spells reserved on mana. Format [spell, mana reserved, state]
    plReservedSpells = $
+   piBaseMax_mana = 0
 
 messages:
 
@@ -6746,7 +6747,7 @@ messages:
    {
       local iTime, oSpell, iSpellPower;
 
-      if piMana > piMax_mana
+      if piMana > piBaseMax_mana
       {
          iTime = BOOST_DECAY_TIME;
       }
@@ -6754,7 +6755,7 @@ messages:
       {
          iTime = BASE_REGEN_TIME + (25-Send(self,@GetMysticism))*1000;
          iTime = iTime * 200 / bound(piVigor,1,$);
-         iTime = iTime/ bound(piMax_Mana,1,$);
+         iTime = iTime/ bound(piBaseMax_mana,1,$);
 
          iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                               #who=self,#hpregen=FALSE);
@@ -7236,6 +7237,8 @@ messages:
       {
          piMax_mana = Send(self, @GetInitialMaxMana);
       }
+      
+      piBaseMax_mana = piMax_mana;
       
       iSumPercentReduction = 0;
       for i in plReservedSpells
@@ -14999,6 +15002,11 @@ messages:
       }
       
       return 0;
+   }
+   
+   GetMaxManaWithoutReservedPenalties()
+   {
+      return piBaseMax_mana;
    }
    
    GetPercentReservedManaTotal()
