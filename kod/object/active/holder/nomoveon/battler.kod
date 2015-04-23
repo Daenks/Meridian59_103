@@ -653,7 +653,8 @@ messages:
          }
 
          iDamage = Send(what,@AssessDamage,#what=self,#damage=iDamage,
-            #atype=Send(self,@GetDamageType),#aspell=Send(self,@GetSpellType),
+            #atype=Send(self,@GetDamageType),#aspell=Send(self,@GetSpellType,
+                                                          #damaging_now=TRUE),
             #scalefactor=iScalefactor,#precision=TRUE);
 
          Send(self,@AssessHit,#what=what,#stroke_obj=stroke_obj,#damage=iDamage);

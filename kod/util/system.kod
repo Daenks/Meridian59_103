@@ -3555,6 +3555,12 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_FORCE_SPIKE,#class=&ForceSpike);
        Send(self,@CreateOneSKillIfNew,#num=SKID_WILL_SURGE,#class=&WillSurge);
        Send(self,@CreateOneSKillIfNew,#num=SKID_VOLATILE_FOCUS,#class=&VolatileFocus);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_CHARGED_CLUTCH,#class=&ChargedClutch);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SOMANCY,#class=&Somancy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_DEVOTION,#class=&Devotion);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENTROPY,#class=&Entropy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENERGY,#class=&Energy);
+       
 
        return;
    }
