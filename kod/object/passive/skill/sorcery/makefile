@@ -5,6 +5,7 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\sorcery.bof
-BOFS = spiritlink.bof
+BOFS = spiritlink.bof bloodmagic.bof willsurge.bof forcespike.bof \
+       volatilefocus.bof
 
 !include $(KODDIR)\kod.mak

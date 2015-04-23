@@ -3552,6 +3552,9 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FOUR,#class=&LinkFour);
        Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FIVE,#class=&LinkFive);
        Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_MAGIC,#class=&BloodMagic);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_FORCE_SPIKE,#class=&ForceSpike);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_WILL_SURGE,#class=&WillSurge);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_VOLATILE_FOCUS,#class=&VolatileFocus);
 
        return;
    }

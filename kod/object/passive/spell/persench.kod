@@ -36,6 +36,9 @@ resources:
       "You cannot cast enchantments upon others here."
 
    spell_blank_template = "%q"
+   
+   unreserved_pers_ench = \
+      "You cancel your %s personal enchantment reservation."
 
 classvars:
 
@@ -137,6 +140,16 @@ messages:
       % Check for enchantment already applied
       if Send(oTarget,@IsEnchanted,#what=self)
       {
+         if Send(who,@HasReservedSpell,#oSpell=self)
+         {
+            if Send(who,@UnReserveSpell,#oSpell=self)
+            {
+               Send(who,@MsgSendUser,#message_rsc=unreserved_pers_ench,
+                                     #parm1=Send(self,@GetName));
+            }
+            return FALSE;
+         }
+
          % Can you override an existing enchantment on yourself?
          if who = oTarget AND
             Send(Send(SYS,@GetSettings),@CanRecastSelfEnchantment)

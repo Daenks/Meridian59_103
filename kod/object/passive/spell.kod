@@ -671,6 +671,20 @@ messages:
                return TRUE;
             }
          }
+         
+         % We've failed. Try will surge.
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_WILL_SURGE) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_WILL_SURGE),
+                            @AttemptVigorSacrifice,
+                            #who=who,
+                            #oSpell=self,
+                            #iSpellPower=iSpellPower)
+            {
+               return TRUE;
+            }
+         }
+         
 
          Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
          Send(who,@MsgSendUser,#message_rsc=spell_insufficient_magic,
@@ -757,7 +771,8 @@ messages:
             % We've failed. Let's try blood magic.
             if Send(who,@GetSkillAbility,#Skill_num=SKID_BLOOD_MAGIC) > 0
             {
-               if Send(who,@AttemptBloodSacrifice,
+               if Send(Send(SYS,@FindSkillByNum,#num=SKID_BLOOD_MAGIC),
+                               @AttemptBloodSacrifice,
                                #who=who,
                                #oSpell=self,
                                #iSpellPower=iSpellPower)
@@ -1343,6 +1358,19 @@ messages:
          if oRing <> $
          {
             if Send(oRing,@InUse)
+            {
+               return TRUE;
+            }
+         }
+
+         % We've failed. Let's try force spike.
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_FORCE_SPIKE) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_FORCE_SPIKE),
+                            @AttemptManaSacrifice,
+                            #who=who,
+                            #oSpell=self,
+                            #iSpellPower=iSpellPower)
             {
                return TRUE;
             }

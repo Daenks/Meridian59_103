@@ -136,6 +136,11 @@ messages:
          rSchool = skill_school_thievery;
       }
       
+      if viSchool = SKS_SORCERY
+      {
+         rSchool = skill_school_sorcery;
+      }
+      
       rStats = Send(self,@GetStatsDesc,#who=who);
       if rStats = $
       {

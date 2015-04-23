@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-BloodMagic is SorcerySkill
+WillSurge is SorcerySkill
 
 constants:
 
@@ -16,32 +16,31 @@ constants:
 
 resources:
 
-   blood_magic_name_rsc = "blood magic"
-   blood_magic_icon_rsc = imajheal.bgf
-   blood_magic_desc_rsc = \
-      "By the sacrifice of some of one's own life essence, a mage can replace "
-      "the need for physical reagents."
+   will_surge_name_rsc = "will surge"
+   will_surge_icon_rsc = lightnin.bgf
+   will_surge_desc_rsc = \
+      "By sheer force of will, a skilled mage that is out of mana can use "
+      "his own vigor to fuel spells."
       
-   not_enough_health = \
-      "You don't have enough health to cast this spell!"
-   sacrifice_health = \
-      "You spill your own blood in place of physical reagents, "
-      "losing %i health."
+   not_enough_vigor = \
+      "You don't have enough vigor to surge this spell."
+   sacrifice_vigor = \
+      "You feel drained as the spell drains %i vigor to complete its work."
 
 classvars:
 
-   vrName = blood_magic_name_rsc
-   vrIcon = blood_magic_icon_rsc
-   vrDesc = blood_magic_desc_rsc
+   vrName = will_surge_name_rsc
+   vrIcon = will_surge_icon_rsc
+   vrDesc = will_surge_desc_rsc
 
    viIndefinite = ARTICLE_NONE
    viDefinite = ARTICLE_NONE
 
-   viSkill_num = SKID_BLOOD_MAGIC
+   viSkill_num = SKID_WILL_SURGE
    viSchool = SKS_SORCERY
-   viSkill_Level = 2
-   viChance_to_Increase = 30
-   viMeditate_ratio = 100
+   viSkill_Level = 4
+   viChance_to_Increase = 15
+   viMeditate_ratio = 150
 
    viSkillExertion = 0
    vbCheck_exertion = FALSE
@@ -55,23 +54,25 @@ messages:
       return Send(who,@GetStamina);
    }
    
-   AttemptBloodSacrifice(who=$,oSpell=$,iSpellPower=0)
+   AttemptVigorSacrifice(who=$,oSpell=$,iSpellPower=0)
    {
-      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient;
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost;
 
       iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
       iSpellAbility = Send(who,@GetSpellAbility,
                                #spell_num=Send(oSpell,@GetSpellNum));
       iStat = Send(self,@GetRequisiteStat,#who=who);
       
-      iSacrifice = Send(oSpell,@GetManaCost,#who=who,#iSpellPower=iSpellPower);
+      iInitialCost = Send(oSpell,@GetManaCost,
+                                 #who=who,#iSpellPower=iSpellPower);
       iCoefficient = Bound(298 - iAbility - iSpellAbility,100,300);
       
-      iSacrifice = (iSacrifice * iCoefficient)/100;
-      
-      if iSacrifice >= Send(who,@GetHealth)
+      iSacrifice = (iInitialCost * iCoefficient)/100;
+
+      if iSacrifice + Send(oSpell,@GetExertion) >= Send(who,@GetVigor)
       {
-         Send(who,@MsgSendUser,#message_rsc=not_enough_health);
+         Send(who,@MsgSendUser,#message_rsc=not_enough_vigor);
          return FALSE;
       }
       
@@ -82,8 +83,8 @@ messages:
 
    DoSkill(who=$,iSacrifice=0)
    {
-      Send(who,@LoseHealth,#amount=iSacrifice);
-      Send(who,@MsgSendUser,#message_rsc=sacrifice_health,
+      Send(who,@AddExertion,#amount=iSacrifice*10000);
+      Send(who,@MsgSendUser,#message_rsc=sacrifice_vigor,
                             #parm1=iSacrifice);
       
       propagate;

@@ -3112,6 +3112,25 @@ messages:
 
       return;
    }
+   
+   FinishTranceEarly(oTrance=$)
+   {
+      local i;
+      
+      for i in plEnchantments
+      {
+         if Nth(i,2) = oTrance
+         {
+            Send(Nth(i,2),@EndEnchantment,#who=self,#state=Nth(i,3));
+
+            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                 #type=ENCHANTMENT_PLAYER);
+            plEnchantments = DelListElem(plEnchantments,i);
+         }
+      }
+
+      return;
+   }
 
    EnchantmentTimer(timer = $)
    {
@@ -3154,11 +3173,6 @@ messages:
             else
             {
                Send(self,@ResetPlayerFlagList,#who=self);
-            }
-
-            if poOwner <> $
-            {
-               Send(poOwner,@SomethingChanged,#what=self);
             }
 
             if poOwner <> $
@@ -11601,9 +11615,18 @@ messages:
             {
                state = Nth(i,3);
             }
-
-            Send(oEnch,@BreakTrance,#who=self,#state=state,
-                  #event=event,#what=what);
+            
+            if IsClass(oEnch,&Trance)
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                    #event=event,#what=what,
+                    #time_remaining=GetTimeRemaining(Nth(i,1)));
+            }
+            else
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                     #event=event,#what=what);
+            }
             bFound = TRUE;
          }
       }
@@ -15147,6 +15170,19 @@ messages:
       }
 
       propagate;
+   }
+   
+   InflictWait(time=1000)
+   {
+      if ptAttackTimer <> $
+      {
+         DeleteTimer(ptAttackTimer);
+         ptAttackTimer = $;
+      }
+      
+      ptAttackTimer = CreateTimer(self,@AttackTimer,time);
+      
+      return;
    }
 
 end
