@@ -51,7 +51,7 @@ messages:
       return Send(who,@GetIntellect);
    }
    
-   ModifyWeaponSpellType(who=$,oWeapon=$,oTouchSpell=$)
+   ModifyWeaponSpellType(who=$,oWeapon=$,oTouchSpell=$,damaging_now=FALSE)
    {
       local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
             iInitialCost, lElements;
@@ -69,7 +69,10 @@ messages:
       if Send(who,@GetMana) >= iSacrifice
          AND Random(1,100) <= iAbility
       {
-         Send(self,@DoSkill,#who=who,#iSacrifice=iSacrifice);
+         if damaging_now
+         {
+            Send(self,@DoSkill,#who=who,#iSacrifice=iSacrifice);
+         }
          
          if NOT IsClass(oWeapon,&RiijaSword)
          {
