@@ -1387,7 +1387,7 @@ messages:
    "half the exertion, and no reagents."
    {
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
-            iNumNeeded, oUserObject, oRoom, iVigCostReduction, iExertion;
+            iNumNeeded, oUserObject, oRoom, iVigorReduction, iExertion;
       
       oRoom = Send(who,@GetOwner);	  
       if NOT IsClass(who,&Player)
