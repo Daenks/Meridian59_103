@@ -100,24 +100,24 @@ messages:
       oSpell = First(state);
       oCaster = Nth(state,2);
       
-      if Send(oCaster,@GetSkillAbility,#Skill_num=SKID_VOLATILE_FOCUS) > 0
+      Send(oCaster,@ClearTranceFlag);
+      
+      if event <> EVENT_STEER
       {
-         if Send(Send(SYS,@FindSkillByNum,#num=SKID_VOLATILE_FOCUS),
+         if Send(oCaster,@GetSkillAbility,#Skill_num=SKID_VOLATILE_FOCUS) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_VOLATILE_FOCUS),
                         @AttemptTimeSacrifice,
                         #who=oCaster,
                         #oSpell=oSpell,
                         #iSpellPower=Send(oSpell,@GetSpellPower,#who=oCaster),
                         #time_remaining=time_remaining)
-         {
-            Send(oCaster,@FinishTranceEarly,#oTrance=self);
-            return;
+            {
+               Send(oCaster,@FinishTranceEarly,#oTrance=self);
+               return;
+            }
          }
-      }
       
-      Send(oCaster,@ClearTranceFlag);
-      
-      if event <> EVENT_STEER
-      {
          Send(oSpell,@TranceBroken,#oCaster=oCaster,#state=state);
       }
       
