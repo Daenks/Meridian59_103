@@ -1387,7 +1387,7 @@ messages:
    "half the exertion, and no reagents."
    {
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
-            iNumNeeded, oUserObject, oRoom;
+            iNumNeeded, oUserObject, oRoom, iVigCostReduction, iExertion;
       
       oRoom = Send(who,@GetOwner);	  
       if NOT IsClass(who,&Player)
@@ -1408,9 +1408,21 @@ messages:
          % Reduce magic points of caster
          Send(who,@LoseMana,#amount=Send(self,@GetManaCost,#who=who,
               #iSpellPower=iSpellpower));
+      
+         iVigorReduction = 0;
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_EFFICIENCY) > 0
+         {
+            iVigorReduction =
+                Send(Send(SYS,@FindSkillByNum,#num=SKID_EFFICIENCY),
+                              @GetVigorReduction,
+                              #who=who,
+                              #oSpell=self);
+         }
+         
+         iExertion = Bound(viSpellExertion-iVigorReduction,0,$);
 
          % Spell casting requires exertion (which is in 10^-4 units)
-         Send(who,@AddExertion,#amount=10000*viSpellExertion);
+         Send(who,@AddExertion,#amount=10000*iExertion);
 
          % Use up reagents, provided reagent use is turned on
          if NOT Send(oRoom, @NoReagents)

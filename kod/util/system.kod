@@ -3560,6 +3560,7 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_DEVOTION,#class=&Devotion);
        Send(self,@CreateOneSKillIfNew,#num=SKID_ENTROPY,#class=&Entropy);
        Send(self,@CreateOneSKillIfNew,#num=SKID_ENERGY,#class=&Energy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EFFICIENCY,#class=&Efficiency);
        
 
        return;

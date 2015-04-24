@@ -6,6 +6,7 @@
 
 DEPEND = ..\sorcery.bof
 BOFS = spiritlink.bof bloodmagic.bof willsurge.bof forcespike.bof \
-       volatilefocus.bof chargedclutch.bof somancy.bof damagemastery.bof
+       volatilefocus.bof chargedclutch.bof somancy.bof damagemastery.bof \
+       efficiency.bof
 
 !include $(KODDIR)\kod.mak
