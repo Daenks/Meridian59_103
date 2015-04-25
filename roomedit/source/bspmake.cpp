@@ -809,83 +809,89 @@ void BSPFindBoundingBoxes(BSPnode *tree)
  */
 Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
 {
-  int a,b,c;
-  int i,j;
-  Poly tmp;
-  WallData temp_wall;
-  int x,y, side;
+   int a,b,c;
+   int i,j;
+   Poly tmp;
+   WallData temp_wall;
+   int x,y, side;
+   
+   int intr[2];
+   int intrcount;
+   
+   intrcount = 0;
   
-  int intr[2];
-  int intrcount;
+   BSPGetLineEquationFromWall(wall, &a, &b, &c);
   
-  intrcount = 0;
+   /* copy first point */
+   j = 0;
+   tmp.p[j] = poly->p[0];
+   j++;
   
-  BSPGetLineEquationFromWall(wall, &a, &b, &c);
-  
-  /* copy first point */
-  j = 0;
-  tmp.p[j] = poly->p[0];
-  j++;
-  
-  for(i=0; i<poly->npts; i++)
-    {
+   for(i=0; i<poly->npts; i++)
+   {
       temp_wall.x0 = poly->p[i].x;
       temp_wall.y0 = poly->p[i].y;
       temp_wall.x1 = poly->p[i+1].x;
       temp_wall.y1 = poly->p[i+1].y;
       
       switch(BSPWallIntersection(wall, &temp_wall, &x, &y))
-	{
-	case NoIntersection:
-	  tmp.p[j] = poly->p[i+1];
-	  j++;
-	  break;
-	case Coincide:
-	  goto oneside;
-	case FirstEndpoint:
-	  if (intrcount < 2)
-	    {
-	      intr[intrcount] = j-1;
-	      intrcount++;
-	    }
-	  else
-	    {
-	      LogError("more than 2 intersections! (1)\n");
-	      pos_poly->npts = neg_poly->npts = 0;
-	      return False;
-	    }
-	  tmp.p[j] = poly->p[i+1];
-	  j++;
-	  break;
-	case SecondEndpoint:
-	  tmp.p[j] = poly->p[i+1];
-	  j++;
-	  break;
-	case Inexpressible:
+      {
+      case NoIntersection:
+         tmp.p[j] = poly->p[i+1];
+         j++;
+         break;
+
+      case Coincide:
+         goto oneside;
+
+      case FirstEndpoint:
+         if (intrcount < 2)
+         {
+            intr[intrcount] = j-1;
+            intrcount++;
+         }
+         else
+         {
+            LogError("more than 2 intersections! (1)\n");
+            pos_poly->npts = neg_poly->npts = 0;
+            return False;
+         }
+         tmp.p[j] = poly->p[i+1];
+         j++;
+         break;
+
+      case SecondEndpoint:
+         tmp.p[j] = poly->p[i+1];
+         j++;
+         break;
+
+      case Inexpressible:
 //	  dprintf("inexpressible intersection in BSPSplitWalls, using approximate intersection...\n");
-	case Middle:
-	  tmp.p[j].x = x;
-	  tmp.p[j].y = y;
-	  
-	  if (intrcount < 2)
-	    {
-	      intr[intrcount] = j;
-	      intrcount++;
-	    }
-	  else
-	    {
-	      LogError("more than 2 intersections! (2)\n");
-	      pos_poly->npts = neg_poly->npts = 0;
-	      return False;
-	    }
-	  j++;
-	  
-	  tmp.p[j] = poly->p[i+1];
-	  j++;
-	  break;
-	}
-    }
-  tmp.npts = j-1;  /* j points added, but last is == to first */
+
+      case Middle:
+         tmp.p[j].x = x;
+         tmp.p[j].y = y;
+         
+         if (intrcount < 2)
+         {
+            intr[intrcount] = j;
+            intrcount++;
+         }
+         else
+         {
+            LogError("more than 2 intersections! (2)\n");
+            pos_poly->npts = neg_poly->npts = 0;
+            return False;
+         }
+         j++;
+
+         tmp.p[j] = poly->p[i+1];
+         j++;
+         break;
+      }
+   }
+
+   tmp.npts = j-1;  /* j points added, but last is == to first */
   
 #if 0
   dprintf("expanded: %d ", tmp.npts);
@@ -894,72 +900,73 @@ Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
   dprintf("\n");
 #endif
   
-  if (intrcount < 2)
-    {
+   if (intrcount < 2)
+   {
       LogError("less than 2 intersections!\n");
       pos_poly->npts = neg_poly->npts = 0;
       return False;
-    }
+   }
   
-  i = 0;
-  while(1)
-    {
+   i = 0;
+   while(1)
+   {
       int k = (i + intr[0]) % tmp.npts;
       pos_poly->p[i] = tmp.p[k];
       i++;
       if (k == intr[1]) break;
-    }
-  pos_poly->p[i] = pos_poly->p[0];
-  pos_poly->npts = i;
-  
-  i = 0;
-  while(1)
-    {
+   }
+
+   pos_poly->p[i] = pos_poly->p[0];
+   pos_poly->npts = i;
+
+   i = 0;
+   while(1)
+   {
       int k = (i + intr[1]) % tmp.npts;
       neg_poly->p[i] = tmp.p[k];
       i++;
       if (k == intr[0]) break;
-    }
-  neg_poly->p[i] = neg_poly->p[0];
-  neg_poly->npts = i;
+   }
+   neg_poly->p[i] = neg_poly->p[0];
+   neg_poly->npts = i;
   
-  /* check to see if we need to switch polys */
-  side = 0;
-  for(i=0; i<pos_poly->npts; i++)
-    {
+   /* check to see if we need to switch polys */
+   side = 0;
+   for(i=0; i<pos_poly->npts; i++)
+   {
       side += a * pos_poly->p[i].x + b * pos_poly->p[i].y + c;
-    }
-  if (side < 0)
-    {
+   }
+   
+   if (side < 0)
+   {
       memcpy(&tmp, pos_poly, sizeof(Poly));
       memcpy(pos_poly, neg_poly, sizeof(Poly));
       memcpy(neg_poly, &tmp, sizeof(Poly));
-    }
-  
-  return True;
-  
+   }
+
+   return True;
   
   
  oneside:        /* polygon all on one side of wall */
-  for(i=0; i<poly->npts; i++)
-    {
+   for(i=0; i<poly->npts; i++)
+   {
       side = a * poly->p[i].x + b * poly->p[i].y + c;
       if (side > 0)
-	{
-	  memcpy(pos_poly, poly, sizeof(Poly));
-	  neg_poly->npts = 0;
-	  return True;
-	}
+      {
+         memcpy(pos_poly, poly, sizeof(Poly));
+         neg_poly->npts = 0;
+         return True;
+      }
       else if (side < 0)
-	{
-	  memcpy(neg_poly, poly, sizeof(Poly));
-	  pos_poly->npts = 0;
-	  return True;
-	}
-    }
-  LogError("all polygon points in plane!\n");
-  pos_poly->npts = neg_poly->npts = 0;
-  return False;
+      {
+         memcpy(neg_poly, poly, sizeof(Poly));
+         pos_poly->npts = 0;
+         return True;
+      }
+   }
+   LogError("all polygon points in plane!\n");
+   pos_poly->npts = neg_poly->npts = 0;
+   return False;
 }
 /*****************************************************************************/
 /*
