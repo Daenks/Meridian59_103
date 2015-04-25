@@ -1572,7 +1572,7 @@ messages:
 
    SetForSale()
    {
-      if Send(Send(SYS,@GetSettings,@GetSorcerySchoolExpansion))
+      if Send(Send(SYS,@GetSettings),@GetSorcerySchoolExpansion)
       {
          plFor_sale = [ $,
                         [ SKID_DEVOTION, SKID_BLOOD_MAGIC ] ,

@@ -113,7 +113,7 @@ messages:
 
    SetForSale()
    {
-      if Send(Send(SYS,@GetSettings,@GetSorcerySchoolExpansion))
+      if Send(Send(SYS,@GetSettings),@GetSorcerySchoolExpansion)
       {
          plFor_Sale = [$,[ SKID_LINK_ONE,
                            SKID_LINK_TWO,
