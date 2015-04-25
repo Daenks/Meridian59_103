@@ -59,15 +59,30 @@ messages:
 
    SetForSale()
    {
-      plFor_Sale = [
-         $,$,
-         [
-            SID_SUMMON_WEB,
-            SID_LIGHTNINGWALL,
-            SID_DEFLECT,
-            SID_HUNT
-         ],
-     $];
+      if Send(Send(SYS,@GetSettings,@GetSorcerySchoolExpansion))
+      {
+         plFor_Sale = [
+            $,[ SKID_FORCE_SPIKE, SKID_WILL_SURGE ],
+            [
+               SID_SUMMON_WEB,
+               SID_LIGHTNINGWALL,
+               SID_DEFLECT,
+               SID_HUNT
+            ],
+        $];
+      }
+      else
+      {
+         plFor_Sale = [
+            $,$,
+            [
+               SID_SUMMON_WEB,
+               SID_LIGHTNINGWALL,
+               SID_DEFLECT,
+               SID_HUNT
+            ],
+        $];
+      }
 
       return;
    }

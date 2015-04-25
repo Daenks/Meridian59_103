@@ -219,6 +219,9 @@ properties:
 
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
+   
+   % Expansion modules
+   bSorcerySchoolExpansion = TRUE
 
 messages:
 
@@ -559,6 +562,11 @@ messages:
    GetBroadcastManaCost()
    {
       return piBroadcastManaPercent;
+   }
+   
+   GetSorcerySchoolExpansion()
+   {
+      return bSorcerySchoolExpansion;
    }
 
 end
