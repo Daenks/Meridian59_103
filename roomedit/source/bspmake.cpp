@@ -327,10 +327,10 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
    int side0,side1;
    int num,denom;
    int dx,dy;
-   
+
    /* first, get line equation from first wall */
    BSPGetLineEquationFromWall(wall1, &a, &b, &c);
-   
+
    /* work with second wall */
    x0 = wall2->x0;
    y0 = wall2->y0;
@@ -355,7 +355,7 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
 
    if ((side0 > 0 && side1 > 0) || (side0 < 0 && side1 < 0))
       return NoIntersection;
-   
+
    if (side0 > 0)
    {
       num = side0;
@@ -366,28 +366,13 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
       num = -side0;
       denom = side1 - side0;
    }
-   reduce(&num, &denom);
-   /* num/denom is between 0 and 1, exclusive */
-   
+
    dx = x1 - x0;
    dy = y1 - y0;
-   
-   if (dx % denom != 0 || dy % denom != 0)
-   {
-      /* prevent overflow! */
-      while(ABS(num) > 65536)
-      {
-	 num >>= 1;
-	 denom >>= 1;
-      }
-      
-      *x = x0 + num * dx / denom;
-      *y = y0 + num * dy / denom;
-      return Inexpressible;
-   }
-   
-   *x = x0 + num * (dx / denom);
-   *y = y0 + num * (dy / denom);
+
+   *x = roundl(((long double)x0 + (long double)num * ((long double)dx / (long double)denom)));
+   *y = roundl(((long double)y0 + (long double)num * ((long double)dy / (long double)denom)));
+
    return Middle;
 }
 /*****************************************************************************/
