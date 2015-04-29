@@ -4419,6 +4419,7 @@ messages:
 
       if NOT IsClass(what,&Holder)
          AND NOT IsClass(what,&ReagentBag)
+         AND NOT IsClass(what,&DeadBody)
          OR (IsClass(what,&Player)
              AND NOT (what = self OR IsClass(self,&Admin)))
       {
@@ -4449,8 +4450,16 @@ messages:
          }
          else
          {
-            lHolding1 = Send(what,@GetHolderActive);
-            lHolding2 = Send(what,@GetHolderPassive);
+            if IsClass(what,&DeadBody)
+            {
+               lHolding1 = Send(what,@GetCorpseContents);
+               lHolding2 = $;
+            }
+            else
+            {
+               lHolding1 = Send(what,@GetHolderActive);
+               lHolding2 = Send(what,@GetHolderPassive);
+            }
          }
       }
 
@@ -5095,6 +5104,15 @@ messages:
 
          if IsClass(what,&ReagentBag)
             AND Send(what,@GetReagentBagContents) <> $
+         {
+            Send(self,@UserObjectContents,#what=what);
+            return;
+         }
+
+         if IsClass(what,&DeadBody)
+            AND Send(what,@GetCorpseContents) <> $
+            AND Send(self,@SquaredDistanceTo,#what=what) <> $
+            AND Send(self,@SquaredDistanceTo,#what=what) <= 6
          {
             Send(self,@UserObjectContents,#what=what);
             return;
