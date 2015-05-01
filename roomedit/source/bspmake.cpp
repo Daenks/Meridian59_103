@@ -804,7 +804,8 @@ Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
   int intrcount;
   
   intrcount = 0;
-  
+  pos_poly->npts = neg_poly->npts = 0;
+
   BSPGetLineEquationFromWall(wall, &a, &b, &c);
   
   /* copy first point */
@@ -881,9 +882,42 @@ Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
   
   if (intrcount < 2)
     {
-      LogError("less than 2 intersections!\n");
-      pos_poly->npts = neg_poly->npts = 0;
+      LogError("less than 2 intersections! Continuing to build.\n");
       return False;
+      // This is my lame attempt at inserting the poly into the tree.
+      // It doesn't work (it does basically nothing), however setting
+      // pos_poly->npts and neg_poly->npts to 0 above DOES allow building
+      // to continue (but leaves a hole in the completed map). A hole just
+      // might be better than a next-to-useless editor for making new rooms.
+      /*switch (BSPFindLineSide(wall, tmp.p[1].x, tmp.p[1].y))
+      {
+      int i;
+      case 1:
+         // Positive side.
+         for (i = 0; i < tmp.npts; i++)
+         {
+            pos_poly->npts = tmp.npts;
+            pos_poly->p[i] = tmp.p[i];
+         }
+         neg_poly->npts = 0;
+         pos_poly->p[i] = pos_poly->p[0];
+         return True;
+      case -1:
+         // Negative side.
+         for (i = 0; i < tmp.npts; i++)
+         {
+            neg_poly->npts = tmp.npts;
+            neg_poly->p[i] = tmp.p[i];
+         }
+         pos_poly->npts = 0;
+         neg_poly->p[i] = neg_poly->p[0];
+         return True;
+      default:
+         LogError("Split poly failed!\n");
+         return False;
+      }
+      return False;
+      //goto oneside;*/
     }
   
   i = 0;
