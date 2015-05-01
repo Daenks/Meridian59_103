@@ -327,10 +327,10 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
    int side0,side1;
    int num,denom;
    int dx,dy;
-   
+
    /* first, get line equation from first wall */
    BSPGetLineEquationFromWall(wall1, &a, &b, &c);
-   
+
    /* work with second wall */
    x0 = wall2->x0;
    y0 = wall2->y0;
@@ -355,7 +355,7 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
 
    if ((side0 > 0 && side1 > 0) || (side0 < 0 && side1 < 0))
       return NoIntersection;
-   
+
    if (side0 > 0)
    {
       num = side0;
@@ -366,28 +366,13 @@ IntersectionType BSPWallIntersection(WallData *wall1, WallData *wall2, int *x, i
       num = -side0;
       denom = side1 - side0;
    }
-   reduce(&num, &denom);
-   /* num/denom is between 0 and 1, exclusive */
-   
+
    dx = x1 - x0;
    dy = y1 - y0;
-   
-   if (dx % denom != 0 || dy % denom != 0)
-   {
-      /* prevent overflow! */
-      while(ABS(num) > 65536)
-      {
-	 num >>= 1;
-	 denom >>= 1;
-      }
-      
-      *x = x0 + num * dx / denom;
-      *y = y0 + num * dy / denom;
-      return Inexpressible;
-   }
-   
-   *x = x0 + num * (dx / denom);
-   *y = y0 + num * (dy / denom);
+
+   *x = roundl(((long double)x0 + (long double)num * ((long double)dx / (long double)denom)));
+   *y = roundl(((long double)y0 + (long double)num * ((long double)dy / (long double)denom)));
+
    return Middle;
 }
 /*****************************************************************************/
@@ -819,7 +804,8 @@ Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
   int intrcount;
   
   intrcount = 0;
-  
+  pos_poly->npts = neg_poly->npts = 0;
+
   BSPGetLineEquationFromWall(wall, &a, &b, &c);
   
   /* copy first point */
@@ -896,9 +882,42 @@ Bool BSPSplitPoly(Poly *poly, WallData *wall, Poly *pos_poly, Poly *neg_poly)
   
   if (intrcount < 2)
     {
-      LogError("less than 2 intersections!\n");
-      pos_poly->npts = neg_poly->npts = 0;
+      LogError("less than 2 intersections! Continuing to build.\n");
       return False;
+      // This is my lame attempt at inserting the poly into the tree.
+      // It doesn't work (it does basically nothing), however setting
+      // pos_poly->npts and neg_poly->npts to 0 above DOES allow building
+      // to continue (but leaves a hole in the completed map). A hole just
+      // might be better than a next-to-useless editor for making new rooms.
+      /*switch (BSPFindLineSide(wall, tmp.p[1].x, tmp.p[1].y))
+      {
+      int i;
+      case 1:
+         // Positive side.
+         for (i = 0; i < tmp.npts; i++)
+         {
+            pos_poly->npts = tmp.npts;
+            pos_poly->p[i] = tmp.p[i];
+         }
+         neg_poly->npts = 0;
+         pos_poly->p[i] = pos_poly->p[0];
+         return True;
+      case -1:
+         // Negative side.
+         for (i = 0; i < tmp.npts; i++)
+         {
+            neg_poly->npts = tmp.npts;
+            neg_poly->p[i] = tmp.p[i];
+         }
+         pos_poly->npts = 0;
+         neg_poly->p[i] = neg_poly->p[0];
+         return True;
+      default:
+         LogError("Split poly failed!\n");
+         return False;
+      }
+      return False;
+      //goto oneside;*/
     }
   
   i = 0;

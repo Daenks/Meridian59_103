@@ -194,7 +194,7 @@ void InsertPolygonVertices (SHORT centerx, SHORT centery, SHORT sides, SHORT rad
 
    for (n = 0; n < sides; n++)
 	  InsertObject( OBJ_VERTEXES, -1,
-					centerx + (SHORT) ((double) radius * cos( 6.28 * (double) n / (double) sides)),
+					centerx + (SHORT) ((double) radius * cos( 6.2832 * (double) n / (double) sides)),
 					centery + (SHORT) ((double) radius * sin( 6.2832 * (double) n / (double) sides)));
    /* Yes, I know... etc. */
 }
