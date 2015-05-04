@@ -396,6 +396,7 @@ void SaveRoomeditWalls(FILE *file)
    int i;
    SideDef SD1, SD2;
    WORD word;
+   DWORD dword;
    Vertex VStart, VEnd;
 
    // Write out walls
@@ -448,12 +449,19 @@ void SaveRoomeditWalls(FILE *file)
 	 word = SD2.sector;
       WriteBytes(file, &word, 2);
 
-      VStart = Vertexes[CurLD.start];
-		VEnd   = Vertexes[CurLD.end];
-		WriteBytes(file, &VStart.x, 4);
-		WriteBytes(file, &VStart.y, 4);
-		WriteBytes(file, &VEnd.x, 4);
-		WriteBytes(file, &VEnd.y, 4);
+     VStart = Vertexes[CurLD.start];
+     VEnd   = Vertexes[CurLD.end];
+
+     // coordinates are 16bit short
+     // but stored as 32bit int
+     dword = VStart.x;
+     WriteBytes(file, &dword, 4);
+     dword = VStart.y;
+     WriteBytes(file, &dword, 4);
+     dword = VEnd.x;
+     WriteBytes(file, &dword, 4);
+     dword = VEnd.y;
+     WriteBytes(file, &dword, 4);
 	}
 }
 /***************************************************************************/

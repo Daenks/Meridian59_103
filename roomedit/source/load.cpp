@@ -336,16 +336,15 @@ BOOL LoadRoom(int infile)
       if (read(infile, &new_sd1->sector, 2) != 2) return FALSE;
       if (read(infile, &new_sd2->sector, 2) != 2) return FALSE;
 
-
-      // Read endpoints
+      // Read endpoints (32bit in roo, 16bit in editor)
       if (read(infile, &temp, 4) != 4) return FALSE;
-      x0 = temp;
+	  x0 = temp;
+	  if (read(infile, &temp, 4) != 4) return FALSE;
+	  y0 = temp;
       if (read(infile, &temp, 4) != 4) return FALSE;
-      y0 = temp;
+	  x1 = temp;
       if (read(infile, &temp, 4) != 4) return FALSE;
-      x1 = temp;
-      if (read(infile, &temp, 4) != 4) return FALSE;
-      y1 = temp;
+	  y1 = temp;
       LineDefs[i].start = AddVertex(x0, y0);
       LineDefs[i].end   = AddVertex(x1, y1);
    }   
