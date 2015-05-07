@@ -329,12 +329,8 @@ extern void			UpdateRoom3D(room_type *room, Draw3DParams *params);
 static int DistanceGet(int x, int y)
 {
 	int	distance;
-	float	xf, yf;
 
-	xf = (float)x;
-	yf = (float)y;
-
-	distance = sqrt((double)(xf * xf) + (double)(yf * yf));
+	distance = sqrt((double)(x * x) + (double)(y * y));
 
 	return (int)distance;
 }
@@ -661,7 +657,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 {
 	D3DMATRIX	mat, rot, trans, view, proj, identity;
 	int			angleHeading, anglePitch;
-	long		timeOverall, timeWorld, timeObjects, timeLMaps, timeSkybox, timeSkybox2, timeInit;
+   // Uncomment to check rendering times.
+   //long		timeOverall, timeWorld, timeObjects, timeLMaps, timeSkybox, timeSkybox2, timeInit, timeStatic, timeGeometry;
 	static ID	tempBkgnd = 0;
 	HRESULT		hr;
 	Bool		draw_sky = TRUE;
@@ -713,9 +710,9 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 
 	gFrame++;
 
-	timeOverall = timeWorld = timeObjects = timeLMaps = timeSkybox = timeSkybox2 = timeInit = 0;
-
-	timeOverall = timeInit = timeGetTime();
+   // Uncomment to check rendering time.
+   //timeOverall = timeWorld = timeObjects = timeLMaps = timeSkybox = timeSkybox2 = timeInit = timeStatic = timeGeometry = 0;
+	//timeOverall = timeInit = timeGetTime();
 
 	gNumObjects = 0;
 	gNumVertices = 0;
@@ -725,8 +722,12 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 
 	gDLightCache.numLights = 0;
 	gDLightCacheDynamic.numLights = 0;
+   // Uncomment to check rendering time.
+   //timeStatic = timeGetTime();
 	D3DLMapsStaticGet(room);
-
+   // Uncomment to check rendering time.
+   //timeStatic = timeGetTime() - timeStatic;
+   ///timeGeometry = timeGetTime();
 	if (gD3DRedrawAll & D3DRENDER_REDRAW_ALL)
 	{
 		D3DGeometryBuildNew(room, &gWorldPoolStatic);
@@ -741,7 +742,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 	{
 		GeometryUpdate(&gWorldPoolStatic, &gWorldCacheSystemStatic);
 	}
-
+   // Uncomment to check rendering time.
+   //timeGeometry = timeGetTime() - timeGeometry;
 	/***************************************************************************/
 	/*                      BEGIN SCENE RENDERING                              */
 	/***************************************************************************/
@@ -794,11 +796,14 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 	playerOldPos.y = params->viewer_y;
 	playerOldPos.z = params->viewer_height;
 
-	timeInit = timeGetTime() - timeInit;
-	// skybox
+   // Uncomment to check rendering time.
+	//timeInit = timeGetTime() - timeInit;
+
+   // skybox
 	if (draw_sky)
 	{
-		timeSkybox = timeGetTime();
+      // Uncomment to check rendering time.
+		//timeSkybox = timeGetTime();
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_CULLMODE, D3DCULL_NONE);
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZWRITEENABLE, FALSE);
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZENABLE, D3DZB_FALSE);
@@ -824,7 +829,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZWRITEENABLE, TRUE);
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZENABLE, D3DZB_TRUE);
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_FOGENABLE, TRUE);
-		timeSkybox = timeGetTime() - timeSkybox;
+      // Uncomment to check rendering time.
+      //timeSkybox = timeGetTime() - timeSkybox;
 	}
 
 	// restore the correct view matrix
@@ -836,7 +842,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 	
 	if (draw_world)
 	{
-		timeWorld = timeGetTime();
+      // Uncomment to check rendering time.
+		//timeWorld = timeGetTime();
 		IDirect3DDevice9_SetVertexShader(gpD3DDevice, NULL);
 		IDirect3DDevice9_SetVertexDeclaration(gpD3DDevice, decl1dc);
 
@@ -884,11 +891,11 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 			IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_CULLMODE, D3DCULL_CW);
 			
 			IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_STENCILENABLE, FALSE);
-		}
-
-		D3DRENDER_SET_ALPHATEST_STATE(gpD3DDevice, TRUE, TEMP_ALPHA_REF, D3DCMP_GREATEREQUAL);
-		D3DRENDER_SET_STENCIL_STATE(gpD3DDevice, TRUE, D3DCMP_ALWAYS, 1, D3DSTENCILOP_ZERO,
-			D3DSTENCILOP_KEEP, D3DSTENCILOP_KEEP);
+         
+         D3DRENDER_SET_ALPHATEST_STATE(gpD3DDevice, TRUE, TEMP_ALPHA_REF, D3DCMP_GREATEREQUAL);
+         D3DRENDER_SET_STENCIL_STATE(gpD3DDevice, TRUE, D3DCMP_ALWAYS, 1, D3DSTENCILOP_ZERO,
+            D3DSTENCILOP_KEEP, D3DSTENCILOP_KEEP);
+      }
 
 		D3DRenderPoolReset(&gWorldPool, &D3DMaterialWorldPool);
 		D3DCacheSystemReset(&gWorldCacheSystem);
@@ -898,7 +905,7 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 		// this pass is a gigantic hack used to cover up the cracks
 		// caused by all the t-junctions in the old geometry.  the entire world is drawn
 		// in wireframe, with zwrite disabled.  welcome to my hell
-		if (0)
+		if (1)
 		{
 			gWireframe = TRUE;
 			IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_ZWRITEENABLE, FALSE);
@@ -914,13 +921,15 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 		D3DCacheFlush(&gWorldCacheSystemStatic, &gWorldPoolStatic, 1, D3DPT_TRIANGLESTRIP);
 		D3DCacheFlush(&gWorldCacheSystem, &gWorldPool, 1, D3DPT_TRIANGLESTRIP);
 
-		timeWorld = timeGetTime() - timeWorld;
+      // Uncomment to check rendering time.
+		//timeWorld = timeGetTime() - timeWorld;
 	}
 
 	// skybox again, drawing only where stencil = 1
 	if (draw_sky)
 	{
-		timeSkybox2 = timeGetTime();
+      // Uncomment to check rendering time.
+		//timeSkybox2 = timeGetTime();
 		IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_CULLMODE, D3DCULL_NONE);
       
 		D3DRENDER_SET_ALPHATEST_STATE(gpD3DDevice, FALSE, TEMP_ALPHA_REF, D3DCMP_GREATEREQUAL);
@@ -951,7 +960,9 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 
 		if (gD3DDriverProfile.bFogEnable)
 			IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_FOGENABLE, TRUE);
-		timeSkybox2 = timeGetTime() - timeSkybox2;
+
+      // Uncomment to check rendering time.
+      //timeSkybox2 = timeGetTime() - timeSkybox2;
 	}
 
 	IDirect3DDevice9_SetTransform(gpD3DDevice, D3DTS_VIEW, &view);
@@ -963,7 +974,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 	
 	if (draw_world && config.bDynamicLighting)
 	{
-		timeLMaps = timeGetTime();
+      // Uncomment to check rendering time.
+		//timeLMaps = timeGetTime();
 		IDirect3DDevice9_SetSamplerState(gpD3DDevice, 1, D3DSAMP_MAGFILTER, gD3DDriverProfile.magFilter);
 		IDirect3DDevice9_SetSamplerState(gpD3DDevice, 1, D3DSAMP_MINFILTER, gD3DDriverProfile.minFilter);
 
@@ -987,7 +999,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 		if (gD3DDriverProfile.bFogEnable)
 			IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_FOGENABLE, TRUE);
 
-		timeLMaps = timeGetTime() - timeLMaps;
+      // Uncomment to check rendering time.
+		//timeLMaps = timeGetTime() - timeLMaps;
 	}
 
 	IDirect3DDevice9_SetRenderState(gpD3DDevice, D3DRS_CULLMODE, D3DCULL_NONE);
@@ -1051,7 +1064,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 	
 	if (draw_objects)
 	{
-		timeObjects = timeGetTime();
+      // Uncomment to check rendering time.
+		//timeObjects = timeGetTime();
 		
 		/************************** NAMES *********************************/
 		
@@ -1149,7 +1163,8 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 		IDirect3DDevice9_SetVertexShader(gpD3DDevice, NULL);
 		IDirect3DDevice9_SetVertexDeclaration(gpD3DDevice, decl1dc);
 
-		timeObjects = timeGetTime() - timeObjects;
+		// Uncomment to check rendering time.
+      //timeObjects = timeGetTime() - timeObjects;
 	}
 
 	/***************************************************************************/
@@ -1330,15 +1345,18 @@ void D3DRenderBegin(room_type *room, Draw3DParams *params)
 			ResetUserData();
 		}
 	}
-	
-	timeOverall = timeGetTime() - timeOverall;
+   // Uncomment to check rendering time.
+	//timeOverall = timeGetTime() - timeOverall;
+
 //	debug(("number of objects = %d\n", gNumObjects));
 	if ((gFrame & 255) == 255)
 		debug(("number of vertices = %d\nnumber of dp calls = %d\n", gNumVertices,
 		gNumDPCalls));
 
+   // Uncomment to check rendering time. Must uncomment timeGetTime calls also.
 	//debug(("all = %d lmaps = %d wrld = %d obj = %d sky = %d init = %d\n",
 		//timeOverall, timeLMaps, timeWorld, timeObjects, timeSkybox+timeSkybox2, timeInit));
+   //debug(("time to init lightmaps is %d, time to init geometry is %d\n", timeStatic, timeGeometry));
 }
 
 void D3DRenderWorldDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DParams *params)
@@ -1728,11 +1746,11 @@ Bool D3DLMapCheck(d_light *dLight, room_contents_node *pRNode)
 		return FALSE;
 	if (dLight->xyzScale.x != DLIGHT_SCALE(pRNode->obj.dLighting.intensity))
 		return FALSE;
-	if (dLight->color.b != (pRNode->obj.dLighting.color & 31) * 255 / 31)
+	if (dLight->color.b != (pRNode->obj.dLighting.color & 31) << 3)
 		return FALSE;
-	if (dLight->color.g != ((pRNode->obj.dLighting.color >> 5) & 31) * 255 / 31)
+	if (dLight->color.g != ((pRNode->obj.dLighting.color >> 5) & 31) << 3)
 		return FALSE;
-	if (dLight->color.r != ((pRNode->obj.dLighting.color >> 10) & 31) * 255 / 31)
+	if (dLight->color.r != ((pRNode->obj.dLighting.color >> 10) & 31) << 3)
 		return FALSE;
 
 	return TRUE;
@@ -1769,7 +1787,7 @@ void D3DLMapsStaticGet(room_type *room)
 
 		if (pDib)
 			gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].xyz.z +=
-				((float)pDib->height / (float)pDib->shrink * 16.0f) - (float)pDib->yoffset * 4.0f;
+				((float)pDib->height / (float)(pDib->shrink << 4)) - (float)(pDib->yoffset << 2);
 
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].xyzScale.x =
 			DLIGHT_SCALE(pProjectile->dLighting.intensity);
@@ -1794,11 +1812,11 @@ void D3DLMapsStaticGet(room_type *room)
 
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.a = COLOR_MAX;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.r =
-			((pProjectile->dLighting.color >> 10) & 31) * COLOR_MAX / 31;
+			((pProjectile->dLighting.color >> 10) & 31) << 3;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.g =
-			((pProjectile->dLighting.color >> 5) & 31) * COLOR_MAX / 31;
+			((pProjectile->dLighting.color >> 5) & 31) << 3;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.b =
-			(pProjectile->dLighting.color & 31) * COLOR_MAX / 31;
+			(pProjectile->dLighting.color & 31) << 3;
 
 		gDLightCacheDynamic.numLights++;
 	}
@@ -1827,7 +1845,7 @@ void D3DLMapsStaticGet(room_type *room)
 
 		if (pDib)
 			gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].xyz.z +=
-				((float)pDib->height / (float)pDib->shrink * 16.0f) - (float)pDib->yoffset * 4.0f;
+				((float)pDib->height / (float)(pDib->shrink << 4)) - (float)(pDib->yoffset << 2);
 
 		if ((pRNode->obj.dLighting.color == 0) || (pRNode->obj.dLighting.intensity == 0))
 			continue;
@@ -1855,11 +1873,11 @@ void D3DLMapsStaticGet(room_type *room)
 
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.a = COLOR_MAX;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.r =
-			((pRNode->obj.dLighting.color >> 10) & 31) * COLOR_MAX / 31;
+			((pRNode->obj.dLighting.color >> 10) & 31) << 3;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.g =
-			((pRNode->obj.dLighting.color >> 5) & 31) * COLOR_MAX / 31;
+			((pRNode->obj.dLighting.color >> 5) & 31) << 3;
 		gDLightCacheDynamic.dLights[gDLightCacheDynamic.numLights].color.b =
-			(pRNode->obj.dLighting.color & 31) * COLOR_MAX / 31;
+			(pRNode->obj.dLighting.color & 31) << 3;
 
 		gDLightCacheDynamic.numLights++;
 	}
@@ -1896,7 +1914,7 @@ void D3DLMapsStaticGet(room_type *room)
 
 		if (pDib)
 			gDLightCache.dLights[gDLightCache.numLights].xyz.z +=
-				((float)pDib->height / (float)pDib->shrink * 16.0f) - (float)pDib->yoffset * 4.0f;
+				((float)pDib->height / (float)(pDib->shrink << 4)) - (float)(pDib->yoffset << 2);
 
 		gDLightCache.dLights[gDLightCache.numLights].xyzScale.x =
 			DLIGHT_SCALE(pRNode->obj.dLighting.intensity);
@@ -1924,11 +1942,11 @@ void D3DLMapsStaticGet(room_type *room)
 
 		gDLightCache.dLights[gDLightCache.numLights].color.a = COLOR_MAX;
 		gDLightCache.dLights[gDLightCache.numLights].color.r =
-			((pRNode->obj.dLighting.color >> 10) & 31) * COLOR_MAX / 31;
+			((pRNode->obj.dLighting.color >> 10) & 31) << 3;
 		gDLightCache.dLights[gDLightCache.numLights].color.g =
-			((pRNode->obj.dLighting.color >> 5) & 31) * COLOR_MAX / 31;
+			((pRNode->obj.dLighting.color >> 5) & 31) << 3;
 		gDLightCache.dLights[gDLightCache.numLights].color.b =
-			(pRNode->obj.dLighting.color & 31) * COLOR_MAX / 31;
+			(pRNode->obj.dLighting.color & 31) << 3;
 
 		gDLightCache.numLights++;
 	}
@@ -2223,7 +2241,7 @@ void GeometryUpdate(d3d_render_pool_new *pPool, d3d_render_cache_system *pCacheS
 	d3d_render_packet_new	*pPacket;
 	d3d_render_chunk_new	*pChunk;
 	Sector					*pSector;
-	int						distX, distY, distance, paletteIndex;
+	int						paletteIndex;
 	list_type				list;
 	long					lightScale;
 	long					lo_end = FINENESS-shade_amount;
@@ -2259,11 +2277,6 @@ void GeometryUpdate(d3d_render_pool_new *pPool, d3d_render_cache_system *pCacheS
 
 				for (i = 0; i < pChunk->numVertices; i++)
 				{
-					distX = pChunk->xyz[i].x - player.x;
-					distY = pChunk->xyz[i].y - player.y;
-
-					distance = DistanceGet(distX, distY);
-
 					if (shade_amount != 0)
 					{
 						long	a, b;
@@ -2296,17 +2309,14 @@ void GeometryUpdate(d3d_render_pool_new *pPool, d3d_render_cache_system *pCacheS
 					else
 						lightScale = FINENESS;
 
-//					if (distance <= 0)
-//						distance = MAX_DISTANCE;
-
 					if (gD3DDriverProfile.bFogEnable)
 						paletteIndex = GetLightPaletteIndex(FINENESS, pSector->light, lightScale, 0);
 					else
-						paletteIndex = GetLightPaletteIndex(distance, pSector->light, lightScale, 0);
+                  paletteIndex = GetLightPaletteIndex(DistanceGet(pChunk->xyz[i].x - player.x, pChunk->xyz[i].y - player.y), pSector->light, lightScale, 0);
 	//				paletteIndex = 64;
 
 					pChunk->bgra[i].r = pChunk->bgra[i].g = pChunk->bgra[i].b =
-						paletteIndex * COLOR_AMBIENT / 64;
+						paletteIndex * COLOR_AMBIENT >> 6;
 					pChunk->bgra[i].a = 255;
 				}
 
@@ -3309,7 +3319,7 @@ Bool D3DObjectLightingCalc(room_type *room, room_contents_node *pRNode, custom_b
 		light = GetLightPaletteIndex(intDistance, light, FINENESS,
 					0);
 
-	light = light * COLOR_AMBIENT / 64;
+	light = light * COLOR_AMBIENT >> 6;
 
 	if (pDLight)
 	{
@@ -3778,7 +3788,7 @@ LPDIRECT3DTEXTURE9 D3DRenderTextureCreateFromBGF(PDIB pDib, BYTE xLat0, BYTE xLa
 
 	IDirect3DTexture9_LockRect(pTexture, 0, &lockedRect, NULL, 0);
 
-	pitchHalf = lockedRect.Pitch / 2;
+	pitchHalf = lockedRect.Pitch >> 1;
 
 	pPixels16 = (unsigned short *)lockedRect.pBits;
 
@@ -3930,7 +3940,7 @@ LPDIRECT3DTEXTURE9 D3DRenderTextureCreateFromBGFSwizzled(PDIB pDib, BYTE xLat0, 
 
 	IDirect3DTexture9_LockRect(pTexture, 0, &lockedRect, NULL, 0);
 
-	pitchHalf = lockedRect.Pitch / 2;
+	pitchHalf = lockedRect.Pitch >> 1;
 
 	pPixels16 = (unsigned short *)lockedRect.pBits;
 
@@ -4075,7 +4085,7 @@ LPDIRECT3DTEXTURE9 D3DRenderTextureCreateFromResource(BYTE *ptr, int width, int 
 
 	IDirect3DTexture9_LockRect(pTexture, 0, &lockedRect, NULL, 0);
 
-	pitchHalf = lockedRect.Pitch / 2;
+	pitchHalf = lockedRect.Pitch >> 1;
 
 	pPixels16 = (unsigned short *)lockedRect.pBits;
 
@@ -4196,7 +4206,7 @@ LPDIRECT3DTEXTURE9 D3DRenderTextureCreateFromPNG(char *pFilename)
 
 			IDirect3DTexture9_LockRect(pTexture, 0, &lockedRect, NULL, 0);
 
-			pitchHalf = lockedRect.Pitch / 2;
+			pitchHalf = lockedRect.Pitch >> 1;
 
 			pBits = (unsigned char *)lockedRect.pBits;
 
@@ -4741,8 +4751,8 @@ void D3DRenderLMapPostFloorAdd(BSPnode *pNode, d3d_render_pool_new *pPool, d_lig
 		invZScaleHalf = pDLightCache->dLights[numLights].invXYZScaleHalf.z;
 
 		unlit = 0;
-		lightRange = (pDLightCache->dLights[numLights].xyzScale.x / 1.5f) *
-			(pDLightCache->dLights[numLights].xyzScale.x / 1.5f);// * 2.0f;
+		lightRange = (pDLightCache->dLights[numLights].xyzScale.x * 2.0f) *
+			(pDLightCache->dLights[numLights].xyzScale.x * 2.0f);// * 2.0f;
 
 //		continue;
 
@@ -4913,8 +4923,8 @@ void D3DRenderLMapPostCeilingAdd(BSPnode *pNode, d3d_render_pool_new *pPool, d_l
 
 		unlit = 0;
 
-		lightRange = (pDLightCache->dLights[numLights].xyzScale.x / 1.5f) *
-			(pDLightCache->dLights[numLights].xyzScale.x / 1.5f);// * 2.0f;
+		lightRange = (pDLightCache->dLights[numLights].xyzScale.x * 2.0f) *
+			(pDLightCache->dLights[numLights].xyzScale.x * 2.0f);// * 2.0f;
 
 //		continue;
 
@@ -5151,8 +5161,8 @@ void D3DRenderLMapPostWallAdd(WallData *pWall, d3d_render_pool_new *pPool, unsig
 		invZScaleHalf = pDLightCache->dLights[numLights].invXYZScaleHalf.z;
 
 		unlit = 0;
-		lightRange = (pDLightCache->dLights[numLights].xyzScale.x / 1.5f) *
-			(pDLightCache->dLights[numLights].xyzScale.x / 1.5f);// * 2.0f;
+		lightRange = (pDLightCache->dLights[numLights].xyzScale.x * 2.0f) *
+			(pDLightCache->dLights[numLights].xyzScale.x * 2.0f);// * 2.0f;
 
 //		continue;
 
@@ -5499,17 +5509,17 @@ void D3DRenderSkyboxDraw(d3d_render_pool_new *pPool, int angleHeading, int angle
 		// add xyz, st, and bgra data
 		for (j = 0; j < 4; j++)
 		{
-			pChunk->xyz[j].x = gSkyboxXYZ[(i * 4 * 3) + (j * 3)];
-			pChunk->xyz[j].z = gSkyboxXYZ[(i * 4 * 3) + (j * 3) + 1];
-			pChunk->xyz[j].y = gSkyboxXYZ[(i * 4 * 3) + (j * 3) + 2];
+			pChunk->xyz[j].x = gSkyboxXYZ[((i << 2) * 3) + (j * 3)];
+			pChunk->xyz[j].z = gSkyboxXYZ[((i << 2) * 3) + (j * 3) + 1];
+			pChunk->xyz[j].y = gSkyboxXYZ[((i << 2) * 3) + (j * 3) + 2];
 
-			pChunk->st0[j].s = gSkyboxST[(i * 4 * 2) + (j * 2)];
-			pChunk->st0[j].t = gSkyboxST[(i * 4 * 2) + (j * 2) + 1];
+			pChunk->st0[j].s = gSkyboxST[(i << 3) + (j << 1)];
+			pChunk->st0[j].t = gSkyboxST[(i << 3) + (j << 1) + 1];
 
-			pChunk->bgra[j].b = gSkyboxBGRA[(i * 4 * 4) + (j * 4)];// / 2.0f;
-			pChunk->bgra[j].g = gSkyboxBGRA[(i * 4 * 4) + (j * 4) + 1];// / 2.0f;
-			pChunk->bgra[j].r = gSkyboxBGRA[(i * 4 * 4) + (j * 4) + 2];// / 2.0f;
-			pChunk->bgra[j].a = gSkyboxBGRA[(i * 4 * 4) + (j * 4) + 3];
+			pChunk->bgra[j].b = gSkyboxBGRA[(i << 4) + (j << 2)];// / 2.0f;
+			pChunk->bgra[j].g = gSkyboxBGRA[(i << 4) + (j << 2) + 1];// / 2.0f;
+			pChunk->bgra[j].r = gSkyboxBGRA[(i << 4) + (j << 2) + 2];// / 2.0f;
+			pChunk->bgra[j].a = gSkyboxBGRA[(i << 4) + (j << 2) + 3];
 
 		}
 		pChunk->indices[0] = 1;
@@ -5728,8 +5738,8 @@ int D3DRenderWallExtract(WallData *pWall, PDIB pDib, unsigned int *flags, custom
 
 		invWidth = 1.0f / (float)pDib->width;
 		invHeight = 1.0f / (float)pDib->height;
-		invWidthFudge = 1.0f / ((float)pDib->width * PETER_FUDGE);
-		invHeightFudge = 1.0f / ((float)pDib->height * PETER_FUDGE);
+		invWidthFudge = 1.0f / ((float)(pDib->width << 4));
+		invHeightFudge = 1.0f / ((float)(pDib->height << 4));
 
 		pST[0].s = (float)xOffset * (float)(pDib->shrink) * invHeight;
 		pST[1].s = (float)xOffset * (float)(pDib->shrink) * invHeight;
@@ -5902,10 +5912,11 @@ int D3DRenderWallExtract(WallData *pWall, PDIB pDib, unsigned int *flags, custom
 			pXYZ[2].z -= 16.0f;
 		}
 
-		pST[0].t += 1.0f / pDib->width;
-		pST[3].t += 1.0f / pDib->width;
-		pST[1].t -= 1.0f / pDib->width;
-		pST[2].t -= 1.0f / pDib->width;
+      float tempVal = 1.0f / pDib->width;
+      pST[0].t += tempVal;
+      pST[3].t += tempVal;
+      pST[1].t -= tempVal;
+      pST[2].t -= tempVal;
 	}
 
 	if (pBGRA)
@@ -5964,7 +5975,7 @@ int D3DRenderWallExtract(WallData *pWall, PDIB pDib, unsigned int *flags, custom
 			if (light <= 127)
 				*flags |= D3DRENDER_NOAMBIENT;
 
-			pBGRA[i].r = pBGRA[i].g = pBGRA[i].b = paletteIndex * COLOR_AMBIENT / 64;
+			pBGRA[i].r = pBGRA[i].g = pBGRA[i].b = paletteIndex * COLOR_AMBIENT >> 6;
 			pBGRA[i].a = 255;
 		}
 	}
@@ -5985,8 +5996,10 @@ void D3DRenderFloorExtract(BSPnode *pNode, PDIB pDib, custom_xyz *pXYZ, custom_s
 
 	left = top = 0;
 
-	inv128 = 1.0f / (128.0f * PETER_FUDGE);// / pDib->shrink);
-	inv64 = 1.0f / (64.0f * PETER_FUDGE);// / pDib->shrink);
+	//inv128 = 1.0f / (128.0f * PETER_FUDGE);// / pDib->shrink);
+   inv128 = 0.00048828125f;
+   //inv64 = 1.0f / (64.0f * PETER_FUDGE);// / pDib->shrink);
+   inv64 = 0.0009765625f;
 
 	// generate texture coordinates
 	if (pSector->sloped_floor)
@@ -6242,7 +6255,7 @@ void D3DRenderFloorExtract(BSPnode *pNode, PDIB pDib, custom_xyz *pXYZ, custom_s
 			else
 				paletteIndex = GetLightPaletteIndex(distance, pSector->light, lightscale, 0);
 
-			pBGRA[count].r = pBGRA[count].g = pBGRA[count].b = paletteIndex * COLOR_AMBIENT / 64;
+			pBGRA[count].r = pBGRA[count].g = pBGRA[count].b = paletteIndex * COLOR_AMBIENT >> 6;
 			pBGRA[count].a = 255;
 		}
 	}
@@ -6261,8 +6274,10 @@ void D3DRenderCeilingExtract(BSPnode *pNode, PDIB pDib, custom_xyz *pXYZ, custom
 
 	left = top = 0;
 
-	inv128 = 1.0f / (128.0f * PETER_FUDGE);
-	inv64 = 1.0f / (64.0f * PETER_FUDGE);
+   //inv128 = 1.0f / (128.0f * PETER_FUDGE);// / pDib->shrink);
+   inv128 = 0.00048828125f;
+   //inv64 = 1.0f / (64.0f * PETER_FUDGE);// / pDib->shrink);
+   inv64 = 0.0009765625f;
 
 	// generate texture coordinates
 	for (count = 0; count < pNode->u.leaf.poly.npts; count++)
@@ -6506,7 +6521,7 @@ void D3DRenderCeilingExtract(BSPnode *pNode, PDIB pDib, custom_xyz *pXYZ, custom
 			else
 				paletteIndex = GetLightPaletteIndex(distance, pSector->light, lightscale, 0);
 
-			pBGRA[count].r = pBGRA[count].g = pBGRA[count].b = paletteIndex * COLOR_AMBIENT / 64;
+			pBGRA[count].r = pBGRA[count].g = pBGRA[count].b = paletteIndex * COLOR_AMBIENT >> 6;
 			pBGRA[count].a = 255;
 		}
 	}
@@ -6581,14 +6596,14 @@ void D3DRenderBackgroundsLoad(char *pFilename, int index)
 			png_read_png(pPng, pInfo, PNG_TRANSFORM_IDENTITY, NULL);
 			rows = png_get_rows(pPng, pInfo);
 
-			bytePP = pPng->pixel_depth / 8;
+			bytePP = pPng->pixel_depth >> 3;
 
 			IDirect3DDevice9_CreateTexture(gpD3DDevice, pPng->width, pPng->height, 1, 0,
                                         D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &gpSkyboxTextures[index][i], NULL);
 
 			IDirect3DTexture9_LockRect(gpSkyboxTextures[index][i], 0, &lockedRect, NULL, 0);
 
-			pitchHalf = lockedRect.Pitch / 2;
+			pitchHalf = lockedRect.Pitch >> 1;
 
 			pBits = (unsigned char *)lockedRect.pBits;
 
@@ -7855,10 +7870,10 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 
 							if (config.large_area)
 							{
-								tempLeft /= 2;
-								tempRight /= 2;
-								tempTop /= 2;
-								tempBottom /= 2;
+								tempLeft >>= 1;
+								tempRight >>= 1;
+								tempTop >>= 1;
+								tempBottom >>= 1;
 							}
 
 							distX = pRNode->motion.x - player.x;
@@ -8235,7 +8250,7 @@ void D3DRenderPlayerOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Dr
 				light = GetLightPaletteIndex(D3DRENDER_LIGHT_DISTANCE, light, FINENESS,
 							0);
 
-			light = light * COLOR_AMBIENT / 64;
+			light = light * COLOR_AMBIENT >> 6;
 
 			bgra.r = bgra.g = bgra.b = min(255, light + lastDistance);
 			bgra.a = 255;*/
@@ -10430,9 +10445,9 @@ float D3DRenderFogEndCalc(d3d_render_chunk_new *pChunk)
 	// note: sectors with the no ambient flag attenuate twice as fast in the old client.
 	// bug or not, it needs to be emulated here...
 	if (pChunk->flags & D3DRENDER_NOAMBIENT)
-		end = (16384 + (light * FINENESS) + (p->viewer_light * 64));
+		end = (16384 + (light * FINENESS) + (p->viewer_light << 6));
 	else
-		end = (32768 + (max(0, light - LIGHT_NEUTRAL) * FINENESS) + (p->viewer_light * 64) +
+		end = (32768 + (max(0, light - LIGHT_NEUTRAL) * FINENESS) + (p->viewer_light << 6) +
 		(current_room.ambient_light * FINENESS));
 
 	return end;

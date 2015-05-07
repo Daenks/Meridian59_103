@@ -34,7 +34,7 @@
 
 // inline utility macros
 #define SWAP(a,b,tmp) (tmp)=(a);(a)=(b);(b)=(tmp)
-#define LERP(a,b,t)   ((a) + ((((b)-(a)) * (t)) / FINENESS))
+#define LERP(a,b,t)   ((a) + ((((b)-(a)) * (t)) >> LOG_FINENESS))
 
 static ID   viewer_id;          /* Id of player's object */
 static long viewer_angle;       /* Angle of viewing in pseudo degrees */
@@ -507,8 +507,8 @@ static void AddObjects(room_type *room)
       d->ncones_ptr    = &d->ncones;
 
       /* set center field */
-      a = (left_a * dx + left_b * dy) / FINENESS;
-      b = (right_a * dx + right_b * dy) / FINENESS;
+      a = (left_a * dx + left_b * dy) >> (FIX_DECIMAL - 6);
+      b = (right_a * dx + right_b * dy) >> (FIX_DECIMAL - 6);
       if (a + b <= 0)
       {
 	 debug(("a+b <= 0! (AddObjects) %ld\n",a+b));
@@ -595,8 +595,8 @@ static void AddObjects(room_type *room)
       d->draw.obj      = NULL;
 
       /* set center field */
-      a = (left_a * dx + left_b * dy) / FINENESS;
-      b = (right_a * dx + right_b * dy) / FINENESS;
+      a = (left_a * dx + left_b * dy) >> (FIX_DECIMAL - 6);
+      b = (right_a * dx + right_b * dy) >> (FIX_DECIMAL - 6);
       if (a + b <= 0)
       {
 	 debug(("a+b <= 0! (AddObjects) %ld\n",a+b));
@@ -2296,8 +2296,8 @@ static void WalkObjects(ObjectData *objects)
       
       x = object->x0 - viewer_x;
       y = object->y0 - viewer_y;
-      a = (left_a * x + left_b * y) / FINENESS;
-      b = (right_a * x + right_b * y) / FINENESS;
+      a = (left_a * x + left_b * y) >> (FIX_DECIMAL - 6);
+      b = (right_a * x + right_b * y) >> (FIX_DECIMAL - 6);
       if (a + b <= 0)
       {
 	 debug(("a+b <= 0! (WalkObjects(1)) %ld\n",a+b));
@@ -2307,8 +2307,8 @@ static void WalkObjects(ObjectData *objects)
       
       x = object->x1 - viewer_x;
       y = object->y1 - viewer_y;
-      a = (left_a * x + left_b * y) / FINENESS;
-      b = (right_a * x + right_b * y) / FINENESS;
+      a = (left_a * x + left_b * y) >> (FIX_DECIMAL - 6);
+      b = (right_a * x + right_b * y) >> (FIX_DECIMAL - 6);
       if (a + b <= 0)
       {
 	 debug(("a+b <= 0! (WalkObjects(2)) %ld\n",a+b));
@@ -3094,13 +3094,13 @@ void doDrawWall(DrawWallStruct *wall, ViewCone *c)
       if (z1 <= 0)
 	 z1 = 1.0f;
 
-      f = ((-z0) * (FINENESS * 4)) / (z1 - z0);
+      f = ((-z0) * (FINENESS << 2)) / (z1 - z0);
       if (f < oldf)
 	f = oldf;
       oldf = f;
       
       // Compute extent of wall on screen
-      d = d0 + (((d1-d0)*f) / (FINENESS * 4));
+      d = d0 + (((d1-d0)*f) / (FINENESS << 2));
       if (d <= 1.0)
 	d = 1.0f;
 
@@ -3163,10 +3163,10 @@ void doDrawWall(DrawWallStruct *wall, ViewCone *c)
 	 xGraphicOffset >>= horzDownScale;
       }
       if (backwards)
-	 textpos = (long)(((( FRACTION-1 - f) * length) / (FINENESS * 4)) + xGraphicOffset)
+	 textpos = (long)(((( FRACTION-1 - f) * length) / (FINENESS << 2)) + xGraphicOffset)
 	    % (bitmap_height);
       else
-         textpos = (long)(((f * length) / (FINENESS * 4)) + xGraphicOffset)
+         textpos = (long)(((f * length) / (FINENESS << 2)) + xGraphicOffset)
 	    % (bitmap_height);
       
       // Make textpos positive
