@@ -737,18 +737,18 @@ BYTE *GetLightPalette(int distance, BYTE sector_light, long scale, int lightOffs
    // See if sector is affected by ambient light
    if (sector_light > 127)
    {
-      row = ((FINENESS/2) << LOG_VIEWER_DISTANCE) / distance;
+      row = ((FINENESS >> 1) << LOG_VIEWER_DISTANCE) / distance;
       if (row < 1)
 	 row = 1;
-      if (row > MAXY / 2)
-	 row = MAXY / 2;
+      if (row > MAXY >> 1)
+	 row = MAXY >> 1;
 
       index = ((int) light_rows[row] + (int) sector_light - LIGHT_NEUTRAL) * 
-	 LIGHT_LEVELS / MAX_LIGHT;  // Scale from 0-255 to # of palettes
+         LIGHT_LEVELS >> 8;  // Scale from 0-255 to # of palettes - bit shift for speed
 
    }
    else index = LIGHT_INDEX(distance, (int) p->viewer_light, 0) * LIGHT_LEVELS / MAX_LIGHT
-      + (int) sector_light / 2;
+      + (int) (sector_light >> 1);
 
    if ((scale != FINENESS) && (sector_light > 127))
        index = (scale * index)>>LOG_FINENESS;
@@ -777,18 +777,18 @@ int GetLightPaletteIndex(int distance, BYTE sector_light, long scale, int lightO
    // See if sector is affected by ambient light
    if (sector_light > 127)
    {
-      row = ((FINENESS/2) << LOG_VIEWER_DISTANCE) / distance;
+      row = ((FINENESS >> 1) << LOG_VIEWER_DISTANCE) / distance;
       if (row < 1)
 	 row = 1;
-      if (row > MAXY / 2)
-	 row = MAXY / 2;
+      if (row > MAXY >> 1)
+	 row = MAXY >> 1;
 
       index = ((int) light_rows[row] + (int) sector_light - LIGHT_NEUTRAL) * 
-	 LIGHT_LEVELS / MAX_LIGHT;  // Scale from 0-255 to # of palettes
+	 LIGHT_LEVELS >> 8;  // Scale from 0-255 to # of palettes - bit shift for speed
 
    }
    else index = LIGHT_INDEX(distance, (int) p->viewer_light, 0) * LIGHT_LEVELS / MAX_LIGHT
-      + (int) sector_light / 2;
+      + (int) (sector_light >> 1);
 
    if ((scale != FINENESS) && (sector_light > 127))
        index = (scale * index)>>LOG_FINENESS;

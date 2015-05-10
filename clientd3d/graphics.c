@@ -361,8 +361,9 @@ void RedrawForce(void)
    lastEndFrame = endFrame;
    timeEndPeriod(1);
 
+   // As far as I can tell, we don't need to do this here.
    // Try to redraw new graphics
-   gD3DRedrawAll |= D3DRENDER_REDRAW_ALL;
+   //gD3DRedrawAll |= D3DRENDER_REDRAW_UPDATE;
 
    if (config.showFPS)
    {
