@@ -280,3 +280,32 @@ void AppendNumToTempString(int iNum)
    sprintf(numbuf, "%d", iNum);
    AppendTempString(numbuf, strlen(numbuf));
 }
+
+// Appends add_str to snod->data using strncat.
+void  AppendString(string_node *snod, char *add_str)
+{
+   // Check if we got sent the temp string. Set it, but log a message.
+   if (snod == &temp_str)
+   {
+      SetTempString(add_str,strlen(add_str));
+      bprintf("AppendString setting temp string!\n");
+
+      return;
+   }
+
+   // Save the old string length before we modify it.
+   int old_len = snod->len_data;
+
+   // Reallocate enough memory for the old + new string.
+   int new_len = snod->len_data + strlen(add_str);
+   snod->data = (char *) ResizeMemory(MALLOC_ID_STRING, snod->data, snod->len_data + 1, new_len + 1);
+
+   // Save the new string length.
+   snod->len_data = new_len;
+
+   // Concatenate the strings, starting at the end of the first string
+   // to save time.
+   strncat(snod->data + old_len, add_str, new_len);
+
+   return;
+}

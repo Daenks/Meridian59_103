@@ -166,6 +166,7 @@ void InitBkodInterpret(void)
    ccall_table[SETRESOURCE] = C_SetResource;
    ccall_table[PARSESTRING] = C_ParseString;
    ccall_table[SETSTRING] = C_SetString;
+   ccall_table[APPENDSTRING] = C_AppendString;
    ccall_table[APPENDTEMPSTRING] = C_AppendTempString;
    ccall_table[CLEARTEMPSTRING] = C_ClearTempString;
    ccall_table[GETTEMPSTRING] = C_GetTempString;

@@ -118,6 +118,7 @@ function_type Functions[] = {
 {"Bound",               BOUND,           AEXPRESSION,   AEXPRESSION,  AEXPRESSION, ANONE},
 {"GetTimeRemaining",    GETTIMEREMAINING,AEXPRESSION,   ANONE},
 {"SetString",           SETSTRING,       AEXPRESSION,   AEXPRESSION,  ANONE},
+{"AppendString",        APPENDSTRING,    AEXPRESSION,   AEXPRESSIONS,  ANONE},
 {"AppendTempString",    APPENDTEMPSTRING,AEXPRESSION,   ANONE},
 {"ClearTempString",     CLEARTEMPSTRING, ANONE},
 {"GetTempString",       GETTEMPSTRING,   ANONE},

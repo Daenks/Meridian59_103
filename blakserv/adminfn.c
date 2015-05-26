@@ -2242,6 +2242,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case CREATESTRING : strcpy(c_name, "CreateString"); break;
 		case ISSTRING : strcpy(c_name, "IsString"); break;
 		case STRINGSUBSTITUTE : strcpy(c_name, "StringSubstitute"); break;
+		case APPENDSTRING : strcpy(c_name, "AppendString"); break;
 		case APPENDTEMPSTRING : strcpy(c_name, "AppendTempString"); break;
 		case CLEARTEMPSTRING : strcpy(c_name, "ClearTempString"); break;
 		case GETTEMPSTRING : strcpy(c_name, "GetTempString"); break;

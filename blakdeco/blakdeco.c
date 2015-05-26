@@ -587,6 +587,7 @@ char * name_function(int fnum)
    case GETINACTIVETIME : return "GetInactiveTime";
    case DUMPSTACK : return "DumpStack";
 
+   case APPENDSTRING : return "AppendString";
    case ISSTRING : return "IsString";
    case STRINGEQUAL : return "StringEqual";
    case STRINGCONTAIN : return "StringContain";

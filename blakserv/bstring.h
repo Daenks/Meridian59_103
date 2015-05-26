@@ -39,6 +39,7 @@ int GetNumStrings(void);
 
 void SetString(string_node *snod,char *buf,int len);
 
+void AppendString(string_node *snod, char *add_str);
 void SetTempString(char *buf,int len);
 void ClearTempString(void);
 void AppendTempString(const char *buf, int len);
