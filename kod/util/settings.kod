@@ -219,6 +219,11 @@ properties:
 
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
+   
+   % Expansion settings
+   %
+   % Champion Mob Spawns
+   pbChampionSpawnsEnabled = FALSE
 
 messages:
 
@@ -559,6 +564,11 @@ messages:
    GetBroadcastManaCost()
    {
       return piBroadcastManaPercent;
+   }
+   
+   GetChampionSpawnsEnabled()
+   {
+      return pbChampionSpawnsEnabled;
    }
 
 end

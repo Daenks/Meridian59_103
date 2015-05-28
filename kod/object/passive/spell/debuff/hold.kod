@@ -283,6 +283,13 @@ messages:
                % Resisted completely
                return FALSE;
             }
+      
+            if IsClass(oTarget,&Monster)
+               AND Send(oTarget,@GetHoldResistance) <> 0
+            {
+               iTotalDuration = 
+                 (iTotalDuration * (100-Send(oTarget,@GetHoldResistance)))/100;
+            }
 
             iTotalDuration = bound(iTotalDuration,500,10000);
          }

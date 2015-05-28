@@ -103,7 +103,7 @@ messages:
          }
       }
 
-      return;
+      propagate;
    }
 
 end

@@ -191,6 +191,8 @@ classvars:
 
    viFlag_row = $
    viFlag_col = $
+   
+   viCanSpawnChampions = TRUE
 
 properties:
 
@@ -4917,6 +4919,11 @@ messages:
    GetGenerators()
    {
       return $;
+   }
+   
+   GetCanSpawnChampions()
+   {
+      return viCanSpawnChampions;
    }
       
 end

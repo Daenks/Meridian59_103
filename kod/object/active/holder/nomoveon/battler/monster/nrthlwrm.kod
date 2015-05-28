@@ -165,7 +165,7 @@ messages:
          Send(what,@AddExertion,#amount=(Random(EXERTION_DAMAGE_MIN,EXERTION_DAMAGE_MAX)*10000));
       }
 
-      return;
+      propagate;
    }
 
 end

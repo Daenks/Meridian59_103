@@ -180,6 +180,11 @@ messages:
 
    SendLightingInformation()
    {
+      if piChampionStatus <> 0
+      {
+         propagate;
+      }
+
       AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
       % Intensity (out of 255)
       AddPacket(1,30);

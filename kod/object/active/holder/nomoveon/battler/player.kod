@@ -8877,6 +8877,8 @@ messages:
             roll = FALSE;
          }
 
+         gain = gain * Send(what,@GetChampionRewardMultiplier);
+
          gainmult = Bound(Send(Send(SYS,@GetSettings),
                      @GetHPGainMultiplier),1,500);
          gain = gain * gainmult;
@@ -8897,17 +8899,20 @@ messages:
             {
                if monster_level <= 121
                {
-                  piTraining_points = piTraining_points + 1;
+                  piTraining_points = piTraining_points +
+                     (1*Send(what,@GetChampionRewardMultiplier));
                }
                else
                {
                   if monster_level <= 150
                   {
-                     piTraining_points = piTraining_points + 2;
+                     piTraining_points = piTraining_points +
+                        (2*Send(what,@GetChampionRewardMultiplier));
                   }
                   else
                   {
-                     piTraining_points = piTraining_points + 3;
+                     piTraining_points = piTraining_points +
+                        (3*Send(what,@GetChampionRewardMultiplier));
 
                   }
                }

@@ -39,14 +39,14 @@ resources:
    % battler_defender_miss - Psychochild's attack is blocked by you.
    % battler_defender_fail - Psychochild's scimitar scrapes you, failing to cause any real harm.
 
-   battler_attacker_hit = "%sYour %s %s %s%s for ~k~B%i~B%s damage."
-   battler_attacker_slay = "%sYour %s %s %s%s."
-   battler_attacker_miss = "%sYour attack %s %s%s."
-   battler_attacker_fail = "%sYour %s %s %s%s, failing to cause any real harm."
-   battler_defender_hit = "%s%s%s's %s %s you for ~r~B%i~B%s damage."
-   battler_defender_slay = "%s%s%s's %s %s you."
-   battler_defender_miss = "%s%s%s's attack %s you."
-   battler_defender_fail = "%s%s%s's %s %s you, failing to cause any real harm."
+   battler_attacker_hit = "%sYour %s %s %s%s%s for ~k~B%i~B%s damage."
+   battler_attacker_slay = "%sYour %s %s %s%s%s."
+   battler_attacker_miss = "%sYour attack %s %s%s%s."
+   battler_attacker_fail = "%sYour %s %s %s%s%s, failing to cause any real harm."
+   battler_defender_hit = "%s%s%s%s's %s %s you for ~r~B%i~B%s damage."
+   battler_defender_slay = "%s%s%s%s's %s %s you."
+   battler_defender_miss = "%s%s%s%s's attack %s you."
+   battler_defender_fail = "%s%s%s%s's %s %s you, failing to cause any real harm."
 
    battler_punch = "punch"
    battler_attack = "attack"
@@ -150,6 +150,8 @@ resources:
    battler_pierce_wound = "pierces"
    battler_pierce_damage = "lacerates"
    battler_pierce_slay = "fells"
+   
+   battler_champion_none = ""
 
 classvars:
 
@@ -1294,7 +1296,8 @@ messages:
             {
                Send(self,@MsgSendUser,#message_rsc=battler_attacker_slay,
                #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-               #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
+               #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+               #parm6=Send(what,@GetName));
             }
             else
             {
@@ -1302,14 +1305,16 @@ messages:
                {
                   Send(self,@MsgSendUser,#message_rsc=battler_attacker_hit,
                   #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName),
-                  #parm6=damage/100,#parm7=rColor);
+                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+                  #parm6=Send(what,@GetName),
+                  #parm7=damage/100,#parm8=rColor);
                }
                else
                {
                   Send(self,@MsgSendUser,#message_rsc=battler_attacker_fail,
                   #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
+                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+                  #parm6=Send(what,@GetName));
                }
             }
          }
@@ -1330,8 +1335,9 @@ messages:
          {   
             Send(what,@MsgSendUser,#message_rsc=battler_defender_slay,
               #parm1=rColor,#parm2=Send(self,@GetCapDef),
-              #parm3=Send(self,@GetName),#parm4=rWeaponName,
-              #parm5=rDamageDesc);
+              #parm3=Send(self,@GetChampString),
+              #parm4=Send(self,@GetName),#parm5=rWeaponName,
+              #parm6=rDamageDesc);
          }
          else
          {
@@ -1339,15 +1345,17 @@ messages:
             {
                Send(what,@MsgSendUser,#message_rsc=battler_defender_hit,
                  #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                 #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                 #parm5=rDamageDesc,#parm6=damage/100,#parm7=rColor);
+                 #parm3=Send(self,@GetChampString),
+                 #parm4=Send(self,@GetName),#parm5=rWeaponName,
+                 #parm6=rDamageDesc,#parm7=damage/100,#parm8=rColor);
             }
             else
             {
                Send(what,@MsgSendUser,#message_rsc=battler_defender_fail,
                  #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                 #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                 #parm5=rDamageDesc);
+                 #parm3=Send(self,@GetChampString),
+                 #parm4=Send(self,@GetName),#parm5=rWeaponName,
+                 #parm6=rDamageDesc);
             }
          }
       }
@@ -1377,7 +1385,8 @@ messages:
               #parm1=rColor,
               #parm2=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj),
               #parm3=Send(what,@GetDef),
-              #parm4=Send(what,@GetName));
+              #parm4=Send(what,@GetChampString),
+              #parm5=Send(what,@GetName));
          Send(stroke_obj,@SendMissMessageToAttacker,#who=self,#victim=what,
               #color_rsc=rColor,#weapon_used=Send(self,@LookupPlayerWeapon),
               #bText=FALSE);
@@ -1397,8 +1406,9 @@ messages:
          Send(what,@MsgSendUser,#message_rsc=battler_defender_miss,
               #parm1=rColor,
               #parm2=Send(self,@GetCapDef),
-              #parm3=Send(self,@GetName),
-              #parm4=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj));
+              #parm3=Send(self,@GetChampString),
+              #parm4=Send(self,@GetName),
+              #parm5=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj));
          % Flag them as "dodging", so they can potentially improve.
          Send(what,@SetPlayerFlag,#flag=PFLAG_DODGED,#value=TRUE);              
       }
@@ -1648,6 +1658,21 @@ messages:
    GetBoostedLevel()
    {
       return 0;
+   }
+   
+   GetChampString()
+   {
+      return battler_champion_none;
+   }
+   
+   GetChampStatus()
+   {
+      return 0;
+   }
+   
+   GetChampionRewardMultiplier()
+   {
+      return 1;
    }
 
 end
