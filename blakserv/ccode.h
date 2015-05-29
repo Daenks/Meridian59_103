@@ -109,6 +109,10 @@ int C_CreateString(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
 		   int num_name_parms,parm_node name_parm_array[]);
 
+int C_IsString(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
+
 int C_StringLength(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
 		   int num_name_parms,parm_node name_parm_array[]);
@@ -129,9 +133,17 @@ int C_GetTimeRemaining(int object_id,local_var_type *local_vars,
 		       int num_normal_parms,parm_node normal_parm_array[],
 		       int num_name_parms,parm_node name_parm_array[]);
 
+int C_IsTimer(int object_id,local_var_type *local_vars,
+		 int num_normal_parms,parm_node normal_parm_array[],
+		 int num_name_parms,parm_node name_parm_array[]);
+
 int C_LoadRoom(int object_id,local_var_type *local_vars,
 	       int num_normal_parms,parm_node normal_parm_array[],
 	       int num_name_parms,parm_node name_parm_array[]);
+
+int C_FreeRoom(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[]);
 
 int C_RoomData(int object_id,local_var_type *local_vars,
 	       int num_normal_parms,parm_node normal_parm_array[],
@@ -141,9 +153,21 @@ int C_CanMoveInRoom(int object_id,local_var_type *local_vars,
 		    int num_normal_parms,parm_node normal_parm_array[],
 		    int num_name_parms,parm_node name_parm_array[]);
 
+int C_CanMoveInRoomHighRes(int object_id,local_var_type *local_vars,
+		    int num_normal_parms,parm_node normal_parm_array[],
+		    int num_name_parms,parm_node name_parm_array[]);
+
+int C_GetHeight(int object_id,local_var_type *local_vars,
+		    int num_normal_parms,parm_node normal_parm_array[],
+		    int num_name_parms,parm_node name_parm_array[]);
+
 int C_CanMoveInRoomFine(int object_id,local_var_type *local_vars,
 		    int num_normal_parms,parm_node normal_parm_array[],
 		    int num_name_parms,parm_node name_parm_array[]);
+
+int C_AppendListElem(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
 
 int C_Cons(int object_id,local_var_type *local_vars,
 	   int num_normal_parms,parm_node normal_parm_array[],
@@ -177,6 +201,10 @@ int C_SetFirst(int object_id,local_var_type *local_vars,
 	       int num_normal_parms,parm_node normal_parm_array[],
 	       int num_name_parms,parm_node name_parm_array[]);
 
+int C_SwapListElem(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
+
 int C_SetNth(int object_id,local_var_type *local_vars,
 	     int num_normal_parms,parm_node normal_parm_array[],
 	     int num_name_parms,parm_node name_parm_array[]);
@@ -184,6 +212,10 @@ int C_SetNth(int object_id,local_var_type *local_vars,
 int C_FindListElem(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
 		   int num_name_parms,parm_node name_parm_array[]);
+
+int C_InsertListElem(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
 
 int C_DelListElem(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
@@ -253,6 +285,13 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
 				int num_name_parms,parm_node name_parm_array[]);
 
+int C_GetSessionIP(int object_id,local_var_type *local_vars,
+				int num_normal_parms,parm_node normal_parm_array[],
+				int num_name_parms,parm_node name_parm_array[]);
+
+int C_SetClassVar(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[]);
 
 void FuzzyCollapseString(char* pTarget, const char* pSource, int len);
 bool FuzzyBufferEqual(const char *s1,int len1,const char *s2,int len2);

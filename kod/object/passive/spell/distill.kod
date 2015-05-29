@@ -22,7 +22,7 @@ resources:
    Distill_icon_rsc = idistill.bgf
    Distill_desc_rsc = \
       "Allows the caster to distill their knowledge of a spell into liquid "
-      "form.  After casting, simply say the name of the spell you want to "
+      "form.  After casting, simply say the name of the spell you wish to "
       "turn into a potion.  "
       "Requires a ruby and ingredients for the potion.  "
 
@@ -30,7 +30,8 @@ resources:
       "With no spell to distill, the spell fizzles into nothing."
    Distill_bad_spell = "You cannot make a potion with those powers."
    Distill_do = \
-      "Through careful preperation of the ingredients you create %s%s."
+      "Through careful preparation of the ingredients you create %s%s."
+   Distill_inv_full_rsc = "Over encumbered, you drop %s%s at your feet."
    Distill_Dont_have_target = "You have no knowledge of %s."
    Distill_no_ingredient = "You do not have all the ingredients you need."
    Distill_Fail_Target = \
@@ -50,30 +51,31 @@ classvars:
    viSpell_level = 3
    viSchool = SS_JALA
    viMana = 20
-   viSpellExertion = 25
-   viCast_time = 30000   
+   viSpellExertion = 4
+   viCast_time = 30000
    viChance_To_Increase = 20
+   viMeditate_ratio = 50
 
 properties:
 
    % Base from which the factor by which the reagents of the target
-   %  spell are multiplied to get ingrediant requirments.  1 to 4
-   %  (based on spellpower) is subtracted from this number to get
-   %  the final multiple.
+   % spell are multiplied to get ingredient requirements.  1 to 4
+   % (based on spellpower) is subtracted from this number to get
+   % the final multiple.
    piMultipleBase = 8
 
 messages:
 
    ResetReagents()
-   {      
+   {
       plReagents = $;
       plReagents = Cons([&Ruby,1], plReagents);
-      
+
       return;
    }
-   
-   CanPayCosts(who = $, lTargets = $)
-   { 
+
+   CanPayCosts(who=$,lTargets=$)
+   {
       propagate;
    }
 
@@ -87,21 +89,21 @@ messages:
    "creation can be triggered if the person says the right thing."
    {
       Send(who,@MsgSendUser,#message_rsc=Distill_no_message);
-      
+
       return FALSE;
    }
 
    GetTranceTime(iSpellpower=0,who=$)
    {
       % Since this spell uses the trance, don't scale it down depending on
-      %  iSpellpower
+      % iSpellpower
       return viCast_time;
    }
 
-   PerformDistill(caster = $,oTarget = $)
+   PerformDistill(caster=$,oTarget=$)
    "Realistically, this will usually be called by SomethingSaidDuringTrance."
    {
-      If Send(self,@CanPayIngredients,#caster=caster,#oTarget=oTarget)
+      if Send(self,@CanPayIngredients,#caster=caster,#oTarget=oTarget)
       {
          Send(self,@PayIngredients,#caster=caster,#oTarget=oTarget);
          Send(self,@MakePotion,#caster=caster,#oTarget=oTarget);
@@ -109,11 +111,11 @@ messages:
          % Call this here since "cast spell" is actually a failure condition.
          Send(self,@ImproveAbility,#who=caster);
       }
-     
-      return;      
+
+      return;
    }
 
-   CanPayIngredients(caster = $, oTarget = $)
+   CanPayIngredients(caster=$,oTarget=$)
    "Do we have the ingredients?"
    {
       local lIngredients, lIngredient, cReagentClass, iNumNeeded, bFound,
@@ -134,7 +136,8 @@ messages:
          bFound = FALSE;
 
          lLists = [ Send(caster,@GetHolderActive),
-                    Send(caster,@GetHolderPassive)
+                    Send(caster,@GetHolderPassive),
+                    Send(caster,@GetReagentBagContents)
                   ];
 
          % Count # of reagent that user has; complain if not enough
@@ -187,7 +190,7 @@ messages:
       return TRUE;
    }
 
-   PayIngredients(caster = $, oTarget = $)
+   PayIngredients(caster=$,oTarget=$)
    "Now we're making a potion so remove the ingredients."
    {
       local num, reqstat, iability, lIngredient, lIngredients,
@@ -197,7 +200,7 @@ messages:
 
       lIngredients = Send(self,@GetIngredients,#caster=caster,
                           #oTarget=oTarget);
-      
+
       if NOT IsClass(caster,&Player)
       {
          return TRUE;
@@ -210,15 +213,21 @@ messages:
          iNumNeeded = Nth(lIngredient, 2);
          iLists = 1;
 
-         while iLists <= 2 
+         while iLists <= 3
          {
             if iLists = 1
             {
                lItems = Send(caster, @GetHolderActive);
             }
-            else
+
+            if iLists = 2
             {
-               lItems = Send(caster, @GetHolderPassive);
+               lItems = Send(caster,@GetHolderPassive);
+            }
+
+            if iLists = 3
+            {
+               lItems = Send(caster,@GetReagentBagContents);
             }
 
             % Since spell is cast, we can be cavalier about deleting things
@@ -233,7 +242,7 @@ messages:
 
                      break;
                   }
-                  else 
+                  else
                   {
                      Send(oUserObject,@Delete);
                      iNumNeeded = iNumNeeded - 1;
@@ -243,9 +252,9 @@ messages:
                      }
                   }
                }
-            }   
+            }
 
-            if iNumNeeded = 0 
+            if iNumNeeded = 0
             {
                % Found all we need
                break;
@@ -253,13 +262,13 @@ messages:
 
             iLists = iLists + 1;
          }
-      }      
+      }
 
       return TRUE;
    }
 
-   MakePotion(caster = $, oTarget = $)
-   "Determine the potion's atributes.  Make it.  Hold it."
+   MakePotion(caster=$,oTarget=$)
+   "Determine the potion's attributes.  Make it.  Hold it."
    {
       local oPotion, cPotionClass, iAbility, iSpellpower, iPotionPower,
             iLevel, iSkill, iGoBadTime;
@@ -293,16 +302,27 @@ messages:
       iGoBadTime = iGoBadTime * 24 * 60 * 60 * 60 * 1000;
 
       oPotion = Create(cPotionClass,#labelled=TRUE,#iSpellPower=iPotionPower,
-                       #gobadtime=igobadtime,#maker=caster,#ability=iSkill);
-           
-      Send(caster,@NewHold,#what=oPotion);
-      Send(caster,@MsgSendUser,#message_rsc=Distill_do,
-           #parm1=Send(oPotion,@GetIndef),#parm2=Send(oPotion,@GetName));
+                  #gobadtime=igobadtime,#maker=caster,#ability=iSkill);
 
+      if Send(caster,@ReqNewHold,#what=oPotion)
+      {
+         Send(caster,@NewHold,#what=oPotion);
+         Send(caster,@MsgSendUser,#message_rsc=Distill_do,
+               #parm1=Send(oPotion,@GetIndef),#parm2=Send(oPotion,@GetName));
+      }
+      else
+      {
+         Send(Send(caster,@GetOwner),@NewHold,#what=oPotion,
+               #new_row=Send(caster,@GetRow),#new_col=Send(caster,@GetCol),
+               #fine_row=(Send(caster,@GetFineRow)+2),
+               #fine_col=(Send(caster,@GetFineCol)+2));
+         Send(caster,@MsgSendUser,#message_rsc=Distill_inv_full_rsc,
+               #parm1=Send(oPotion,@GetIndef),#parm2=Send(oPotion,@GetName));
+      }
       return;
    }
 
-   GetIngredients(oTarget = $, caster = $)
+   GetIngredients(oTarget=$,caster=$)
    "Ask oTarget what its reagents are and multiply by proper factor, scale "
    "this to spellpower."
    {
@@ -317,7 +337,7 @@ messages:
       lReagents  = Send(oTarget,@GetReagents);
 
       for i in lReagents
-      {  
+      {
          cType  = Nth(i,1);
          iNumber = Nth(i,2) * iMultiple;
          lList = [ cType,iNumber ];
@@ -327,41 +347,46 @@ messages:
       return lIngredients;
    }
 
-   SomethingSaidDuringTrance(who=$,string=$,lTargets = $)
+   TranceBlocksSay()
+   {
+      return TRUE;
+   }
+
+   SomethingSaidDuringTrance(who=$,string=$,lTargets=$)
    "Check if string is a potion spell.  If it is make it the target."
    {
       local lSpells, name, oTarget, iAbility, iRand, i;
 
+      oTarget = $;
       lSpells = Send(SYS,@GetSpells);
       iRand = Random(1,100);
 
       % Use EVENT_STEER: don't print fizzle message
-      Send(who,@BreakTrance,#event=EVENT_STEER);  
+      Send(who,@BreakTrance,#event=EVENT_STEER);
 
       for i in lSpells
       {
          if StringEqual(string,Send(i,@GetName))
          {
             oTarget = i;
-
             break;
          }
       }
-      
+
       if oTarget = $
       {
          return;
       }
-      
+
       if Send(oTarget,@GetPotionClass) = $
       {
          Send(who,@MsgSendUser,#message_rsc=Distill_bad_spell);
 
          return;
       }
-    
+
       % Get percent in the target spell.  If not there or fail check bail and
-      %  print failure.
+      % print failure.
       iAbility = Send(who,@GetSpellAbility,
                       #spellnum=Send(oTarget,@GetSpellNum));
 
@@ -369,24 +394,28 @@ messages:
       {
          if iRand > iAbility
          {
-            % If pass check Start distilling.      
+            % If pass check Start distilling.
             Send(self,@PerformDistill,#caster=who,#oTarget=oTarget);
          }
          else
          {
             Send(who,@MsgSendUser,#message_rsc=Distill_fail_target,
-                 #parm1=Send(oTarget,@GetName));
+                  #parm1=Send(oTarget,@GetName));
          }
       }
       else
       {
          Send(who,@MsgSendUser,#message_rsc=Distill_Dont_have_target,
-              #parm1=Send(oTarget,@GetName));
+               #parm1=Send(oTarget,@GetName));
       }
-      
-      return;
-   }  
 
+      return;
+   }
+
+   SpellBannedInArena()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

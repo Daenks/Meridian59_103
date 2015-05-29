@@ -22,17 +22,20 @@ resources:
 
    duskrat_koc_name_rsc = "teotnapyijoa"
    duskrat_name_rsc = "dusk rat"
-   duskrat_icon_rsc = rat.bgf
+   duskrat_icon_rsc = duskrat.bgf
 
    duskrat_desc_rsc = \
-      "The air around the rat is dark and thick with evil.  The smell of death "
-      "and disease linger on its fetid breath as it darts towards its target.  "
-      "The origins of this abomination are unknown.  The only definite knowledge "
-      "known is of the deadly poison it carries in its bite."
+      "The air around the rat is dark and thick with evil.  The smell of "
+      "death and disease linger on its fetid breath as it darts towards "
+      "its target.  The origins of this abomination are unknown.  The only "
+      "definite knowledge known is of the deadly poison it carries "
+      "in its bite."
 
    duskrat_poisoned_add_rsc = \
       "As the poison travels to your head, you begin "
-      "to feel a little lightheaded.  The room spins around you."
+      "to feel a little light-headed.  The room spins around you."
+   duskrat_illusion_poisoned = \
+      "%s%s reels as poison from your attack courses through %s veins."
 
    duskrat_dead_icon_rsc = ratX.bgf
    duskrat_dead_name_rsc = "dead dusk rat"
@@ -57,14 +60,18 @@ classvars:
    viSpeed = SPEED_VERY_FAST
    viAttack_type = ATCK_WEAP_CLAW
    viAttributes = 0
-   viLevel = 50
+   viLevel = 90
    viDifficulty = 6
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
+   viVisionDistance = 11
    viKarma = -40
-   viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT | AI_MOVE_REGROUP
+   viDefault_behavior = \
+      AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT | AI_MOVE_REGROUP
    viLight_Penalty = 30
    viCashmin = 250
    viCashmax = 750
-   
+
    vrSound_hit = duskrat_sound_hit
    vrSound_miss = duskrat_sound_miss
    vrSound_aware = duskrat_sound_aware
@@ -79,15 +86,15 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [-30, -ATCK_SPELL_FIRE ], 
-                        [ 10, ATCK_WEAP_BLUDGEON ] ,
-                        [ 20, ATCK_WEAP_SLASH ]
+      plResistances = [ [-ATCK_SPELL_FIRE, -30 ],
+                        [ATCK_WEAP_BLUDGEON, 10 ],
+                        [ATCK_WEAP_SLASH, 20 ]
                       ];
 
       propagate;
    }
 
-   MonsterAttack(what = $)
+   MonsterAttack(what=$)
    {
       Send(self,@DoSlash);
 
@@ -128,8 +135,8 @@ messages:
 
       propagate;
    }
- 
-   NewOwner(what = $)
+
+   NewOwner(what=$)
    "Make room darker when present, about 2X darker than a ShadowBeast"
    {
       %New room
@@ -137,17 +144,17 @@ messages:
       {
          Send(what,@AddBaseLight,#amount=-viLight_Penalty);
       }
-      
+
       %Old room
       if poOwner <> $
       {
          Send(poOwner,@AddBaseLight,#amount=viLight_Penalty);
       }
-      
+
       propagate;
    }
 
-   HitSideEffect( what = $ )
+   HitSideEffect(what=$,who=$)
    {
       local oSpell;
 
@@ -155,20 +162,32 @@ messages:
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_POISON);
          Send(oSpell,@MakePoisoned,#who=what,
-              #lossrate=POISON_LOSSRATE,#duration=POISON_DURATION);
-         Send(what,@EffectSendUserDuration,#effect=EFFECT_WAVER,#duration=10000);
-         Send(what,@MsgSendUser,#message_rsc=duskrat_poisoned_add_rsc);
+               #lossrate=POISON_LOSSRATE,#duration=POISON_DURATION);
+
+         if IsClass(what,&Player)
+         {
+            Send(what,@EffectSendUserDuration,#effect=EFFECT_WAVER,
+                  #duration=10000);
+            Send(what,@MsgSendUser,#message_rsc=duskrat_poisoned_add_rsc);
+         }
+         
+         if who <> $
+         {
+            Send(who,@MsgSendUser,#message_rsc=duskrat_illusion_poisoned,
+                  #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
+                  #parm3=Send(what,@GetHisHer));
+         }
       }
 
       return;
    }
 
-   IsAlly(target = $)
+   IsAlly(target=$)
    {
       % Qor Characters?
       return FALSE;
    }
-   
+
    Killed()
    {
       % old room
@@ -176,7 +195,7 @@ messages:
       {
          Send(poOwner,@AddBaseLight,#amount=viLight_Penalty);
       }
-      
+
       propagate;
    }
 
@@ -186,10 +205,9 @@ messages:
       {
          Send(poOwner,@AddBaseLight,#amount=viLight_Penalty);
       }
-      
+
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -87,6 +87,7 @@ static handler_struct game_handler_table[] = {
 { BP_PLAY_MUSIC,        HandlePlayMusic },
 { BP_EFFECT,            HandleEffect },
 { BP_SHOOT,             HandleShoot },
+{ BP_RADIUS_SHOOT,      HandleRadiusShoot },
 { BP_LIGHT_AMBIENT,     HandleLightAmbient },
 { BP_LIGHT_PLAYER,      HandleLightPlayer },
 { BP_LIGHT_SHADING,     HandleLightShading },
@@ -98,6 +99,7 @@ static handler_struct game_handler_table[] = {
 { BP_SECTOR_MOVE,       HandleSectorMove },
 { BP_WALL_ANIMATE,      HandleWallAnimate },
 { BP_SECTOR_ANIMATE,    HandleSectorAnimate },
+{ BP_SECTOR_CHANGE,     HandleSectorChange },
 { BP_ADD_BG_OVERLAY,    HandleAddBackgroundOverlay },
 { BP_REMOVE_BG_OVERLAY, HandleRemoveBackgroundOverlay },
 { BP_CHANGE_BG_OVERLAY, HandleChangeBackgroundOverlay },
@@ -318,7 +320,7 @@ void ExtractDLighting(char **ptr, d_lighting *dLighting)
  *   ptr appropriately.  Place data in given object node.
  */
 void ExtractObject(char **ptr, object_node *item)
-{  
+{
    Extract(ptr, &item->id, SIZE_ID);
    if (IsNumberObj(item->id))
       Extract(ptr, &item->amount, SIZE_AMOUNT);
@@ -326,7 +328,17 @@ void ExtractObject(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
-   Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
+   Extract(ptr, &item->flags, 4);
+   Extract(ptr, &item->drawingtype, 1);
+   Extract(ptr, &item->minimapflags, 4);
+   Extract(ptr, &item->namecolor, 4);
+
+   BYTE temptype = 0;
+   Extract(ptr, &temptype, 1);
+   item->objecttype = (object_type)temptype;
+
+   Extract(ptr, &temptype, 1);
+   item->moveontype = (moveon_type)temptype;
 
    ExtractDLighting(ptr, &item->dLighting);
 
@@ -359,7 +371,17 @@ void ExtractObjectNoLight(char **ptr, object_node *item)
       item->amount = 0;
    Extract(ptr, &item->icon_res, SIZE_ID);
    Extract(ptr, &item->name_res, SIZE_ID);
-   Extract(ptr, &item->flags, 4); // includes drawfx_mask bits
+   Extract(ptr, &item->flags, 4);
+   Extract(ptr, &item->drawingtype, 1);
+   Extract(ptr, &item->minimapflags, 4);
+   Extract(ptr, &item->namecolor, 4);
+
+   BYTE temptype = 0;
+   Extract(ptr, &temptype, 1);
+   item->objecttype = (object_type)temptype;
+
+   Extract(ptr, &temptype, 1);
+   item->moveontype = (moveon_type)temptype;
 
    ExtractPaletteTranslation(ptr,&item->translation,&item->effect);
    item->normal_translation = item->translation;
@@ -1141,6 +1163,19 @@ Bool HandlePlayers(char *ptr,long len)
 
       Extract(&ptr, &obj->flags, SIZE_VALUE);
       len -= SIZE_VALUE;
+      Extract(&ptr, &obj->drawingtype, SIZE_TYPE);
+      len -= SIZE_TYPE;
+      Extract(&ptr, &obj->minimapflags, SIZE_VALUE);
+      Extract(&ptr, &obj->namecolor, SIZE_VALUE);
+      len -= 2 * SIZE_VALUE;
+
+      BYTE temptype = 0;
+      Extract(&ptr, &temptype, SIZE_TYPE);
+      obj->objecttype = (object_type)temptype;
+
+      Extract(&ptr, &temptype, SIZE_TYPE);
+      obj->moveontype = (moveon_type)temptype;
+      len -= 2 * SIZE_TYPE;
 
       list = list_add_item(list, obj);
    }
@@ -1168,9 +1203,22 @@ Bool HandleAddPlayer(char *ptr,long len)
 
    len = ExtractString(&ptr, len, name, MAXNAME);
    ChangeResource(obj->name_res, name);
-   
+
    Extract(&ptr, &obj->flags, SIZE_VALUE);
    len -= SIZE_VALUE;
+   Extract(&ptr, &obj->drawingtype, SIZE_TYPE);
+   len -= SIZE_TYPE;
+   Extract(&ptr, &obj->minimapflags, SIZE_VALUE);
+   Extract(&ptr, &obj->namecolor, SIZE_VALUE);
+   len -= 2 * SIZE_VALUE;
+
+   BYTE temptype = 0;
+   Extract(&ptr, &temptype, SIZE_TYPE);
+   obj->objecttype = (object_type)temptype;
+
+   Extract(&ptr, &temptype, SIZE_TYPE);
+   obj->moveontype = (moveon_type)temptype;
+   len -= 2 * SIZE_TYPE;
 
    if (len != 0)
    {
@@ -1285,6 +1333,9 @@ Bool HandlePlayWave(char *ptr,long len)
    Extract(&ptr, &col, sizeof(col));
    Extract(&ptr, &radius, sizeof(radius));
    Extract(&ptr, &maxvol, sizeof(maxvol));
+   
+   // client overrides any volume setting the server might think it should be
+   maxvol = config.sound_volume;
    
    GamePlaySound(rsc, obj, flags, (WORD)row, (WORD)col, (WORD)radius, (WORD)maxvol);
    return True;
@@ -1405,6 +1456,40 @@ Bool HandleShoot(char *ptr, long len)
    return True;
 }
 /********************************************************************/
+Bool HandleRadiusShoot(char *ptr, long len)
+{
+   Projectile *p = (Projectile *) ZeroSafeMalloc(sizeof(Projectile));
+   BYTE speed, range;
+   char *start = ptr;
+   ID source;
+   WORD flags;
+   WORD reserved;
+   BYTE number;
+
+   Extract(&ptr, &p->icon_res, SIZE_ID);
+   ExtractPaletteTranslation(&ptr,&p->translation,&p->effect);
+   ExtractAnimation(&ptr, &p->animate);
+
+   Extract(&ptr, &source, SIZE_ID);
+   Extract(&ptr, &speed, 1);
+   Extract(&ptr, &flags, SIZE_PROJECTILE_FLAGS);
+
+   // no longer sent by the server
+   //Extract(&ptr, &reserved, SIZE_PROJECTILE_RESERVED);
+   reserved = 0;
+   Extract(&ptr, &range, 1);
+   Extract(&ptr, &number, 1);
+   ExtractDLighting(&ptr, &p->dLighting);
+
+   len -= (ptr - start);
+   if (len != 0)
+      return False;
+
+   RadiusProjectileAdd(p, source, speed, flags, reserved, range, number);
+
+   return True;
+}
+/********************************************************************/
 Bool HandleLoadModule(char *ptr, long len)
 {
    ID name_rsc;
@@ -1513,7 +1598,20 @@ Bool HandleSectorAnimate(char *ptr, long len)
    ExtractAnimation(&ptr, &a);
    Extract(&ptr, &action, 1);
 
-   SectorChange(sector_num, &a, action);
+   SectorAnimate(sector_num, &a, action);
+   return True;
+}
+/********************************************************************/
+Bool HandleSectorChange(char *ptr, long len)
+{
+   WORD sector_num;
+   BYTE depth, scroll;
+
+   Extract(&ptr, &sector_num, 2);
+   Extract(&ptr, &depth,1);
+   Extract(&ptr, &scroll, 1);
+
+   SectorChange(sector_num, depth, scroll);
    return True;
 }
 /********************************************************************/

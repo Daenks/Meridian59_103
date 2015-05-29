@@ -92,70 +92,45 @@ do	\
 #endif
 
 #define CHUNK_XYZ_SET(_pChunk, _index, _x, _y, _z)	\
-do	\
-{	\
 	_pChunk->xyz[_index].x = _x;	\
 	_pChunk->xyz[_index].y = _y;	\
-	_pChunk->xyz[_index].z = _z;	\
-} while (0)
+	_pChunk->xyz[_index].z = _z;
 
 #define CHUNK_BGRA_SET(_pChunk, _index, _b, _g, _r, _a)	\
-do	\
-{	\
-	_pChunk->bgra[_index].b = _b;	\
+_pChunk->bgra[_index].b = _b;	\
 	_pChunk->bgra[_index].g = _g;	\
 	_pChunk->bgra[_index].r = _r;	\
-	_pChunk->bgra[_index].a = _a;	\
-} while (0)
+	_pChunk->bgra[_index].a = _a;
 
 #define CHUNK_ST0_SET(_pChunk, _index, _s, _t)	\
-do	\
-{	\
 	_pChunk->st0[_index].s = _s;	\
-	_pChunk->st0[_index].t = _t;	\
-} while (0)
+	_pChunk->st0[_index].t = _t;
 
 #define CHUNK_ST1_SET(_pChunk, _index, _s, _t)	\
-do	\
-{	\
 	_pChunk->st1[_index].s = _s;	\
-	_pChunk->st1[_index].t = _t;	\
-} while (0)
+	_pChunk->st1[_index].t = _t;
 
 #define CHUNK_INDEX_SET(_pChunk, _index, _value)	\
-do	\
-{	\
-	_pChunk->indices[_index] = _value;	\
-} while (0)
+	_pChunk->indices[_index] = _value;
 
 #define CACHE_UNLOCK(_pCache)	\
-do	\
-{	\
-	int	i;	\
-	IDirect3DVertexBuffer8_Unlock((_pCache)->xyzBuffer.pVBuffer);	\
-	for (i = 0; i < TEMP_NUM_STAGES; i++)	\
-		IDirect3DVertexBuffer8_Unlock((_pCache)->stBuffer[i].pVBuffer);	\
-	IDirect3DVertexBuffer8_Unlock((_pCache)->bgraBuffer.pVBuffer);	\
-	IDirect3DIndexBuffer8_Unlock((_pCache)->indexBuffer.pIBuffer);	\
-} while (0)
+	IDirect3DVertexBuffer9_Unlock((_pCache)->xyzBuffer.pVBuffer);	\
+	for (int i = 0; i < TEMP_NUM_STAGES; i++)	\
+		IDirect3DVertexBuffer9_Unlock((_pCache)->stBuffer[i].pVBuffer);	\
+	IDirect3DVertexBuffer9_Unlock((_pCache)->bgraBuffer.pVBuffer);	\
+	IDirect3DIndexBuffer9_Unlock((_pCache)->indexBuffer.pIBuffer);
 
 #define CACHE_BGRA_LOCK(_pCache)	\
-do	\
-{	\
-	IDirect3DVertexBuffer8_Lock((_pCache)->bgraBuffer.pVBuffer,	\
-                              0, 0, (BYTE **)&(_pCache)->bgraBuffer.u.pBGRA, \
-                              D3DLOCK_DISCARD);             \
-} while (0)
+	IDirect3DVertexBuffer9_Lock((_pCache)->bgraBuffer.pVBuffer,	\
+                              0, 0, (void **)&(_pCache)->bgraBuffer.u.pBGRA, \
+                              D3DLOCK_DISCARD);
 
 #define CACHE_BGRA_UNLOCK(_pCache)	\
-do	\
-{	\
-	IDirect3DVertexBuffer8_Unlock((_pCache)->bgraBuffer.pVBuffer);	\
-} while (0)
+	IDirect3DVertexBuffer9_Unlock((_pCache)->bgraBuffer.pVBuffer);
 
 typedef struct d3d_texture_cache_entry
 {
-	LPDIRECT3DTEXTURE8	pTexture;
+	LPDIRECT3DTEXTURE9	pTexture;
 	unsigned int		pDibID;
 	unsigned int		pDibID2;
 	int					size;
@@ -209,6 +184,7 @@ typedef struct d3d_render_chunk_new
 	Bool				(*pMaterialFctn)(struct d3d_render_chunk_new *pChunk);
 	d3d_render_cache	*pRenderCache;
 	u_int				flags;
+	BYTE				drawingtype;
 	u_int				curIndex;
 	u_int				startIndex;
 	u_int				numIndices;
@@ -239,13 +215,14 @@ typedef struct d3d_render_packet_new
 {
 	Bool				(*pMaterialFctn)(struct d3d_render_packet_new *pPacket,
 										d3d_render_cache_system *pCacheSystem);
-	LPDIRECT3DTEXTURE8	pTexture;
+	LPDIRECT3DTEXTURE9	pTexture;
 	PDIB				pDib;
 	BYTE				xLat0;
 	BYTE				xLat1;
 	int					effect;
 	int					numStages;
 	u_int				flags;
+	BYTE				drawingtype;
 	u_int				curChunk;
 	u_int				size;
 	d3d_render_chunk_new	renderChunks[PACKET_SIZE];
@@ -271,9 +248,9 @@ void				D3DCacheFill(d3d_render_cache_system *pCacheSystem, d3d_render_pool_new 
 								 int numStages);
 void				D3DCacheFlush(d3d_render_cache_system *pCacheSystem, d3d_render_pool_new *pPool,
 								  int numStages, int type);
-LPDIRECT3DTEXTURE8	D3DCacheTextureLookupSwizzled(d3d_texture_cache *pTextureCache, d3d_render_packet_new *pPacket,
+LPDIRECT3DTEXTURE9	D3DCacheTextureLookupSwizzled(d3d_texture_cache *pTextureCache, d3d_render_packet_new *pPacket,
 												 int effect);
-LPDIRECT3DTEXTURE8	D3DCacheTextureLookup(d3d_texture_cache *pTextureCache, d3d_render_packet_new *pPacket,
+LPDIRECT3DTEXTURE9	D3DCacheTextureLookup(d3d_texture_cache *pTextureCache, d3d_render_packet_new *pPacket,
 												 int effect);
 void				D3DCacheReset(d3d_render_cache *pRenderCache);
 void				D3DCacheXYZAdd(d3d_render_cache *pRenderCache, float x, float y, float z);

@@ -65,7 +65,7 @@ int TInfoControl::NbObjects = 0 ;
 // ------------
 //
 TInfoControl::TInfoControl (TWindow* parent, int id, unsigned _NumLines,
-							const char far* title, int x, int y, int w, int h,
+							const char* title, int x, int y, int w, int h,
 							TModule* module):
 	TControl(parent, id, title, x, y, w, h, module)
 {
@@ -101,7 +101,7 @@ TInfoControl::TInfoControl (TWindow* parent, int id, unsigned _NumLines,
 	curColor = DEF_COLOR;
 	curAlign = DEF_ALIGN;
 
-	SetCursor (GetApplication(), IDC_HAND);
+	SetCursor(GetApplication(), IDC_HANDC);
 }
 
 
@@ -137,7 +137,7 @@ void TInfoControl::Cleanup()
 	if ( TextLineTab != NULL )
 	{
 		// Free TextLines
-		for (int i = 0 ; i < NumLines ; i++)
+		for (unsigned int i = 0 ; i < NumLines ; i++)
 		{
 			if ( TextLineTab[i] != NULL )
 			{
@@ -172,7 +172,7 @@ void TInfoControl::SetupWindow ()
 	// Calculate font height on first time
 	if ( FontHeight == 0 )
 	{
-		TClientDC dc(HWindow);
+		TClientDC dc(Handle);
 		dc.SelectObject (*StaticFont);
 
 		TEXTMETRIC textMetric;
@@ -195,7 +195,7 @@ void TInfoControl::SetupWindow ()
 // TInfoControl
 // ------------
 //
-void TInfoControl::Paint (TDC& dc, BOOL erase, TRect& rect)
+void TInfoControl::Paint (TDC& dc, bool erase, TRect& rect)
 {
 	TControl::Paint(dc, erase, rect);
 
@@ -208,7 +208,7 @@ void TInfoControl::Paint (TDC& dc, BOOL erase, TRect& rect)
 	// Draw each text line
 	if ( TextLineTab != NULL )
 	{
-		for (int i = 0 ; i < NumLines ; i++)
+		for (unsigned int i = 0 ; i < NumLines ; i++)
 		{
 			if (TextLineTab[i] != NULL  && TextLineTab[i]->Text != NULL)
 			{
@@ -242,7 +242,7 @@ void TInfoControl::Paint (TDC& dc, BOOL erase, TRect& rect)
 // TInfoControl
 // ------------
 //
-UINT TInfoControl::EvNCHitTest (TPoint& /*point*/)
+UINT TInfoControl::EvNCHitTest (const TPoint& /*point*/)
 {
 	return HTCAPTION;
 }
@@ -252,10 +252,10 @@ UINT TInfoControl::EvNCHitTest (TPoint& /*point*/)
 // TInfoControl
 // ------------
 //
-BOOL TInfoControl::EvSetCursor (HWND hWndCursor, UINT hitTest,
+bool TInfoControl::EvSetCursor (HWND hWndCursor, UINT hitTest,
 								UINT /* mouseMsg */)
 {
-	if (hWndCursor == HWindow && hitTest == HTCAPTION && HCursor)
+	if (hWndCursor == Handle && hitTest == HTCAPTION && HCursor)
 	{
 		::SetCursor(HCursor);
 		return TRUE;
@@ -310,7 +310,7 @@ void TInfoControl::Insert (const char *format, ...)
 	if ( TextLineTab == NULL )
 	{
 		TextLineTab = (TextLine **)GetMemory( NumLines * sizeof (TextLine *));
-		for (int i = 0 ; i < NumLines ; i++)
+		for (unsigned int i = 0 ; i < NumLines ; i++)
 			TextLineTab[i] = NULL;
 	}
 
@@ -357,7 +357,7 @@ void TInfoControl::InsertAt (int linePos, const char *format, ...)
 }
 
 
-char far* TInfoControl::GetClassName ()
+char* TInfoControl::GetClassName ()
 {
 	return "WinDEU_InfoControl";
 }

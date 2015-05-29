@@ -49,10 +49,11 @@ classvars:
    viSchool = SS_FAREN
    viSpell_level = 1
    viMana = 8
-   viSpellExertion = 8
+   viSpellExertion = 1
    viCast_time = 10000
 
    viChance_To_Increase = 20
+   viMeditate_ratio = 10
 
 properties:
 
@@ -102,7 +103,7 @@ messages:
          % Cull everything that isn't "get-able" out of the list.
          if IsClass(oObj,&Item)
             AND send(who,@ReqNewHold,#what=oObj)
-            AND NOT IsClass(oObj,&Totem)
+            AND Send(oObj,@CanSweep)
          {
             lGoodItems = cons(oObj,lGoodItems);
          }                 
@@ -251,9 +252,8 @@ messages:
       Post(oRoom,@SomeoneSaid,#what=who,#string=rRant,#type=SAY_MESSAGE,
            #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
 
-      propagate;
+      return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -11,14 +11,14 @@
 UtilityFunctions
 
 constants:
-   
+
    include blakston.khd
    include protocol.khd
-   
+
 properties:
 
    plTemp = $
-   
+
 messages:
 
    UtilGoNearSquare(what = $,where = $,new_row = $,new_col = $,do_move = TRUE,
@@ -33,14 +33,15 @@ messages:
 
       if what = $ OR where = $ OR new_row = $ OR new_col = $
       {
-         debug("Got $ what,where,new_row,or new_col",what,where,new_row,new_col);
+         Debug("Got $ what,where,new_row,or new_col",
+               what,where,new_row,new_col);
 
          return FALSE;
       }
 
       if NOT IsClass(where,&Room)
       {
-         debug("Got non-room destination",where);
+         Debug("Got non-room destination",where);
 
          return FALSE;
       }
@@ -72,7 +73,7 @@ messages:
                   {
                      return TRUE;
                   }
-             
+
                   j = j + 1;
                }
             }
@@ -113,21 +114,23 @@ messages:
    UtilGoToSquare(what = $,where = $,new_row = $,new_col = $,new_angle = $,
              fine_row = FINENESS/2,fine_col = FINENESS/2,do_move = TRUE)
    "Called only by UtilGoNearSquare.\n"
-   "<new_row> and <new_col> MUST be inside coords of <where>,"
-   "otherwise the room move could go to adjacent rooms!! blah."
-   "If <new_angle> = $, then no angle is passed to rooms (will leave old one if in room)."
+   "<new_row> and <new_col> MUST be inside coords of <where>, otherwise "
+   "the room move could go to adjacent rooms!! blah. If <new_angle> = $, "
+   "then no angle is passed to rooms (will leave old one if in room)."
    {
       % MOVE in same room
       if Send(what,@GetOwner) = where
       {
          if IsClass(what,&User)
-            OR Send(where,@ReqSomethingMoved,#what=what,#new_row=new_row,
-                    #new_col=new_col)
+            OR Send(where,@ReqSomethingMoved,#what=what,
+                     #new_row=new_row,
+                     #new_col=new_col)
          {
             if do_move
             {
-               Send(where,@SomethingMoved,#what=what,#new_row=new_row,#new_col=new_col,
-                    #fine_row=fine_row,#fine_col=fine_col);
+               Send(where,@SomethingMoved,#what=what,
+                     #new_row=new_row,#new_col=new_col,
+                     #fine_row=fine_row,#fine_col=fine_col);
                if new_angle <> $
                {
                   Send(where,@SomethingTurned,#what=what,#new_angle=new_angle);
@@ -142,32 +145,33 @@ messages:
       {
          if Send(where,@ReqNewHold,#what=what,#new_row=new_row,#new_col=new_col)
             AND (IsClass(what,&User)
-                 OR Send(where,@ReqSomethingMoved,#what=what,#new_row=new_row,
-                         #new_col=new_col,#entering_room=TRUE))             
+              OR Send(where,@ReqSomethingMoved,#what=what,#new_row=new_row,
+                        #new_col=new_col,#entering_room=TRUE))
          {
             if do_move
             {
                if new_angle <> $
                {
-                  Send(where,@NewHold,#what=what,#new_row=new_row,#new_col=new_col,
-                       #new_angle=new_angle,#fine_row=fine_row,#fine_col=fine_col);
+                  Send(where,@NewHold,#what=what,#new_row=new_row,
+                        #new_col=new_col,#new_angle=new_angle,
+                        #fine_row=fine_row,#fine_col=fine_col);
                }
                else
                {
                   % move with no angle data, so room uses default
-                  Send(where,@NewHold,#what=what,#new_row=new_row,#new_col=new_col,
-                       #fine_row=fine_row,#fine_col=fine_col);
+                  Send(where,@NewHold,#what=what,#new_row=new_row,
+                        #new_col=new_col,#fine_row=fine_row,#fine_col=fine_col);
                }
-			   
-			   % make sure the position is updated
-			   Send(where,@SomethingMoved,#what=what,#new_row=new_row,#new_col=new_col,
-                    #fine_row=fine_row,#fine_col=fine_col);
+
+               % make sure the position is updated
+               Send(where,@SomethingMoved,#what=what,#new_row=new_row,
+                     #new_col=new_col,#fine_row=fine_row,#fine_col=fine_col);
             }
 
             return TRUE;
          }
       }
-      
+
       return FALSE;
    }
 
@@ -196,7 +200,7 @@ messages:
       {
          return what;
       }
-      
+
       return Send(self,@UtilGetRoomRecurse,#what=Send(what,@GetOwner));
    }
 
@@ -272,22 +276,74 @@ messages:
          return TRUE;
       }
 
+      % These translations are red->color while blue->skin and
+      % red->black while blue->white and vice versa, or
+      % red->black/blue->black.
+      if Xlat = XLAT_REDTOBLACK
+         OR Xlat = XLAT_BLUETOBLACK
+         OR (Xlat >= PT_REDTODGREEN1
+            AND Xlat <= PT_BLBLK_REDWHT)
+      {
+         return TRUE;
+      }
+
       return FALSE;
    }
 
    EncodeTwoColorXLAT(color1 = 0, color2 = 0)
-   "This is used by guild shields and player art to color translate a red/blue bgf "
-   "into the correct colors."
+   "This is used by guild shields and player art to color translate a "
+   "red/blue bgf into the correct colors."
    {
       local iCompound;
 
       if color1 >  XLAT_TO_SKY
       {
+         % Handle new black/white translations. These include red->black and
+         % red->black while blue->skin, red->black while blue->white and
+         % vice versa. We include them here so they can be used to translate
+         % guild shields and other items correctly. These single two-color
+         % XLATS are sent as color1, with no color2 added (raw value returned).
+         if color1 = XLAT_REDTOBLACK
+            OR color1 = XLAT_BLUETOBLACK
+            OR color1 = PT_REDBLK_BLWHT
+            OR color1 = PT_BLBLK_REDWHT
+         {
+            return color1;
+         }
+
+         % We might need to modify these based on a given skin color.
+         if color2 >= XLAT_TO_SKIN1
+            AND color2 <= XLAT_TO_SKIN4
+         {
+            if (color1 >= PT_REDTODGREEN1
+                  AND color1 <= PT_REDTODGREEN3)
+            {
+               return 121 + color2;
+            }
+            if (color1 >= PT_REDTOBLACK1
+                  AND color1 <= PT_REDTOBLACK3)
+            {
+               return 124 + color2;
+            }
+            if (color1 >= PT_REDTODKBLACK1
+                  AND color1 <= PT_REDTODKBLACK3)
+            {
+               return 127 + color2;
+            }
+         }
+
+         % Skin colors handled, return the raw value for new two-color XLATs.
+         if color1 >= PT_REDTODGREEN1
+            AND color1 <= PT_REDTODKBLACK3
+         {
+            return color1;
+         }
+
          if color2 < XLAT_TO_SKIN1
             OR color2 > XLAT_TO_SKIN4
          {
-            Debug("This color1 can only be paired with skin color2 colors. color1 =",
-                  color1, " color2 = ", color2);
+            Debug("This color1 can only be paired with skin color2 ",
+                  "colors. color1 =",color1, " color2 = ", color2);
 
             return XLAT_BASE_VALUE;
          }
@@ -303,10 +359,9 @@ messages:
          {
             iCompound = 124 + color2;  return iCompound;
          }
+      }
 
-      }    
-
-      iCompound = XLAT_BASE_VALUE + (11 * color1) + (color2);      
+      iCompound = XLAT_BASE_VALUE + (11 * color1) + (color2);
 
       return iCompound;
    }
@@ -317,12 +372,19 @@ messages:
       {
          return XLAT_TO_DGREEN;
       }
-      
+
       if Xlat > 124 AND Xlat < 128
       {
          return XLAT_TO_BLACK;
       }
-      
+
+      if (Xlat > 127 AND Xlat < 133)
+         OR Xlat = XLAT_REDTOBLACK
+         OR Xlat = XLAT_BLUETOBLACK
+      {
+         return Xlat;
+      }
+
       Xlat = Xlat - XLAT_BASE_VALUE;
       Xlat = Xlat / 11;
 
@@ -331,7 +393,7 @@ messages:
 
    DecodeSecondaryColor(Xlat = 0)
    {
-      if Xlat > 120 AND Xlat < 128
+      if Xlat > 120 AND Xlat < 131
       {
          Xlat = xlat - 121;
          xlat = xlat mod 3;
@@ -343,6 +405,14 @@ messages:
          {
             return xlat;
          }
+      }
+
+      if Xlat = PT_REDBLK_BLWHT
+         OR Xlat = PT_BLBLK_REDWHT
+         OR Xlat = XLAT_REDTOBLACK
+         OR Xlat = XLAT_BLUETOBLACK
+      {
+         return Xlat;
       }
 
       Xlat = Xlat - XLAT_BASE_VALUE;
@@ -377,83 +447,87 @@ messages:
 
       return lCopy;
    }
-   
+
    ListClass(lSource = $)
    {
       local i, lObjects;
-	  lObjects = Send(self,@ListCopy,#source=lSource);
+
+      lObjects = Send(self,@ListCopy,#source=lSource);
       for i in lSource
-	  {
-		Debug("create object", GetClass(i));
-		if (isClass(i,&NumberItem))
-		{
-		   %Debug(GetClass(i),Send(i,@GetNumber));
-		   Debug("create object",GetClass(i),"number int",Send(i,@GetNumber),"tl = %");
-		}
-	  }
-	  return;
+      {
+         Debug("create object", GetClass(i));
+         if (IsClass(i,&NumberItem))
+         {
+            %Debug(GetClass(i),Send(i,@GetNumber));
+            Debug("create object",GetClass(i),"number int",
+                  Send(i,@GetNumber),"tl = %");
+         }
+      }
+
+      return;
    }
-   
+
    CreateTempList()
    {
       plTemp = [ ];
-	  return;
+
+      return;
    }
-   
+
    AddTempList(oItem = $)
    {
-	  if plTemp <> $
-	  {
-	     plTemp = Cons(oItem,plTemp);
-	  }
-	  else
-	  {
-	     plTemp = Cons(oItem,[ ]);
-	  }
-	  return;
+      if plTemp <> $
+      {
+         plTemp = Cons(oItem,plTemp);
+      }
+      else
+      {
+         plTemp = Cons(oItem,[ ]);
+      }
+
+      return;
    }
-   
+
    DecodeSpellNum(compound = 0)
    {
-      return abs(compound) / 100;
+      return Abs(compound) / 100;
    }
-   
+
    DecodeSpellAbility(compound = 0)
    {
-      return abs(compound) mod 100;
+      return Abs(compound) MOD 100;
    }
-   
+
    GetSpellCommands(plSpells = $)
    {
       local i,lSpells;
-	  lSpells = Send(self,@ListCopy,#source=plSpells);
-	  for i in lSpells
-	  { %AdminSetSpell(num = 0, ability = 0, add = 0)
-	     Debug("send o % AdminSetSpell num int",
-		 Send(self,@DecodeSpellNum,#compound=i),"ability int",
-		 Send(self,@DecodeSpellAbility,#compound=i));
-	  }
-	  return;
+
+      lSpells = Send(self,@ListCopy,#source=plSpells);
+      for i in lSpells
+      {
+         %AdminSetSpell(num = 0, ability = 0, add = 0)
+         Debug("send o % AdminSetSpell num int",
+               Send(self,@DecodeSpellNum,#compound=i),"ability int",
+               Send(self,@DecodeSpellAbility,#compound=i));
+      }
+
+      return;
    }
-   
-   
-   
 
    SortUsersByPlayTime()
    {
       local i, lUsers, lFinal, iHigh, iIndex;
 
       lUsers = Send(self,@ListCopy,#source=Send(SYS,@GetUsers));
-      
       lFinal = $;
 
       % First, let's delete any deadweight from the list.
       % People who never logged on get nothing.
       for i in lUsers
       {
-         if Send(i,@GetTimeLoggedIn) < 1 
-         {  
-            debug(Send(i,@Getname),"is dead weight! No goodies!"); 
+         if Send(i,@GetTimeLoggedIn) < 1
+         {
+            Debug(Send(i,@GetName),"is dead weight! No goodies!");
             lUsers = DelListElem(lUsers,i); 
          }
       }
@@ -467,17 +541,17 @@ messages:
          iIndex = $;
 
          for i in lUsers
-         {              
+         {
             if Send(i,@GetTimeLoggedIn) > iHigh
             {
                iIndex = i;
                iHigh = Send(i,@GetTimeLoggedIn);
             }
          }
-         
+
          if iIndex = $ OR iHigh = 0
          {
-            debug("SORT WENT WAY BAD!");
+            Debug("SORT WENT WAY BAD!");
 
             return $;
          }
@@ -501,7 +575,18 @@ messages:
       return retVal;
    }
 
+   CreateSpellBook(SID=SID_FIREBALL,mana=1)
+   "Creates a monster spellbook with a single spell."
+   {
+      return [[SID,mana,100]];
+   }
+
+   TryLook()
+   "Placeholder in case client sends a wrong object ID in UserLook. "
+   "May accidentally use the object number for a UtilityFunction."
+   {
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

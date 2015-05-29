@@ -1,0 +1,184 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MarkOfDishonor is Debuff
+
+constants:
+
+   include blakston.khd
+
+   DISHONOR_LOWEST_VIGOR_REST_THRESHOLD = 10
+   DISHONOR_VIGOR_LOSS = 40
+
+resources:
+
+   MarkOfDishonor_name_rsc = "mark of dishonor"
+   MarkOfDishonor_icon_rsc = imarkdis.bgf
+   MarkOfDishonor_desc_rsc = \
+      "Allows caster to cast Shal'ille's displeasure upon a target.  Will "
+      "prevent target's life force from exceeding the body's maximum.  For "
+      "evil targets, Shal'ille will cause a loss of vigor.  "
+      "Requires an emerald to cast."
+
+   MarkOfDishonor_sound = smarkdis.wav
+
+   MarkOfDishonor_start = \
+      "Shal'ille singles you out for punishment.  Your life energies ebb."
+   MarkOfDishonor_stop  = \
+      "Shal'ille's attention turns to more pressing matters."
+   MarkOfDishonor_success = "The eyes of Shal'ille turn towards %s%s."
+   MarkOfDishonor_already_enchanted = "%s%s is already marked."
+   MarkOfDishonor_no_self = \
+      "You cannot cast mark of dishonor upon yourself; if you were truly "
+      "dishonorable you would not be able to cast Shal'ille's spells."
+
+
+classvars:
+
+   vrName = MarkOfDishonor_name_rsc
+   vrIcon = MarkOfDishonor_icon_rsc
+   vrDesc = MarkOfDishonor_desc_rsc
+
+   vrAlreadyEnchanted = MarkOfDishonor_already_enchanted
+   vrEnchantment_On = MarkOfDishonor_start
+   vrEnchantment_Off = MarkOfDishonor_stop
+   vrSuccess = MarkOfDishonor_success
+   vrNoSelfTarget = MarkOfDishonor_no_self
+
+   viSchool = SS_SHALILLE
+   viSpell_num = SID_MARK_OF_DISHONOR
+   viSpell_level = 4
+   viMana = 12
+   viChance_To_Increase = 25
+   viMeditate_ratio = 40
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = MarkOfDishonor_sound
+   vbCastable_in_HappyLand = FALSE
+
+properties:
+
+   piBaseDuration = 120000
+   piSpellPowerModifier = 1800
+   piDeviation = 10
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Emerald,1],plReagents);
+
+      return;
+   }
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
+   {
+      local oTarget;
+
+      oTarget = First(lTargets);
+
+      % Spell effects
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,#iSpellPower=iSpellPower,
+           #iDuration=Send(self,@GetDuration,#iSpellPower=iSpellPower));
+
+      propagate;
+   }
+
+   DoSpell(what=$,oTarget=$,iDuration=0,iSpellPower=0)
+   {
+      local iKarma, iVigorRestThreshold, iVigorRestThresholdChange;
+
+      if IsClass(oTarget,&Player)
+      {
+         iKarma = Send(oTarget,@GetKarma);
+         iVigorRestThresholdChange = 0;
+
+         % Shal'ille only takes vigor from evil people.
+         if iKarma < 0
+         {
+            iVigorRestThreshold = Send(oTarget,@GetVigorRestThreshold);
+            iVigorRestThresholdChange = iKarma * (iVigorRestThreshold -
+                                      DISHONOR_LOWEST_VIGOR_REST_THRESHOLD)
+                                      / MAX_EVIL;
+
+            % Make sure we aren't going to lower target's VigorRestThreshold
+            % below 10, otherwise we could end up increasing the player's
+            % VigorRestThreshold (see player.kod for reason why)
+            if (iVigorRestThreshold - iVigorRestThresholdChange) < 10
+            {
+               iVigorRestThresholdChange = iVigorRestThreshold - 10;
+            }
+
+            Send(oTarget,@AddExertion,#amount=200000);
+            Send(oTarget,@SetVigorRestThreshold,
+                  #amount=iVigorRestThreshold-iVigorRestThresholdChange);
+         }
+
+         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,
+               #state=iVigorRestThresholdChange);
+         Send(oTarget,@MsgSendUser,#message_rsc=MarkOfDishonor_start);
+         Send(what,@MsgSendUser,#message_rsc=MarkOfDishonor_success,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+         % Make sure hps aren't over maximum.  Post this so enchantment is finished.
+         Post(oTarget,@NewHealth);
+      }
+      else
+      {
+            % EnterStateWait will make the monster stop aggro players and put
+            % them on wait-state waiting to aggro again
+            % Duration against monsters is 1/6 that against players
+            iDuration = iDuration/6;
+            Send(oTarget,@EnterStateWait,#delay=iDuration);
+            Send(oTarget,@StartEnchantment,#what=self,#time=iDuration);
+            Send(what,@MsgSendUser,#message_rsc=MarkOfDishonor_success,
+                  #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+      }
+
+      propagate;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDuration;
+
+      % Duration calculation now uses class properties, modifiable in game
+      % By default, base duration 2 min, total time 2-5 min using 1800x
+      % spellpower multiplier, with the final duration 90-100% max
+
+      iDuration = (piBaseDuration + (iSpellPower+1)*piSpellPowerModifier);
+      iDuration = Random(iDuration*(100-piDeviation)/100,iDuration);
+
+      return iDuration;
+   }
+
+   EndEnchantment(who=$,state=0,report=TRUE)
+   {
+      local iVigorRestThreshold;
+
+      % If we end enchantment on a player, reset VigorRestThreshold
+      if isClass(who,&Player)
+      {
+         iVigorRestThreshold = Send(who,@GetVigorRestThreshold);
+         Send(who,@SetVigorRestThreshold,#amount=iVigorRestThreshold+state);
+
+         if report
+         {
+            Send(who,@MsgSendUser,#message_rsc=MarkOfDishonor_stop);
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

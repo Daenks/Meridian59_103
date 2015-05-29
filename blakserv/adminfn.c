@@ -94,7 +94,7 @@ void AdminMail(int session_id,admin_parm_type parms[],
 void AdminPage(int session_id,admin_parm_type parms[],
                int num_blak_parm,parm_node blak_parm[]);
 
-void AdminShowStatus(int seFssion_id,admin_parm_type parms[],
+void AdminShowStatus(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
 void AdminShowMemory(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
@@ -209,6 +209,8 @@ void AdminCreateAutomated(int session_id,admin_parm_type parms[],
                           int num_blak_parm,parm_node blak_parm[]);
 void AdminRecreateAutomated(int session_id,admin_parm_type parms[],
                             int num_blak_parm,parm_node blak_parm[]);
+void AdminAddUserToEachAccount(int session_id,admin_parm_type parms[],
+							   int num_blak_parm,parm_node blak_parm[]);
 void AdminCreateUser(int session_id,admin_parm_type parms[],
                      int num_blak_parm,parm_node blak_parm[]);
 void AdminCreateAdmin(int session_id,admin_parm_type parms[],
@@ -410,6 +412,7 @@ admin_table_type admin_create_table[] =
 	{ AdminCreateResource,{R,N},   F, A|M, NULL, 0, "resource","Create resource string" },
 	{ AdminCreateTimer,   {I,S,I,N},F,A|M, NULL, 0, "timer","Create timer for obj id, message, milli" },
 	{ AdminCreateUser,    {I,N},   F, A|M, NULL, 0, "user",    "Create user object by account id" },
+	{ AdminAddUserToEachAccount, {N},   F, A|M, NULL, 0, "useroneachaccount", "Add one user object to each account" }
 };
 #define LEN_ADMIN_CREATE_TABLE (sizeof(admin_create_table)/sizeof(admin_table_type))
 
@@ -2000,7 +2003,6 @@ void AdminShowEachSysTimer(systimer_node *st)
 	case SYST_INTERFACE_UPDATE : s = "Update interface"; break;
 	case SYST_RESET_TRANSMITTED : s = "Reset TX count"; break;
 	case SYST_RESET_POOL : s = "Reset buffer pool"; break;
-	case SYST_MYSQL_CONNECT : s = "Check MySQL conn"; break;
 	default : s = "Unknown"; break;
 	}
 	aprintf("%i %-18s %-15s ",st->systimer_type,s,RelativeTimeStr(st->period));
@@ -2064,6 +2066,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case PARSESTRING : strcpy(c_name, "ParseString"); break;
 		case SETSTRING : strcpy(c_name, "SetString"); break;
 		case CREATESTRING : strcpy(c_name, "CreateString"); break;
+		case ISSTRING : strcpy(c_name, "IsString"); break;
 		case STRINGSUBSTITUTE : strcpy(c_name, "StringSubstitute"); break;
 		case APPENDTEMPSTRING : strcpy(c_name, "AppendTempString"); break;
 		case CLEARTEMPSTRING : strcpy(c_name, "ClearTempString"); break;
@@ -2073,12 +2076,17 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case CREATETIMER : strcpy(c_name, "CreateTimer"); break;
 		case DELETETIMER : strcpy(c_name, "DeleteTimer"); break;
 		case GETTIMEREMAINING : strcpy(c_name, "GetTimeRemaining"); break;
+		case ISTIMER : strcpy(c_name, "IsTimer"); break;
 		case CREATEROOMDATA : strcpy(c_name, "CreateRoomData"); break;
+		case FREEROOM : strcpy(c_name, "FreeRoom"); break;
 		case ROOMDATA : strcpy(c_name, "RoomData"); break;
 		case CANMOVEINROOM : strcpy(c_name, "CanMoveInRoom"); break;
 		case CANMOVEINROOMFINE : strcpy(c_name, "CanMoveInRoomFine"); break;
+		case CANMOVEINROOMHIGHRES : strcpy(c_name, "CanMoveInRoomHighRes"); break;
+		case GETHEIGHT : strcpy(c_name, "GetHeight"); break;
 		case MINIGAMENUMBERTOSTRING : strcpy(c_name, "MinigameNumberToString"); break;
 		case MINIGAMESTRINGTONUMBER : strcpy(c_name, "MinigameStringToNumber"); break;
+		case APPENDLISTELEM : strcpy(c_name, "AppendListElem"); break;
 		case CONS : strcpy(c_name, "Cons"); break;
 		case FIRST : strcpy(c_name, "First"); break;
 		case REST : strcpy(c_name, "Rest"); break;
@@ -2088,6 +2096,8 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case ISLIST : strcpy(c_name, "IsList"); break;
 		case SETFIRST : strcpy(c_name, "SetFirst"); break;
 		case SETNTH : strcpy(c_name, "SetNth"); break;
+		case SWAPLISTELEM : strcpy(c_name, "SwapListElem"); break;
+		case INSERTLISTELEM : strcpy(c_name, "InsertListElem"); break;
 		case DELLISTELEM : strcpy(c_name, "DelListElem"); break;
 		case FINDLISTELEM : strcpy(c_name, "FindListElem"); break;
 		case GETTIME : strcpy(c_name, "GetTime"); break;
@@ -2103,6 +2113,9 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case ISOBJECT : strcpy(c_name, "IsObject"); break;
 		case RECYCLEUSER : strcpy(c_name, "RecycleUser"); break;
 		case RANDOM : strcpy(c_name, "Random"); break;
+		case RECORDSTAT : strcpy(c_name, "RecordStat"); break;
+		case GETSESSIONIP : strcpy(c_name, "GetSessionIP"); break;
+		case SETCLASSVAR : strcpy(c_name, "SetClassVar"); break;
 			
 		default : 
 			sprintf(c_name,"Unknown (%i)",max_index);
@@ -3508,6 +3521,12 @@ void AdminRecreateAutomated(int session_id,admin_parm_type parms[],
 	}
 	AdminShowOneUser(u);
 	
+}
+void AdminAddUserToEachAccount(int session_id,admin_parm_type parms[],
+							   int num_blak_parm,parm_node blak_parm[])                         
+{
+	ForEachAccount(CreateUseronAccount);
+	aprintf("Added one user to each account.\n");
 }
 
 void AdminCreateUser(int session_id,admin_parm_type parms[],

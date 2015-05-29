@@ -22,7 +22,9 @@ resources:
    Spellitem_label_name_rsc = "generic spellitem"
    Spellitem_icon_rsc = scr07.bgf
    Spellitem_desc_rsc = \
-      "This is the generic spellitem and I can think of no good reason for you to have it.  You have been reported to the authorities.  prepare to die!!!!!"
+      "This is the generic spellitem and I can think of no good reason for "
+      "you to have it.  You have been reported to the authorities.  prepare "
+      "to die!!!!!"
    Spellitem_broken_desc = "Generic broken description"
    Spellitem_Broken = "This is the generic broken message."
    Spellitem_fails = "Generic failure message."
@@ -39,6 +41,10 @@ resources:
    SpellItem_journeyman_rsc = ", Journeyman"
    SpellItem_master_rsc = ", Master"
 
+   combine_spell_item_rsc = \
+      "You combine the %s with your current stock, for a total "
+      "of %d uses with %d power."
+
 classvars:
 
    vrLabelName = Spellitem_label_name_rsc
@@ -53,18 +59,17 @@ classvars:
 
    viUse_type = ITEM_SINGLE_USE
 
-   viObject_flags = APPLY_YES | GETTABLE_YES
    vrIcon = Spellitem_icon_rsc
    vrDesc = Spellitem_desc_rsc
 
    viValue_average = 120
-   viWeight = 3
-   viBulk = 5
+   viWeight = 2
+   viBulk = 2
 
    vbFailSafe = FALSE
 
    % Set to true for items you want to have delete themselves when they run out of charges.
-   vbNoBrokenView = FALSE  
+   vbNoBrokenView = FALSE
 
    viGround_group = 2
    viInventory_group = 1
@@ -75,9 +80,10 @@ classvars:
 properties:
 
    vrName = Spellitem_name_rsc
+   viObject_flags = OF_GETTABLE
 
    % Used by the item creation spells when making a spell item at a set power.
-   piSpellPower = $   
+   piSpellPower = $
    pbBad = FALSE
    ptGoBadTimer = $
    piGoBadTime = GO_BAD_TIME
@@ -90,11 +96,15 @@ properties:
    pbDisabled = FALSE
 
    % If true, user has to pass spell's karma check.  Otherwise, can always cast.
-   pbCheckKarma = FALSE
+   pbCheckKarma = TRUE
+
+   % If true, item can be split.
+   pbCanSplit = TRUE
 
 messages:
 
-   Constructor(labelled=FALSE,model=$,iSpellpower=$,gobadtime=$,maker=$,Ability=$)
+   Constructor(labelled=FALSE,model=$,iSpellpower=$,gobadtime=$,
+               maker=$,Ability=$)
    {
       local oItemAtt;
 
@@ -129,22 +139,24 @@ messages:
 
          Send(self,@StartGoBadTimer);
       }
-      
+
       if maker <> $
       {
          pbMade = TRUE;
+         pbCheckKarma = FALSE;
          poMaker = maker;
 
-         piSkill = bound(((Ability / 25) + 1),1,4);
-         if piSkill = 1 { pilabelcolor = XLAT_TO_GREEN; }
-         if piSkill = 2 { pilabelcolor = XLAT_TO_YELLOW; }
-         if piSkill = 3 { pilabelcolor = XLAT_TO_PURPLE; }
-         if piSkill = 4 { pilabelcolor = XLAT_TO_RED; }
+         piSkill = Bound(((Ability / 25) + 1),1,4);
+         if piSkill = 1 { piLabelColor = XLAT_TO_GREEN; }
+         if piSkill = 2 { piLabelColor = XLAT_TO_YELLOW; }
+         if piSkill = 3 { piLabelColor = XLAT_TO_PURPLE; }
+         if piSkill = 4 { piLabelColor = XLAT_TO_RED; }
       }
 
       if viColor <> $
       {
-         piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=viColor,#color2=pilabelcolor);
+         piItem_flags = Send(SYS,@EncodeTwoColorXLAT,
+                              #color1=viColor,#color2=piLabelColor);
       }
 
       if iSpellpower <> $
@@ -152,7 +164,7 @@ messages:
          piSpellPower = iSpellPower;
       }
 
-      piHits = random(viHits_init_min,viHits_init_max);
+      piHits = Random(viHits_init_min,viHits_init_max);
 
       propagate;
    }
@@ -169,8 +181,13 @@ messages:
 
    AppendDesc()
    {
+      local iSchool;
+
+      iSchool = Send(Send(SYS,@FindSpellByNum,#num=viSpellEffect),@GetSchool);
       % Tell player if this has karma restrictions
       if pbCheckKarma
+         AND (iSchool = SS_SHALILLE
+            OR iSchool = SS_QOR)
       {
          AppendTempString("\n\n");
          AppendTempString(vrKarmaDesc);
@@ -179,20 +196,22 @@ messages:
       propagate;
    }
 
-   ReqNewApply(what = $,apply_on = $)
+   ReqNewApply(what=$,apply_on=$)
    {
       % Prevent use if you can't fight.
       if (IsClass(what,&Player))
          AND (Send(what,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT))
          OR pbDisabled
+         OR (IsClass(apply_on,&Player)
+             AND Send(apply_on,@IsInCannotInteractMode))
       {
          return FALSE;
       }
 
       return TRUE;
    }
-   
-   CastSpell(what = $, apply_on = $)
+
+   CastSpell(what=$,apply_on=$)
    "Casts the spell set by the spell object"
    {
       local oSpell,iSpellPower,iRand,iInt,lTargets;
@@ -210,37 +229,36 @@ messages:
       }
 
       % Karma check?
-      if pbCheckKarma AND NOT Send(oSpell, @KarmaCheck, #who = poOwner)
+      if pbCheckKarma AND NOT Send(oSpell,@KarmaCheck,#who=poOwner)
       {
-         Debug("user karma = ", Send(poOwner, @GetKarma), " spell needs = ",
-             Send(oSpell, @GetLevel));
-         Post(what, @MsgSendUser, #message_rsc = SpellItem_bad_karma,
-              #parm1 = Send(self, @GetDef),
-              #parm2 = Send(self, @GetName));
+         Post(what,@MsgSendUser,#message_rsc=SpellItem_bad_karma,
+               #parm1=Send(self,@GetDef),
+               #parm2=Send(self,@GetName));
+
          return;
       }
 
       if piSpellPower = $
-      {   
+      {
          iSpellPower = random(piMinSpellPower,piMaxSpellPower);
       }
       else
       {
          iSpellpower = piSpellpower;
       }
-      
+
       if (vbFailSafe)
          OR ( (Send(oSpell,@CanPayCosts,#who=poOwner,#lTargets=lTargets,
-                    #iSpellPower=iSpellPower,#bItemCast=TRUE,#bMade=pbMade))
+                    #iSpellPower=iSpellPower,#bItemCast=TRUE))
               AND (Send(Send(what,@GetOwner),@ReqSpellCast,#who=what,#oSpell=oSpell))
               AND ((NOT Send(oSpell,@IsHarmful))
                    OR Send(Send(what,@GetOwner),@ReqSomethingAttack,#what=what,
                             #victim=apply_on)) )
-      {         
+      {
          Send(oSpell,@CastSpell,#who=poOwner,#lTargets=lTargets,
-              #iSpellPower=iSpellPower,#bItemCast=TRUE);
-      } 
-      else 
+               #iSpellPower=iSpellPower,#bItemCast=TRUE);
+      }
+      else
       {
          Send(self,@DoFailure,#what=what,#lTargets=lTargets);
       }
@@ -248,11 +266,11 @@ messages:
       return;
    }
 
-   DoFailure(what = $,lTargets=$)
-   {      
+   DoFailure(what=$,lTargets=$)
+   {
       % Override for special behavior
       Send(what,@MsgSendUser,#message_rsc=vrFails);
-      
+
       return;
    }
 
@@ -266,7 +284,7 @@ messages:
       if vrName <> vrLabelName
       {
          vrName = vrLabelName;
-         
+
          % Let the world know something changed.
          if poOwner <> $
          {
@@ -278,13 +296,22 @@ messages:
 
       return FALSE;
    }
+   
+   IsRevealed()
+   {
+      if vrName = vrLabelName
+      {
+         return TRUE;
+      }
+      return FALSE;
+   }
 
    GetTrueName()
    {
       return vrLabelName;
    }
 
-   NewApplied(what = $,apply_on = $)
+   NewApplied(what=$,apply_on=$)
    "Casts the spell specified by the item (see subclass) on whatever it"
    "is being applied to, then reduces 1 charge--break the item if last charge"
    {
@@ -292,13 +319,14 @@ messages:
 
       % Cast the spell specific to the Spellitem
       Send(self,@CastSpell,#what=what,#apply_on=apply_on);
-      
-      % Check and see if that does in the Spellitem 
+
+      % Check and see if that does in the Spellitem
       if piHits <= 0
       {
          % Post this so it prints AFTER the spell message.
          Post(poOwner,@MsgSendUser,#message_rsc=vrBroken,
-              #parm1=Send(self,@GetCapDef),#parm2=Send(self,@GetName));
+               #parm1=Send(self,@GetCapDef),
+               #parm2=Send(self,@GetName));
 
          % Due to a lack of art resources we are now deleting all used up spellitems.
          % I'm leaving vbNoBrokenView in so that if/when we ever get broken wand art we just 
@@ -309,7 +337,16 @@ messages:
             Post(self,@Delete);
          }
       }
-      
+      else
+      {
+         % Update the player's weight carried bar.
+         if poOwner <> $
+            AND IsClass(poOwner,&Player)
+         {
+            Send(poOwner,@DrawCapacity);
+         }
+      }
+
       return;
    }
 
@@ -331,8 +368,8 @@ messages:
          AppendTempString(vrDesc);
       }
 
-      if pbMade 
-      { 
+      if pbMade
+      {
          if IsClass(poMaker,&Admin)
          {
             AppendTempString(SpellItem_Divine_rsc);
@@ -345,28 +382,28 @@ messages:
          AppendTempString(Send(poMaker,@GetCapDef));
          AppendTempString(Send(self,@GetTitle));
          AppendTempString(SpellItem_distiller_rsc);
-      }  
+      }
 
       return;
    }
 
    GetTitle()
    {
-      local stitle;
+      local sTitle;
 
-      if piSkill = 1 { stitle = SpellItem_novice_rsc; }
+      if piSkill = 1 { sTitle = SpellItem_novice_rsc; }
       if piSkill = 2 { sTitle = SpellItem_apprentice_rsc; }
       if piSkill = 3 { sTitle = SpellItem_journeyman_rsc; }
       if piSkill = 4 { sTitle = SpellItem_master_rsc; }
 
-      return stitle;
+      return sTitle;
    }
 
    GoBad()
    {
       ptGoBadTimer = $;
       pbBad = TRUE;
-      
+
       return;
    }
 
@@ -400,8 +437,8 @@ messages:
       % Delete the go bad timer so it won't go off.
       if ptGoBadTimer <> $
       {
-         % Put a lower cap on the go bad time to a sixt of the standard go bad time.
-         %  This is currently 4 hours.
+         % Put a lower cap on the go bad time to a sixth of the standard go bad time.
+         % This is currently 4 hours.
          piGoBadTime = bound(GetTimeRemaining(ptGoBadTimer),GO_BAD_TIME/6,$);
 
          DeleteTimer(ptGoBadTimer);
@@ -427,10 +464,101 @@ messages:
          DeleteTimer(ptGoBadTimer);
          ptGoBadTimer = $;
       }
-      
+
       propagate;
    }
 
+   GetBulk()
+   {
+      return viBulk * piHits;
+   }
+
+   GetWeight()
+   {
+      return viWeight * piHits;
+   }
+
+   GetInitValue()
+   {
+      return viValue_average * piHits;
+   }
+
+   GetValue()
+   {
+      return viValue_average * piHits;
+   }
+   
+   GetSpellPower()
+   {
+      if piSpellPower = $
+      {
+         return Random(piMinSpellPower,piMaxSpellPower);
+      }
+
+      return piSpellPower;
+   }
+
+   CombineSpellItems(sacrificed_item=$)
+   {
+      local iSacrificeHits, iSacrificeSpellPower;
+
+      if sacrificed_item = $
+      {
+         return;
+      }
+
+      iSacrificeHits = Send(sacrificed_item,@GetHits);
+      if iSacrificeHits = $
+         OR iSacrificeHits < 1
+      {
+         return;
+      }
+
+      iSacrificeSpellPower = Send(sacrificed_item,@GetSpellPower);
+      if iSacrificeSpellPower = $
+         OR iSacrificeSpellPower < 1
+      {
+         iSacrificeSpellPower = Random(piMinSpellPower,piMaxSpellPower);
+      }
+      if piSpellPower = $
+         OR piSpellPower < 1
+      {
+         piSpellPower = Random(piMinSpellPower,piMaxSpellPower);
+      }
+
+      piSpellPower = ((piSpellPower * piHits)
+                        + (iSacrificeSpellPower * iSacrificeHits))
+                        / (piHits + iSacrificeHits);
+      piHits = piHits + iSacrificeHits;
+
+      if IsClass(poOwner,&User)
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=combine_spell_item_rsc,
+               #parm1=Send(sacrificed_item,@GetName),
+               #parm2=piHits,#parm3=piSpellPower);
+      }
+
+      Send(sacrificed_item,@Delete);
+
+      return;
+   }
+
+   CanSplit()
+   {
+      return pbCanSplit;
+   }
+
+   GetKarmaCheck()
+   {
+      return pbCheckKarma;
+   }
+
+   SetKarmaCheck(value=FALSE)
+   {
+      pbCheckKarma = value;
+
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

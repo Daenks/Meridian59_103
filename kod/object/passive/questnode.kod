@@ -1062,9 +1062,17 @@ messages:
                {
                   if IsClass(i,&GuildShield)
                   {
-                     oGuildShield = i;
+                     if oGuildShield <> $
+                        AND Send(oGuildShield,@HasInsignia)
+                        AND NOT Send(i,@HasInsignia)
+                     {
+                        % We had a shield which had an insignia, but we
+                        % found one that didn't. Switch to that one instead.
+                        oGuildShield = i;
 
-                     break;
+                        break;
+                     }
+                     oGuildShield = i;
                   }
                }
             }
@@ -1313,11 +1321,12 @@ messages:
             if iBoonNum <> $
             {
                oBoon = Send(SYS,@FindSpellByNum,#num=iBoonNum);
-	       if oBoon = $
-	       {
-	       	       Debug("Can't find spell for boon",iBoonNum);
-		       return;
-	       }
+               if oBoon = $
+               {
+                  Debug("Can't find spell for boon",iBoonNum);
+
+                  return;
+               }
                SetNth(plDescs,2,Send(oBoon,@GetName));
                SetNth(plIndefDescs,2,Send(oBoon,@GetIndef));
                SetNth(plDefDescs,2,Send(oBoon,@GetDef));
@@ -1370,7 +1379,7 @@ messages:
 
             if iPrizeFaction = QN_PRIZE_FACTION_NEUTRAL
             {
-               Send(oQuester,@ResignFaction);
+               Send(oQuester,@ResignLoyaltyFailed);
             }
          }
 
@@ -1467,7 +1476,7 @@ messages:
          %     [ QN_PRIZETYPE_ESTABLISH_NECROGUILD ]
 
          oLich = Send(Send(SYS,@FindRoomByNum,#num=RID_GUILDH15),
-                      @FindHoldingActive,#class=&DeadLich);
+                        @FindHoldingActive,#class=&DeadLich);
          if oLich <> $
          {
             Send(oLich,@EstablishNecromancerGuild,#master=First(recipients));
@@ -1487,25 +1496,16 @@ messages:
 
          for oQuester in recipients
          {
-            if Send(SYS,@IsPKAllowed)
-            {
-               Send(oQuester,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=TRUE);
-            }
-            else
-            {
-               % In Sacred Haven, just give them a random negative stat boon
-               %  instead.
-               iPrizeBoon = Nth([QN_PRIZE_BOON_INTELLECT,
-                                 QN_PRIZE_BOON_AIM,
-                                 QN_PRIZE_BOON_STAMINA,
-                                 QN_PRIZE_BOON_AGILITY,
-                                 QN_PRIZE_BOON_MYSTICISM,
-                                 QN_PRIZE_BOON_STRENGTH ],random(1,6));
-               iAmount = 1;
-               iDays = 2;
-               Send(self,@AwardPrizeOrPenalty,#recipients=recipients,
-                     #prize=[QN_PRIZETYPE_BOON,iPrizeBoon,iAmount,iDays]);
-            }
+            iPrizeBoon = Nth([QN_PRIZE_BOON_INTELLECT,
+                              QN_PRIZE_BOON_AIM,
+                              QN_PRIZE_BOON_STAMINA,
+                              QN_PRIZE_BOON_AGILITY,
+                              QN_PRIZE_BOON_MYSTICISM,
+                              QN_PRIZE_BOON_STRENGTH ],random(1,6));
+            iAmount = -3;
+            iDays = 2;
+            Send(self,@AwardPrizeOrPenalty,#recipients=recipients,
+                  #prize=[QN_PRIZETYPE_BOON,iPrizeBoon,iAmount,iDays]);
          }
 
          return;
@@ -1556,21 +1556,24 @@ messages:
             if iType = QN_TYPE_MONSTER
             {
                piStatus = QN_STATUS_IN_PROGRESS;
-
+               Send(poMonster,@Delete);
+               poMonster = $;
                return TRUE;
             }
 
             if iType <> QN_TYPE_MONSTER_ITEMCLASS
             {
                Debug("Questnode of non-monster type processed monster death.");
-
+               Send(poMonster,@Delete);
+               poMonster = $;
                return TRUE;
             }
 
             if pCargo = $
             {
                Debug("Questnode expected item to place after monster death.");
-
+               Send(poMonster,@Delete);
+               poMonster = $;
                return TRUE;
             }
 
@@ -1585,7 +1588,8 @@ messages:
             {
                Send(oRoom,@NewHold,#what=pCargo,#new_row=iRow,#new_col=iCol);
                piStatus = QN_STATUS_IN_PROGRESS;
-
+               Send(poMonster,@Delete);
+               poMonster = $;
                return TRUE;
             }
             else   
@@ -1702,6 +1706,10 @@ messages:
       plIndefDescs = $;
       plDefDescs = $;
       pCargo = $;
+      if poMonster <> $
+      {
+         Send(poMonster,@Delete);
+      }
       poMonster = $;
       poQuestActivated = $;
       piStatus = QN_STATUS_UNINITIALIZED;

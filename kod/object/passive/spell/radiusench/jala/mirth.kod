@@ -60,8 +60,9 @@ classvars:
    viDrainTime = 5000
    viBaseRange = 3
 
-   viSpellExertion = 2      
+   viSpellExertion = 1
    viChance_To_Increase = 25
+   viMeditate_ratio = 20
 
    viAffectsEveryone = TRUE
 
@@ -79,18 +80,24 @@ messages:
       return;
    }
 
-   StartSpecialEffect(who=$,iPower=0,caster=$)
+   StartSpecialEffect(what=$,iPower=0,source=$)
    {
-      Send(who,@SetAction,#action=UA_HAPPY);
+      if IsClass(what,&User)
+      {
+         Send(what,@SetAction,#action=UA_HAPPY);
+      }
+
       propagate;
    }
    
-   EndSpecialEffect(who=$,iPower=0,caster=$)
+   EndSpecialEffect(what=$,iPower=0,source=$)
    {
-      if Send(who,@GetAction) = UA_HAPPY
+      if IsClass(what,&User)
+         AND Send(what,@GetAction) = UA_HAPPY
       {
-         Send(who,@SetAction,#action=UA_NORMAL);
+         Send(what,@SetAction,#action=UA_NORMAL);
       }
+      
       propagate;
    }
 
@@ -98,6 +105,11 @@ messages:
 
    ModifyHitRoll(who = $,what = $,hit_roll = $)
    {
+      if what = $
+      {
+         return hit_roll;
+      }
+
       % Only affect the evil ones...
       if Send(what,@GetKarma,#detect=TRUE) < 0
       {
@@ -110,6 +122,11 @@ messages:
    
    ModifyDamage(who = $,what = $,damage = $)
    {
+      if what = $
+      {
+         return damage;
+      }
+
       % Only affect the evil ones...
       if Send(what,@GetKarma,#detect=TRUE) < 0
       {

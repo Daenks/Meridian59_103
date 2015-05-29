@@ -21,7 +21,7 @@ resources:
    ExplosiveFrost_icon_rsc = iexfrost.bgf
 
    ExplosiveFrost_desc_rsc = \
-      "Creates a small exploision of frost which damages a target at short range.  "
+      "Creates a small explosion of frost which damages a target at short range.  "
       "Requires red mushrooms and elderberries to cast."
 
    ExplosiveFrost_sound = ficefing.wav
@@ -45,14 +45,14 @@ classvars:
    % In seconds, since it works off GetTime().
    viPostCast_time = 2
 
-   viChance_To_Increase = 5
+   viChance_To_Increase = 15
 
 properties:
 
    piDamageMin = 13
    piDamageMax = 25
-   piRange = 4
-   
+   piRange = 4 * FINENESS
+
 messages:
 
    ResetReagents()

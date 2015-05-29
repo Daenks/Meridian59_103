@@ -17,10 +17,10 @@ constants:
    ACCEPT_DELAY = 15000
    ADVERT_DELAY_MIN = 60000
    ADVERT_DELAY_MAX = 120000
-   COMMENCE_DELAY_MIN = 8000
-   COMMENCE_DELAY_MAX = 15000
-   FIGHT_DELAY_ONE_ON_ONE = 240000
-   FIGHT_DELAY_LAST_MAN_STANDING = 480000
+   COMMENCE_DELAY_MIN = 6000
+   COMMENCE_DELAY_MAX = 12000
+   FIGHT_DELAY_ONE_ON_ONE = 480000
+   FIGHT_DELAY_LAST_MAN_STANDING = 720000
 
    LAST_MINUTE = 60000
 
@@ -48,9 +48,9 @@ resources:
    TosWatcher_ad_good_fight2 = "Hip-hip-Huzzah!"
    TosWatcher_ad_good_fight3 = "Let's see some blood!"
 
-   TosWatcher_no_need = "We have no need of new combatants at this time."     
+   TosWatcher_no_need = "We have no need of new combatants at this time."
    TosWatcher_need_champion = \
-      "We do not yet have a Champion!  Would you be that brave soul?"     
+      "We do not yet have a Champion!  Would you be that brave soul?"
    TosWatcher_dont_need_challenger = \
       "We have no need of challengers at this time."
    TosWatcher_fight_in_progress = \
@@ -539,7 +539,7 @@ messages:
          Send(self,@SetChampion,#who=who);
       }
 
-      plCombatants = cons(who,plCombatants);
+      plCombatants = Cons(who,plCombatants);
 
       return; 
    }
@@ -937,7 +937,11 @@ messages:
          }
       }
 
-      Send(self,@Teleport,#what=who,#outofplay=TRUE);
+      % Don't teleport monsters out
+      if IsClass(who,&Player)
+      {
+         Send(self,@Teleport,#what=who,#outofplay=TRUE);
+      }
 
       if who = poChampion
       {
@@ -957,7 +961,7 @@ messages:
          Send(self,@Say,#message_rsc=TosWatcher_invalid_fight);
       }
 
-      if ptCommence <> $ and not Send(self,@validatefight)
+      if ptCommence <> $ AND NOT Send(self,@validatefight)
       {
          DeleteTimer(ptCommence);
          ptCommence = $;
@@ -1086,8 +1090,9 @@ messages:
                      j = Send(poOwner,@HolderExtractObject,#data=i);
                      if IsClass(j,&Monster)
                         AND NOT (Send(j,@GetBehavior) & AI_NPC)
+                        AND NOT (Send(j,@GetMaster) = poChampion)
                      {
-                        Send(j,@Delete);
+                        Post(j,@Delete);
                      }
                   }
                }
@@ -1217,9 +1222,9 @@ messages:
       for i in plCombatants
       {
          index = (Send(i,@GetMaxHealth)+15) - Send(i,@GetHealth);
-         Send(i,@GainHealth,#amount=bound(index,0,15));
+         Send(i,@GainHealth,#amount=Bound(index,0,15));
          index = (Send(i,@GetMaxMana)+25) - Send(i,@GetMana);
-         Send(i,@GainMana,#amount=bound(index,0,25));
+         Send(i,@GainMana,#amount=Bound(index,0,25));
 
          % Teleport any and all combatants out of the ring.
          if ptFight <> $
@@ -1565,7 +1570,7 @@ messages:
                OR (IsClass(what,&Player) AND Send(what,@IsActor))
             {
                Send(what,@MsgSendUser,
-                    #message_rsc=TosWatcher_not_during_fight);
+                     #message_rsc=TosWatcher_not_during_fight);
 
                return FALSE;
             }
@@ -1574,8 +1579,8 @@ messages:
             if oActor <> $
             {
                Send(what,@MsgSendUser,
-                    #message_rsc=TosWatcher_only_grand_marshal,
-                    #parm1 = Send(oActor,@GetName));
+                     #message_rsc=TosWatcher_only_grand_marshal,
+                     #parm1 = Send(oActor,@GetName));
             }
 
             return FALSE;
@@ -1589,8 +1594,8 @@ messages:
             AND Send(what,@IsActor)
          {
             Send(poOwner,@someonesaid,#string=TosWatcher_tournament_cancelled,
-                 #parm1=Send(what,@GetHisHer),#parm2=Send(what,@GetDef),
-                 #parm3=Send(what,@GetName),#type=SAY_MESSAGE,#what=self);
+                  #parm1=Send(what,@GetHisHer),#parm2=Send(what,@GetDef),
+                  #parm3=Send(what,@GetName),#type=SAY_MESSAGE,#what=self);
             Send(self,@clearcombatants);
 
             return FALSE;
@@ -1608,7 +1613,7 @@ messages:
       {
          Send(self,@Say,#message_rsc=TosWatcher_must_choose_style);
 
-         return;     
+         return;
       }
 
       if NOT Send(self,@AcceptingChampions)
@@ -1634,7 +1639,7 @@ messages:
             Send(self,@SayToOne,#target=what,#message_rsc=TosWatcher_no_need);
          }
       }
-      else   
+      else
       {
          % Accept the champion here
          if piCombat_Style = STYLE_GUILD_VS_GUILD
@@ -1681,7 +1686,7 @@ messages:
          }
       }
 
-      return;  
+      return;
    }
 
    TrigChallenge(what=$)
@@ -1694,7 +1699,7 @@ messages:
          Send(self,@SaytoOne,#target=what,
               #message_rsc=TosWatcher_must_choose_style);
 
-         return;     
+         return;
       }
 
       if Send(self,@FightInSession)
@@ -1703,7 +1708,7 @@ messages:
               #message_rsc=TosWatcher_fight_in_progress);
 
          return;
-      } 
+      }
 
       if Send(self,@AcceptingChampions)
       {
@@ -1731,14 +1736,14 @@ messages:
       if piCombat_style <> STYLE_ONE_ON_ONE
       {
          % You can only accept fights in traditional 2 man fights.
-         return FALSE;    
+         return FALSE;
       }
 
       if what <> poChampion
       {
          % Only the champion can accept a fight from a challenger
-         return FALSE;   
-      } 
+         return FALSE;
+      }
 
       if Send(self,@FightInSession)
       {
@@ -1746,7 +1751,7 @@ messages:
       }
 
       if (ptAccept <> $)
-      { 
+      {
          Send(self,@Accept,#who=what);
       }
 
@@ -1833,8 +1838,8 @@ messages:
 
    DestroyDisposable()
    {
-      % Don't delete it on random passthroughs.      
-      return FALSE;    
+      % Don't delete it on random passthroughs.
+      return FALSE;
    }
 
    IsCombatant(who=$)
@@ -1850,6 +1855,13 @@ messages:
          }
 
          count = count + 1;
+      }
+
+      if IsClass(who,&Monster)
+         AND NOT IsClass(who,&TosTown)
+         AND Send(poOwner,@InPlay,#what=who,#bNonPlayerOkay=TRUE)
+      {
+         return TRUE;
       }
 
       return FALSE;
@@ -1869,9 +1881,9 @@ messages:
 
    Teleport(what=$, goinplay=FALSE, outofplay=FALSE)
    {
-      local i, bInList, iAmount;
+      local i, bInList, iAmount, lMinions;
 
-      if goinplay OR Send(self,@IsCombatant,#who=what)   
+      if goinplay OR Send(self,@IsCombatant,#who=what)
       {
          % teleport to the playing field
          bInList = FALSE;
@@ -1880,28 +1892,31 @@ messages:
             if First(i) = what
             {
                bInList = TRUE;
-            }   
+            }
          }
 
-         if NOT bInList
+         if IsClass(what,&Player)
          {
-            plUserStats = Cons([ what,Send(what,@GetHealth),
-                                 Send(what,@GetMana),Send(what,@GetVigor)
-                               ],plUserStats);     
-         }
+            if NOT bInList
+            {
+               plUserStats = Cons([ what,Send(what,@GetHealth),
+                                    Send(what,@GetMana),Send(what,@GetVigor)
+                                  ],plUserStats);     
+            }
 
-         if Send(what,@GetHealth) < Send(what,@GetMaxHealth)
-         {
-            Send(what,@GainHealthNormal,#amount=200);
-         }
+            if Send(what,@GetHealth) < Send(what,@GetMaxHealth)
+            {
+               Send(what,@GainHealthNormal,#amount=200);
+            }
 
-         if Send(what,@GetMana) < Send(what,@GetMaxMana)
-         {
-            iAmount = Send(what,@GetMaxMana) - Send(what,@GetMana);
-            Send(what,@GainMana,#amount=iAmount);
-         }
+            if Send(what,@GetMana) < Send(what,@GetMaxMana)
+            {
+               iAmount = Send(what,@GetMaxMana) - Send(what,@GetMana);
+               Send(what,@GainMana,#amount=iAmount);
+            }
 
-         Send(what,@AddExertion,#settothreshold=TRUE);
+            Send(what,@AddExertion,#amount=-2000000);
+         }
       }
       else
       {
@@ -1916,14 +1931,29 @@ messages:
                Send(what,@AddExertion,#amount=iAmount);
                plUserStats = DelListElem(plUserStats,i);
             }
-         }     
+         }
       }
 
       Send(poOwner,@Teleport,#what=what,#goinplay=goinplay,
-           #outofplay=outofplay);
+            #outofplay=outofplay);
+      if IsClass(what,&Player)
+      {
+         lMinions = Send(what,@GetControlledMinions);
+         if lMinions <> $
+         {
+            for i in lMinions
+            {
+               if Send(i,@GetOwner) = Send(self,@GetOwner)
+               {
+                  Send(poOwner,@Teleport,#what=i,#goinplay=goinplay,
+                        #outofplay=outofplay);
+               }
+            }
+         }
+      }
 
       return;
-    }
+   }
 
    ClearCombatants()
    {
@@ -1949,7 +1979,7 @@ messages:
             if IsClass(j,&Monster)
                AND (NOT (Send(j,@GetBehavior) & AI_NPC))
             {
-               Send(j,@Delete);
+               Post(j,@Delete);
             }
 
             % Yuckily, this is the easiest way to deal with this.
@@ -1991,15 +2021,18 @@ messages:
    {
       if Send(self,@IsCombatant,#who=what)
       {
-         if ptFight <> $
+         if NOT IsClass(what,&Monster)
          {
-            Send(self,@Say,#message_rsc=TosWatcher_pitifully_fled,
-                 #parm1=Send(what,@GetCapDef),#parm2=Send(what,@GetName));
-         }
-         else
-         {
-            Send(self,@Say,#message_rsc=TosWatcher_wont_fight,
-                 #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));               
+            if ptFight <> $
+            {
+               Send(self,@Say,#message_rsc=TosWatcher_pitifully_fled,
+                  #parm1=Send(what,@GetCapDef),#parm2=Send(what,@GetName));
+            }
+            else
+            {
+               Send(self,@Say,#message_rsc=TosWatcher_wont_fight,
+                  #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+            }
          }
 
          Send(self,@CombatantReneges,#who=what);
@@ -2022,7 +2055,7 @@ messages:
       % Targetless spells
       if victim = $
       {
-         if NOT Send(self,@IsCombatant,#who=what)         
+         if NOT Send(self,@IsCombatant,#who=what)
          {
             if IsClass(what,&Player)
             {
@@ -2056,15 +2089,15 @@ messages:
          propagate;
       }
 
-      % Spells with targets = all the rest of them     
-      if (NOT Send(self,@isCombatant,#who=what)
-         OR NOT Send(self,@isCombatant,#who=victim))
-         AND IsClass(victim,&Player)
+      % Spells with targets = all the rest of them
+      if NOT Send(self,@IsCombatant,#who=what)
+         OR NOT (Send(self,@IsCombatant,#who=victim)
+            AND IsClass(victim,&Player))
       {
          if IsClass(what,&Player)
          {
             Send(self,@SayToOne,#target=what,
-                 #message_rsc=toswatcher_only_combatants);
+                  #message_rsc=toswatcher_only_combatants);
          }
 
          return FALSE;
@@ -2075,7 +2108,7 @@ messages:
          if IsClass(what,&Player)
          {
             Send(self,@SayToOne,#target=what,
-                 #message_rsc=toswatcher_no_fighting_yet);
+                  #message_rsc=toswatcher_no_fighting_yet);
          }
 
          return FALSE;
@@ -2084,7 +2117,7 @@ messages:
       propagate;
    }
 
-   ReqSpellCast(who=$,oSpell = $, lItems = $)
+   ReqSpellCast(who=$,oSpell=$,lItems=$)
    {
       local i, spellNum, rTarget;
 
@@ -2097,23 +2130,26 @@ messages:
       % Only combatants may cast spells on each other.
 
       % If the caster is not a combatant, don't let him cast.
-      if (not Send(self,@isCombatant,#who=who) AND IsClass(who,&Player))      
+      if (NOT Send(self,@isCombatant,#who=who) AND IsClass(who,&Player))
       {
          Send(self,@SayToOne,#target=who,
-              #message_rsc=TosWatcher_only_combatants_cast);
+               #message_rsc=TosWatcher_only_combatants_cast);
 
          return FALSE;
       }
-   
-      % If the caster's target is not a combatant, don't let him cast.
-      for i in lItems
-      {
-         if NOT Send(self,@isCombatant,#who=i) AND IsClass(i,&Player)
-         {
-            Send(self,@SayToOne,#target=who,
-                 #message_rsc=TosWatcher_only_target_combatants);
 
-            return FALSE;
+      % If the caster's single target is not a combatant, don't let him cast.
+      if Length(lItems) = 1
+      {
+         for i in lItems
+         {
+            if NOT Send(self,@isCombatant,#who=i)
+            {
+               Send(self,@SayToOne,#target=who,
+                     #message_rsc=TosWatcher_only_target_combatants);
+
+               return FALSE;
+            }
          }
       }
 
@@ -2123,17 +2159,17 @@ messages:
          if IsClass(who,&Player)
          {
             Send(self,@SayToOne,#target=who,
-                 #message_rsc=toswatcher_no_fighting_yet);
+                  #message_rsc=toswatcher_no_fighting_yet);
          }
 
          return FALSE;
       }
 
-      % Certain spells are banned outright      
+      % Certain spells are banned outright
       if Send(oSpell,@SpellBannedInArena)
       {
          Send(self,@SayToOne,#target=who,#message_rsc=toswatcher_spell_banned,
-              #parm1=Send(oSpell,@GetName));
+               #parm1=Send(oSpell,@GetName));
 
          return FALSE;
       }
@@ -2150,8 +2186,8 @@ messages:
          }
 
          Send(self,@SayToOne,#target=poMarshal,
-              #message_rsc=TosWatcher_spell_cast,#parm1=Send(who,@GetTrueName),
-              #parm2=Send(oSpell,@GetName),#parm3=rTarget);
+               #message_rsc=TosWatcher_spell_cast,#parm1=Send(who,@GetTrueName),
+               #parm2=Send(oSpell,@GetName),#parm3=rTarget);
       }
 
       propagate;
@@ -2201,7 +2237,7 @@ messages:
          AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
       {
          Post(self,@Say,#message_rsc=TosWatcher_worship_admin,
-              #parm1=Send(what,@GetTrueName),#parm2=Send(what,@GetHeShe));
+               #parm1=Send(what,@GetTrueName),#parm2=Send(what,@GetHeShe));
          if NOT pbTournament
          {
             Post(poOwner,@SpecialGreeting);
@@ -2216,17 +2252,17 @@ messages:
          AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
       {
          Post(self,@Say,#message_rsc=TosWatcher_worship_dm,
-              #parm1=Send(what,@GetLordLady),#parm2=Send(what,@GetName));
+               #parm1=Send(what,@GetLordLady),#parm2=Send(what,@GetName));
          if NOT pbTournament
          {
             Post(poOwner,@SpecialGreeting);
          }
 
          propagate;
-      }     
+      }
 
       if IsClass(what,&Player)
-      {   
+      {
          for lSublist in plChampions
          {
             lTemp = Nth(lSublist,2);
@@ -2322,7 +2358,7 @@ messages:
       }
 
       % If the guy wasn't in the list, see if the current counter is lower
-      %  than anyone on the list.  If so, then replace that guy.  
+      % than anyone on the list.  If so, then replace that guy.  
 
       if NOT bFound
       {
@@ -2334,7 +2370,7 @@ messages:
                 SetNth(i,2,piKill_counter);
 
                 break;
-            }             
+            }
          }
       }
 
@@ -2458,7 +2494,7 @@ messages:
 
       return;
    }
-   
+
    ReqAssassinGameAttack(what=$)
    {
       if pbTournament
@@ -2470,7 +2506,6 @@ messages:
       
       return TRUE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -18,8 +18,8 @@ void D3DParticleSystemReset(particle_system *pParticleSystem)
 void D3DParticleEmitterInit(particle_system *pParticleSystem, float posX, float posY, float posZ,
 							float velX, float velY, float velZ, unsigned char b, unsigned char g,
 							unsigned char r, unsigned char a, int energy, int timerBase,
-							float rotX, float rotY, float rotZ, Bool bRandomize, int randomPos,
-							int randomRot)
+							float rotX, float rotY, float rotZ, Bool bRandomizeXY, Bool bRandomizeZ,
+							int randomPos, int randomRot, Bool bGroundDestroy, Bool bWeatherEffect)
 {
 	emitter	*pEmitter = NULL;
 
@@ -34,7 +34,10 @@ void D3DParticleEmitterInit(particle_system *pParticleSystem, float posX, float 
 	memset(pEmitter, 0, sizeof(emitter));
 
 	pEmitter->numParticles = 0;
-	pEmitter->bRandomize = bRandomize;
+	pEmitter->bRandomizeXY = bRandomizeXY;
+	pEmitter->bRandomizeZ = bRandomizeZ;
+	pEmitter->bGroundDestroy = bGroundDestroy;
+	pEmitter->bWeatherEffect = bWeatherEffect;
 	pEmitter->pos.x = posX;
 	pEmitter->pos.y = posY;
 	pEmitter->pos.z = posZ;
@@ -69,7 +72,7 @@ void D3DParticleEmitterUpdate(emitter *pEmitter, float posX, float posY, float p
 }
 
 void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_new *pPool,
-							 d3d_render_cache_system *pCacheSystem)
+							 d3d_render_cache_system *pCacheSystem, Draw3DParams *params)
 {
 	int						curParticle;
 	list_type				list;
@@ -85,6 +88,7 @@ void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_n
 	for (list = pParticleSystem->emitterList; list != NULL; list = list->next)
 	{
 		pEmitter = (emitter *)list->data;
+		//debug(("numparticles is %i\n",pEmitter->numParticles));
 
 		for (curParticle = 0; curParticle < pEmitter->numParticles; curParticle++)
 		{
@@ -97,6 +101,16 @@ void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_n
 			}
 			else
 			{
+				PDIB pdibCeiling = NULL;
+				pdibCeiling = GetPointCeilingTexture(pParticle->pos.x, pParticle->pos.y);
+				if (pEmitter->bWeatherEffect && pdibCeiling)
+				{
+					D3DParticleDestroy(pParticle);
+					pEmitter->numParticles--;
+
+					continue;
+				}
+
 				custom_xyzw	velocity;
 
 				velocity.x = pParticle->velocity.x;
@@ -124,6 +138,17 @@ void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_n
 				pParticle->pos.y += pParticle->velocity.y;
 				pParticle->pos.z += pParticle->velocity.z;
 
+				// If we don't allow this type of particle to survive inside the ground, destroy it.
+				if ((pEmitter->bGroundDestroy) && (pParticle->pos.z < GetPointFloor(pParticle->pos.x, pParticle->pos.y)))
+				{
+					//debug(("destroying particle, floor: %i, pHeight: %6.1f \n",GetPointFloor(pParticle->pos.x, pParticle->pos.y), pParticle->pos.z));
+					pParticle->energy = 0;
+
+					continue;
+				}
+            // If this particle is hidden from the player's view, don't let D3D try to draw it.
+            if (IsHidden(params, (long)pParticle->pos.x, (long)pParticle->pos.y, (long)pParticle->pos.x, (long)pParticle->pos.y))
+               continue;
 				pPacket = D3DRenderPacketFindMatch(pPool, NULL, NULL, 0, 0, 0);
 				assert(pPacket);
 				pPacket->pMaterialFctn = &D3DMaterialParticlePacket;
@@ -165,21 +190,23 @@ void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_n
 						pParticle->pos.y = pEmitter->pos.y;
 						pParticle->pos.z = pEmitter->pos.z;
 
-						if (pEmitter->bRandomize)
+						if (pEmitter->bRandomizeXY)
 						{
 							int	sign = 1;
 
 							if ((int)rand() & 1)
 								sign = -sign;
-							pParticle->pos.x += sign * ((int)rand() & pEmitter->randomPos);
-
+							pParticle->pos.x += sign * ((int)rand() % pEmitter->randomPos);
 							if ((int)rand() & 1)
 								sign = -sign;
-							pParticle->pos.y += sign * ((int)rand() & pEmitter->randomPos);
+							pParticle->pos.y += sign * ((int)rand() % pEmitter->randomPos);
 
-							if ((int)rand() & 1)
-								sign = -sign;
-							pParticle->pos.z += sign * ((int)rand() & pEmitter->randomPos);
+							if (pEmitter->bRandomizeZ)
+							{
+								if ((int)rand() & 1)
+									sign = -sign;
+								pParticle->pos.z += sign * ((int)rand() % pEmitter->randomPos);
+							}
 						}
 
 						pParticle->velocity.x = pEmitter->velocity.x;
@@ -190,7 +217,22 @@ void D3DParticleSystemUpdate(particle_system *pParticleSystem, d3d_render_pool_n
 						pParticle->rotation.y = pEmitter->rotation.y;
 						pParticle->rotation.z = pEmitter->rotation.z;
 
-						if (pEmitter->bRandomize)
+						// Weather effect randomizing.
+						if (pEmitter->bWeatherEffect)
+						{
+							// Small randomization of Z velocity.
+							pParticle->velocity.z *= ((float)((int)rand() % 11 + 5)) / 10.0f;
+
+								// Half particles start at the ceiling, half start at
+								// a lower point. This gives a nicer effect on screens
+								// with large ceilings (TODO: standardise ceiling height).
+								if ((int)rand() & 1)
+								{
+									pParticle->pos.z = GetPointCeiling(pParticle->pos.x, pParticle->pos.y);
+								}
+						}
+
+						if (pEmitter->randomRot)
 						{
 							float	random, sign;
 

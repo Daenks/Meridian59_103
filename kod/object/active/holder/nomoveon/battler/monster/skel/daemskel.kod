@@ -13,9 +13,8 @@ DaemonSkeleton is Skeleton
 constants:
 
    include blakston.khd
-   
-   PALSY_CHANCE = 10
-   DEMENTIA_CHANCE = 10
+
+   DEMENTIA_CHANCE = 20
 
 resources:
 
@@ -26,7 +25,7 @@ resources:
       "The sight alone of this abomination of nature is often enough to "
       "paralyze a human.  You shudder to think what dark ritual brought "
       "this creature into being."
-      
+
    DaemonSkeleton_head = skelhed4.bgf
    DaemonSkeleton_dead_icon_rsc = skelX.bgf
    DaemonSkeleton_dead_name_rsc = "pile of bones"
@@ -50,10 +49,15 @@ classvars:
    viAttributes = 0
    viLevel = 130
    viDifficulty = 8
+   viVisionDistance = 15
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viKarma = -90
-   viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE | AI_FIGHT_SWITCHALOT | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 650
-   viCashmax = 2025
+   viDefault_behavior = \
+      AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE \
+      | AI_FIGHT_SWITCHALOT | AI_MOVE_FLEE_FRIGHTENERS
+   viCashmin = 450
+   viCashmax = 1025
    vrSound_miss = DaemonSkeleton_sound_miss
    vrSound_aware = DaemonSkeleton_sound_aware
    vrSound_death = DaemonSkeleton_sound_death
@@ -63,45 +67,44 @@ classvars:
 properties:
 
    piAnimation = ANIM_NONE
-   
+
 messages:
 
    SetResistances()
    {
-      plResistances = [ [ 70, ATCK_WEAP_PIERCE ],
-                        [ 70, ATCK_WEAP_THRUST ],
-                        [ 70, -ATCK_SPELL_UNHOLY ],
-                        [ 70, -ATCK_SPELL_SHOCK ],
-                        [ 70, -ATCK_SPELL_FIRE ],
-                        [ -10, -ATCK_SPELL_COLD ],
-                        [ -20, -ATCK_SPELL_HOLY ],
-                        [ -20, ATCK_WEAP_BLUDGEON ]
+      plResistances = [ [ATCK_WEAP_PIERCE, 70 ],
+                        [ATCK_WEAP_THRUST, 70 ],
+                        [-ATCK_SPELL_UNHOLY, 70 ],
+                        [-ATCK_SPELL_SHOCK, 70 ],
+                        [-ATCK_SPELL_FIRE, 70 ],
+                        [-ATCK_SPELL_COLD, -10 ],
+                        [-ATCK_SPELL_HOLY, -20 ],
+                        [ATCK_WEAP_BLUDGEON, -20 ]
                       ];
 
       return;
    }
-   
-     HitSideEffect(what = $)
+
+   HitSideEffect(what = $, who = $)
    {
       local oSpell;
-      
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_PALSY);
-      if NOT Send(what,@IsEnchanted,#what=oSpell) 
-         AND Random(1,PALSY_CHANCE) = 1
-      {
-         Send(oSpell,@MakeSick,#who=what);
-      }
-      
-      oSpell = Send(SYS,@FindSpellByNum,#num=SID_DEMENTIA);
-      if NOT Send(what,@IsEnchanted,#what=oSpell) 
+
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_DEMENT);
+      if NOT Send(what,@IsEnchanted,#what=oSpell)
          AND Random(1,DEMENTIA_CHANCE) = 1
       {
-         Send(oSpell,@MakeSick,#who=what);
+         if who <> $
+         {
+            Send(oSpell,@CastSpell,#who=who,#lTargets=[what],#iSpellPower=15);
+         }
+         else
+         {
+            Send(oSpell,@DoSpell,#what=self,#oTarget=what,#iSpellPower=15);
+         }
       }
 
       return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

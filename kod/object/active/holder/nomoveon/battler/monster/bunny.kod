@@ -1,0 +1,176 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Bunny is Monster
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   bunny_koc_name_rsc = "ixleocbunny"
+   bunny_name_rsc = "bunny"
+   bunny_icon_rsc = bunny2.bgf
+   bunny_desc_rsc = "Aw, look at the cute little bunny!"
+
+   bunny_dead_icon_rsc = bunny2X.bgf
+   bunny_dead_name_rsc = "dead bunny"
+
+   bunny_sound_hit = bunny_atkh.wav
+   bunny_sound_miss = bunny_atkh.wav
+   bunny_sound_death = bunny_dth.wav
+   bunny_sound_aware = bunny_awr.wav
+
+classvars:
+
+   vrKocName = bunny_koc_name_rsc
+   vrName = bunny_name_rsc
+   vrIcon = bunny_icon_rsc
+   vrDesc = bunny_desc_rsc
+   vrDead_icon = bunny_dead_icon_rsc
+   vrDead_name = bunny_dead_name_rsc
+
+   viSpeed = SPEED_SLOW
+   viAttack_type = ATCK_WEAP_SLASH
+   viDefault_behavior = AI_FIGHT_KARMA_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS
+
+   viDifficulty = 4
+   viLevel = 40
+   viKarma = -45
+   viCashmin = 175
+   viCashmax = 375
+   vrSound_hit = bunny_sound_hit
+   vrSound_miss = bunny_sound_miss
+   vrSound_aware = bunny_sound_aware
+   vrSound_death = bunny_sound_death
+
+properties:
+
+   viTreasure_type = TID_ZOMBIE
+
+   piAnimation = ANIM_NONE
+
+   ptRevertControl = $
+
+messages:
+
+   Constructed()
+   {
+      plResistances = [ [-ATCK_SPELL_UNHOLY, 50 ],
+                        [-ATCK_SPELL_HOLY, -25 ] ];
+
+      % The gray translations won't work on Bunny, but work on the
+      % child classes. The blend translations *do* work, and give
+      % the parent Bunny class a small chance to change color.
+      Send(self,@ChangeColor);
+
+      propagate;
+   }
+
+   MonsterAttack(what=$)
+   {
+      piAnimation = ANIM_ATTACK;
+      Send(poOwner,@SomethingChanged,#what=self);
+      piAnimation = ANIM_NONE;
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      if piColor_translation <> 0
+      {
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_translation);
+      }
+
+      AddPacket(1,ANIMATE_CYCLE);
+      AddPacket(4,200,2,2,2,3);
+
+      return;
+   }
+
+   SendMoveAnimation()
+   {
+      if piColor_translation <> 0
+      {
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_translation);
+      }
+
+      % Cycle through "walking" bitmaps (groups 2-5) at 45 milliseconds per frame
+      AddPacket(1,ANIMATE_CYCLE,4,180,2,2,2,3);
+
+      return;
+   }
+
+   SendAnimation()
+   {
+      if piColor_translation <> 0
+      {
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_translation);
+      }
+
+      if piAnimation = ANIM_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE,4,125,2,2,2,5,2,1);
+         return;
+      }
+
+      % if no body animation
+
+      propagate;
+   }
+
+   Delete()
+   {
+      if ptRevertControl <> $
+      {
+         DeleteTimer(ptRevertControl);
+         ptRevertControl = $;
+      }
+
+      propagate;
+   }
+
+   CanMorphTo()
+   {
+      return FALSE;
+   }
+
+   ChangeColor(xlat = 0)
+   "Changes the color of the bunny."
+   {
+      if xlat <> 0
+      {
+         piColor_translation = xlat;
+      }
+      else
+      {
+         % These are the gray palette translations.
+         piColor_translation = Random(PT_GRAY_TO_ORANGE,PT_GRAY_TO_BLOND);
+      }
+
+      % This one is invalid. Use it to introduce a few more choices.
+      if piColor_translation = 0x01F
+      {
+         % These are the red/blue/green full palette translations.
+         piColor_translation = Random(PT_BLEND25RED,PT_BLEND25GREEN);
+      }
+
+      if poOwner <> $
+      {
+         Send(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

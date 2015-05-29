@@ -40,11 +40,12 @@ classvars:
    viSchool = SS_FAREN
    viSpell_level = 3
    viMana = 15
-   viSpellExertion = 10
+   viSpellExertion = 3
    viCast_time = 3000
 
    vrSucceed_wav = SummonWeb_sound
    viChance_To_Increase = 25
+   viMeditate_ratio = 30
 
    viHarmful = TRUE
 
@@ -88,7 +89,7 @@ messages:
 
 
       % Facing East
-      if iAngle > ANGLE_ENE OR iAngle < ANGLE_ESE
+      if iAngle >= ANGLE_ENE OR iAngle < ANGLE_ESE
       {
          iCol = Send(who,@GetCol) + 2;
          iRow = Send(who,@GetRow);
@@ -141,6 +142,14 @@ messages:
       {
          iRow = Send(who,@GetRow) - 2;
          iCol = Send(who,@GetCol) + 2;
+      }
+
+      % Sanity check for invalid location.
+      if iRow = $
+         OR iCol = $
+      {
+         % Don't try to place the web on $ coordinates.
+         return;
       }
 
       oRoom = Send(who,@GetOwner);

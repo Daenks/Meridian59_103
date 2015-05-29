@@ -1,0 +1,171 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RadiusProjectile is AttackSpell
+
+% A projectile that is sent out in a radius, instead of at a target. The spell
+% itself hits all valid targets in the radius.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+   vrRadius_Icon = $
+   vrProjectile_icon = $
+   vbIsRangedAttack = TRUE
+
+   viProjectileFlag = PROJ_FLAG_LIGHT_SOURCE
+
+   % Projectile lighting information.
+   viProjectileLightFlags = LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC
+   % Medium light range, out of 255.
+   viProjectileLightIntensity = 100
+   % Default color is lightning.
+   viProjectileLightColor = LIGHT_LIGHTNING
+
+   viChance_To_Increase = 15
+
+properties:
+
+   % Range in FINENESS units, default 6 row/col units.
+   % The client needs to be sent range in row/col units, so divide
+   % by FINENESS whenever the row/col value is needed.
+   piRange = 384
+   piSpeed = 5
+
+   % Maximum amount of bonus damage mana focus gives us for casting this spell.
+   piManaFocusBonus = 10
+
+   % Number of projectiles to shoot, default 8.
+   piNumber = 8
+
+messages:
+
+   GetNumSpellTargets()
+   {
+      return 0;
+   }
+
+   GetTargets(who=$,lTargets=$)
+   "This returns a list of valid targets in range."
+   {
+      local lFinalTargets, oRoom, i, each_obj, iRange_squared, lActive,
+            iDistance;
+
+      lFinalTargets = $;
+
+      iRange_squared = piRange * piRange;
+      oRoom = Send(who,@GetOwner);
+      lActive = Send(oRoom,@GetplActive);
+
+      for i in lActive
+      {
+         each_obj = Send(oRoom,@HolderExtractObject,#data=i);
+         if each_obj <> who
+            AND IsClass(each_obj,&Battler)
+         {
+            % Skip players who are phased/in spectator mode.
+            if IsClass(each_obj,&Player)
+               AND Send(each_obj,@IsInCannotInteractMode)
+            {
+               continue;
+            }
+
+            iDistance = Send(who,@SquaredFineDistanceToLocation3D,
+                              #row=Send(each_obj,@GetRow),
+                              #col=Send(each_obj,@GetCol),
+                              #fine_row=Send(each_obj,@GetFineRow),
+                              #fine_col=Send(each_obj,@GetFineCol));
+            if iDistance <= iRange_squared
+               AND NOT (IsClass(oRoom,&GuildHall)
+                     AND Send(oRoom,@InFoyer,#who=each_obj)
+                        <> Send(oRoom,@InFoyer,#who=who))
+            {
+               lFinalTargets = Cons(each_obj,lFinalTargets);
+            }
+         }
+      }
+
+      return lFinalTargets;
+   }
+
+   CastSpell(who=$,lTargets=$)
+   {
+      local oOwner, i, lActive, each_obj;
+
+      oOwner = Send(who,@GetOwner);
+
+      % Show bolt flying through the air.
+      lActive = Send(oOwner,@GetHolderActive);
+
+      for i in lActive
+      {
+         each_obj = Send(oOwner,@HolderExtractObject,#data=i);
+
+         if isClass(each_obj,&Player)
+         {
+            Send(oOwner,@SomethingShotRadius,#who=who,#projectile=self,
+                  #flags=viProjectileFlag,#range=piRange/FINENESS,
+                  #number=piNumber,#iLightIntensity=viProjectileLightIntensity,
+                  #iLightColor=viProjectileLightColor,#speed=piSpeed);
+         }
+      }
+
+      propagate;
+   }
+
+   GetProjectileIcon()
+   "Return the icon used to display a spell shooting through the air."
+   {
+      return vrProjectile_icon;
+   }
+
+   GetProjectileSpeed()
+   "Return the speed of the projectile."
+   {
+      return piSpeed;
+   }
+
+   GetProjectileRange()
+   "Returns projectile range, in row/col units."
+   {
+      return piRange/FINENESS;
+   }
+
+   SendProjectileAnimation()
+   {
+      % Send animation info to user.
+      % Default is no animation, display with group 1
+      AddPacket(1,ANIMATE_NONE, 2,1);
+
+      return;
+   }
+
+   GetProjectileLightFlags()
+   {
+      return viProjectileLightFlags;
+   }
+
+   GetProjectileLightIntensity()
+   {
+      return viProjectileLightIntensity;
+   }
+
+   GetProjectileLightColor()
+   {
+      return viProjectileLightColor;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

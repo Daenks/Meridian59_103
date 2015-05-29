@@ -1,0 +1,193 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Rescue is TeleportationSpell
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   rescue_name_rsc = "rescue"
+   rescue_icon_rsc = rescuico.bgf
+   rescue_desc_rsc = \
+      "Calls upon Shal'ille to transport you back to "
+      "safety.  Ability determines how fast you are rescued.  "
+      "Requires emerald to cast."
+
+   Rescue_Start = "You start your rescue preparations."
+   Rescue_Success = \
+      "You feel a holy force rescue you from your current situation."
+   Rescue_Already_Cast = "You are already being rescued."
+   Rescue_Token_Cancel = "You cannot rescue while holding a token."
+   
+   Rescue_depart_to_destination = \
+      "%s vanishes in a burst of protective light!"
+   
+   rescue_sound = srescue.wav
+
+classvars:
+
+   vrName = rescue_name_rsc
+   vrIcon = rescue_icon_rsc
+   vrDesc = rescue_desc_rsc
+
+   viSpell_num = SID_RESCUE
+   viSchool = SS_SHALILLE
+   viSpell_level = 3
+   viMana = 16
+
+   vrSucceed_wav = rescue_sound
+   viChance_To_Increase = 10
+   viMeditate_ratio = 30
+
+   viFlash = FLASH_GOOD
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Emerald,1],plReagents);
+
+      return;
+   }
+
+   GetNumSpellTargets()
+   {
+      return 0;
+   }
+
+   CanPayCosts(who = $,lTargets = $)
+   {
+      % Can't cast just after attacking someone
+      if Send(who,@GetLastPlayerAttackTime)
+         + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+         > GetTime()
+      {
+         Send(who,@MsgSendUser,#message_rsc=spell_too_soon_since_attacking);
+
+         return FALSE;
+      }
+
+      if Send(who,@FindHolding,#class=&Token)
+      {
+         Send(who,@MsgSendUser,#message_rsc=Rescue_Token_Cancel);
+
+         return FALSE;
+      }
+
+      if NOT Send(who,@CanRescue)
+      {
+         Send(who,@MsgSendUser,#message_rsc=Rescue_Already_Cast);
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   CastSpell(who = $, iSpellPower = 0)
+   {
+      local iDelay;
+
+      % Start with the base time.  Reduce time by spellpower.
+      iDelay = 1000 * Send(Send(SYS, @GetSettings), @RescueBaseDelaySec);
+      iDelay = iDelay - (iSpellPower * iDelay) / 100 / 4;
+
+      % Add a little delay in sometimes.
+      if random(1,2) = 1
+      {
+         iDelay = iDelay + random(5000, 10000);
+      }
+
+      Send(who,@StartRescueTimer,#time=iDelay);
+      Send(who,@MsgSendUser,#message_rsc=Rescue_Start);
+
+      propagate;
+   }
+
+   DoRescue(who = $)
+   {
+      local i, each_obj, oCurrentRoom, oTargetRoom, oGuild;
+
+      Send(who,@MsgSendUser,#message_rsc=Rescue_Success);
+
+      oCurrentRoom = Send(who,@GetOwner);
+
+      if oCurrentRoom <> $
+      {
+         % Are they guilded with a guild hall?
+         oGuild = Send(who,@GetGuild);
+         if oGuild <> $
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2)
+         {
+            oTargetRoom = Send(oGuild,@GetGuildHall);
+
+            % If we have a guild hall, and not already in the guild hall,
+            %  and we're in the same region as the hall, go there.
+            if oTargetRoom <> $
+               AND oTargetRoom <> oCurrentRoom
+               AND Send(oTargetRoom,@GetRegion) = Send(oCurrentRoom,@GetRegion)
+            {
+               Post(oTargetRoom,@Teleport,#what=who);
+
+               return;
+            }
+         }
+
+         % Teleport to Ko'catan Inn if we're in Kocatan, or at Vigor Pool.
+         if Send(oCurrentRoom,@GetRegion) = RID_KOCATAN
+            OR Send(oCurrentRoom,@GetRoomNum) = RID_ORC_CAVE5_EXT
+         {
+            oTargetRoom = Send(SYS,@FindRoomByNum,#num=RID_KOC_INN);
+            Post(oTargetRoom,@Teleport,#what=who);
+
+            return;
+         }
+
+         % If we're in the orc caves, teleport to the Pool of Vigor.
+         % Except: actually being in the Pool of Vigor is handled above.
+         if Send(oCurrentRoom,@GetRegion) = RID_ORC_CAVE1
+         {
+            oTargetRoom = Send(SYS,@FindRoomByNum,#num=RID_ORC_CAVE5_EXT);
+            Post(oTargetRoom,@Teleport,#what=who);
+
+            return;
+         }
+      }
+
+      % Default: Go to our home room.
+      Post(who,@AdminGoToSafety);
+
+      for i in Send(Send(who,@GetOwner),@GetHolderActive)
+      {
+         each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            Send(each_obj,@MsgSendUser,
+                  #message_rsc=Rescue_depart_to_destination,
+                  #parm1=Send(who,@GetName));
+         }
+      }
+
+      return;
+   }
+
+   GetPotionClass()
+   {
+      return &RescuePotion;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

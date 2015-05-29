@@ -1,0 +1,140 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Poison is Disease
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   poison_start = "Fresh poison courses through your veins like fire."
+   poison_stop  = "The poison abates somewhat."
+   poison_icon = iposoned.bgf
+   poison_name = "poison"
+
+   poison_kraanan = \
+      "~IKraanan's magic fortifies you against the accursed venom!"
+   poison_desc = \
+   "Like fire under your skin, the poison burns with dangerous "
+   "strength, slowly sapping away at your strength, your health, "
+   "and your will to live.  "
+
+   poison_sound = poisoned.wav
+
+classvars:
+
+   vrIcon = poison_icon
+   viShow_enchantment_icon = 0x02
+   vrName = poison_name
+   vrDesc = poison_desc
+
+   vrEnchantment_On = poison_start
+   vrEnchantment_Off = poison_stop
+
+   viSpell_num = SID_POISON
+   viSchool = SS_QOR
+   viSpell_level = 1
+   viMana = 10
+   viSpell_Exertion = 4
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = poison_sound
+
+   viMeditate_ratio = 0
+
+   vbDisease = TRUE
+
+   % Players can't actually cast poison directly
+   viOutlaw = FALSE
+
+properties:
+
+   pbAccessible = FALSE
+
+messages:
+
+   GetSpellNum()
+   {
+      return SID_POISON;
+   }
+
+   MakePoisoned(who=$,lossrate=0,duration=0)
+   "Lossrate is in units of 10^-4 health points per second."
+   "Duration is in milliseconds."
+   {
+      local i, oSpell;
+
+      if not isClass(who,&Player)
+      {
+         return;
+      }
+
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_RESIST_POISON);
+      if Send(who,@IsEnchanted,#what=oSpell)
+      {
+         % Give players a decent chance to improve the spell!
+         for i in Send(who,@GetPassiveImprovementList)
+         {
+            if First(i) = oSpell
+            {
+               Post(First(i),@ImproveAbility,#who=who);
+            }
+         }
+
+         if (Random(1,100) < Send(who,@GetEnchantedState,#what=oSpell))
+         {
+            Send(who,@MsgSendUser,#message_rsc=poison_kraanan);
+            return;
+         }
+      }
+
+      Send(who,@AddPoison,#strength=lossrate);
+      Send(who,@StartEnchantment,#what=self,#time=duration,#state=lossrate);
+      Send(who,@MsgSendUser,#message_rsc=poison_start);
+      Send(who,@WaveSendUser,#wave_rsc=poison_sound);
+
+      return;
+   }
+
+   EndEnchantment(who=$,state=0,report=TRUE)
+   {
+      Send(who,@RemovePoison,#strength=state);
+      if report
+      {
+         Send(who,@MsgSendUser,#message_rsc=poison_stop);
+      }
+
+      return;
+   }
+
+   IsPersonalEnchantment()
+   {
+      % Purify will get rid of sickness.
+      return TRUE;
+   }
+
+   IsHarmful()
+   {
+      % Purge won't get rid of sickness
+      return TRUE;
+   }
+
+   CanBeRemovedByPlayer()
+   "Returns if a spell can be removed by normal Purge/Purify"
+   {
+      % Most sicknesses can be purged or purified.
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

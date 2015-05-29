@@ -11,13 +11,16 @@
 DMRescue is DMSpell
 
 constants:
+
    include blakston.khd
 
 resources:
 
    dmrescue_name_rsc = "deliverance"
    dmrescue_icon_rsc = light.bgf
-   
+   dmrescue_only_oog = \
+       "You may only deliver players from Out of Grace."
+
 classvars:
 
    vrName = dmrescue_name_rsc
@@ -34,42 +37,48 @@ messages:
       return 1;
    }
 
-   CastSpell(who = $, lTargets = $)
+   CastSpell(who=$,lTargets=$)
    {
-      local i, j, oRoom, sHonor;
+      local i, j, oRoom, oHell;
+
+      % Unless the player is a 'SeniorGuide' or above, all they can
+      % do with this spell is send players home from OoG.
+      oHell = Send(SYS,@FindRoomByNum,#num=RID_OUTOFGRACE);
+
+      if NOT Send(who,@IsActor)
+      {
+         if NOT (Send(who,@GetOwner) = oHell)
+         {
+            Send(who,@MsgSendUser,#message_rsc=dmrescue_only_oog);
+
+            return;
+         }
+      }
 
       for j in lTargets
       {
          i = j;
 
-         if isClass(i,&LogoffGhost)
+         if IsClass(i,&LogoffGhost)
          {
-            i = send(i,@GetGhostedPlayer);
+            i = Send(i,@GetGhostedPlayer);
             Send(i,@AdminGoToSafety);
-            oRoom = send(SYS,@FindRoomByNum,#num=send(i,@GetSaveRoom));
-            send(SYS,@UtilGoToSquare,#what=j,#where=oRoom,
-                 #row=send(i,@GetSaveRow),#col=send(i,@GetSaveCol));
+            oRoom = Send(SYS,@FindRoomByNum,#num=Send(i,@GetSaveRoom));
+            Send(SYS,@UtilGoToSquare,#what=j,#where=oRoom,
+                 #row=Send(i,@GetSaveRow),#col=Send(i,@GetSaveCol));
 
-            sHonor = send(i,@GetHonorString);
-            if StringContain(sHonor,damn_last_annoyed)
-            {
-               ClearTempString();
-               send(i,@SetHonorString,#string=GetTempString());
-            }
+            % If they have the damned string, this will remove it.
+            Send(i,@RemoveHonorString,#string=damn_last_annoyed);
 
             continue;
          }
 
-         if isClass(i,&Player)
+         if IsClass(i,&Player)
          {
             Send(i,@AdminGoToSafety);
 
-            sHonor = send(i,@GetHonorString);
-            if StringContain(sHonor,damn_last_annoyed)
-            {
-               ClearTempString();
-               send(i,@SetHonorString,#string=GetTempString());
-            }
+            % If they have the damned string, this will remove it.
+            Send(i,@RemoveHonorString,#string=damn_last_annoyed);
 
             continue;
          }
@@ -83,5 +92,4 @@ messages:
    }
 
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

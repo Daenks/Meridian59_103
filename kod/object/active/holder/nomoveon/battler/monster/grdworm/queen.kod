@@ -46,11 +46,14 @@ classvars:
    viAttack_spell = ATCK_SPELL_ACID
    viLevel = 130
    viDifficulty = 7
+   viVisionDistance = 22
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viKarma = -50
    viDefault_behavior = AI_FIGHT_HYPERAGGRESSIVE | AI_FIGHT_SINGLEMINDED
    viGender = GENDER_FEMALE
-   viCashmin = 650
-   viCashmax = 2000
+   viCashmin = 250
+   viCashmax = 700
    viTrailLength = 4
    vbTrailLarge = TRUE
 

@@ -47,15 +47,14 @@ classvars:
 
    viLevel = 30
    viDifficulty = 5
-   viKarma = 15
+   viVisionDistance = 8
+   viKarma = 20
    viCashmin = 150
-   viCashmax = 450
+   viCashmax = 300
    vrSound_hit = centipede_sound_hit
    vrSound_miss = centipede_sound_miss
    vrSound_aware = centipede_sound_aware
    vrSound_death = centipede_sound_death
-
-
 
 properties:
 
@@ -65,10 +64,11 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 40, -ATCK_SPELL_FIRE ],
-                        [ 20, ATCK_WEAP_SLASH],
-			[ -20, ATCK_WEAP_MAGIC],
-                        [-20, -ATCK_SPELL_SHOCK] ];
+      plResistances = [ [-ATCK_SPELL_FIRE, 40 ],
+                        [ATCK_WEAP_SLASH, 20],
+                        [ATCK_WEAP_MAGIC, -20],
+                        [-ATCK_SPELL_SHOCK, -20] ];
+
       propagate;
    }
 
@@ -77,7 +77,7 @@ messages:
       piAnimation = ANIM_ATTACK;
       Send(poOwner,@SomethingChanged,#what=self);
       piAnimation = ANIM_NONE;
-      
+
       return;
    }
 
@@ -100,12 +100,13 @@ messages:
    {
       if piAnimation = ANIM_ATTACK
       {
-	 AddPacket(1,ANIMATE_ONCE,4,160,2,7,2,12,2,1);
-	 return;
+         AddPacket(1,ANIMATE_ONCE,4,160,2,7,2,12,2,1);
+
+         return;
       }
 
       % if no body animation
-      
+
       propagate;
    }
 
@@ -114,7 +115,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

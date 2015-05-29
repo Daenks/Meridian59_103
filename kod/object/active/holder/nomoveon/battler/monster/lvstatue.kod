@@ -130,9 +130,9 @@ resources:
    LivingStatue_leftarm_gauntlet_male = ble.bgf
    LivingStatue_leftarm_gauntlet_female = blf.bgf
 
-   LivingStatue_sound_attack = stat_atk.wav
-   LivingStatue_sound_aware = stat_awr.wav
-   LivingStatue_sound_death = stat_die.wav
+   LivingStatue_sound_attack = xeoatk.wav
+   LivingStatue_sound_aware = xeodie.wav
+   LivingStatue_sound_death = xeo1awr.wav
 
 classvars:
 
@@ -152,12 +152,13 @@ classvars:
    viDead_drawfx = DRAWFX_SECONDTRANS
 
    % percentage chance to be female
-   viChanceFemale = 50  
+   viChanceFemale = 50
 
    % Our normal speed when active
    viNormalSpeed = SPEED_AVERAGE
-   viCashmin = 200
-   viCashmax = 800
+   viCashmin = 150
+   viCashmax = 500
+
 properties:
 
    % Put these as properties so they can be set
@@ -169,6 +170,9 @@ properties:
 
    viLevel = 75
    viDifficulty = 5
+   viVisionDistance = 3
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viGender = GENDER_MALE
 
    viSpeed = SPEED_NONE
@@ -231,7 +235,7 @@ messages:
          viLevel = viLevel + 15;
          viDifficulty = viDifficulty + 2;
 
-	 % This makes the soliders not have karma
+         % This makes the soliders not have karma
          pbDontDispose = TRUE;
       }
       else
@@ -283,7 +287,7 @@ messages:
    {
       local i, iThreshold, iRandomDamage, rDamageReport, each_obj;
 
-      iThreshold = piHit_points*5/piMax_hit_points;
+      iThreshold = piHit_points/(piMax_hit_points*20);
 
       % General damage report
       rDamageReport = LivingStatue_damage;
@@ -428,12 +432,6 @@ messages:
       return;
    }
 
-   GetVisionDistance()
-   {
-      % A fairly short range for these monsters.
-      return 3;
-   }
-
    TweakBehavior()
    "Our default behavior it not be noticable as a monster."
    {
@@ -451,6 +449,7 @@ messages:
    {
       % Make ourselves mobile!
       viSpeed = viNormalSpeed;
+
       piBehavior = piBehavior & ~(AI_NOMOVE | AI_NOFIGHT | AI_NPC);
       if poOwner <> $
       {
@@ -1076,10 +1075,11 @@ messages:
    % Override from monster superclass
    CreateDeadBody(killer=$)
    {
-      return Create(&DeadBody,#icon=vrDead_Icon,#name=vrDead_Name,
-                    #playername=Send(killer,@GetTrueName),#mob=TRUE,
-                    #monstername=LivingStatue_name_rsc,
-                    #PlayerBodyOverlay=vrDead_Legs,#DrawFX=viDead_drawfx);
+      return Create(&DeadBody,
+                     #victim=self,
+                     #killer=killer,
+                     #PlayerBodyOverlay=vrDead_Legs,
+                     #DrawFX=viDead_drawfx);
    }
 
    CreateTreasure(who=$,corpse=$)
@@ -1087,7 +1087,9 @@ messages:
       local i,iGen_items,oTreasure,oTreasure_type;
 
       % Soldiers have a small chance to drop a rose as treasure.
-      if pbIsSoldier AND random(0,100) = 59
+      if pbIsSoldier
+         AND Random(0,100) = 59
+         AND NOT pbIllusion
       {
          oTreasure = Create(&Rose,#corpse=corpse);
 
@@ -1109,23 +1111,10 @@ messages:
       propagate;
    }
 
-   IsAlly(target = $, regroup = FALSE)
-   {
-      local iFaction;
-
-      if IsClass(target,GetClass(self))
-      {
-         return TRUE;
-      }
-      
-      propagate;
-   }
-
-   CanMorphTo() 
+   CanMorphTo()
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

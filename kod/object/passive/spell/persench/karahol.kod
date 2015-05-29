@@ -23,15 +23,18 @@ resources:
       "Kara'hol for a brief period, enhancing the ferocity of "
       "your attacks.  When the spirit departs, your body "
       "is temporarily paralyzed from shock.  "
-      "Requires the sacrifice of a few entroot berries to cast."
+      "Requires the sacrifice of two entroot berries to cast."
    
    KaraholsCurse_on = \
       "The spirit of Kara'hol descends upon you making your "
       "blood boil and your muscles twitch with newfound vigor."
-   KaraholsCurse_off = "Your body freezes as total exhaustion grips your limbs."
-   KaraholsCurse_already_enchanted_rsc = "Your blood already boils with Kara'hol's spirit!"
+   KaraholsCurse_off = \
+      "Your body freezes as total exhaustion grips your limbs."
+   KaraholsCurse_already_enchanted_rsc = \
+      "Your blood already boils with Kara'hol's spirit!"
 
-   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat abilities, but with a price to pay later."
+   Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat "
+   "abilities, but with a price to pay later."
 
    KaraholsCurse_sound = qkcurse.wav
 
@@ -53,6 +56,7 @@ classvars:
 
    vrSucceed_wav = KaraholsCurse_sound
    viChance_To_Increase = 45
+   viMeditate_ratio = 30
 
    vrAlreadyEnchanted = KaraholsCurse_already_enchanted_rsc
    vrEnchantment_On = KaraholsCurse_on
@@ -61,10 +65,12 @@ classvars:
    viFlash = FLASH_GOOD
 
    % Cannot enchant others because of drawback.
-   vbCanCastOnOthers = FALSE  
+   vbCanCastOnOthers = FALSE
+
+   viOffensive = TRUE
 
 properties:
-   
+
 messages:
 
    ResetReagents()
@@ -75,10 +81,10 @@ messages:
       return;
    }
 
-   CastSpell(who = $,iSpellPower= 0, ltargets = $)
+   CastSpell(who=$,iSpellPower=0,lTargets=$)
    {
       Send(who,@AddAttackModifier,#what=self);
-     
+
       propagate;
    }
 
@@ -96,7 +102,7 @@ messages:
       return iDuration;
    }
 
-   EndEnchantment(who=$, report=TRUE, state=0)
+   EndEnchantment(who=$,report=TRUE,state=0)
    {
       local oHoldSpell, iDuration;
 
@@ -108,30 +114,47 @@ messages:
       {
          Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
       }
-      
-      % Hold duration is measured in seconds, not milliseconds.  Lasts 1/6 the time of the bonus.
+
+      % Hold duration is measured in seconds, not milliseconds.
+      % Lasts 1/6 the time of the bonus.
       iDuration = (Send(self,@GetDuration,#iSpellPower=state))/6;
-      Send(oHoldSpell,@DoHold,#what=self,#otarget=who,#iDuration=iDuration,#report=TRUE,#bAllowFreeAction=FALSE);
-      
+      Send(oHoldSpell,@DoHold,#what=self,#oTarget=who,#iDuration=iDuration,
+            #report=TRUE,#bAllowFreeAction=FALSE);
+
       propagate;
    }
 
-   % stuff we handle to be an attack modifier
-   ModifyHitRoll(who = $,what = $,hit_roll = $)
-   {      
-      return hit_roll + 100 + (send(who,@GetEnchantedState,#what=self)*2);
+   % Stuff we handle to be an attack modifier
+   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      return hit_roll + 100 + (Send(who,@GetEnchantedState,#what=self)*2);
    }
    
-   ModifyDamage(who = $,what = $,damage = $)
+   ModifyDamage(who=$,what=$,damage=$)
    {
-      return (damage + 1 + Random(0,send(who,@GetEnchantedState,#what=self)/20));
+      return (damage + 1 + Random(0,Send(who,@GetEnchantedState,#what=self)/20));
    }
 
    GetPotionClass()
    {
-      RETURN &KaraholsCursePotion;
+      return &KaraholsCursePotion;
    }
 
+   EffectDesc(who=$)
+   {
+      AppendTempString("\n\n");
+      AppendTempString("Your current ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" enchantment adds ");
+      AppendTempString(100 + (Send(who,@GetEnchantedState,#what=self) * 2));
+      AppendTempString(" offense and 1-");
+      AppendTempString(1 + (Send(who,@GetEnchantedState,#what=self)/20));
+      AppendTempString(" attack damage. When it expires, it will paralyze you for ");
+      AppendTempString(((40+(Send(who,@GetEnchantedState,#what=self)/2)) * 1000)/6);
+      AppendTempString(" milliseconds.");
+
+      propagate;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

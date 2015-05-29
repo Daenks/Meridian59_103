@@ -16,7 +16,7 @@ constants:
 
 resources:
 
-   room_name_OutdoorsKD3 ="Deep in the Jungle"
+   room_name_OutdoorsKD3 = "Deep in the Jungle"
    room_OutdoorsKD3 = KD3.roo
    OutdoorsKD3_music = boneprst.mp3
 
@@ -46,6 +46,8 @@ properties:
    piInit_count_max = 9
 
    piMonster_count_max = 12
+
+   pbSnowGroundTexture = TRUE
 
 messages:
 
@@ -123,6 +125,5 @@ messages:
       propagate;
    }
 
-
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

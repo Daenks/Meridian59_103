@@ -45,13 +45,13 @@ classvars:
    % In seconds, since it works off GetTime().
    viPostCast_time = 2
 
-   viChance_To_Increase = 5
+   viChance_To_Increase = 20
 
 properties:
 
    piDamageMin = 12
    piDamageMax = 20
-   piRange = 5
+   piRange = 5 * FINENESS
 
 messages:
 

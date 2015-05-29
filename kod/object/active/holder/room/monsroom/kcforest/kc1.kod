@@ -16,7 +16,7 @@ constants:
 
 resources:
 
-   room_name_OutdoorsKC1 ="The Chasm"
+   room_name_OutdoorsKC1 = "The Chasm"
    room_OutdoorsKC1 = KC1.roo
    OutdoorsKC1_music = avarwar.mp3
 
@@ -49,6 +49,9 @@ properties:
 
    piMonster_count_max = 12
 
+   pbSnowGroundTexture = TRUE
+
+
 messages:
 
    Constructed()
@@ -60,7 +63,7 @@ messages:
    }
 
    CreateJungleItemCoords()
-   {      
+   {
       plItem_coords = [ [&FireSand,19,45], [&FireSand,24,14] ];
 
       % Do not propagate
@@ -70,7 +73,7 @@ messages:
    CreateStandardExits()
    {
       plEdge_Exits = $;
-      plEdge_Exits = Cons([LEAVE_WEST, RID_KB1, 22, 49, ROTATE_NONE], plEdge_exits);      
+      plEdge_Exits = Cons([LEAVE_WEST, RID_KB1, 22, 49, ROTATE_NONE], plEdge_exits);
       plEdge_Exits = Cons([LEAVE_EAST, RID_KD1, 26, 1, ROTATE_NONE], plEdge_exits);
 
       propagate;
@@ -87,7 +90,6 @@ messages:
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

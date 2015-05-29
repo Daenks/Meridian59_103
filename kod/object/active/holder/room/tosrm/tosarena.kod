@@ -114,9 +114,12 @@ properties:
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
    viTerrain_type = TERRAIN_CITY
 
+   pbSnowGroundTexture = TRUE
+
    pbLocked = FALSE
    pbRealdeath = FALSE
-
+   pbNoReagents = TRUE
+   
 messages:
 
 
@@ -278,13 +281,12 @@ messages:
 
          if (iRow < NORTH_BOUNDARY OR iCol < WEST_BOUNDARY)
             OR (iRow > SOUTH_BOUNDARY OR iCol > EAST_BOUNDARY)
-         {                                                                         
-            if (not bNonPlayerOkay)
-               AND ( ((iRow > 8 AND iRow < 17) AND (iCol > 18 AND iCol < 26))
+         {
+            if ( ((iRow > 8 AND iRow < 17) AND (iCol > 18 AND iCol < 26))
                      OR ((iRow = 4 OR iRow = 5) AND (iCol = 4 OR iCol = 5))
                      OR ((iRow = 5 OR iRow = 6) AND (iCol = 5 OR iCol = 6))
                      OR ((iRow = 20 OR iRow = 21) AND (iCol = 4 OR iCol = 5))
-                     OR ((iRow = 19 OR iRow = 20) AND (iCol = 5 OR iCol = 6)) )         
+                     OR ((iRow = 19 OR iRow = 20) AND (iCol = 5 OR iCol = 6)) )
             {
                return TRUE;
             }
@@ -558,7 +560,26 @@ messages:
 
    EndFight(lCombatants = $)
    {
+      local i, j, k;
+
       Send(self,@LowerMaze);
+
+      % Remove radius enchantments
+      for i in Send(self,@GetHolderActive)
+      {
+         j = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(j,&Player)
+            OR (IsClass(j,&Monster) AND NOT ((Send(j,@GetBehavior) & AI_NPC)))
+         {
+            for k in Send(j,@GetRadiusEnchantments)
+            {
+               Send(Nth(k,1),@CancelRadiusEnchantment,#source=Nth(k,3));
+            }
+         }
+      }
+
+      % Remove room enchantments
+      Send(self,@RemoveAllEnchantments);
 
       %% cages in corners.
       Send(self,@SetSector,#sector=8,#animation=ANIMATE_CEILING_LIFT,#height=124,#speed=32);
@@ -603,7 +624,7 @@ messages:
       Send(self,@SomeoneSaid,#string=TosArena_start_tournament,#type=SAY_MESSAGE,#what=self);
       Send(self,@TeleportToBooth,#who=marshal);
       Send(self,@SomethingWaveRoom,#wave_rsc=TosArena_Fanfare_Sound);
-
+      pbNoReagents = FALSE;
       return;
    }
 
@@ -611,7 +632,7 @@ messages:
    {
       Send(self,@someonesaid,#string=TosArena_end_tournament,#type=SAY_MESSAGE,#what=self);
       Send(self,@SomethingWaveRoom,#wave_rsc=TosArena_Fanfare_Sound);
-      
+      pbNoReagents = TRUE;     
       return;
    }
 
@@ -752,6 +773,68 @@ messages:
       return pbRealdeath;
    }
 
+   StartSnow(bOnGround=TRUE)
+   {
+      % Check if we can have weather effects here.
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      % If there's a sandstorm weather effect here, clear it.
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SANDSTORM)
+      {
+         Send(self,@EndSandstorm);
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            Send(self,@ChangeTexture,#id=0,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=1,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=2,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=3,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=4,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=5,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=6,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=7,#new_texture=61015,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=15,#new_texture=61016,
+                  #flags=CTF_BELOWWALL);
+         }
+      }
+
+      Send(self,@SetRoomFlag,#flag=ROOM_SNOWING,#value=TRUE);
+      Send(self,@WeatherChanged);
+
+      return;
+   }
+
+   EndSnow(override=FALSE)
+   "Use override if rooms have manually placed textures."
+   {
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+      {
+         Send(self,@SetRoomFlag,#flag=ROOM_SNOWING,#value=FALSE);
+         Send(self,@WeatherChanged);
+      }
+
+      if pbSnowGroundTexture
+         OR override
+      {
+         Send(self,@RemoveTextureChange,#id=0);
+         Send(self,@RemoveTextureChange,#id=1);
+         Send(self,@RemoveTextureChange,#id=2);
+         Send(self,@RemoveTextureChange,#id=3);
+         Send(self,@RemoveTextureChange,#id=4);
+         Send(self,@RemoveTextureChange,#id=5);
+         Send(self,@RemoveTextureChange,#id=6);
+         Send(self,@RemoveTextureChange,#id=7);
+         Send(self,@RemoveTextureChange,#id=15);
+      }
+
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -214,6 +214,8 @@
 #define ID_CONFIGMENU                   186
 #define IDS_CANTSENDREQUEST             187
 #define IDS_CANTGETFILESIZE             188
+#define IDS_FORUMURL                    189
+#define IDS_WIKIURL                     190
 #define IDC_PORTNUM                     1000
 #define IDC_HOST                        1001
 #define IDC_ITEMLIST                    1002
@@ -397,6 +399,10 @@
 #define IDC_SOUND_VOLUME                1205
 #define IDC_MUSIC_VOLUME                1206
 #define IDC_SOUND_VOLUME2               1207
+#define IDC_WEATHER                     1208
+#define IDC_TEMPSAFE                    1209
+#define IDC_GROUPING                    1210
+#define IDC_SHOWFPS                     1211
 #define ID_GAME_EXIT                    3002
 #define ID_FONT_MAIL                    3014
 #define ID_FONT_LIST                    3015
@@ -449,14 +455,18 @@
 #define ID_OPTIONS_FONT_MAP_TEXT        3510
 #define ID_HELP_REQUEST_CS              3511
 #define IDM_DRAW_MAP                    3512
+#define ID_COLOR_MAGIC                  3513
+#define ID_FORUM                        3514
+#define ID_WIKI                         3515
+#define ID_HOMEPAGE                     3516
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        187
-#define _APS_NEXT_COMMAND_VALUE         3513
-#define _APS_NEXT_CONTROL_VALUE         1206
+#define _APS_NEXT_RESOURCE_VALUE        191
+#define _APS_NEXT_COMMAND_VALUE         3517
+#define _APS_NEXT_CONTROL_VALUE         1212
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif

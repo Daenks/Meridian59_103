@@ -63,6 +63,8 @@ static char INIScrollLock[]  = "ScrollLock";
 static char INITooltips[]    = "Tooltips";
 static char INIInventory[]   = "InventoryNum";
 static char INIAggressive[]  = "Aggressive";
+static char INITempSafe[]    = "TempSafe";
+static char INIGrouping[]    = "Grouping";
 static char INIBounce[]      = "Bounce";
 static char INIToolbar[]     = "Toolbar";
 static char INIPainFX[]      = "Pain";
@@ -104,9 +106,9 @@ static char INIDebug[]        = "Debug";
 static char INISecurity[]     = "Security";
 static char INITechnical[]    = "Technical";
 
+static char INIShowFPS[] = "ShowFPS";
 #ifndef NODPRINTFS
 static char INIShowMapBlocking[]= "ShowMapBlocking";
-static char INIShowFPS[]     = "ShowFPS";
 static char INIShowUnseenWalls[] = "ShowUnseenWalls";
 static char INIShowUnseenMonsters[] = "ShowUnseenMonsters";
 static char INIAvoidDownloadAskDialog[] = "AvoidDownloadAskDialog";
@@ -117,7 +119,7 @@ static char INIQuickStart[]   = "QuickStart";
 
 static int   DefaultRedialDelay   = 60;
 static char  DefaultHostname[]    = "cheater";
-static char  DefaultDomainFormat[] = "meridian%d.daenks.org"; // MUST have a %d in it somewhere.
+static char  DefaultDomainFormat[] = "meridian%d.openmeridian.org"; // MUST have a %d in it somewhere.
 static char  DefaultSockPortFormat[] = "59%.2d";
 static int   DefaultServerNum     = -1;
 static int   DefaultTimeout       = 1440; // 1 day in minutes (60*24)
@@ -228,10 +230,12 @@ void ConfigLoad(void)
    config.tooltips     = GetConfigInt(interface_section, INITooltips, True, ini_file);
    config.inventory_num= GetConfigInt(interface_section, INIInventory, True, ini_file);
    config.aggressive   = GetConfigInt(interface_section, INIAggressive, False, ini_file);
+   config.tempsafe     = GetConfigInt(interface_section, INITempSafe, True, ini_file);
+   config.grouping     = GetConfigInt(interface_section, INIGrouping, True, ini_file);
    config.bounce       = GetConfigInt(interface_section, INIBounce, True, ini_file);
    config.toolbar      = GetConfigInt(interface_section, INIToolbar, True, ini_file);
    config.pain         = GetConfigInt(interface_section, INIPainFX, True, ini_file);
-   config.weather      = GetConfigInt(interface_section, INIWeatherFX, False, ini_file);
+   config.weather      = GetConfigInt(interface_section, INIWeatherFX, True, ini_file);
    config.antiprofane  = GetConfigInt(interface_section, INIAntiProfane, True, ini_file);
    config.ignoreprofane = GetConfigInt(interface_section, INIIgnoreProfane, False, ini_file);
    config.extraprofane = GetConfigInt(interface_section, INIExtraProfane, False, ini_file);
@@ -266,7 +270,6 @@ void ConfigLoad(void)
    config.debug    = False;
    config.security = True;
    config.showMapBlocking = FALSE;
-   config.showFPS = FALSE;
    config.showUnseenWalls = FALSE;
    config.showUnseenMonsters = FALSE;
    config.avoidDownloadAskDialog = FALSE;
@@ -276,7 +279,6 @@ void ConfigLoad(void)
    config.debug				= GetConfigInt(special_section, INIDebug, False, ini_file);
    config.security			= GetConfigInt(special_section, INISecurity, True, ini_file);
    config.showMapBlocking	= GetConfigInt(special_section, INIShowMapBlocking, 0, ini_file);
-   config.showFPS			= GetConfigInt(special_section, INIShowFPS, 0, ini_file);
    config.showUnseenWalls	= GetConfigInt(special_section, INIShowUnseenWalls, 0, ini_file);
    config.showUnseenMonsters = GetConfigInt(special_section, INIShowUnseenMonsters, 0, ini_file);
    config.avoidDownloadAskDialog = GetConfigInt(special_section, INIAvoidDownloadAskDialog, 0, ini_file);
@@ -284,7 +286,7 @@ void ConfigLoad(void)
    config.clearCache		= GetConfigInt(special_section, INIClearCache, False, ini_file);
    //config.quickstart = GetConfigInt(special_section, INIQuickStart, 0, ini_file);
 #endif
-
+   config.showFPS = GetConfigInt(special_section, INIShowFPS, False, ini_file);
    config.timeout	= GetConfigInt(misc_section, INITimeout, DefaultTimeout, ini_file);
    config.technical = GetConfigInt(special_section, INITechnical, False, ini_file);
 
@@ -334,6 +336,8 @@ void ConfigSave(void)
    WriteConfigInt(interface_section, INITooltips, config.tooltips, ini_file);
    WriteConfigInt(interface_section, INIInventory, config.inventory_num, ini_file);
    WriteConfigInt(interface_section, INIAggressive, config.aggressive, ini_file);
+   WriteConfigInt(interface_section, INITempSafe, config.tempsafe, ini_file);
+   WriteConfigInt(interface_section, INIGrouping, config.grouping, ini_file);
    WriteConfigInt(interface_section, INIBounce, config.bounce, ini_file);
    WriteConfigInt(interface_section, INIToolbar, config.toolbar, ini_file);
    WriteConfigInt(interface_section, INIDrawMap, config.drawmap, ini_file);
@@ -354,8 +358,8 @@ void ConfigSave(void)
    WriteConfigInt(misc_section, INIServerHigh, config.server_high, ini_file);
    WriteConfigInt(misc_section, INIServerGuest, config.server_guest, ini_file);
    WriteConfigInt(misc_section, INILastPass, config.lastPasswordChange, ini_file);
-
-   // "Special" section options NOT saved, so that they're not normally visible
+   WriteConfigInt(special_section, INIShowFPS, config.showFPS, ini_file);
+   // "Special" section options NOT saved, so that they're not normally visible (except FPS)
 
    WritePrivateProfileString(interface_section, INIOldProfane, NULL, ini_file); // remove old string
 }

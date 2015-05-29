@@ -35,91 +35,94 @@
    HOUR = 3600
    MINUTE = 60
 
-   %%% Object type constants
+   %%% KOD Object type constants
 
    ACTIVE = 1
    PASSIVE = 2
 
-   %%% Object flags for client
-
-   % 0's are default value
+   % MoveOn type enum, now separate from object flags.
    MOVEON_YES        = 0
-   MOVEON_NO         = 0x00000001
-   MOVEON_TELEPORTER = 0x00000002
-   MOVEON_NOTIFY     = 0x00000003
-   USER_NO           = 0
-   USER_YES          = 0x00000004
-   BATTLER_NO        = 0
-   BATTLER_YES       = 0x00000008
-   GETTABLE_NO       = 0
-   GETTABLE_YES      = 0x00000010
+   MOVEON_NO         = 1
+   MOVEON_TELEPORTER = 2
+   MOVEON_NOTIFY     = 3
+
+   % Object flags for client.
+   OF_GROUPING       = 0x00000002
+   OF_PLAYER         = 0x00000004
+   OF_ATTACKABLE     = 0x00000008
+   OF_GETTABLE       = 0x00000010
    % careful--only one's user is ALLOWED to put/get in.
-   CONTAINER_NO      = 0
-   CONTAINER_YES     = 0x00000020
-   LOOK_YES          = 0
-   LOOK_NO           = 0x00000040
+   OF_CONTAINER      = 0x00000020
+   OF_NOEXAMINE      = 0x00000040
+   OF_ITEM_MAGIC     = 0x00000080
+   OF_HANGING        = 0x00000100
+   OF_OFFERABLE      = 0x00000200
+   OF_BUYABLE        = 0x00000400
+   OF_ACTIVATABLE    = 0x00000800
+   OF_APPLYABLE      = 0x00001000
+   OF_SAFETY         = 0x00002000
+   OF_TEMPSAFE       = 0x00004000
 
-   % unused       = 0x00000080
+   OF_BOUNCING       = 0x00010000
+   OF_FLICKERING     = 0x00020000
+   OF_FLASHING       = 0x00040000
+   OF_PHASING        = 0x00080000
 
-   INVISIBLE_YES     = 0x00000100
-   INVISIBLE_NO      = 0
-   OFFER_YES         = 0x00000200
-   OFFER_NO          = 0
-   BUY_YES           = 0x00000400
-   BUY_NO            = 0
-   ACTIVATE_YES      = 0x00000800
-   ACTIVATE_NO       = 0
-
-   % Borrows same value as activate. Must always be false for players.
-   % Used only by reflections so GuideDialogue can tell difference.
-   FALSEPLAYER_YES   = 0x00000800
-
-   APPLY_YES         = 0x1000
-   APPLY_NO          = 0
-   SAFETY_YES        = 0x2000
-   SAFETY_NO         = 0
-
-   % Visual effects
-   FLICKERING_YES    = 0x00020000
-   FLICKERING_NO     = 0
-   FLASHING_YES      = 0x00040000
-   FLASHING_NO       = 0
-   BOUNCE_YES        = 0x00060000
-   BOUNCE_NO         = 0
-   PHASING_YES       = 0x00080000
-   PHASING_NO        = 0
-
-   DRAWFX_NO = 0
-   DRAWFX_TRANSLUCENT_25 = 0x100000
-   DRAWFX_TRANSLUCENT_50 = 0x200000
-   DRAWFX_TRANSLUCENT_75 = 0x300000
-   DRAWFX_BLACK          = 0x400000
-   DRAWFX_INVISIBLE      = 0x500000
-   DRAWFX_DITHERINVIS    = 0x700000
-   DRAWFX_DITHERTRANS    = 0x800000
-   DRAWFX_DOUBLETRANS    = 0x900000
-   DRAWFX_SECONDTRANS    = 0xA00000
-   DRAWFX_MASK          = 0x1F00000
-
-   % Object flags
-   OF_HANGING = 0x10000
-   OF_FLICKERING = 0x20000
-   OF_FLASHING = 0x40000
-   OF_PHASING = 0x80000
-
-   % Bits 0x4000, 0x8000, 0x10000 in total describe the player type
-   PLAYER_NO         = 0
-   PLAYER_PK         = 0x4000
-   PLAYER_OUTLAW     = 0x8000
-   PLAYER_DM         = 0xC000
-   PLAYER_CREATOR    = 0x10000
-   PLAYER_SUPER      = 0x14000
-   PLAYER_EVENT      = 0x1C000
+   % Drawing effects flags, separate from the boolean object flags.
+   DRAWFX_NONE           = 0
+   DRAWFX_TRANSLUCENT_25 = 0x01
+   DRAWFX_TRANSLUCENT_50 = 0x02
+   DRAWFX_TRANSLUCENT_75 = 0x03
+   DRAWFX_BLACK          = 0x04
+   DRAWFX_INVISIBLE      = 0x05
+   DRAWFX_TRANSLATE      = 0x06 % This is reserved by client, do not use.
+   DRAWFX_DITHERINVIS    = 0x07
+   DRAWFX_DITHERTRANS    = 0x08
+   DRAWFX_DOUBLETRANS    = 0x09
+   DRAWFX_SECONDTRANS    = 0x0A
+   DRAWFX_DITHERGREY     = 0x0B % Old logoff ghost greyscale effect.
+   DRAWFX_MASK           = 0xFF
 
    % What is the target, according to the viewer?  Used for special flagging.
-   PLAYER_IS_ENEMY      = 0x02000000
-   PLAYER_IS_FRIEND     = 0x04000000
-   PLAYER_IS_GUILDMATE  = 0x08000000
+   % This is now its own bitfield separate from object flags.
+   MM_NONE                 = 0x00000000
+   MM_PLAYER               = 0x00000001
+   MM_PLAYER_IS_ENEMY      = 0x00000002
+   MM_PLAYER_IS_FRIEND     = 0x00000004
+   MM_PLAYER_IS_GUILDMATE  = 0x00000008
+   MM_BUILDER_GROUP        = 0x00000010
+   MM_MONSTER              = 0x00000020
+   MM_NPC                  = 0x00000040
+   MM_MINION_OTHER         = 0x00000080
+   MM_MINION_SELF          = 0x00000100
+   MM_TEMPSAFE             = 0x00000200
+   MM_MINIBOSS             = 0x00000400
+   MM_BOSS                 = 0x00000800
+
+   % Player name color sent as hex RGB value. Define constants
+   % for ease of use as needed. Requires OF_PLAYER boolean flag
+   % to be set to draw a name.
+   NC_PLAYER       = 0xFFFFFF   % Default, white name.
+   NC_SHADOW       = 0x000000   % Set if name should be drawn black.
+   NC_KILLER       = 0xFF0000   % Set if object is a killer.
+   NC_OUTLAW       = 0xFC9E00   % Set if object is an outlaw.
+   NC_DM           = 0x00FFFF   % Set if object is a DM player.
+   NC_CREATOR      = 0xFFFF00   % Set if object is a creator player.
+   NC_SUPER        = 0x00FF00   % Set if object is a "super DM".
+   NC_MODERATOR    = 0x0078FF   % Set if object is a "moderator".
+   NC_EVENTCHAR    = 0xFF00FF   % Set if object is an event character.
+   NC_DAENKS       = 0xB300B3   % Purple name color for Daenks.
+   NC_COLOR_MAX    = 0xFFFFFF   % Max color, defined for clarity.
+
+   % Object type enum. Used in the client for differentiating objects.
+   OT_NONE         = 0   % Default, no type set.
+   OT_KILLER       = 1   % Set if object is a killer.
+   OT_OUTLAW       = 2   % Set if object is an outlaw.
+   OT_DM           = 3   % Set if object is a DM player.
+   OT_CREATOR      = 4   % Set if object is a creator player.
+   OT_SUPER        = 5   % Set if object is a "super DM".
+   OT_MODERATOR    = 6   % Set if object is a "moderator".
+   OT_EVENTCHAR    = 7   % Set if object is an event character.
 
    %%% Projectile and Light flags
 
@@ -277,6 +280,16 @@
    PT_REDTOBLACK1    = 0x007D
    PT_REDTOBLACK2    = 0x007E
    PT_REDTOBLACK3    = 0x007F
+   PT_REDTODKBLACK1  = 0x0080
+   PT_REDTODKBLACK2  = 0x0081
+   PT_REDTODKBLACK3  = 0x0082
+   PT_REDBLK_BLWHT   = 0x0083
+   PT_BLBLK_REDWHT   = 0x0084
+
+   % Color to black translations.
+   XLAT_REDTOBLACK     = 0x005A
+   XLAT_BLUETOBLACK    = 0x005B
+   XLAT_PURPLETOBLACK  = 0x005C
 
    % Translations used for Avar warriors.
    PT_PURPLETOBLUE   = 0x003A
@@ -850,6 +863,23 @@
    RID_OLD_MARION = 9001
    RID_OLD_BAR_NORTH = 9002
    RID_OLD_BAR_SOUTH = 9003
+   
+   RID_DESERTPATH1 = 9010
+   RID_DESERTCLIFFACCESS = 9011
+   RID_DESERTCLIFFNOACCESS1 = 9012
+   RID_DESERTCLIFFNOACCESS2 = 9013
+   RID_DESERTCLIFFNOACCESS3 = 9014
+   RID_DESERTDUNES = 9015
+   RID_WAYLAYOASIS = 9016
+   RID_DESERTSHORE1 = 9017
+   RID_DESERTSHORE2 = 9018
+   RID_DESERTSHORE3 = 9019
+   RID_DESERTRIVER1 = 9020
+   RID_DESERTRIVER2 = 9021
+  
+   % Survival Rooms 9500 - 9999
+   RID_SURVIVAL_START = 9500
+   RID_SURVIVAL_END = 9999
 
    % Rentable Rooms 10000+
    RID_RENTABLE_START = 10000
@@ -880,7 +910,7 @@
    RID_TOSGREY = 57
    RID_TOSFORGT = 58
    RID_TOSARENA = 60
-   RID_EASTTOS = 61
+   RID_TOSEAST = 61
    RID_TOSGRAVE = 70
    RID_TOSCRYPT = 71
    RID_TOSHALL = 72
@@ -1008,7 +1038,7 @@
    % Marion Crypt Dungeon
    RID_MARDUN01 = 2600
    RID_MARDUN02 = 2601
-   RID_RES00001 = 2602
+   RID_MARDUN03 = 2602
 
    % Historic rooms
    RID_OJAS = 9000
@@ -1053,6 +1083,12 @@
    ROOM_JIG           = 0x4000
    % Prevents monsters from fighting, but doesn't stop players
    ROOM_NO_MOB_COMBAT = 0x8000
+   % Is it raining here?
+   ROOM_RAINING       = 0x10000
+   % Is it snowing here?
+   ROOM_SNOWING       = 0x20000
+   % Is there a sandstorm (weather, not spell) happening?
+   ROOM_SANDSTORM     = 0x40000
 
    % Terrain constants, used to tell what type of terrain the room is.
    TERRAIN_GUILDHALL = 0x0000001
@@ -1118,6 +1154,22 @@
    OUTDOORS_9 = 9
    OUTDOORS_10 = 10
 
+   % Room Icons
+   ICON_ROOM_SAFE_DEATH    = 1
+   ICON_ROOM_NO_COMBAT     = 2
+   ICON_ROOM_NO_PK         = 3
+   ICON_ROOM_GUILD_PK_ONLY = 4
+   ICON_ROOM_NO_MAGIC      = 5
+   ICON_ROOM_HOMETOWN      = 6
+   ICON_ROOM_SANCTUARY     = 7
+   ICON_ROOM_ANTI_MAGIC    = 8
+   ICON_ROOM_KILL_ZONE     = 9
+   ICON_ROOM_GUEST_AREA    = 10
+   ICON_ROOM_HARD_LEARN    = 11
+   ICON_ROOM_SAFELOGOFF    = 12
+   ICON_ROOM_TRIPLE_HEAL   = 13
+   ICON_ROOM_NO_MOB_COMBAT = 14
+
    % Weather options
    WEATHER_DAY = 1
    WEATHER_NIGHT = 2
@@ -1148,9 +1200,26 @@
    CTF_FLOOR           = 0x08
    CTF_CEILING         = 0x10
 
+   % Constants for sector depth (i.e. water sectors).
+   % Same names as those used in client.
+   SF_DEPTH0 = 0x00000000      % Sector has default (0) depth
+   SF_DEPTH1 = 0x00000001      % Sector has shallow depth
+   SF_DEPTH2 = 0x00000002      % Sector has deep depth
+   SF_DEPTH3 = 0x00000003      % Sector has very deep depth
+
+   % Constants for sector texture scroll speed.
+   SCROLL_NONE   = 0x00000000
+   SCROLL_SLOW   = 0x00000001
+   SCROLL_MEDIUM = 0x00000002
+   SCROLL_FAST   = 0x00000003
+
+   % Constant for a BP_SECTOR_CHANGE variable override.
+   CHANGE_OVERRIDE = 0x00000004
+
    % Fineness per block
    FINENESS = 64
    FINENESS_HALF = 32
+   FINENESS_SQUARED = 4096
 
    SECTOR_UP = 1
    SECTOR_DN = 0
@@ -1363,16 +1432,12 @@
    MERCHANT_RIPOFF     = 5
 
    % Mob attributes
-   % Chase timer is 0 to 2.0sec + this many milliseconds.
-   MOB_CHASE_TIMER_WAIT = 150
    % Move timer is .3 to 8.5ec + this many milliseconds.
-   MOB_MOVE_TIMER_WAIT   = 1500
-   % Follow timer is when master <> $, .1 to 2.5ec + this many milliseconds.
-   MOB_FOLLOW_TIMER_WAIT = 500
+   MOB_MOVE_TIMER_WAIT   = 375
    % Attack timer  0 to 2.5sec + this many milliseconds.
    MOB_ATTACK_TIMER_WAIT = 1000
    % Monster will sit this many ms at birth.
-   MOB_START_FREEZE = 15000
+   MOB_START_FREEZE = 1000
 
    % Mob attributes
    MOB_NOFIGHT          = 0x00001   % Doesn't fight
@@ -1505,7 +1570,6 @@
    % Flags indicating enchantments
    ENCH_PALSY       = 0x01
    ENCH_DEMENTIA    = 0x20
-   ENCH_MANA_BOMB   = 0x40
 
    % Resistance constants
    MAX_RESISTANCE =  100
@@ -1586,6 +1650,15 @@
    TID_KRIIPA        = 55
    TID_MOLLUSK       = 56
    TID_SHADOWBEAST   = 57
+
+   TID_RAT_KING      = 58
+   TID_EARTH_ELE     = 59
+   TID_FIRE_ELE      = 60
+   TID_ICE_ELE       = 61
+   TID_NERU_ELE      = 62
+
+   TID_EASTER_BUNNY  = 63
+   TID_KILLER_BUNNY  = 64
 
    %%% English articles
 
@@ -1682,6 +1755,7 @@
    WA_SPELLCASTER          = 68
    WA_GLOWING              = 69
    WA_PURGER               = 70
+   WA_SIPHON               = 71
 
    %%% Herald shields
 
@@ -1722,7 +1796,8 @@
    WEAPON_TYPE_SLASH = 2
 
    % How much range bonus do we get if a player target has moved recently?
-   RANGE_MOVEMENT_BONUS = 1
+   % In FINENESS units.
+   RANGE_MOVEMENT_BONUS = 64
 
    % Missile weapons ammo-type, determined by each missile weapon.
    AMMO_ARROW = 1
@@ -1830,6 +1905,7 @@
 
    SID_LIGHTNING_BOLT = 1
    SID_MINOR_HEAL = 2
+   SID_ICE_NOVA = 3
    SID_NIGHT_VISION = 4
    SID_FIREBALL = 5
    SID_DMRESCUE = 6
@@ -1843,8 +1919,9 @@
    SID_MEND = 13
    SID_EARTHQUAKE = 14
    SID_POISON = 15
-   SID_PALSY = 16
+   SID_FIRE_STORM = 16
    SID_SUPER_STRENGTH = 17
+
    SID_TOUCH_OF_FLAME = 20
    SID_HOLY_TOUCH = 21
    SID_VAMPIRIC_DRAIN = 22
@@ -1894,7 +1971,7 @@
    SID_KARAHOLS_CURSE = 66
    SID_MANA_FOCUS = 67
    SID_MANA_BOMB = 68
-   SID_DEMENTIA = 69
+
    SID_BONK = 70
    SID_SCRY = 71
    SID_PURIFY = 72
@@ -1915,6 +1992,7 @@
    SID_SPORE_BURST = 87
    SID_TRUTH     = 88
    SID_DISPEL_ILLUSION = 89
+
    SID_REFLECTION = 99
    SID_SPIRITUAL_HAMMER = 100
    SID_APPARITION = 101
@@ -2002,6 +2080,8 @@
    SID_LOADOUT = 183
    SID_CONVEYANCE = 184
    SID_DEATH_RIFT = 185
+   SID_PHASE = 186
+   SID_MEDITATE = 187
 
    % Depreciated spell IDs
    SID_LIGHTNING = 1                   % use SID_LIGHTNING_BOLT
@@ -2047,12 +2127,27 @@
    SID_VIGOR_BOON =      198
    % No sids above 400 to keep spell IDs unique from skill IDs!
 
+   %%% Stats
+   STAT_ID_MIGHT     = 1
+   STAT_ID_INTELLECT = 2
+   STAT_ID_STAMINA   = 3
+   STAT_ID_AGILITY   = 4
+   STAT_ID_MYSTICISM  = 5
+   STAT_ID_AIM       = 6
+   
    %%% Spells and Skills
 
    % Used for when the spell has an infinite duration
    SPELL_INDEFINITE_DURATION = 0
 
+   % Skill Schools
+   NUM_SKILL_SCHOOLS=1
+   NUM_SKILL_SCHOOL_LEVELS = 6
+   
    % Spell Schools
+   NUM_SCHOOLS = 7
+   NUM_SPELL_LEVELS = 6
+   
    % School is set to this if this spell is not castable on a pk-free server.
    SS_INACCESSIBLE = -1
 
@@ -2125,38 +2220,41 @@
 
    % First set of flags (in piFlags)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG_MASK              = 0x463D7E
+   PFLAG_MASK              = 0x1C63D7E
 
-   PFLAG_INVISIBLE         = 0x000001
-   PFLAG_MURDERER          = 0x000002
-   PFLAG_SAFETY            = 0x000004
-   PFLAG_OUTLAW            = 0x000008
-   PFLAG_DID_DAMAGE        = 0x000010
-   PFLAG_TOOK_DAMAGE       = 0x000020
-   PFLAG_DODGED            = 0x000040
-   PFLAG_TRANCE            = 0x000080
-   PFLAG_HAUNTED           = 0x000100
-   PFLAG_MANA_FOCUS        = 0x000200
-   PFLAG_PKILL_ENABLE      = 0x000400
-   PFLAG_TUTORIAL          = 0x000800
-   PFLAG_PKILL_LOCK        = 0x001000
+   PFLAG_INVISIBLE         = 0x0000001
+   PFLAG_MURDERER          = 0x0000002
+   PFLAG_SAFETY            = 0x0000004
+   PFLAG_OUTLAW            = 0x0000008
+   PFLAG_DID_DAMAGE        = 0x0000010
+   PFLAG_TOOK_DAMAGE       = 0x0000020
+   PFLAG_DODGED            = 0x0000040
+   PFLAG_TRANCE            = 0x0000080
+   PFLAG_HAUNTED           = 0x0000100
+   PFLAG_MANA_FOCUS        = 0x0000200
+   PFLAG_PKILL_ENABLE      = 0x0000400
+   PFLAG_TUTORIAL          = 0x0000800
+   PFLAG_PKILL_LOCK        = 0x0001000
    % Taking part in factions?
-   PFLAG_INTRIGUING        = 0x002000
-   PFLAG_NO_FIGHT          = 0x004000
-   PFLAG_NO_MAGIC          = 0x008000
-   PFLAG_NO_MOVE           = 0x010000
-   PFLAG_LOG               = 0x020000
-   % Can the player broadcast messages?
-   PFLAG_SQUELCHED         = 0x040000
-   PFLAG_ANONYMOUS         = 0x080000
-   PFLAG_FORGOTTEN         = 0x100000
-   PFLAG_MORPHED           = 0x200000
+   PFLAG_INTRIGUING        = 0x0002000
+   PFLAG_NO_FIGHT          = 0x0004000
+   PFLAG_NO_MAGIC          = 0x0008000
+   PFLAG_NO_MOVE           = 0x0010000
+   PFLAG_LOG               = 0x0020000
+   % Setting for the player's temp safety
+   PFLAG_TEMP_SAFETY       = 0x0040000
+   PFLAG_ANONYMOUS         = 0x0080000
+   PFLAG_FORGOTTEN         = 0x0100000
+   PFLAG_MORPHED           = 0x0200000
    % this player has moved since he's entered the room.
-   PFLAG_MOVED_SINCE_ENTRY = 0x400000
+   PFLAG_MOVED_SINCE_ENTRY = 0x0400000
+   PFLAG_GROUPING          = 0x0800000
+   PFLAG_KILLED_BY_PLAYER  = 0x1000000
 
    % Second set of player flags (in piFlags2)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG2_MASK             = 0x000080
+   PFLAG2_MASK             = 0x003E80
+
    PFLAG2_HASTED           = 0x000001
    PFLAG2_DANCING          = 0x000002
    PFLAG2_DETECT_GOOD      = 0x000004
@@ -2167,6 +2265,14 @@
    % DM set only.  No chance of revenants.
    PFLAG2_NOHAUNT          = 0x000080
    PFLAG2_KOCATAN_DEATH    = 0x000100
+   % Flags for squelching players.
+   PFLAG2_SQUELCHED_TELLS  = 0x000200
+   PFLAG2_SQUELCHED_BCAST  = 0x000400
+   PFLAG2_SQUELCHED_SAYS   = 0x000800
+   PFLAG2_SQUELCHED_POSTS  = 0x001000
+   % Sum of the other squelched flags.
+   PFLAG2_SQUELCHED_ALL    = 0x001E00
+   PFLAG2_TEMPSAFE         = 0x002000
 
    % Set of flags just for DM's
    % DM is completely invisible
@@ -2258,6 +2364,8 @@
    EVENT_REST = 8
    % Player was disrupted by something external trying to disrupt.
    EVENT_DISRUPT = 9
+   % Player is moving to a new room but has not yet
+   EVENT_REQNEWOWNER = 10
 
    %%% Hot spot definitions
 
@@ -2671,6 +2779,13 @@
    OO_RR_TABLE = 154
    OO_RR_BASIN = 155
 
+   OO_QORMAS_SNOWMAN = 156
+   OO_QORMAS_TREE = 157
+   OO_QORMAS_WREATH = 158
+   OO_QORMAS_TREE_BIG = 159
+
+   OO_JASPERLAMP1 = 160
+
    %%% Shrines
 
    % These IDs don't need to be bitvectors, just unique.
@@ -2976,11 +3091,13 @@
 
    %%% Line of Sight (LOS) testing
 
-   % Determines which version of LOS we're using.
-   LOS_OLD = 0
-   LOS_NEW_MONSTER = 1
-   LOS_NEW_PLAYER = 2
-   LOS_NEW_BOTH = 3
+   % Values for dealing with some safespots in LoS.
+   %  These are basically "steps" on the high-res grid
+   %  which can be skipped at the dest end for still successful LoS.
+   %  Skipping the last step (LOS_SKIP_1) removes any safe-spot.
+   %  Skipping none of the tiny steps (LOS_SKIP_0) allows rare safe-spots at room edges/corners.
+   LOS_SKIP_0 = 0
+   LOS_SKIP_1 = 1
 
    % String limits
    MIN_CHAR_NAME_LEN = 3
@@ -2990,8 +3107,12 @@
    MAX_GUILD_RANK_LEN = 20
    MAX_URL_LEN = 200
    
-   %Statistics Constants, matches enum in blakserv.h
-   STAT_BLANK = 0
+   %Statistics Constants, must match enum sql_recordtype in database.h
    STAT_TOTALMONEY = 1
    STAT_MONEYCREATED = 2
-   STAT_ASSESS_DAM = 3
+   STAT_PLAYERLOGIN = 3
+   STAT_ASSESS_DAM = 4
+   
+   % Survival options
+   OPT_NATURAL = 1    % Rooms with natural monster spawn only
+   OPT_PVP_ON = 2     % Players can fight

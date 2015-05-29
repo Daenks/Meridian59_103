@@ -32,11 +32,13 @@ classvars:
 properties:
 
    viWeaponDamage = 1
-   viRange = 100
+   viRange = 100 * FINENESS
    viHit_roll_modifier = 100
 
    % What's the basic color of the wood?
    viBaseXLAT = XLAT_TO_SKIN4
+  
+   piAttack_Type = ATCK_WEAP_MAGIC+ATCK_WEAP_PIERCE
 
 messages:
 

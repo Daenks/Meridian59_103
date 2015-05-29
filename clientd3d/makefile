@@ -9,12 +9,16 @@ SOURCEDIR = $(CLIENTDIR)
 # generated files are there.
 CFLAGS = $(CFLAGS) -I$(OUTDIR) -DBLAKCLIENT
 
+# On clientside: Use SSE instead of SSE2 (default for VS2013)
+# Because of old CPU (Athlon XP)
+CCOMMONFLAGS = $(CCOMMONFLAGS) /arch:SSE
+
 LIBS =  \
 	 user32.lib gdi32.lib comdlg32.lib shell32.lib \
 	 ws2_32.lib comctl32.lib advapi32.lib \
 	 winmm.lib archive.lib rscload.lib wininet.lib \
 	 ole32.lib  waveplay.lib \
-	 dxerr8.lib d3d8.lib d3dx8.lib libpng.lib zdll.lib
+	 d3d9.lib dxerr.lib libpng.lib zdll.lib
 
 DEFFILE  = $(SOURCEDIR)\client.def
 
@@ -135,7 +139,7 @@ $(OUTDIR)\md5.obj : $(TOPDIR)\util\md5.c
 
 $(OUTDIR)\meridian.exe: $(OBJS) $(DEFFILE) $(OUTDIR)\client.res
 	$(LINK) $(LINKFLAGS) @<<
-$(OBJS) $(LIBS) -def:$(DEFFILE) $(OUTDIR)\client.res /MAP -OUT:$@ /subsystem:windows
+$(OBJS) $(LIBS) -def:$(DEFFILE) $(OUTDIR)\client.res /MAP -OUT:$@ /SUBSYSTEM:WINDOWS",5.01"
 <<
 	$(CP) $(OUTDIR)\meridian.lib $(BLAKLIBDIR)
 	$(CP) $@ $(CLIENTRUNDIR)
@@ -150,7 +154,7 @@ $(OUTDIR)\makepal.exe: $(OUTDIR)\makepal.obj
 
 profile: $(OBJS) client.res $(BLAKNTLIBS) 
 	$(LINK) $(LINKFLAGS) @<<
-$(OBJS) /PROFILE /MAP $(LIBS) -def:$(DEFFILE) client.res -OUT:meridian.exe /subsystem:windows
+$(OBJS) /PROFILE /MAP $(LIBS) -def:$(DEFFILE) client.res -OUT:meridian.exe /SUBSYSTEM:WINDOWS",5.01"
 <<
 #       prep /lc /excall /inc draw3d.obj meridian.exe   
 	prep /ft /excall /inc drawbsp.obj meridian.exe

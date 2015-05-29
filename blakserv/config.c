@@ -180,8 +180,8 @@ config_table_type config_table[] =
 
 { RIGHTS_GROUP,           F, "[Rights]",      CONFIG_GROUP, "" },
 { RIGHTS_GOROOM,          T, "GoRoom",        CONFIG_INT,   "2" },
-{ RIGHTS_GOROOMBYNUM,     T, "GoRoomByNum",   CONFIG_INT,   "1" },
-{ RIGHTS_GOPLAYER,        T, "GoPlayer",      CONFIG_INT,   "2" },
+{ RIGHTS_GOROOMBYNUM,     T, "GoRoomByNum",   CONFIG_INT,   "2" },
+{ RIGHTS_GOPLAYER,        T, "GoPlayer",      CONFIG_INT,   "1" },
 { RIGHTS_GETPLAYER,       T, "GetPlayer",     CONFIG_INT,   "1" },
 
 { CONSTANTS_GROUP,        F, "[Constants]",   CONFIG_GROUP, "" },
@@ -196,6 +196,7 @@ config_table_type config_table[] =
 
 { DEBUG_GROUP,            F, "[Debug]",       CONFIG_GROUP, "" },
 { DEBUG_CANMOVEINROOM,    T, "CanMoveInRoom", CONFIG_BOOL,  "No" },
+{ DEBUG_CANMOVEINROOMHIGHRES,    T, "CanMoveInRoomHighRes", CONFIG_BOOL,  "No" },
 { DEBUG_HEAP,             T, "Heap",          CONFIG_BOOL,  "No" },
 { DEBUG_TRANSMITTED_BYTES,T, "TransmittedBytes",CONFIG_BOOL,"No" },
 { DEBUG_HASH,             T, "Hash",          CONFIG_BOOL,  "No" },

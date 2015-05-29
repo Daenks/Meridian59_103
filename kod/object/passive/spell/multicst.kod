@@ -31,7 +31,8 @@ classvars:
    viMultiCast_Spellpower = 1000   
 
    % Give a little better than usual since its a pain to get many casters.
-   viChance_To_Increase = 30 
+   viChance_To_Increase = 30
+   viMeditate_ratio = 100
 
    % Mana is amount used upon inititiation
    viMana = 10
@@ -80,7 +81,7 @@ properties:
 
    pbAccessible = TRUE
 
-messages:      
+messages:
 
    SpellMurmurMessage(caster=$, target=$, hearer=$)
    {
@@ -206,6 +207,12 @@ messages:
       local oRoom, oPrism;
 
       oPrism = Send(Self,@FindPrism,#who=who);
+      if oPrism = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=multicast_no_prism);
+
+         return;
+      }
 
       Send(who,@StartEnchantment,#what=self,#state=[oPrism],#time=viDrainTime,
            #iSpellPower=iSpellPower,#lastcall=FALSE);
@@ -232,6 +239,10 @@ messages:
       return;
    }
 
+   SpellBannedInArena()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

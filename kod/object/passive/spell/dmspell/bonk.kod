@@ -25,6 +25,17 @@ resources:
    bonked_bonk_msg = "~r~B>OUCH<~n~b  You are bonked on the head by %s%s."
    bonk_desc_rsc = "This bonks a person of your choice.  "
 
+   caster_bonkstick_msg = \
+      "~bYou viciously slam your bonkstick on %s%s's noggin."
+   bonked_bonkstick_msg = \
+      "~r~B>OUCH<~n~b  %s%s ruthlessly beats on your head with %s bonkstick!!"
+   allinroom_bstick_msg1 = \
+      "~b%s%s's eyes cross momentarily as %s%s pounds %s on the "
+      "noggin with %s bonkstick."
+   allinroom_bstick_msg2 = \
+      "~bYou wince as %s%s viciously bonks %s%s with %s bonkstick, "
+      "which collapses."
+
 classvars:
    vrName = bonk_name_rsc
    vrIcon = bonk_icon_rsc
@@ -35,7 +46,7 @@ classvars:
    viMana = 0
 
 properties:
- 
+
 messages:
 
    GetNumSpellTargets()
@@ -56,53 +67,103 @@ messages:
       return;
    }
 
-   CastSpell(who = $, lTargets = $)
+   CanPayCosts(who=$,lTargets=$)
    {
-      local  i, oRoom, lActive, each_obj;
+      local oTarget;
+
+      oTarget = First(lTargets);
+
+      % Can't bonk someone if they already have an effect, i.e. a debuff.
+      if Send(oTarget,@IsEnchanted,#byClass=&Debuff)
+      {
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   CastSpell(who=$,lTargets=$,bItemCast=FALSE)
+   {
+      local i, oRoom, lActive, each_obj, oTarget;
 
       oRoom = Send(who,@GetOwner);
       lActive = Send(oRoom,@GetHolderActive);
+      oTarget = First(lTargets);
 
       % Show lightning flying through the air
 
-      Send(oRoom,@SomethingShot,#who=who,#target=First(lTargets), 
-           #projectile=self,#flags=PROJ_FLAG_LIGHT_SOURCE);
+      Send(oRoom,@SomethingShot,#who=who,#target=oTarget,
+            #projectile=self,#flags=PROJ_FLAG_LIGHT_SOURCE);
 
-      Send(who,@MsgSendUser,#message_rsc=caster_bonk_msg,
-           #parm1=Send(First(lTargets),@GetDef),
-           #parm2=Send(First(lTargets),@GetName));
-
-
-      Send(First(lTargets),@EffectSendUser,#what=self,#effect=EFFECT_INVERT);
-      Send(First(lTargets),@MsgSendUser,#message_rsc=bonked_bonk_msg,
-           #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
-
-      If isClass(first(lTargets),&Cow)
+      if bItemCast
       {
-         send(first(lTargets),@Bonked);
+         Send(who,@MsgSendUser,#message_rsc=caster_bonkstick_msg,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+         Send(oTarget,@MsgSendUser,#message_rsc=bonked_bonkstick_msg,
+               #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),
+               #parm3=Send(who,@GetHisHer));
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=caster_bonk_msg,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+         Send(oTarget,@MsgSendUser,#message_rsc=bonked_bonk_msg,
+               #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
+      }
+
+      Send(oTarget,@EffectSendUser,#what=self,#effect=EFFECT_INVERT);
+
+      If isClass(oTarget,&Cow)
+      {
+         Send(oTarget,@Bonked);
       }
       
       for i in lActive
       {
          each_obj = Send(oRoom,@HolderExtractObject,#data=i);
-         if (IsClass(each_obj,&Player) and (each_obj <> who) and (each_obj <> First(lTargets)))
+         if (IsClass(each_obj,&Player)
+            AND (each_obj <> who)
+            AND (each_obj <> oTarget))
          {
-            if (IsClass(First(lTargets),&Battler))
+            if (IsClass(oTarget,&Battler))
             {
-               send(each_obj,@MsgSendUser,#message_rsc=allinroom_bonk_msg1,
-                 #parm1=Send(who,@GetDef),
-                 #parm2=Send(who,@GetName,#cap=TRUE),
-                 #parm3=Send(First(lTargets),@getdef),
-                 #parm4=Send(First(lTargets),@GetName));
-
+               if bItemCast
+               {
+                  Send(each_obj,@MsgSendUser,#message_rsc=allinroom_bstick_msg1,
+                        #parm1=Send(oTarget,@GetDef,#cap=TRUE),
+                        #parm2=Send(oTarget,@GetName),
+                        #parm3=Send(who,@GetDef),
+                        #parm4=Send(who,@GetName),
+                        #parm5=Send(oTarget,@GetHimHer),
+                        #parm6=Send(who,@GetHisHer));
+               }
+               else
+               {
+                  Send(each_obj,@MsgSendUser,#message_rsc=allinroom_bonk_msg1,
+                        #parm1=Send(who,@GetDef),
+                        #parm2=Send(who,@GetName,#cap=TRUE),
+                        #parm3=Send(oTarget,@GetDef),
+                        #parm4=Send(oTarget,@GetName));
+               }
             }
             else
             {
-               send(each_obj,@MsgSendUser,#message_rsc=allinroom_bonk_msg2,
-                #parm1=Send(who,@GetDef),
-                #parm2=Send(who,@GetName),
-                #parm3=Send(First(lTargets),@getdef),
-                #parm4=Send(First(lTargets),@GetName));
+               if bItemCast
+               {
+                  Send(each_obj,@MsgSendUser,#message_rsc=allinroom_bstick_msg2,
+                        #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),
+                        #parm3=Send(oTarget,@GetDef),
+                        #parm4=Send(oTarget,@GetName),
+                        #parm5=Send(who,@GetHisHer));
+               }
+               else
+               {
+                  Send(each_obj,@MsgSendUser,#message_rsc=allinroom_bonk_msg2,
+                        #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),
+                        #parm3=Send(oTarget,@GetDef),
+                        #parm4=Send(oTarget,@GetName));
+               }
             }
          }
       }
@@ -114,7 +175,7 @@ messages:
    {
       % for EFFECT_INVERT, 4 bytes of time to be inverted
       AddPacket(4,10000);
-      
+
       return;
    }
 
@@ -157,10 +218,9 @@ messages:
    GetProjectileLightColor()
    {
       % Color is random!
-      return send(SYS,@GetRGB,#iRed=random(33,100),#iGreen=random(33,100),
+      return Send(SYS,@GetRGB,#iRed=random(33,100),#iGreen=random(33,100),
                   #iBlue=random(33,100));
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

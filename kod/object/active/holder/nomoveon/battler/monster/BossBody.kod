@@ -15,7 +15,7 @@ constants:
    include blakston.khd
 
 resources:
-  
+
    OrcPitBossBody_name_rsc = "body of the orc pit boss"
    OrcPitBossBody_live_name = "orc pit boss"
    OrcPitBossBody_icon_rsc = OrcPitbX.bgf
@@ -50,6 +50,7 @@ classvars:
    viDefault_behavior = AI_NOMOVE| AI_NOFIGHT
    viLevel = 1
    viDifficulty = 1
+   viVisionDistance = 1
    viKarma = 0
    viCashmin = 1
    viCashmax = 1
@@ -60,7 +61,7 @@ classvars:
 
    vrMonster_healing = OrcPitBossBody_monster_healing
 
-properties:  
+properties:
 
 messages:
 
@@ -68,12 +69,12 @@ messages:
    {
       local oHead;
 
-      if poOwner <>$
+      if poOwner <> $
       {
          oHead = Create(&OrcPitBossHead,#corpse=corpse);
          Send(poOwner,@NewHold,#what=oHead,
-              #new_row=send(self,@GetRow),#new_col=send(self,@getCol),
-	           #fine_row=send(self,@GetFineRow),#fine_col=send(self,@GetFineCol));
+               #new_row=piRow,#new_col=piCol,
+               #fine_row=piFine_row,#fine_col=piFine_col);
       }
 
       propagate;
@@ -81,7 +82,7 @@ messages:
 
    GetMaxHitPoints()
    {
-      return 100;      
+      return 100;
    }
 
    SendAnimation()
@@ -95,7 +96,16 @@ messages:
    {
       return FALSE;
    }
+ 
+   CanEvilTwin()
+   {
+      return FALSE;
+   }
 
+   CanGetMe()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

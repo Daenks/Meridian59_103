@@ -52,12 +52,11 @@ classvars:
    vrKarmaDesc = Potion_has_karma_requirement
 
    viBulk = 20
-   viWeight = 17
+   viWeight = 20
    viValue_average = 60
 
    viFilling = 10
 
-   viObject_flags = GETTABLE_YES
    viItem_type = ITEMTYPE_POTION | ITEMTYPE_SUNDRY
    viUse_type = ITEM_SINGLE_USE
 
@@ -79,6 +78,9 @@ properties:
    piMinSpellPower = 20
    piMaxSpellPower = 60
 
+   % No more potion expiration
+   piGoBadTime = -1
+
 messages:
 
    Constructor(maker=$)
@@ -91,11 +93,11 @@ messages:
       propagate;
    }
 
-   ReqNewApply(what = $,apply_on = $)
+   ReqNewApply(what=$,apply_on=$)
    {
       if NOT Send(apply_on,@ReqEatSomething,#filling=viFilling)
       {
-	      return FALSE;
+         return FALSE;
       }
 
       if what <> apply_on
@@ -105,21 +107,21 @@ messages:
 
       propagate;
    }
-   
-   NewApplied(what = $,apply_on = $)
+
+   NewApplied(what=$,apply_on=$)
    {
       local oSpell;
 
-      if isClass(apply_on,&User) 
+      if isClass(apply_on,&User)
       {
-         send(apply_on,@WaveSendUser,#wave_rsc=Potion_gulp_sound);
+         Send(apply_on,@WaveSendUser,#wave_rsc=Potion_gulp_sound);
       }
 
       if pbBad
       {
          Send(apply_on,@MsgSendUser,#message_rsc=Potion_bad_drink);
          % do some damage!
-         if send(apply_on,@AssessDamage,#report=FALSE,#what=what,
+         if Send(apply_on,@AssessDamage,#report=FALSE,#what=what,
                  #damage=(viGoBadDamage*Random(8,12)/10),
                  #aspell=ATCK_SPELL_ACID) = $
          {
@@ -135,7 +137,7 @@ messages:
                  #duration=(POISON_DURATION*Random(8,12)/10));
          }
 
-         send(self,@Delete);
+         Send(self,@Delete);
 
          return;
       }
@@ -150,12 +152,48 @@ messages:
       return TRUE;
    }
 
-   DoFailure(what = $)
+   DoFailure(what=$)
    {
       % Overriding because the superclass gives a "broken" message.  Oops.
       return;
    }
 
+   AppendDesc()
+   {
+      if piSpellPower <> $
+         AND piHits <> 0
+      {
+         AppendTempString("\n\nThis potion contains ");
+         AppendTempString(piHits);
+
+         if piHits > 1
+         {
+            AppendTempString(" draughts");
+         }
+         else
+         {
+            AppendTempString(" draught");
+         }
+
+         AppendTempString(". The liquid within averages ");
+         AppendTempString(piSpellPower);
+         AppendTempString(" power.");
+      }
+
+      propagate;
+   }
+
+   SetPotionFlags()
+   "This can be used to fix potions that have their "
+   "viObject_flags set to OF_APPLYABLE."
+   {
+      if viObject_flags = (OF_GETTABLE | OF_APPLYABLE)
+      {
+         viObject_flags = viObject_flags & ~OF_APPLYABLE;
+      }
+
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

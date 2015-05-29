@@ -48,10 +48,10 @@ messages:
    {
       plMonsters = [ [&Skeleton, 60]];
 
-      plGenerators = [ [13, 3], [14, 7], [12, 12],
+      plGenerators = [ [5,18], [13, 3], [14, 7], [12, 12],
                        [13, 8], [14, 24], [12, 27] ,
                        [13, 30], [12, 37], [19, 40] ,
-                       [15, 44] , [ 6,3 ], [ 7,32 ] ] ;
+                       [15, 44], [19,36] ] ;
 
       propagate;
    }
@@ -102,7 +102,27 @@ messages:
       propagate;
    }
 
+   SomethingMoved(what = $, new_row = $, new_col = $, fine_row = FINENESS/2,
+                  fine_col = FINENESS/2, cause = CAUSE_UNKNOWN, speed = 0,
+                  non_monsters_only = FALSE)
+   {
+      if IsClass(what,&Skeleton)
+      {
+         if new_row = 9
+            OR new_row = 8
+         {
+            if new_col = 4
+               OR new_col = 10
+               OR new_col = 26
+               OR new_col = 32
+            {
+               Post(self,@SomethingTryGo,#what=what,#row=new_row,#col=new_col);
+            }
+         }
+      }
+
+      propagate;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

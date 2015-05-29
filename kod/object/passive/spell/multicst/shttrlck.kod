@@ -22,28 +22,28 @@ resources:
    ShatterLock_name_rsc = "shatterlock"
    ShatterLock_icon_rsc = ishatlok.bgf
    ShatterLock_desc_rsc = \
-      "Penetrates the locks of a guild hall (note that it won't open other kinds "
-      "of doors elsewhere).  Requires Kriipa Claws to cast, and the casters' "
-      "energies must be focused through a prism."
+      "Penetrates the locks of a guild hall (note that it won't open other "
+      "kinds of doors elsewhere).  Requires four Kriipa Claws to cast, and "
+      "the casters' energies must be focused through a prism."
 
    Shatterlock_safety = \
-      "You must not have a guardian angel and must turn your safety OFF before "
-      "you cast this spell.  Note that you will marked as an outlaw as the result "
-      "of casting this spell."
+      "You must not have a guardian angel and must turn your safety OFF "
+      "before you cast this spell.  Note that you will marked as an outlaw "
+      "as the result of casting this spell."
 
    Shatterlock_outlaw = \
-      "NOTE: Casting this spell will mark you as an outlaw, even if you are not "
-      "successful in breaking into the hall.  Therefore, you must turn your "
-      "safety OFF before casting the spell."
+      "NOTE: Casting this spell will mark you as an outlaw, even if you are "
+      "not successful in breaking into the hall.  Therefore, you must turn "
+      "your safety OFF before casting the spell."
 
    ShatterLock_cast_complete = \
       "As you finish your incantation, the door to the guild hall opens!"
 
    ShatterLock_guildwarning = \
-      "You have a strange feeling that your guild hall's defenses are being "
-      "tampered with."
+      "You have a strange feeling that your guild hall's defenses are "
+      "being tampered with."
 
-   ShatterLock_sound = kraanan.wav  
+   ShatterLock_sound = kraanan.wav
 
 classvars:
 
@@ -52,21 +52,19 @@ classvars:
    vrDesc = ShatterLock_desc_rsc
 
    vrSucceed_wav = ShatterLock_sound
-                                 
-   viMana = 50         % Mana is amount used upon inititiation
+
+   viMana = 50         % Mana is amount used upon initiation
 
    viSpell_num = SID_SHATTERLOCK
    viSchool = SS_KRAANAN
    viSpell_level = 6
 
    viSpellExertion = 50
-   viCast_time = 20000
+   viCast_time = 2000
    viChance_To_Increase = 50
 
    viManaDrain = 1       % Drain is amount used every viDrainTime milliseconds
    viDrainTime = 1000    % Drain some mana every viDrainTime milliseconds
-
-   viCast_time = 2000    % in milliseconds
 
    viOutlaw = TRUE
    vbCastable_in_HappyLand = FALSE
@@ -77,7 +75,7 @@ properties:
    piBaseCastTime = 900             % 15 minutes (in seconds) minimum casting time.
    piGuildWarnTime = 180            % warn once (per caster) every 3 minutes on average
 
-messages:      
+messages:
 
    ResetReagents()
    {
@@ -93,14 +91,21 @@ messages:
 
       if IsClass(who,&Player)
          AND (Send(who,@CheckPlayerFlag,#flag=PFLAG_SAFETY)
-              OR NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE))
+              OR NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE))
       {
-         Send(who,@MsgSendUser,#message=Shatterlock_safety);
+         Send(who,@MsgSendUser,#message_rsc=Shatterlock_safety);
 
          return FALSE;
       }
 
       oPrism = Send(self,@FindPrism,#who=who);
+      if oPrism = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=multicast_no_prism);
+
+         return;
+      }
+
       if NOT IsClass(Send(oPrism,@GetOwner),&GuildHall)
       {
          return FALSE;
@@ -111,7 +116,8 @@ messages:
 
    GetTotalSpellPower(oPrism=$)
    {
-      local lMembers, iMembers, oGuild, oGuildHall, iMembersNotOnline, i, iReqSpellPower;
+      local lMembers, iMembers, oGuild, oGuildHall, iMembersNotOnline,
+            i, iReqSpellPower;
 
       oGuildHall = Send(oPrism,@GetOwner);
 
@@ -136,7 +142,7 @@ messages:
             }
          }
 
-         iMembers = length(lMembers); 
+         iMembers = length(lMembers);
 
          % If the guild has very few people on, apply a penalty.
          %  Otherwise, scale the time based on the number of people online.
@@ -157,15 +163,15 @@ messages:
          iReqSpellPower = iReqSpellPower * 15;
       }
 
-      return iReqSpellPower; 
+      return iReqSpellPower;
    }
 
-   PrismCast(spellpower = 0, lCasters=$, oPrism=$)
+   PrismCast(spellpower=0,lCasters=$,oPrism=$)
    {
       local oRoom, i;
 
       oRoom = Send(oPrism,@GetOwner);
-      if isclass(oRoom,&GuildHall)
+      if IsClass(oRoom,&GuildHall)
       {
          if Send(oRoom,@InFoyer,#who=oPrism)
          {
@@ -181,19 +187,19 @@ messages:
       return;
    }
 
-   StartPeriodicEnchantment(who = $, state = $ )
+   StartPeriodicEnchantment(who=$,state=$)
    {
       local oGuild,lMembers,i;
 
       % Every 3 minutes on average, tell a guild member that something's up.
-      if random(1,piGuildWarnTime) > 1
+      if Random(1,piGuildWarnTime) > 1
       {
          propagate;
       }
 
       if NOT IsClass(first(state),&Prism)
       {
-         DEBUG("StartPeriodicEnchantment called with bad state (no prism)");
+         Debug("StartPeriodicEnchantment called with bad state (no prism)");
 
          return;
       }
@@ -206,7 +212,7 @@ messages:
 
          for i in lMembers
          {
-            if (random(1,length(lMembers))=1) AND Send(First(i),@IsLoggedOn)
+            if (Random(1,Length(lMembers))=1) AND Send(First(i),@IsLoggedOn)
             {
                Send(First(i),@MsgSendUser,#message_rsc=shatterlock_guildwarning);
             }
@@ -225,7 +231,6 @@ messages:
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

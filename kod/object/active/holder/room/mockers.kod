@@ -42,6 +42,7 @@ properties:
 
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
 
+   pbSnowGroundTexture = TRUE
 
    prRoom = room_mockers
    piRoom_num = RID_MOCKERS_ROOM
@@ -86,7 +87,6 @@ messages:
          send(object,@ChangeGuildShieldColor,#color1=XLAT_TO_SKIN1,#shape=SHIELDSHAPE_CHECKER,#override=1);
          send(object,@ChangeGuildInsignia,#insignia=8);
          send(what,@NewHold,#what=object);
-         send(what,@NewHold,#what=create(&BonkStick));
          send(what,@NewHold,#what=create(&LeatherArmor));
          send(what,@NewHold,#what=create(&Gauntlet));
          send(what,@NewHold,#what=create(&PantsC));

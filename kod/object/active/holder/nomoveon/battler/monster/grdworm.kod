@@ -37,9 +37,9 @@ resources:
    GroundWorm_icon_rsc = wormm.bgf
    GroundWorm_koc_name_rsc = "slithic"
    GroundWorm_desc_rsc = \
-      "A fearsome and stealthy creature, the groundworm is known for its habit "
-      "of lurking underground out of sight, then suddenly springing forth to "
-      "devour its hapless victim."
+      "A fearsome and stealthy creature, the groundworm is known for its "
+      "habit of lurking underground out of sight, then suddenly springing "
+      "forth to devour its hapless victim."
 
    GroundWorm_dead_icon_rsc = wormmX.bgf
    GroundWorm_dead_name_rsc = "slain groundworm"
@@ -47,6 +47,9 @@ resources:
    GroundWorm_sound_miss = gwrmatk.wav
    GroundWorm_sound_death = gwrmdie.wav
    GroundWorm_sound_aware = gwrm1awr.wav
+
+   groundworm_cannot_hit = \
+      "You are unable to reach the groundworm with your attacks."
 
 classvars:
 
@@ -63,10 +66,11 @@ classvars:
    viAttributes = 0
    viLevel = 100
    viDifficulty = 5
+   viVisionDistance = 12
    viKarma = -30
    viDefault_behavior = AI_FIGHT_AGGRESSIVE
-   viCashmin = 500
-   viCashmax = 1500
+   viCashmin = -500
+   viCashmax = 700
    vrSound_miss = GroundWorm_sound_miss
    vrSound_aware = GroundWorm_sound_aware
    vrSound_death = GroundWorm_sound_death
@@ -84,15 +88,15 @@ properties:
    pbSurfaced = FALSE
 
    ptPostPop = $
-   
+
 messages:
 
    Constructed()
    {
-      plResistances = [ [ -20, ATCK_WEAP_MAGIC ],
-                        [ -30, ATCK_WEAP_BLUDGEON ],
-                        [  70, -ATCK_SPELL_ACID ],
-                        [  50, -ATCK_SPELL_QUAKE ]
+      plResistances = [ [ATCK_WEAP_MAGIC, -20 ],
+                        [ATCK_WEAP_BLUDGEON, -30 ],
+                        [-ATCK_SPELL_ACID, 70 ],
+                        [-ATCK_SPELL_QUAKE, 50 ]
                       ];
 
       propagate;
@@ -144,9 +148,9 @@ messages:
 
 %%%
 %  Shouldn't need to handle this state change, since the animation stuff is handled in MonsterAttack.
-%        In fact, if we handled it here we might have sychronization problems - either we do the
-%        POPUPATTACK animation here and we'd actually attack a bit later, or we do the POPUP animation
-%        here and it might get interrupted by an ATTACK animation.
+%  In fact, if we handled it here we might have sychronization problems - either we do the
+%  POPUPATTACK animation here and we'd actually attack a bit later, or we do the POPUP animation
+%  here and it might get interrupted by an ATTACK animation.
 %%%
 %   EnterStateAttack()
 %   {
@@ -158,7 +162,7 @@ messages:
    {
       if pbSurfaced
       {
-         send(self,@PopDown);
+         Send(self,@PopDown);
       }
 
       propagate;
@@ -168,7 +172,7 @@ messages:
    {
       if pbSurfaced
       {
-         send(self,@PopDown);
+         Send(self,@PopDown);
       }
 
       propagate;
@@ -178,7 +182,7 @@ messages:
    {
       if pbSurfaced
       {
-         send(self,@PopDown);
+         Send(self,@PopDown);
       }
 
       propagate;
@@ -188,7 +192,7 @@ messages:
    {
       if pbSurfaced
       {
-         send(self,@PopDown);
+         Send(self,@PopDown);
       }
 
       propagate;
@@ -196,7 +200,7 @@ messages:
 
    SendMoveAnimation()
    {
-      send(self,@SendAnimation);
+      Send(self,@SendAnimation);
 
       return;
    }
@@ -205,28 +209,28 @@ messages:
    {
       if piAnimation = ANIM_ATTACK
       {
-         send(self,@SendAttackAnimation);
+         Send(self,@SendAttackAnimation);
 
          return;
       }
 
       if piAnimation = ANIM_POPUP
       {
-         send(self,@SendPopupAnimation);
+         Send(self,@SendPopupAnimation);
 
          return;
       }
 
       if piAnimation = ANIM_POPDOWN
       {
-         send(self,@SendPopdownAnimation);
+         Send(self,@SendPopdownAnimation);
 
          return;
       }
 
       if piAnimation = ANIM_POPUPATTACK
       {
-         send(self,@SendPopupAttackAnimation);
+         Send(self,@SendPopupAttackAnimation);
 
          return;
       }
@@ -245,28 +249,32 @@ messages:
 
    SendAttackAnimation()
    {
-      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_ATTACK_START,2,FRAME_ATTACK_END,2,FRAME_SURFACED);
+      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_ATTACK_START,
+            2,FRAME_ATTACK_END,2,FRAME_SURFACED);
 
       return;
    }
 
    SendPopupAnimation()
    {
-      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPUP_START,2,FRAME_POPUP_END,2,FRAME_SURFACED);
+      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPUP_START,
+            2,FRAME_POPUP_END,2,FRAME_SURFACED);
 
       return;
    }
 
    SendPopdownAnimation()
    {
-      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPDOWN_START,2,FRAME_POPDOWN_END,2,FRAME_UNDERGROUND);
+      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPDOWN_START,
+            2,FRAME_POPDOWN_END,2,FRAME_UNDERGROUND);
 
       return;
    }
 
    SendPopupAttackAnimation()
    {
-      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPUP_START,2,FRAME_ATTACK_END,2,FRAME_SURFACED);
+      AddPacket(1,ANIMATE_ONCE,4,ANIMATION_SPEED,2,FRAME_POPUP_START,
+            2,FRAME_ATTACK_END,2,FRAME_SURFACED);
 
       return;
    }
@@ -287,10 +295,10 @@ messages:
 
    NewOwner(what = $)
    {
-      if send(self,@GetOwner) <> what
+      if Send(self,@GetOwner) <> what
       {
          % gotta post this so we look at our coords after we're in the new room
-         post(self,@InitializeTrail);
+         Post(self,@InitializeTrail);
       }
 
       propagate;
@@ -300,15 +308,15 @@ messages:
    {
       local i;
 
-      if send(self,@GetOwner) <> $
+      if poOwner <> $
       {
-         piLastRow = send(self,@GetRow);
-         piLastCol = send(self,@GetCol);
+         piLastRow = piRow;
+         piLastCol = piCol;
       }
 
       for i in plTrail
       {
-         send(i,@Delete);
+         Send(i,@Delete);
       }
 
       plTrail = $;
@@ -322,29 +330,31 @@ messages:
 
       if what = self
       {
-         if (send(self,@GetRow) = piLastRow) and (send(self,@GetCol) = piLastCol)
+         if (piRow = piLastRow) AND (piCol = piLastCol)
          {
-            %DEBUG("got Somethingmoved but still at saved coords - got the order wrong");
             propagate;
          }
 
-         piLastRow = send(self,@GetRow);
-         piLastCol = send(self,@GetCol);
+         piLastRow = piRow;
+         piLastCol = piCol;
          bAddTrailClump = TRUE;
+
          for i in plTrail
          {
-            if send(i,@GetOwner) = $
+            if Send(i,@GetOwner) = $
             {
                plTrail = DelListElem(plTrail,i);
+
                continue;
             }
-            if (send(i,@GetRow) = new_row) and (send(i,@GetCol) = new_col)
+            if (Send(i,@GetRow) = new_row) AND (Send(i,@GetCol) = new_col)
             {
-               send(i,@Delete);
+               Send(i,@Delete);
                plTrail = DelListElem(plTrail,i);
+
                continue;
             }
-            if (send(i,@GetRow) = piLastRow) and (send(i,@GetCol) = piLastCol)
+            if (Send(i,@GetRow) = piLastRow) AND (Send(i,@GetCol) = piLastCol)
             {
                if bAddTrailClump
                {
@@ -352,8 +362,9 @@ messages:
                }
                else
                {
-                  DEBUG("Got two trail elements at the same location!  Deleting the extra one.");
-                  send(i,@Delete);
+                  Debug("Got two trail elements at the same location! ",
+                        " Deleting the extra one.");
+                  Send(i,@Delete);
                   plTrail = DelListElem(plTrail,i);
                }
             }
@@ -362,14 +373,15 @@ messages:
          if bAddTrailClump
          {
             oTrailClump = Create(&GroundWormTrailClump,#TrailLarge=vbTrailLarge);
-            send(poOwner,@NewHold,#what=oTrailClump,#new_row=piLastRow,#new_col=piLastCol);
-            plTrail = cons(oTrailClump,plTrail);
+            Send(poOwner,@NewHold,#what=oTrailClump,
+                  #new_row=piLastRow,#new_col=piLastCol);
+            plTrail = Cons(oTrailClump,plTrail);
          }
 
-         while length(plTrail) > viTrailLength
+         while Length(plTrail) > viTrailLength
          {
-            oTrailClump = nth(plTrail,length(plTrail));
-            send(oTrailClump,@Delete);
+            oTrailClump = Nth(plTrail,Length(plTrail));
+            Send(oTrailClump,@Delete);
             plTrail = DelListElem(plTrail,oTrailClump);
          }
       }
@@ -385,33 +397,50 @@ messages:
       {
          return TRUE;
       }
-      
+
       if NOT pbSurfaced
       {
          if use_weapon = $
             OR NOT (IsClass(use_weapon,&Hammer)
-                    OR IsClass(use_weapon,&SpiritualHammer))
-         { 
-            return FALSE; 
+               OR IsClass(use_weapon,&SpiritualHammer)
+               OR IsClass(use_weapon,&Mace))
+         {
+            Send(who,@MsgSendUser,#message_rsc=groundworm_cannot_hit);
+            return FALSE;
          }
       }
 
       return TRUE;
    }
 
-   Delete()
+   Killed(what = $)
    {
-      local i;
-      for i in plTrail
-      {
-         send(i,@Delete);
-      }
-      plTrail = $;
+      % Delete this now, in case this timer is active.
       if ptPostPop <> $
       {
          DeleteTimer(ptPostPop);
-         ptPostPop = $;
       }
+
+      ptPostPop = $;
+
+      propagate;
+   }
+
+   Delete()
+   {
+      local i;
+
+      for i in plTrail
+      {
+         Send(i,@Delete);
+      }
+      plTrail = $;
+
+      if ptPostPop <> $
+      {
+         DeleteTimer(ptPostPop);
+      }
+      ptPostPop = $;
 
       propagate;
    }
@@ -420,7 +449,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -34,23 +34,23 @@
 #include "lineedit.h"
 #include "levels.h"
 
-#ifndef __OWL_LISTBOX_H
+#ifndef OWL_LISTBOX_H
 #include <owl\listbox.h>
 #endif
 
-#ifndef __OWL_EDIT_H
+#ifndef OWL_EDIT_H
 #include <owl\edit.h>
 #endif
 
-#ifndef __OWL_RADIOBUT_H
+#ifndef OWL_RADIOBUT_H
 #include <owl\radiobut.h>
 #endif
 
-#ifndef __OWL_CHECKBOX_H
+#ifndef OWL_CHECKBOX_H
 #include <owl\checkbox.h>
 #endif
 
-#ifndef __OWL_VALIDATE_H
+#ifndef OWL_VALIDATE_H
 #include <owl\validate.h>
 #endif
 
@@ -147,7 +147,7 @@ const SHORT *D1_LineDefSetTab[] =
    };
 
 // const NB_LINEDEFSET = sizeof(LineDefSetTab) / sizeof (int *);
-const NB_LINEDEFSET = 6;
+const int NB_LINEDEFSET = 6;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -494,7 +494,7 @@ void TLineDefEditDialog::CmOk ()
    }
    
    // Did the user made changes ?
-   LineDef HUGE *pLineDef = &LineDefs[ldnum];
+   LineDef *pLineDef = &LineDefs[ldnum];
    if ( memcmp (&CurLineDef, pLineDef, sizeof (CurLineDef)) != 0 )
       MadeChanges = TRUE;
    
@@ -573,7 +573,7 @@ void TLineDefEditDialog::CmOk ()
 	      LdPtr != NULL ;
 	      LdPtr = LdPtr->next)
 	 {
-	    LineDef HUGE *pSelLineDef = &LineDefs[LdPtr->objnum];
+	    LineDef *pSelLineDef = &LineDefs[LdPtr->objnum];
 	    LineDef LineDefBefore = *pSelLineDef;
 	    
 	    if ( ConfirmData.pTypeCheck )
@@ -855,7 +855,7 @@ void TLineDefEditDialog::GetSideDef (int sdnum)
    ConfirmData.pSpeedCheck[sdnum] = (CurSD[sdnum].animate_speed != (SHORT)atoi (str));
    // May already be true (new SideDef), so use |=
    ConfirmData.pSDCheck[sdnum] |= ConfirmData.pSpeedCheck[sdnum];
-   CurSD[sdnum].animate_speed = (SHORT)atoi (str);
+   CurSD[sdnum].animate_speed = (BYTE)atoi (str);
 
    pIDNumEdit[sdnum]->GetText (str, 6);
    ConfirmData.pIDNumCheck[sdnum] = (CurSD[sdnum].user_id != (SHORT)atoi (str));
@@ -895,7 +895,7 @@ void TLineDefEditDialog::CopySDData (int sdnum, SHORT DestLD,
    if ( xfer.pSDCheck[sdnum] == FALSE )
       return;
    
-   LineDef HUGE *pDestLineDef = &LineDefs[DestLD];
+   LineDef *pDestLineDef = &LineDefs[DestLD];
    
    // Retreive source and dest. SideDef numbers
    SHORT SrcSD, DestSD;
@@ -943,8 +943,8 @@ void TLineDefEditDialog::CopySDData (int sdnum, SHORT DestLD,
    }
    
    // Copy selected data members to the Dest. SideDef
-   SideDef HUGE *pSrcSideDef = &SideDefs[SrcSD];
-   SideDef HUGE *pDestSideDef = &SideDefs[DestSD];
+   SideDef *pSrcSideDef = &SideDefs[SrcSD];
+   SideDef *pDestSideDef = &SideDefs[DestSD];
    
    if ( xfer.pSDAboveCheck[sdnum] )
    {
@@ -1763,7 +1763,7 @@ void TLineDefEditDialog::TextureListDBLClick ()
    {
       TextureInfo *info = FindTextureByName(TextureName);
 
-      if ( pWTextureDialog->SelectBitmap (info->filename) < 0 )
+      if ( pWTextureDialog->SelectBitmap2 (info->filename) < 0 )
 	 Notify ("Error: Cannot select the texture name \"%s\" in the "
 		 "dialog box of Wall Texture view ! (BUG)", TextureName);
    }
@@ -1776,12 +1776,12 @@ void TLineDefEditDialog::TextureListDBLClick ()
 // TLineDefEditDialog
 // ------------------
 //
-void TLineDefEditDialog::EvLButtonDown (UINT modKeys, TPoint& point)
+void TLineDefEditDialog::EvLButtonDown (UINT modKeys, const TPoint& point)
 {
    TDialog::EvLButtonDown(modKeys, point);
    
    // Retreive object for handle
-   TStatic *pStatic = GetPointedStatic (point);
+   TStatic *pStatic = GetPointedStatic ((TPoint&)point);
    if ( pStatic == NULL )
       return;
    
@@ -1802,12 +1802,12 @@ void TLineDefEditDialog::EvLButtonDown (UINT modKeys, TPoint& point)
 // TLineDefEditDialog
 // ------------------
 //
-void TLineDefEditDialog::EvLButtonDblClk (UINT modKeys, TPoint& point)
+void TLineDefEditDialog::EvLButtonDblClk (UINT modKeys, const TPoint& point)
 {
    TDialog::EvLButtonDblClk(modKeys, point);
    
    // Retreive object for handle
-   TStatic *pStatic = GetPointedStatic (point);
+   TStatic *pStatic = GetPointedStatic ((TPoint&)point);
    if ( pStatic == NULL )
       return;
    

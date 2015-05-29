@@ -21,6 +21,9 @@
 #define SCROLL_WALL_MEDIUM_PERIOD   32
 #define SCROLL_WALL_FAST_PERIOD      8
 
+// Constant to override a BP_SECTOR_CHANGE variable.
+#define CHANGE_OVERRIDE 0x00000004
+
 // Number of milliseconds between flickering a light
 #define FLICKER_PERIOD             100
 
@@ -71,7 +74,8 @@ typedef struct {
 
 void MoveSector(BYTE type, WORD sector_num, WORD height, BYTE speed);
 void WallChange(WORD wall_num, Animate *a, BYTE action);
-void SectorChange(WORD sector_num, Animate *a, BYTE action);
+void SectorAnimate(WORD sector_num, Animate *a, BYTE action);
+void SectorChange(WORD sector_num, BYTE depth, BYTE scroll);
 void TextureChange(WORD id_num, WORD texture_num, BYTE flags);
 void SectorFlickerChange(WORD sector_num, BYTE type);
 

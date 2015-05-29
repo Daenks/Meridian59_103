@@ -31,7 +31,6 @@ resources:
    CaveOrc_sound_death = cor_dth.wav
    CaveOrc_sound_aware = cor_awr.wav
 
-
 classvars:
 
    vrKocName = CaveOrc_koc_name_rsc
@@ -48,10 +47,15 @@ classvars:
    viAttributes = 0
    viLevel = 80
    viDifficulty = 7
+   viVisionDistance = 16
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viKarma = -55
-   viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS | AI_FIGHT_HYPERAGGRESSIVE | AI_FIGHT_SWITCHALOT
-   viCashmin = 400
-   viCashmax = 1200
+   viDefault_behavior = \
+      AI_FIGHT_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS \
+      | AI_FIGHT_HYPERAGGRESSIVE | AI_FIGHT_SWITCHALOT
+   viCashmin = 250
+   viCashmax = 650
    viWimpy = 4
 
    vrSound_hit = CaveOrc_sound_hit
@@ -67,10 +71,11 @@ messages:
 
    Constructed()
    {
-      plResistances = [ [ 40, -ATCK_SPELL_UNHOLY ],
-                        [ 20, ATCK_WEAP_PIERCE ],
-                        [ 25, ATCK_WEAP_SLASH ],
-                        [-20, -ATCK_SPELL_HOLY ] ];
+      plResistances = [ [-ATCK_SPELL_UNHOLY, 40 ],
+                        [ATCK_WEAP_PIERCE, 20 ],
+                        [ATCK_WEAP_SLASH, 25 ],
+                        [-ATCK_SPELL_HOLY, -20 ] ];
+
       propagate;
    }
 
@@ -81,12 +86,14 @@ messages:
       {
          return 0;
       }
+
       return (viDifficulty*10)/4;
    }
 
    MonsterAttack(what = $)
    {
       Send(self,@DoSlash);
+
       return;
    }
 
@@ -95,7 +102,7 @@ messages:
       piAnimation = ANIM_ATTACK;
       Send(poOwner,@SomethingChanged,#what=self);
       piAnimation = ANIM_NONE;
-      
+
       return;
    }
 
@@ -120,16 +127,22 @@ messages:
    {
       if piAnimation = ANIM_ATTACK
       {
-	 AddPacket(1,ANIMATE_ONCE,4,75,2,7,2,11,2,1);
-	 return;
-      } 
-      %% if no body animation.     
+         AddPacket(1,ANIMATE_ONCE,4,75,2,7,2,11,2,1);
+
+         return;
+      }
+
+      % if no body animation.
       propagate;
    }
 
    IsFrightenedOf(target=$)
    {
-      if target <> $ and isClass(target,&GiantRat) { return TRUE; }
+      if target <> $
+         AND IsClass(target,&GiantRat)
+      {
+         return TRUE;
+      }
 
       return FALSE;
    }

@@ -6,6 +6,7 @@
 #define _BSP_H
 
 #define FINENESS 1024
+#define FINENESSHIGHRESGRID 256
 #define NUMDEGREES 4096
 
 #define BLAK_FACTOR 16  // Multiply by this to convert roomeditor coordinates to client coordinates
@@ -93,22 +94,23 @@
 
 #define ABS(x) ((x) > 0 ? (x) : (-(x)))
 #define SGN(x) ((x) == 0 ? 0 : ((x) > 0 ? 1 : -1))
+#define SGNDOUBLE(x) (((x) <= 0.001 && (x) >= -0.001) ? 0 : ((x) > 0.001 ? 1 : -1))
 
 /* plane defined by ax + by + c = 0. (x and y are in fineness units.) */
 typedef struct
 {
-   long a, b, c;
+   double a, b, c;
 } Plane;
 
 /* box defined by its top left and bottom right coordinates (in fineness) */
 typedef struct
 {
-   long x0,y0,x1,y1;
+   double x0,y0,x1,y1;
 } Box;
 
 typedef struct
 {
-   long x,y;
+   double x,y;
 } Pnt;
 
 typedef struct WallData
@@ -132,9 +134,9 @@ typedef struct WallData
    int pos_sector;             /* Sector # on + side */
    int neg_sector;             /* Sector # on - side */
 
-   int x0, y0, x1, y1;         /* coordinates of wall start and end */
+   double x0, y0, x1, y1;      /* coordinates of wall start and end */
 
-   int length;                 /* length of wall; 1 grid square = 64 */
+   double length;              /* length of wall; 1 grid square = 64 */
    int z0;                     /* height of bottom of lower wall */
    int z1;                     /* height of top of lower wall / bottom of normal wall */
    int z2;                     /* height of top of normal wall / bottom of upper wall */
@@ -220,5 +222,6 @@ void BSPTreeFree(void);
 BYTE ComputeMoveFlags(BSPTree tree, int row, int col, int rows, int cols,
                       int min_distance);
 BYTE ComputeSquareFlags(BSPTree tree, int row, int col, int rows, int cols);
+int ComputeHighResSquareFlags(BSPTree tree, int row, int col, int rows, int cols, int min_distance);
 
 #endif  /* #ifndef _BSP_H */

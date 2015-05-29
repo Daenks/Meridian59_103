@@ -1,0 +1,307 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Elusion is TeleportationSpell
+
+constants:
+
+   include blakston.khd
+
+   TRANCE_TIME = 30000
+
+resources:
+
+   Elusion_name_rsc = "elusion"
+   Elusion_icon_rsc = ielusion.bgf
+   Elusion_desc_rsc = \
+      "Allows the caster to elude trouble and escape off to another location.  "
+      "A number of destinations may be available, and the caster must call out "
+      "the name of the location he wishes to travel to.  "
+      "Requires the claws of the fearsome kriipa to cast."
+
+   Elusion_No_Location_Given = \
+      "With no location specified your elusion attempt fails."
+   Elusion_Success = "The world folds in on itself."
+   Elusion_Location_list = \
+      "The world shimmers and secret paths are revealed, leading to %q."
+   Elusion_fail = "That is not a valid destination."
+   Elusion_cant_cast_here = \
+       "You may only elude from a place you can elude to."
+       
+   Elusion_depart_to_destination = \
+      "%s vanishes in an instant, leaving behind a fading shimmer of "
+      "warped space."
+
+   Elusion_and = "and "
+
+   % Yeah, it's Illusionary wounds sound, but it fits.
+   % Plus, Ill. Wounds wasn't using it anymore.
+   Elusion_sound = riluswnd.wav
+
+classvars:
+
+   vrName = Elusion_name_rsc
+   vrIcon = Elusion_icon_rsc
+   vrDesc = Elusion_desc_rsc
+
+   viSpell_num = SID_ELUSION
+   viSchool = SS_RIIJA
+   viSpell_level = 6
+   viMana = 20
+   viSpellExertion = 15
+
+   viChance_To_Increase = 10
+   viMeditate_ratio = 50
+
+   vrSucceed_wav = Elusion_sound
+   viFlash = FLASH_GOOD
+
+properties:
+
+   % If true, can cast elusion from any room.  Otherwise it's limited.
+   pbCanCastFromAnywhere = TRUE
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&KriipaClaw,2],plReagents);
+
+      return;
+   }
+
+   CanPayCosts(who = $,lTargets = $,bItemCast = FALSE)
+   {
+      local oRoom, iRoomNum;
+
+      % Can't cast just after attacking someone
+      if Send(who,@GetLastPlayerAttackTime)
+         + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+         > GetTime()
+      {
+         Send(who,@MsgSendUser,#message_rsc=spell_too_soon_since_attacking);
+
+         return FALSE;
+      }
+
+      if pbCanCastFromAnywhere
+      {
+         propagate;
+      }
+
+      % Can only cast from certain rooms.  This was added because being
+      % able to escape from anywhere was too powerful.
+
+      oRoom = Send(who, @GetOwner);
+      iRoomNum = Send(oRoom, @GetRoomNum);
+
+      if (iRoomNum <> RID_TOS AND iRoomNum <> RID_MARION AND
+          iRoomNum <> RID_BARLOQUE AND iRoomNum <> RID_CORNOTH AND
+          iRoomNum <> RID_JASPER AND iRoomNum <> RID_KOC_INN)
+      {
+         % In your guild hall?
+         if oRoom <> Send(who,@GetGuildHall)
+         {
+            Send(who,@MsgSendUser,#message_rsc=Elusion_cant_cast_here);
+
+            return FALSE;
+         }
+      }
+
+      propagate;
+   }
+
+   GetTranceTime(iSpellpower=0,who=$)
+   {
+      % Since this spell uses the trance, don't
+      % scale it down depending on iSpellpower
+      return viCast_time;
+   }
+
+   BeginCastingTrance(who=$,lTargets=$,iSpellpower=$)
+   {
+      local oTrance, lLocations, sLocations;
+
+      % Get rid of the regular casting trance, we
+      % need a special one put on below.
+      Send(who,@BreakTrance,#event=EVENT_STEER);
+
+      oTrance = Send(SYS,@FindSpellByNum,#num=SID_TRANCE);
+
+      lLocations = Send(self,@GetLocations,#iSpellpower=iSpellpower,
+                        #target=who);
+
+      sLocations = Send(self,@GetLocationsString,#lLocations=lLocations);
+      Send(who,@MsgSendUser,#message_rsc=Elusion_location_list,
+            #parm1=sLocations);
+
+      % lTargets is of the form = [location1, location2,...]
+      Send(oTrance,@BeginCastingTrance,#what=self,#who=who,
+            #lTargets=lLocations,#time=TRANCE_TIME);
+
+      propagate;
+   }
+
+   TranceBlocksSay()
+   {
+      return TRUE;
+   }
+
+   SomethingSaidDuringTrance(who=$,string=$,lTargets = $)
+   {
+      local lAllTargets, oGuildHall, sRoomName, bFound, oRoom, i, each_obj;
+
+      % Check if string is a location.  If it is, and the caster has
+      % sufficient spellpower make it the target.  Get percent in the
+      % target spell.  If not there or fail check, bail and print failure.
+
+      Send(who,@BreakTrance,#event=EVENT_STEER);  %% Don't print fizzle message
+
+      bFound = FALSE;
+
+      lAllTargets = lTargets;
+
+      % Special bonus!  Warp to guild hall with high enough spellpower.
+      % Spellpower has to be high enough that you were already going to 5
+      % or more places.
+      if Length(lTargets) >= 5
+      {
+         oGuildHall = Send(who,@GetGuildHall);
+
+         if oGuildHall <> $
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2)
+         {
+            lAllTargets = Cons(oGuildHall,lAllTargets);
+         }
+      }
+
+      for oRoom in lAllTargets
+      {
+         sRoomName = Send(oRoom,@GetName);
+         if StringContain(string,sRoomName)
+         {
+            bFound = TRUE;
+            Post(oRoom,@Teleport,#what=who);
+
+            for i in Send(Send(who,@GetOwner),@GetHolderActive)
+            {
+               each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+               if IsClass(each_obj,&User)
+               {
+                  Send(each_obj,@MsgSendUser,
+                        #message_rsc=Elusion_depart_to_destination,
+                        #parm1=Send(who,@GetName));
+               }
+            }
+
+            break;
+         }
+      }
+
+      if bFound
+      {
+         Send(who,@MsgSendUser,#message_rsc=Elusion_success);
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=Elusion_fail);
+      }
+
+      return;
+   }
+
+   GetLocations(iSpellpower=$,target=$)
+   {
+      local lLocations, lAvailable, iNumLocations, oRoom, sLocations;
+
+      lLocations = [Send(SYS,@FindRoomByNum,#num=RID_TOS),
+                    Send(SYS,@FindRoomByNum,#num=RID_MARION),
+                    Send(SYS,@FindRoomByNum,#num=RID_BARLOQUE),
+                    Send(SYS,@FindRoomByNum,#num=RID_CORNOTH),
+                    Send(SYS,@FindRoomByNum,#num=RID_JASPER)];
+
+      lAvailable = $;
+
+      % Originally divided by 16 for 96 spellpower, this has been
+      % dropped to 84 spellpower for Island (divide by 14)
+      iNumLocations = bound(iSpellPower/14,1,6);
+
+      if Send(Send(target,@GetOwner),@GetRegion) = RID_KOCATAN
+         OR iNumLocations = 6
+      {
+         lAvailable = Cons(Send(SYS,@FindRoomByNum,
+                           #num=RID_KOC_INN),lAvailable);
+         iNumLocations = iNumLocations - 1;
+      }
+
+      while iNumLocations > 0
+      {
+         % Make these completely random, since we're just escaping
+         % to somewhere ...anywhere... else.
+
+         oRoom = Nth(lLocations,Random(1,Length(lLocations)));
+         lAvailable = Cons(oRoom,lAvailable);
+         lLocations = DelListElem(lLocations,oRoom);
+
+         iNumLocations = iNumLocations - 1;
+      }
+
+      return lAvailable;
+   }
+
+   GetLocationsString(lLocations=$)
+   {
+      local i, iNumRooms, sString, iCounter;
+
+      ClearTempString();
+      iCounter = 0;
+
+      iNumRooms = length(lLocations);
+
+      for i in lLocations
+      {
+         iCounter = iCounter + 1;
+
+         if iNumRooms > 1
+         {
+            if iCounter = iNumRooms
+            {
+               AppendTempString(Elusion_and);
+               AppendTempString(Send(i,@GetName));
+            }
+            else
+            {
+               AppendTempString(Send(i,@GetName));
+               AppendTempString(", ");
+            }
+         }
+         else
+         {
+            AppendTempString(Send(i,@GetName));
+         }
+
+      }
+
+      sString = CreateString();
+      sString = GetTempString();
+
+      return sString;
+   }
+
+   DoubleCheckAfterTrance(who=$,lTargets=$)
+   {
+      Send(who,@MsgSendUser,#message_rsc=Elusion_No_Location_Given);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -38,6 +38,8 @@ properties:
    piBaseLight = LIGHT_NICE
    piOutside_factor = 3
 
+   pbSnowGroundTexture = TRUE
+
    prMusic = koctavern_music
 
 messages:
@@ -59,7 +61,6 @@ messages:
       plExits = Cons([ 14, 16, RID_KOC_INN, 12, 7, ROTATE_NONE ],plExits);
       plExits = Cons([ 14, 17, RID_KOC_INN, 12, 7, ROTATE_NONE ],plExits);
 
-  
       propagate;
    }
 
@@ -83,31 +84,77 @@ messages:
 
       Send(self,@CreateOrnObjFromList,#lObjlist=lObjCoords1);
 
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=10,#new_col=14,
-           #fine_row=32,#fine_col=32);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=13,#new_col=14,
-           #fine_row=40,#fine_col=32);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=10,#new_col=18,
-           #fine_row=48,#fine_col=32);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=13,#new_col=18,
-           #fine_row=16,#fine_col=32);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=19,#new_col=26,
-           #fine_row=08,#fine_col=56);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=05,#new_col=26,
-           #fine_row=08,#fine_col=56);
-      send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=04,#new_col=15,
-           #fine_row=56,#fine_col=16);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=10,#new_col=14,
+            #fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=13,#new_col=14,
+            #fine_row=40,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=10,#new_col=18,
+            #fine_row=48,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=13,#new_col=18,
+            #fine_row=16,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=19,#new_col=26,
+            #fine_row=08,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=05,#new_col=26,
+            #fine_row=08,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&KocatanLamp),#new_row=04,#new_col=15,
+            #fine_row=56,#fine_col=16);
 
-      send(self,@NewHold,#what=Create(&Candle),#new_row=02,#new_col=11,
-           #fine_row=48,#fine_col=16);
-      
-      send(self,@NewHold,#what=Create(&KocatanBartender),
-            #new_row=19,#new_col=19,#fine_row=0,#fine_col=0,
-            #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Candle),#new_row=02,#new_col=11,
+            #fine_row=48,#fine_col=16);
+
+      Send(self,@NewHold,#what=Create(&KocatanBartender),
+             #new_row=19,#new_col=19,#fine_row=0,#fine_col=0,
+             #new_angle=ANGLE_EAST);
 
       propagate;
    }
 
+   StartSnow(bOnGround=TRUE)
+   {
+      % Check if we can have weather effects here.
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      % If there's a sandstorm weather effect here, clear it.
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SANDSTORM)
+      {
+         Send(self,@EndSandstorm);
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % We just want to show snow in the outside area.
+            Send(self,@ChangeTexture,#id=1,#new_texture=61015,#flags=CTF_FLOOR);
+         }
+      }
+
+      Send(self,@SetRoomFlag,#flag=ROOM_SNOWING,#value=TRUE);
+      Send(self,@WeatherChanged);
+
+      return;
+   }
+
+   EndSnow(override=FALSE)
+   "Use override if rooms have manually placed textures."
+   {
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+      {
+         Send(self,@SetRoomFlag,#flag=ROOM_SNOWING,#value=FALSE);
+         Send(self,@WeatherChanged);
+      }
+
+      if pbSnowGroundTexture
+         OR override
+      {
+         Send(self,@RemoveTextureChange,#id=1);
+      }
+
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

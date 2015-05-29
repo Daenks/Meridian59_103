@@ -131,6 +131,7 @@ void InitBkodInterpret(void)
 	ccall_table[CLEARTEMPSTRING] = C_ClearTempString;
 	ccall_table[GETTEMPSTRING] = C_GetTempString;
 	ccall_table[CREATESTRING] = C_CreateString;
+	ccall_table[ISSTRING] = C_IsString;
 	ccall_table[STRINGSUBSTITUTE] = C_StringSubstitute;
 	ccall_table[STRINGLENGTH] = C_StringLength;
 	ccall_table[STRINGCONSISTSOF] = C_StringConsistsOf;
@@ -138,12 +139,16 @@ void InitBkodInterpret(void)
 	ccall_table[CREATETIMER] = C_CreateTimer;
 	ccall_table[DELETETIMER] = C_DeleteTimer;
 	ccall_table[GETTIMEREMAINING] = C_GetTimeRemaining;
-	
+	ccall_table[ISTIMER] = C_IsTimer;
 	ccall_table[CREATEROOMDATA] = C_LoadRoom;
+	ccall_table[FREEROOM] = C_FreeRoom;
 	ccall_table[ROOMDATA] = C_RoomData;
 	ccall_table[CANMOVEINROOM] = C_CanMoveInRoom;
 	ccall_table[CANMOVEINROOMFINE] = C_CanMoveInRoomFine;
-	
+	ccall_table[CANMOVEINROOMHIGHRES] = C_CanMoveInRoomHighRes;
+	ccall_table[GETHEIGHT] = C_GetHeight;
+
+	ccall_table[APPENDLISTELEM] = C_AppendListElem;
 	ccall_table[CONS] = C_Cons;
 	ccall_table[FIRST] = C_First;
 	ccall_table[REST] = C_Rest;
@@ -153,12 +158,14 @@ void InitBkodInterpret(void)
 	ccall_table[ISLIST] = C_IsList;
 	ccall_table[SETFIRST] = C_SetFirst;
 	ccall_table[SETNTH] = C_SetNth;
+	ccall_table[SWAPLISTELEM] = C_SwapListElem;
+	ccall_table[INSERTLISTELEM] = C_InsertListElem;
 	ccall_table[DELLISTELEM] = C_DelListElem;
 	ccall_table[FINDLISTELEM] = C_FindListElem;
 	
 	ccall_table[GETTIME] = C_GetTime;
 	ccall_table[GETTICKCOUNT] = C_GetTickCount;
-	
+	ccall_table[SETCLASSVAR] = C_SetClassVar;
 	
 	ccall_table[CREATETABLE] = C_CreateTable;
 	ccall_table[ADDTABLEENTRY] = C_AddTableEntry;
@@ -173,6 +180,8 @@ void InitBkodInterpret(void)
 	ccall_table[RANDOM] = C_Random;
 	
 	ccall_table[RECORDSTAT] = C_RecordStat;
+   
+   ccall_table[GETSESSIONIP] = C_GetSessionIP;
 	
 	ccall_table[ABS] = C_Abs;
 	ccall_table[BOUND] = C_Bound;

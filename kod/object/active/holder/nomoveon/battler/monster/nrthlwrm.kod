@@ -15,8 +15,8 @@ constants:
    include blakston.khd
 
    SEC_PER_FRAME = 150
-   EXERTION_DAMAGE_MIN = 3
-   EXERTION_DAMAGE_MAX = 7
+   EXERTION_DAMAGE_MIN = 0
+   EXERTION_DAMAGE_MAX = 3
 
 resources:
 
@@ -24,15 +24,16 @@ resources:
    NarthylWorm_name_rsc = "narthyl worm"
    NarthylWorm_icon_rsc = darkbeas.bgf
    NarthylWorm_desc_rsc = \
-   "In spite of its otherworldy hideousness, the narthyl worm's lithe movements are "
-   "intensely hypnotic.  Every nerve in your body is screaming danger, ringing dully "
-   "through the trance-like state that seems to be descending over your mind."
+      "In spite of its otherworldly hideousness, the narthyl worm's lithe "
+      "movements are intensely hypnotic.  Every nerve in your body is "
+      "screaming danger, ringing dully through the trance-like state that "
+      "seems to be descending over your mind."
 
    NarthylWorm_dead_icon_rsc = dkbx.bgf
    NarthylWorm_dead_name_rsc = "dead narthyl worm"
 
    NarthylWorm_sound_miss = wrm_atk.wav
-   NarthylWorm_sound_death = wrm_dth.wav
+   NarthylWorm_sound_death = wrm_die.wav
    NarthylWorm_sound_aware = wrm_awr.wav
 
    NarthylWorm_sound_flap1 = wrm_flp1.wav
@@ -53,54 +54,64 @@ classvars:
    viAttributes = 0
    viLevel = 120
    viDifficulty = 7
+   viVisionDistance = 20
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viKarma = -70
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE
-   viCashmin = 600
-   viCashmax = 1800
+   viCashmin = -3600
+   viCashmax = 1250
    vrSound_miss = NarthylWorm_sound_miss
    vrSound_aware = NarthylWorm_sound_aware
    vrSound_death = NarthylWorm_sound_death
-
 
 properties:
 
    piAnimation = ANIM_NONE
    ptRestartAnimation = $
-   
+
 messages:
 
    Constructed()
    {
-      plResistances = [ [ 70, ATCK_WEAP_PIERCE],
-                        [ 70, ATCK_WEAP_THRUST ],
-                        [ 70, -ATCK_SPELL_UNHOLY ],
-                        [ 70, -ATCK_SPELL_SHOCK ],
-                        [ 70, -ATCK_SPELL_FIRE ],
-                        [ -20, -ATCK_SPELL_HOLY]];
+      plResistances = [ [ATCK_WEAP_PIERCE, 70],
+                        [ATCK_WEAP_THRUST, 70 ],
+                        [-ATCK_SPELL_UNHOLY, 70 ],
+                        [-ATCK_SPELL_SHOCK, 70 ],
+                        [-ATCK_SPELL_FIRE, 70 ],
+                        [-ATCK_SPELL_HOLY, -20]];
       propagate;
    }
 
-   MonsterAttack(what = $)
+   MonsterAttack(what=$)
    {
       Send(self,@DoSlash);
-      
+
       return;
    }
 
    DoSlash()
    {
-      piAnimation = ANIM_ATTACK;
-      Send(poOwner,@SomethingChanged,#what=self);
-      piAnimation = ANIM_NONE;
-      ptRestartAnimation = createTimer(self,@RestartAnimation,SEC_PER_FRAME*5);
-      
+      if poOwner <> $
+      {
+         piAnimation = ANIM_ATTACK;
+         Send(poOwner,@SomethingChanged,#what=self);
+         piAnimation = ANIM_NONE;
+         ptRestartAnimation = CreateTimer(self,@RestartAnimation,
+                                    SEC_PER_FRAME*5);
+      }
+
       return;
    }
 
    RestartAnimation()
    {
       ptRestartAnimation = $;
-      Send(poOwner,@SomethingChanged,#what=self);
+
+      if poOwner <> $
+      {
+         Send(poOwner,@SomethingChanged,#what=self);
+      }
 
       return;
    }
@@ -109,10 +120,10 @@ messages:
    {
       if ptRestartAnimation <> $
       {
-         deleteTimer(ptRestartAnimation);
+         DeleteTimer(ptRestartAnimation);
          ptRestartAnimation = $;
       }
-      
+
       propagate;
    }
 
@@ -122,7 +133,7 @@ messages:
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
       }
-      
+
       AddPacket(1,ANIMATE_CYCLE,4,SEC_PER_FRAME,2,1,2,4);
 
       return;
@@ -134,7 +145,7 @@ messages:
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
       }
-      
+
       if piAnimation = ANIM_ATTACK
       {
          AddPacket(1,ANIMATE_ONCE,4,SEC_PER_FRAME,2,5,2,8,2,1);
@@ -143,20 +154,19 @@ messages:
       {
          AddPacket(1,ANIMATE_CYCLE,4,SEC_PER_FRAME,2,1,2,4); % that's the standing one.
       }
-      
+
       return;
    }
 
-   HitSideEffect(what = $)
+   HitSideEffect(what=$)
    {
       if IsClass(what,&Player)
       {
-         send(what,@AddExertion,#amount=(random(EXERTION_DAMAGE_MIN,EXERTION_DAMAGE_MAX)*10000));
+         Send(what,@AddExertion,#amount=(Random(EXERTION_DAMAGE_MIN,EXERTION_DAMAGE_MAX)*10000));
       }
 
       return;
    }
-   
-end
 
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -205,6 +205,9 @@ void MenuCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
    case ID_COLOR_LISTSEL:
       UserSelectColors(COLOR_LISTSELFGD, COLOR_LISTSELBGD);
       break;
+   case ID_COLOR_MAGIC:
+      UserSelectColor(COLOR_ITEM_MAGIC_FG);
+      break;
    case ID_COLOR_HIGHLIGHT:
       UserSelectColor(COLOR_HIGHLITE);
       break;
@@ -244,6 +247,15 @@ void MenuCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
    case ID_HELP_CONTENTS:
       StartHelp();
+      break;
+   case ID_HOMEPAGE:
+      WebLaunchBrowser(GetString(hInst, IDS_HOMEPAGEURL));
+      break;
+   case ID_FORUM:
+      WebLaunchBrowser(GetString(hInst, IDS_FORUMURL));
+      break;
+   case ID_WIKI:
+      WebLaunchBrowser(GetString(hInst, IDS_WIKIURL));
       break;
    case ID_HELP_ABOUT:
       DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUT), hMain, AboutDialogProc);

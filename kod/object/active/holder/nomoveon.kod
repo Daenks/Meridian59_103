@@ -16,7 +16,7 @@ constants:
 
 classvars:
 
-   viObject_flags = MOVEON_NO
+   viMoveOn_type = MOVEON_NO
 
 properties:
 
@@ -25,6 +25,11 @@ properties:
    piCol
    piFine_row = 0
    piFine_col = 0
+
+   % List of enchantments applied by radius spells.
+   % Each element is [song object, spellpower, caster]
+   % Support for players, monsters, and items
+   plRadiusEnchantments = $
 
 messages:
 
@@ -62,11 +67,87 @@ messages:
       return piFine_col;
    }
 
-   ReqSomethingMoved(what = $,new_row = $,new_col = $)
+   GetHeightAtObject()
    {
-      local iRow,iCol;
+      if poOwner <> $
+      {
+         return GetHeight(Send(poOwner,@GetRoomData),piRow,piCol,
+                     piFine_row,piFine_col);
+      }
 
-      if new_row = piRow AND new_col = piCol AND IsClass(what,&Battler)
+      return 0;
+   }
+
+   ReqSomethingMoved(what = $,new_row = $,new_col = $,new_finerow = $,
+   new_finecol = $)
+   {
+      local iRowWe,iColWe,iRowDest,iColDest,iFlags,
+            iRowWhat,iColWhat,iRowFineWhat,iColFineWhat,iDold,iDnew;
+
+      % Get coordinates of what.
+      iRowWhat = Send(what,@GetRow);
+      iColWhat = Send(what,@GetCol);
+
+      % Sanity check on the "big" values which can be $.
+      if new_row = $ OR new_col = $
+         OR piRow = $ OR piCol = $
+      {
+         propagate;
+      }
+
+      iFlags = Send(self,@GetMoveOnType);
+      if (iFlags = MOVEON_YES)
+      {
+         propagate;
+      }
+
+      % Apply defaults on fine new values.
+      if new_finerow = $
+      {
+         new_finerow = FINENESS_HALF;
+      }
+      if new_finecol = $
+      {
+         new_finecol = FINENESS_HALF;
+      }
+
+      % Get squared distance in fine units to old and new location
+      % of the object. If the object has $ row and col values, we
+      % can skip this check.
+      if iRowWhat <> $
+         AND iColWhat <> $
+      {
+         iRowFineWhat = Send(what,@GetFineRow);
+         iColFineWhat = Send(what,@GetFineCol);
+
+         iDold = Send(self,@SquaredFineDistanceToLocation,#row=iRowWhat,
+                        #col=iColWhat,#fine_row=iRowFineWhat,
+                        #fine_col=iColFineWhat);
+         iDnew = Send(self,@SquaredFineDistanceToLocation,#row=new_row,
+                        #col=new_col,#fine_row=new_finerow,
+                        #fine_col=new_finecol);
+
+         % Don't block anything that goes away from us,
+         % not even the smallest steps.
+         if iDnew > iDold
+         {
+            propagate;
+         }
+      }
+
+      % Get highres square of ourself.
+      iRowWe = ((piRow * FINENESS) + piFine_row) / 16;
+      iColWe = ((piCol * FINENESS) + piFine_col) / 16;
+      
+      % Get highres square of requested destination.
+      iRowDest = ((new_row * FINENESS) + new_finerow) / 16;
+      iColDest = ((new_col * FINENESS) + new_finecol) / 16;
+
+      % Prevent them from stepping too close on each other.
+      % These are in highres-squares, the typical stepwidth.
+      if Abs(iRowDest - iRowWe) < 3
+         AND Abs(iColDest - iColWe) < 3
+         AND IsClass(what,&Battler)
       {
          return FALSE;
       }
@@ -103,16 +184,184 @@ messages:
       return;
    }
 
+   AddRadiusEnchantment(what=$,iPower=0,source=$)
+   {
+      local i;
+      
+      for i in plRadiusEnchantments
+      {
+         if Nth(i,1) = what
+            AND Nth(i,2) = iPower
+            AND Nth(i,3) = source
+         {
+            return;
+         }
+      }
+
+      plRadiusEnchantments = Cons([what,iPower,source],plRadiusEnchantments);
+      
+      If IsClass(self,&User)
+      {
+         Send(self,@ShowAddEnchantment,#what=what,#type=2);
+         
+         If source = self
+            AND NOT Send(what,@GetOldAreaEnchStyle)
+         {
+            Send(self,@ShowAddEnchantment,#what=what,#type=1);
+         }
+      }
+      
+      return;
+   }
+
+   RemoveRadiusEnchantment(what=$,iPower=0,source=$)
+   {
+      local i;
+
+      for i in plRadiusEnchantments
+      {
+         if Nth(i,1) = what
+            AND Nth(i,2) = iPower
+            AND Nth(i,3) = source
+         {
+            If IsClass(self,&User)
+            {
+               Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=2);
+
+               If source = self
+                  AND NOT Send(what,@GetOldAreaEnchStyle)
+               {
+                  Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=1);
+               }
+            }
+         
+            plRadiusEnchantments = DelListElem(plRadiusEnchantments,i);
+         }
+      }
+
+      return;
+   }
+   
+   IsAffectedByRadiusEnchantment(what=$,caster=$,byClass=&RadiusEnchantment)
+   "Returns whether or not currently enchanted by <what> radius enchantment."
+   {
+      local i;
+      
+      if plRadiusEnchantments = $
+      {
+         return FALSE;
+      }
+
+      if what = $
+      {
+         for i in plRadiusEnchantments
+         {
+            if IsClass(Nth(i,1),byClass)
+            {
+               if caster = $
+               {
+                  return TRUE;
+               }
+               else
+               {
+                  if Nth(i,3) = caster
+                  {
+                     return TRUE;
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         for i in plRadiusEnchantments
+         {
+            if Nth(i,1) = what
+            {
+               if caster = $
+               {
+                  return TRUE;
+               }
+               else
+               {
+                  if Nth(i,3) = caster
+                  {
+                     return TRUE;
+                  }
+               }
+            }
+         }      
+      }
+      
+      return FALSE;
+   }
+   
+   GetMostPowerfulRadiusEnchantmentState(byClass=&RadiusEnchantment)
+   {
+      local i, oHighest;
+   
+      oHighest = $;
+   
+      for i in plRadiusEnchantments
+      {
+         if IsClass(Nth(i,1), byClass)
+         {
+            if oHighest = $
+            {
+               oHighest = i;
+            }
+            else
+            {
+               if Nth(i,2) > Nth(oHighest,2)
+               {
+                  oHighest = i;
+               }
+            }
+         }
+      }
+      return oHighest;
+   }
+
+   GetRadiusEnchantments()
+   {
+      return plRadiusEnchantments;
+   }
+
+   IsInSameRoom(what = $)
+   {
+      local oOwner;
+      
+      oOwner = Send(what,@GetOwner);
+
+      if poOwner <> $
+         AND IsClass(poOwner,&Room)
+         AND oOwner <> $
+         AND IsClass(oOwner,&Room)
+         AND poOwner = oOwner
+      {
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
    SquaredDistanceTo(what = $)
-   "Computes squared distance to <what>.  Assumes they are in same room!"
+   "Computes squared distance to <what>. Returns $ for any object that is "
+   "not within a room."
    {
       local iRow, iCol;
+      
+      if NOT Send(self,@IsInSameRoom,#what=what)
+      {
+         return $;
+      }
 
       iRow = Send(what,@GetRow);
       iCol = Send(what,@GetCol);
 
       % Sanity checking
       if iRow = $ OR iCol = $
+         OR piRow = $ OR piCol = $
       {
          return $;
       }
@@ -130,7 +379,139 @@ messages:
 
       return  (iRow_diff * iRow_diff + iCol_diff * iCol_diff);
    }
-   
+
+   SquaredFineDistanceTo(what = $)
+   "Computes squared distance to <what> in fine-units. Returns $ for any "
+   "object that is not within a room."
+   {
+      local iRow, iCol, iFineRow, iFineCol;
+      
+      if NOT Send(self,@IsInSameRoom,#what=what)
+      {
+         return $;
+      }
+
+      iRow = Send(what,@GetRow);
+      iCol = Send(what,@GetCol);
+      iFineRow = Send(what,@GetFineRow);
+      iFineCol = Send(what,@GetFineCol);
+
+      return Send(self,@SquaredFineDistanceToLocation,#row=iRow,#col=iCol,
+                  #fine_row=iFineRow,#fine_col=iFineCol);
+   }
+
+   SquaredFineDistanceToLocation(row = $,col = $,fine_row = FINENESS_HALF,
+                                 fine_col = FINENESS_HALF)
+   "Computes squared distance to (row,col)"
+   {
+      local iRow, iCol, iRow_diff, iCol_diff, iResult;
+
+      % Sanity check, big row/col can be $.
+      if row = $ OR col = $ OR piRow = $ OR piCol = $
+      {
+         return $;
+      }
+
+      % Scale to fine
+      iRow = (piRow * FINENESS) + piFine_row;
+      iCol = (piCol * FINENESS) + piFine_col;
+      row = (row * FINENESS) + fine_row;
+      col = (col * FINENESS) + fine_col;
+
+      % Deltas
+      iRow_diff = iRow - row;
+      iCol_diff = iCol - col;
+
+      iResult = (iRow_diff * iRow_diff + iCol_diff * iCol_diff);
+      if iResult < 0
+      {
+         iResult = MAX_INT;
+      }
+
+      return iResult;
+   }
+
+   SqFineDistToVision(what = $)
+   "Computes squared distance to <what> in fine-units. Optimised for "
+   "monster vision check. Returns squared fine units, divide by "
+   "FINENESS_SQUARED to compare to squared row/col units."
+   {
+      local iRow, iCol, iWhatRow, iWhatCol, iRow_diff, iCol_diff, iResult;
+
+      % Scale to fine.
+      iRow = piRow * FINENESS + piFine_row;
+      iCol = piCol * FINENESS + piFine_col;
+      iWhatRow = Send(what,@GetRow) * FINENESS + Send(what,@GetFineRow);
+      iWhatCol = Send(what,@GetCol) * FINENESS + Send(what,@GetFineCol);
+
+      % Deltas.
+      iRow_diff = iRow - iWhatRow;
+      iCol_diff = iCol - iWhatCol;
+
+      iResult = iRow_diff * iRow_diff + iCol_diff * iCol_diff;
+      if iResult < 0
+      {
+         iResult = MAX_INT;
+      }
+
+      return iResult;
+   }
+
+   SquaredFineDistanceTo3D(what=$)
+   {
+      local iRow, iCol, iWhatRow, iWhatCol, iRow_diff, iCol_diff, iHeight_diff,
+      iResult;
+
+      % Scale to fine.
+      iRow = piRow * FINENESS + piFine_row;
+      iCol = piCol * FINENESS + piFine_col;
+      iWhatRow = Send(what,@GetRow) * FINENESS + Send(what,@GetFineRow);
+      iWhatCol = Send(what,@GetCol) * FINENESS + Send(what,@GetFineCol);
+
+      % Deltas.
+      iRow_diff = iRow - iWhatRow;
+      iCol_diff = iCol - iWhatCol;
+      iHeight_diff = (Send(self,@GetHeightAtObject)
+                           - Send(what,@GetHeightAtObject)) * 16;
+
+      iResult = iRow_diff * iRow_diff + iCol_diff * iCol_diff
+                  + iHeight_diff * iHeight_diff;
+      if iResult < 0
+      {
+         iResult = MAX_INT;
+      }
+
+      return iResult;
+   }
+
+   SquaredFineDistanceToLocation3D(row = $,col = $,fine_row = FINENESS_HALF,
+                                 fine_col = FINENESS_HALF)
+   {
+      local iRow, iCol, iWhatRow, iWhatCol, iRow_diff, iCol_diff, iHeight_diff,
+      iResult;
+
+      % Scale to fine
+      iRow = piRow * FINENESS + piFine_row;
+      iCol = piCol * FINENESS + piFine_col;
+      iWhatRow = (row * FINENESS) + fine_row;
+      iWhatCol = (col * FINENESS) + fine_col;
+
+      % Deltas.
+      iRow_diff = iRow - iWhatRow;
+      iCol_diff = iCol - iWhatCol;
+      iHeight_diff = (Send(self,@GetHeightAtObject)
+                           - GetHeight(Send(poOwner,@GetRoomData),row,col,
+                                    fine_row,fine_col)) * 16;
+
+      iResult = iRow_diff * iRow_diff + iCol_diff * iCol_diff
+                  + iHeight_diff * iHeight_diff;
+      if iResult < 0
+      {
+         iResult = MAX_INT;
+      }
+
+      return iResult;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

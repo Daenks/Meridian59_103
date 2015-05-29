@@ -28,11 +28,7 @@ constants:
 
    % Base percent chance to resist spells.
    MAGIC_RESIST = 50
-   % Range, squared, of spell attacks.
-   SPELL_RANGE_SQUARED = 100
-   % Chance (1 in this many) to cast an offensive spell per attack.
-   SPELL_CHANCE = 3
-   
+
 resources:
 
    DarkAngel_koc_name_rsc = "ozangelis"
@@ -41,16 +37,16 @@ resources:
    DarkAngel_desc_rsc = \
       "Travelling under cover of darkness, the Dark Angels seek the souls of "
       "people to consume.  They are pure evil, lashing out at any that wander "
-      "near them.  Surely these beasts are the handservants of Qor!"
+      "near them.  Surely these beasts are the hand-servants of Qor!"
 
    DarkAngel_wings_rsc = anglwing.bgf
 
    DarkAngel_dead_icon_rsc = angelX.bgf
    DarkAngel_dead_name_rsc = "dead dark angel"
 
-   DarkAngel_sound_attack = dangatk.wav
-   DarkAngel_sound_death = dangdth.wav
-   DarkAngel_sound_aware = dangawr.wav
+   DarkAngel_sound_attack = lich_atk.wav
+   DarkAngel_sound_death = gst_dth.wav
+   DarkAngel_sound_aware = gst_awr.wav
 
    DarkAngel_fireball = fireball.bgf
 
@@ -66,148 +62,83 @@ classvars:
    viTreasure_type = TID_DARK_ANGEL
    viCashmin = 0
    viCashmax = 0
-   viSpeed = SPEED_VERY_FAST
+   viSpeed = SPEED_FASTER
    viAttack_type = ATCK_WEAP_MAGIC
    viAttack_spell = ATCK_SPELL_FIRE
    viLevel = 200
    viDifficulty = 9
+   viVisionDistance = 28
+
+   % Attack range of 448, or 7 row/col.
+   viAttackRange = 448
+
    viKarma = -100
    viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_FIGHT_AGGRESSIVE \
                         | AI_FIGHT_SWITCHALOT | AI_MOVE_REGROUP \
-                        | AI_MOVE_OPTIMAL_RANGE
+                        | AI_MOVE_OPTIMAL_RANGE | AI_FIGHT_THROUGH_WALLS
 
    vrSound_miss = DarkAngel_sound_attack
    vrSound_aware = DarkAngel_sound_aware
    vrSound_death = DarkAngel_sound_death
 
+   % 1 in x chance to cast a spell.
+   viSpellChance = 3
+
 properties:
 
    piAnimation = ANIM_NONE
-   piDrawfx = BOUNCE_YES
-   plSummoned = $
+   piDrawEffectFlag = OF_BOUNCING
+
+   piSpellPower = 99
+   piMax_mana = 40
+
+   % piSpellRange in FINENESS units. 10 row/cols.
+   piSpellRange = 640
 
 messages:
 
    Constructed()
    {
-      plResistances = [ [ 50, -ATCK_SPELL_COLD ],
-                        [ 50, -ATCK_SPELL_FIRE ],
-                        [ 50, -ATCK_SPELL_SHOCK ],
-                        [ 75, ATCK_WEAP_NERUDITE ],
-                        [ -5, ATCK_WEAP_MAGIC ]
+      plResistances = [ [ -ATCK_SPELL_COLD, 50 ],
+                        [ -ATCK_SPELL_FIRE, 50 ],
+                        [ -ATCK_SPELL_SHOCK, 50 ],
+                        [ ATCK_WEAP_NERUDITE, 75 ],
+                        [ ATCK_WEAP_MAGIC, -5 ]
                       ];
+      plSpellBook =  [ [SID_BLIND,8,20],[SID_EVIL_TWIN,12,30], [SID_HOLD,8,40],
+                       [SID_REFLECTION,5,60], [SID_DISCORDANCE,5,70],
+                       [SID_ENFEEBLE,8,80], [SID_FORGET,5,100] ];
+
       propagate;
    }
 
-   % Dark Angels have a range with their fireballs.
-   GetAttackRange()
-   {
-      return 7;
-   }
-
-   MonsterAttack(what = $)
+   MonsterAttack(what=$)
    {
       local oSpell;
 
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_DARKNESS);
       if NOT Send(poOwner,@IsEnchanted,#what=oSpell)
          AND Send(oSpell,@CanPayMonsterCosts,#who=self,#lTargets=$,
-                  #iSpellPower=SPELLPOWER_MAXIMUM)
+                  #iSpellPower=piSpellPower)
          AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,#litems=$)
       {
          Send(oSpell,@CastSpell,#who=self,#lTargets=$,
-              #iSpellPower=SPELLPOWER_MAXIMUM);
+              #iSpellPower=piSpellPower);
       }
-      
+
       Send(self,@MonsterCastSpell);
       Send(self,@DoFireball);
-      
+
       return;
    }
 
-   MonsterCastSpell()
+   MonsterCastAnimation(iSpellNum=$)
    {
-      local iDistance, oSpell, iRandom, lTargets;
+      % We use the fireball for cast animation.
+      Send(self,@DoFireball);
 
-      iDistance = Send(self,@SquaredDistanceTo,#what=poTarget);
-
-      iRandom = Send(self,@AdjustedChanceBase,#base=SPELL_CHANCE);
-      if Random(1,iRandom) = 1
-         AND iDistance > Send(self,@GetAttackRange)
-         AND iDistance <= SPELL_RANGE_SQUARED
-         AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
-         AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
-                  #use_weapon=self)
-      {
-         iRandom = random(1,100);
-         if iRandom < 20
-         {
-            oSpell = SID_BLIND;
-            lTargets = [poTarget];
-         }
-         else
-         {
-            if iRandom < 30
-            {
-               % Summoning an Evil Twin
-               return Send(self,@SummonAngelReflection,#target=poTarget);
-            }
-            else
-            {
-               if iRandom < 40
-               {
-                  oSpell = SID_HOLD;
-                  lTargets = [poTarget];
-               }
-               else
-               {
-                  if iRandom < 60
-                  {
-                     % Summoning a Reflection
-                     return Send(self,@SummonAngelReflection,#target=self);
-                  }
-                  else
-                  {
-                     if iRandom < 70
-                     {
-                        oSpell = SID_DISCORDANCE;
-                        lTargets = $;
-                     }
-                     else
-                     {
-                        if iRandom < 80
-                        {
-                           oSpell = SID_ENFEEBLE;
-                           lTargets = [poTarget];
-                        }
-                        else
-                        {
-                           oSpell = SID_FORGET;
-                           lTargets = [poTarget];
-                        }
-                     }
-                  }
-               }
-            }
-         }
-
-         oSpell = Send(SYS,@FindSpellByNum,#num=oSpell);
-         lTargets = Send(oSpell,@GetTargets,#who=self,#lTargets=lTargets);
-
-         if Send(oSpell,@CanPayMonsterCosts,#who=self,#ltargets=lTargets,
-                 #iSpellPower=SPELLPOWER_MAXIMUM)
-            AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,
-                     #litems=lTargets)
-         {
-            Send(oSpell,@CastSpell,#who=self,#ltargets=lTargets,
-                 #iSpellPower=SPELLPOWER_MAXIMUM);
-         }
-
-         return TRUE;
-      }
-      
-      return FALSE;
-    }
+      return;
+   }
 
    DoFireball()
    {
@@ -216,62 +147,6 @@ messages:
       Send(poOwner,@SomethingShot,#who=self,#target=poTarget,#projectile=self,
            #flags=PROJ_FLAG_LIGHT_SOURCE);
       piAnimation = ANIM_NONE;
-      
-      return;
-   }
-
-   % This summons a reflection type monster.  If target is not self,
-   %  then summons an evil twin. If self, summons a reflection instead.
-   % Use this instead of the proper spells because of player-specific
-   %  checks.
-   SummonAngelReflection(target = $)
-   {
-      local oTwin, oRoom, iRow, iCol;
-
-      oRoom = Send(target,@GetOwner);
-
-      % Check the summon limit restrictions
-      if Send(oRoom,@CountHoldingHowMany,#class=&monster) > 25
-         OR Send(oRoom,@CountHoldingHowMany,#class=&EvilTwin) > 10
-         OR Send(oRoom,@CountHoldingHowMany,#class=&Reflection) > 10
-         OR Send(oRoom,@CountHoldingSummoned)
-            > Send(Send(SYS, @GetSettings), @GetPlayerSummonedObjectLimit)
-      {
-         return FALSE;
-      }
-
-      if target = self
-      {
-         oTwin = Create(&Reflection,#iSpellpower=100,#oMaster=self);  
-      }
-      else
-      {
-         oTwin = Create(&EvilTwin,#iSpellpower=100,#oMaster=self,
-                        #oTarget=target);
-      }
-
-      iRow = Send(target,@GetRow);
-      iCol = Send(target,@GetCol);
-
-      Send(oTwin,@SetOriginal,#who=target);
-      
-      if NOT Send(oRoom,@ReqNewHold,#what=oTwin,#new_row=iRow,#new_col=iCol)
-      {
-         Send(oTwin,@Delete);
-
-         return FALSE;
-      }
-
-      Send(oRoom,@NewHold,#what=oTwin,#new_row=iRow,#new_col=iCol);
-      Send(SYS,@AddReflection,#who=target,#oReflection=oTwin);
-      plSummoned = cons(oTwin,plSummoned);
-   
-      return TRUE;
-   }
-
-   SummonDeleted(what=$)
-   {
-      plSummoned = DelListElem(plSummoned,what);
 
       return;
    }
@@ -285,11 +160,11 @@ messages:
    {
       return 25;
    }
-   
+
    SendProjectileAnimation()
    {
       % 40ms between animations
-      AddPacket(1,ANIMATE_CYCLE, 4,40, 2,1, 2,2);   
+      AddPacket(1,ANIMATE_CYCLE, 4,40, 2,1, 2,2);
 
       return;
    }
@@ -318,7 +193,7 @@ messages:
 
       return;
    }
-   
+
    SendMoveAnimation()
    {
       AddPacket(1,ANIMATE_NONE, 2,FRAME_STAND);
@@ -376,28 +251,14 @@ messages:
 
    Delete()
    {
-      local oEachObj;
-
-      for oEachObj in plSummoned
-      {
-         Send(oEachObj,@Delete,#bMonsterReport=FALSE);
-      }
-
-      plSummoned = $;
-
       propagate;
    }
 
-   GetObjectFlags()
-   {
-      return MOVEON_NO | BOUNCE_YES | BATTLER_YES;
-   }
-   
    CanMorphTo()
    {
       % Dark Angel has overlays.
       return FALSE;
-   }      
+   }
 
    CanBeSilenced()
    "Dark Angels cannot be silenced by the room enchantment."
@@ -413,7 +274,7 @@ messages:
       {
          return FALSE;
       }
- 
+
       if Send(oSpell,@IsHarmful)
       {
          iResistChance = MAGIC_RESIST;
@@ -424,7 +285,7 @@ messages:
             % Extra 60% chance to resist.  Brings 50% up to 80%
             iResistChance = (iResistChance * 160)/100;
          }
-         
+
          if iSpellPower < 40
             OR Random(0,100) < iResistChance
          {
@@ -434,7 +295,6 @@ messages:
 
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

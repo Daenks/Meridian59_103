@@ -24,7 +24,7 @@
 %       Difficulty = maxhealth/12 (bounded at 4 and 9)
 %    Standard Revenant difficulty:
 %       Level = 150% of maxhealth
-%       Difficulty = maxhealth/10 (bounded at 4 and 10)
+%       Difficulty = maxhealth/10 (bounded at 4 and 9)
 
 
 Revenant is Monster
@@ -38,12 +38,19 @@ resources:
    revenant_name_rsc = "revenant"
    revenant_icon_rsc = zombie.bgf
    revenant_desc_rsc = \
-   "The reward for someone's misdeeds: a battle to the death with a lost soul.  Although it is harmless to all but the murderer it haunts, anyone foolish enough to interfere will suffer the same fate."
+      "The reward for someone's misdeeds: a battle to the death with a lost "
+      "soul.  Although it is harmless to all but the murderer it haunts, "
+      "anyone foolish enough to interfere will suffer the same fate."
 
-   Rev_grouping_is_bad = "Your soul twitches as you interfere in another's battle.  You realize that you too will now be haunted when you leave this place."
+   Rev_grouping_is_bad = \
+      "Your soul twitches as you interfere in another's battle.  You "
+      "realize that you too will now be haunted when you leave this place."
    Rev_vanquished = "You feel a great weight lifted from your soul."
-   Rev_coming_to_get_ya = "Your spine tingles as you sense the foreboding presence of a pursuing revenant drawing near."
-   Rev_draining_effect = "The revenant makes a mystical motion... you feel drained."
+   Rev_coming_to_get_ya = \
+      "Your spine tingles as you sense the foreboding presence of a "
+      "pursuing revenant drawing near."
+   Rev_draining_effect = \
+      "The revenant makes a mystical motion... you feel drained."
 
 classvars:
    vrName = revenant_name_rsc
@@ -51,57 +58,63 @@ classvars:
    vrDesc = revenant_desc_rsc
 
    viAttack_type = ATCK_WEAP_SLASH
-   viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_SINGLEMINDED | AI_MOVE_WALKTHROUGH_WALLS | AI_FIGHT_THROUGH_WALLS
+   viDefault_behavior = \
+      AI_FIGHT_AGGRESSIVE | AI_FIGHT_SINGLEMINDED \
+      | AI_MOVE_WALKTHROUGH_WALLS | AI_FIGHT_THROUGH_WALLS
 
 properties:
 
    viSpeed = SPEED_FASTER
-   viLevel = 55                 %% These are reset in constructor
+   viLevel = 55               %% These are reset in constructor
    viDifficulty = 5
+   viVisionDistance = 100
+   % Attack range of 192, or 3 row/col.
+   viAttackRange = 192
    viKarma = 20
    viCashmin = 0
    viCashmax = 0
    % our private data
 
    piAnimation = ANIM_NONE
+   piDrawFx = DRAWFX_INVISIBLE
 
-   poRoom = $                  %% The room we are scheduled to be created in.
-   poHauntee = $               %% The player we are to hunt.
-   ptPlace = $                 %% Timer for the delay before we are created.
+   poRoom = $                %% The room we are scheduled to be created in.
+   poHauntee = $             %% The player we are to hunt.
+   ptPlace = $               %% Timer for the delay before we are created.
 
 messages:
 
-   Constructor(target = $, location = $, diff = 0, level = 0, karmic = 0, speed = 0)
+   Constructor(target = $,location = $,diff = 0,level = 0,karmic = 0,speed = 0)
    {
-      if target = $ 
-         OR location = $  
-         OR Send(location,@CheckRoomFlag,#flag=ROOM_NO_COMBAT) 
+      if target = $
+         OR location = $
+         OR Send(location,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
          OR Send(location,@CheckRoomFlag,#flag=ROOM_SANCTUARY)
          OR Send(location,@checkRoomFlag,#flag=ROOM_SAFE_DEATH)
       {
-         return ;
+         return;
       }
-      
+
       poRoom = location;
       poHauntee = target;
       poTarget = poHauntee;
-      
+
       if speed <> $
       {
          speed = Send(Send(SYS,@GetSettings),@GetRevenantSpeed);
          viSpeed = speed;
       }
-	  
+
       if diff <> $
       {
          viDifficulty = diff;
       }
-      
+
       if level <> $
       {
          viLevel = level;
       }
-      
+
       if karmic <> $
       {
          viKarma = karmic;
@@ -109,15 +122,26 @@ messages:
 
       %% place near target in 3-8 seconds
       ptPlace = CreateTimer(self,@Place,Random(3000,8000));
-      
+
       propagate;
    }
 
    Constructed()
    {
-      plResistances = [ [ 40, -ATCK_SPELL_ALL ],
-                        [ 40, ATCK_WEAP_MAGIC ],
-                        [ 25, ATCK_WEAP_PIERCE] ];
+      plResistances = [ [-ATCK_SPELL_ALL, 25 ],
+                        [ATCK_WEAP_MAGIC, 15 ],
+                        [ATCK_WEAP_PIERCE, 25] ];
+      propagate;
+   }
+
+   Delete()
+   {
+      if ptPlace <> $
+      {
+         DeleteTimer(ptPlace);
+      }
+      ptPlace = $;
+
       propagate;
    }
 
@@ -127,19 +151,20 @@ messages:
       local oRoom, bValid_location, iTries, iRow, iCol, iRow_sign, iCol_sign,
             iTarg_row, iTarg_col ;
 
+      ptPlace = $;
       oRoom = Send(poHauntee,@GetOwner);
-      
+
       if oRoom <> poRoom
       {
          %% target has moved on, let new revenant take over
          Send(self,@Delete);
-         
+
          return;
       }
-      
+
       iTarg_row = Send(poHauntee,@GetRow);
       iTarg_col = Send(poHauntee,@GetCol);
-      
+
       iTries = 0;
       bValid_location = FALSE;
       
@@ -156,7 +181,7 @@ messages:
          {
             iRow_sign=  1 ;
          }
-         
+
          if Random(1,2) = 1
          {
             iCol_sign= -1 ;
@@ -165,10 +190,10 @@ messages:
          {
             iCol_sign=  1 ;
          }
-         
+
          iRow = iTarg_row + iRow_sign*Random(3,6);
          iCol = iTarg_col + iCol_sign*Random(3,6);
-         
+
          if iRow >= 1
             AND iRow <= Send(poRoom,@GetRoomRows)
             AND iCol >= 1
@@ -177,18 +202,13 @@ messages:
             bValid_location = TRUE;
          }
       }
-      
+
       Send(poRoom,@NewHold,#what=self,#new_row=iRow,#new_col=iCol);
       poTarget = poHauntee;
-      send(self,@EnterStateChase);
+      Send(self,@EnterStateChase);
       Post(poHauntee,@MsgSendUser,#message_rsc=Rev_coming_to_get_ya);
-      
-      return;
-   }
 
-   GetVisionDistance()
-   {
-      return 9999;       %% effectively infinite
+      return;
    }
 
    MonsterAttack(what = $)
@@ -196,7 +216,7 @@ messages:
       piAnimation = ANIM_ATTACK;
       Send(poOwner,@SomethingChanged,#what=self);
       piAnimation = ANIM_NONE;
-      
+
       %Extra revenant penalty.. each time it hits, it drains away vigor
       %The 20% drain might be too high, but well see. *cackle*
       if Random(0,9) = 0
@@ -204,15 +224,22 @@ messages:
          Send(what,@MsgSendUser,#message_rsc=Rev_draining_effect);
          Send(what,@AddExertion,#amount=Send(what,@GetVigor)*10000/10);
       }
-      
+
       return;
+   }
+
+   SomethingMoved()
+   {
+      Send(Send(self,@GetOwner),@DeleteWallsAroundBattler,#who=self);
+
+      propagate;
    }
 
    SendLookAnimation()
    {
       AddPacket(1,ANIMATE_CYCLE);
       AddPacket(4,200,2,2,2,3);
-      
+
       return;
    }
 
@@ -229,18 +256,13 @@ messages:
       if piAnimation = ANIM_ATTACK
       {
          AddPacket(1,ANIMATE_ONCE,4,200,2,2,2,3,2,1);
-         
+
          return;
       }
 
       % if no body animation
-      
-      propagate;
-   }
 
-   GetObjectFlags()
-   {
-      return BATTLER_YES | DRAWFX_INVISIBLE;
+      propagate;
    }
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -256,19 +278,19 @@ messages:
       {
          Send(self,@RevenantWasAttacked,#what=what);
       }
-      
+
       propagate;
    }
 
    RevenantWasAttacked(what = $)
    {
       if what <> poHauntee and IsClass(what,&User) AND
-         (not Send(what,@CheckPlayerFlag,#flag=PFLAG_HAUNTED))
+         (NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_HAUNTED))
       {
          Send(what,@MsgSendUser,#message_rsc=Rev_grouping_is_bad);
          Send(what,@SetPlayerFlag,#flag=PFLAG_HAUNTED,#value=TRUE);
       }
-      
+
       return;
    }
 
@@ -277,10 +299,18 @@ messages:
    {
       if poHauntee = victim
       {
-         post(self,@Delete);  % MUST post this
+         % Posting Delete so delete Place timer here.
+         if ptPlace <> $
+         {
+            DeleteTimer(ptPlace);
+         }
+
+         ptPlace = $;
+
+         Post(self,@Delete);  % MUST post this
       }
-      
-      return ; 
+
+      return ;
    }
 
 
@@ -291,11 +321,102 @@ messages:
    %% If it's the target, delete revenant
    SomethingLeft(what = $)
    {
-      if what = poHauntee 
-      { 
-         post(self,@Delete); 
+      if what = poHauntee
+      {
+         % Posting Delete so delete Place timer here.
+         if ptPlace <> $
+         {
+            DeleteTimer(ptPlace);
+         }
+
+         ptPlace = $;
+
+         Post(self,@Delete);
       }
-      
+
+      return;
+   }
+
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % State Transition Functions
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+   % Called when the user leaves the screen, as we're being deleted.
+   % We don't add to the target's piMonsterChasers, so override the
+   % superclass here.
+   EnterStateLimbo()
+   {
+      Send(self,@ClearBehavior);
+
+      poTarget = $;
+      piHatred = 0;
+      Send(self,@SetState,#bit=STATE_LIMBO);
+      % The whole point of the limbo state is that there are no timers to set.
+
+      return;
+   }
+
+   EnterStateWait(actnow=FALSE,delay=MOB_MOVE_TIMER_WAIT)
+   {
+      poTarget = $;
+      piHatred = 0;
+
+      Send(self,@SetState,#bit=STATE_WAIT);
+      Send(self,@ClearBehavior);
+
+      if actnow
+      {
+         Send(self,@WaitTimer);
+      }
+      else
+      {
+         ptBehavior = CreateTimer(self,@WaitTimer,delay);
+      }
+
+      return;
+   }
+
+   EnterStateMove( actnow=FALSE )
+   {
+      % Note: All monsters "move" even the ones who physically can't.
+      Send(self,@SetState,#bit=STATE_MOVE);
+
+      poTarget = $;
+      piHatred = 0;
+
+      Send(self,@ClearBehavior);
+
+      if actnow
+      {
+         Send(self,@MoveTimer);
+      }
+      else
+      {
+         ptBehavior = CreateTimer(self,@MoveTimer,Send(self,@GetMoveTime));
+      }
+
+      return;
+   }
+
+   TargetSwitch(what=$, iHatred = 0)
+   {
+      if what = $
+      {
+         Debug("BAD target we're switching to here!");
+
+         return;
+      }
+
+      piHatred = iHatred;
+      piState = (piState & VSTATE_VALIDITY_MASK);
+
+      % 'lock' sound
+      if vrSound_aware <> $
+      {
+         Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=vrSound_aware);
+      }
+
       return;
    }
 
@@ -306,7 +427,7 @@ messages:
    %% The only escape from haunting is the death of the revenant
    Killed(what = $)
    {
-      If what <> poHauntee
+      if what <> poHauntee
          AND IsClass(what,&User)
          AND (NOT Send(what,@checkPlayerFlag,#flag=PFLAG_HAUNTED))
       {
@@ -317,7 +438,7 @@ messages:
       Send(poHauntee,@SetPlayerFlag,#flag=PFLAG_HAUNTED,#value=FALSE);
       Send(poHauntee,@MsgSendUser,#message_rsc=Rev_vanquished);
       Send(self,@Delete);
-      
+
       return;  %% do not propagate (revenants leave no corpse or treasure)
    }
 
@@ -333,13 +454,17 @@ messages:
    CanMorphTo()
    {
       return FALSE;
-   }  
-   
+   }
+
    CanPlayerAdvanceOnMe()
-   {  
+   {
       return FALSE;
-   }    
+   }
+
+   CanEvilTwin()
+   {
+      return FALSE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

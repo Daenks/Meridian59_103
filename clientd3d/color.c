@@ -56,11 +56,14 @@ static char colorinfo[][15] = {
 	{ "255,255,255"},   /* COLOR_BAR4 */
 	{ "192,192,192"},   /* COLOR_INVNUMFGD */
 	{ "0,0,0"},         /* COLOR_INVNUMBGD */
+	{ "255,80,0"}       /* COLOR_ITEM_MAGIC_FG */
 };
 
 static char color_section[] = "Colors";  /* Section for colors in INI file */
 
-// Colors for drawing player names
+/* Colors for drawing player names. These are no longer
+   needed since we send RGB hex values. Keeping these
+   here for now.
 #define NAME_COLOR_NORMAL_FG   PALETTERGB(255, 255, 255)
 #define NAME_COLOR_OUTLAW_FG   PALETTERGB(252, 128, 0)
 #define NAME_COLOR_KILLER_FG   PALETTERGB(255, 0, 0)
@@ -68,7 +71,9 @@ static char color_section[] = "Colors";  /* Section for colors in INI file */
 #define NAME_COLOR_CREATOR_FG  PALETTEINDEX(251) // yellow
 #define NAME_COLOR_SUPER_FG    PALETTEINDEX(250) // green
 #define NAME_COLOR_DM_FG       PALETTEINDEX(254) // cyan
+#define NAME_COLOR_MOD_FG      PALETTERGB(0, 120, 255)
 #define NAME_COLOR_BLACK_FG    PALETTERGB(0, 0, 0)
+#define NAME_COLOR_DAENKS_FG   PALETTERGB(179,0,179)*/
 
 extern HPALETTE hPal;
 
@@ -403,20 +408,27 @@ HBRUSH DialogCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
 * GetItemListColor:  Get given color id # for given owner-drawn list box.
 *    (Inventory has different colors than popup dialog lists)
 *    Doesn't return color itself so that caller can use id to call GetBrush.
+*    Now colors magic items; any future item colors should be added here.
 */
-WORD GetItemListColor(HWND hwnd, int type)
+WORD GetItemListColor(HWND hwnd, int type, int flags)
 {
-	switch(type)
-	{
-	case UNSEL_FGD:
-		return COLOR_LISTFGD;
-	case UNSEL_BGD:
-		return COLOR_LISTBGD;
-	case SEL_FGD:
-		return COLOR_LISTSELFGD;
-	case SEL_BGD:
-		return COLOR_LISTSELBGD;
+	if ((flags != NULL) && (GetItemFlags(flags) == (OF_ITEM_MAGIC | OF_GETTABLE)))
+		return COLOR_ITEM_MAGIC_FG;
+	else
+   {
+		switch(type)
+		{
+		case UNSEL_FGD:
+			return COLOR_LISTFGD;
+		case UNSEL_BGD:
+			return COLOR_LISTBGD;
+		case SEL_FGD:
+			return COLOR_LISTSELFGD;
+		case SEL_BGD:
+			return COLOR_LISTSELBGD;
+		}
 	}
+
 	return 0;
 }
 
@@ -425,29 +437,18 @@ WORD GetItemListColor(HWND hwnd, int type)
 * GetPlayerNameColor:  Return color that player's name should be drawn in,
 *   depending on player's object flags
 */
-COLORREF GetPlayerNameColor(int flags,char*name)
+COLORREF GetPlayerNameColor(object_node* obj, char *name)
 {
-	if (GetDrawingEffect(flags) == OF_BLACK)
-		return NAME_COLOR_BLACK_FG;
+   int r, g, b;
 
-	switch (GetPlayerFlags(flags))
-	{
-		case PF_DM:
-			return NAME_COLOR_DM_FG;
-		case PF_KILLER:
-			return NAME_COLOR_KILLER_FG;
-		case PF_OUTLAW:
-			return NAME_COLOR_OUTLAW_FG;
-		case PF_CREATOR:
-			return NAME_COLOR_CREATOR_FG;
-		case PF_SUPER:
-			return NAME_COLOR_SUPER_FG;
-		case PF_EVENTCHAR:
-			return NAME_COLOR_EVENT_FG;
-            
-    default:
-			return NAME_COLOR_NORMAL_FG;
-	}
+   if (obj->drawingtype == DRAWFX_BLACK)
+      return PALETTERGB(0,0,0);
+
+     r = (obj->namecolor & 0xFF0000) >> 16;
+     g = (obj->namecolor & 0x00FF00) >> 8;
+     b = (obj->namecolor & 0x0000FF);
+
+     return PALETTERGB(r, g, b);
 }
 
 /****************************************************************************/
@@ -455,24 +456,13 @@ COLORREF GetPlayerNameColor(int flags,char*name)
 * GetPlayerWhoNameColor:  Return color that player's name should be drawn on
 *   the who list, depending on player's object flags
 */
-COLORREF GetPlayerWhoNameColor(int flags,char*name)
+COLORREF GetPlayerWhoNameColor(object_node* obj, char *name)
 {
-    switch (GetPlayerFlags(flags))
-    {
-        case PF_DM:
-            return NAME_COLOR_DM_FG;
-        case PF_CREATOR:
-            return NAME_COLOR_CREATOR_FG;
-        case PF_SUPER:
-            return NAME_COLOR_SUPER_FG;
-        case PF_EVENTCHAR:
-            return NAME_COLOR_EVENT_FG;
-        case PF_KILLER:
-            return NAME_COLOR_KILLER_FG;
-        case PF_OUTLAW:
-            return NAME_COLOR_OUTLAW_FG;
+     int r, g, b;
 
-        default:
-            return NAME_COLOR_NORMAL_FG;
-    }
+     r = (obj->namecolor & 0xFF0000) >> 16;
+     g = (obj->namecolor & 0x00FF00) >> 8;
+     b = (obj->namecolor & 0x0000FF);
+
+      return PALETTERGB(r, g, b);
 }

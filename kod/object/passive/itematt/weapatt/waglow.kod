@@ -14,19 +14,19 @@ WeapAttGlowing is WeaponAttribute
 %
 %  Causes weapon to glow, similar to a torch.
 %
-%  Form is: 
+%  Form is:
 %
 %       [ WA_GLOWING, timer, light_intensity ]
-%   
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 constants:
 
-   include blakston.khd   
+   include blakston.khd
 
 resources:
 
-   weapattglowing_desc = "  It glows softly like a torch."
+   weapattglowing_desc = " It glows softly like a torch."
    weapattglowing_name = "glowing %s"
 
    waglowing_gone = "Your %s stops glowing."
@@ -47,19 +47,20 @@ properties:
    piValue_power_modifier = -10
 
 messages:
-  
+
    %%%  Effect Functions
 
    DMCreateItemAtt(who=$,string=$,oWeapon=$)
-   {      
-      if who = $ OR string= $ OR oWeapon = $
+   {
+      if who = $ OR string = $ OR oWeapon = $
       {
-         DEBUG("BAD data sent to DMCreateItemAtt!");
+         Debug("BAD data sent to DMCreateItemAtt!");
+
          return FALSE;
       }
 
       if StringContain(string,glowing_dm)
-      {  
+      {
          % If DM created, it's 100 light (more than the spell allows)
          %  and 35 hours in duration.
          Send(self,@AddToItem,#oItem=oWeapon,#random_gen=FALSE,
@@ -102,7 +103,7 @@ messages:
       return;
    }
 
-   AddSelfToRandomItem(oItem = $)
+   AddSelfToRandomItem(oItem=$)
    {
       local iGlowLevel;
 
@@ -118,7 +119,7 @@ messages:
          Send(self,@AddToItem,#oItem=oItem,#state1=iGlowLevel,
               #timer_duration=random(3600000,86400000),#random_gen=TRUE);
       }
-      
+
       return;
    }
 
@@ -137,13 +138,13 @@ messages:
    TimerExpired(oItem=$,lData=$)
    {
       % Timer is gone, now remove reference
-      SetNth(lData,2,$);   
+      SetNth(lData,2,$);
       Send(self,@RemoveFromItem,#oItem=oItem,#lData=lData);
-   
+
       return;
    }
 
-   RemoveFromItem(oItem=$, lData=$)
+   RemoveFromItem(oItem=$,lData=$)
    {
       local oPlayer, oRoom;
 
@@ -165,7 +166,6 @@ messages:
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

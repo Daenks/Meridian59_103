@@ -38,6 +38,7 @@ enum {
    COLOR_BAR4,            /* Bar graph color #4 (numbers in graphs) */
    COLOR_INVNUMFGD,       /* Inventory number foreground */
    COLOR_INVNUMBGD,       /* Inventory number background */
+   COLOR_ITEM_MAGIC_FG,   /* Color for magic weapons in lists*/
    MAXCOLORS,
 };
 
@@ -51,8 +52,8 @@ void ColorsCreate(Bool use_defaults);
 void ColorsDestroy(void);
 M59EXPORT COLORREF GetColor(WORD color);
 M59EXPORT HBRUSH GetBrush(WORD color);
-COLORREF GetPlayerNameColor(int flags,char*name);
-COLORREF GetPlayerWhoNameColor(int flags,char*name);
+COLORREF GetPlayerNameColor(object_node* obj,char *name);
+COLORREF GetPlayerWhoNameColor(object_node* obj,char *name);
 
 void UserSelectColor(WORD color);
 void UserSelectColors(WORD fg, WORD bg);
@@ -62,6 +63,6 @@ void ColorsRestoreDefaults(void);
 M59EXPORT HBRUSH DialogCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type);
 HBRUSH MainCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type);
 
-WORD GetItemListColor(HWND hwnd, int type);
+WORD GetItemListColor(HWND hwnd, int type, int flags);
 
 #endif /* #ifndef _COLOR_H */

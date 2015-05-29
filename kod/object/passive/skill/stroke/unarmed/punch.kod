@@ -44,18 +44,18 @@ classvars:
    viSchool = SKS_FENCING
 
    viSkill_num = SKID_PUNCH
-   viskillExertion = 5
+   viSkillExertion = 3
    vbCheck_exertion = FALSE
 
    viChance_to_increase = 60
+   viMeditate_ratio = 30
 
-   viHit_Factor = 30
    viSkill_level = 1
 
    viSkill_Num = SKID_PUNCH
 
-   viMin_Damage = 1         % Damage_min here replaces a weapon    
-   viMax_Damage = 5         % Damage_max replaces the weapon's stats.
+   viMin_Damage = 2         % Damage_min here replaces a weapon    
+   viMax_Damage = 6         % Damage_max replaces the weapon's stats.
 
    VbAutomatic = FALSE  %  If this is set to TRUE, then the effects of this
                         %  skill happen automatically, and are not accessible
@@ -80,8 +80,6 @@ messages:
    "The stroke may choose it's own damage give or recieve message.  Otherwise"
    "player.kod will offer the default 'You killed the whatever' message."
    {
-      % Is this really necessary?  Can't we just use the messages defined in battler instead?
-      
       if (Send(who,@GetWeapon) <> $)
       {
          % They have a weapon, probably a touch attack.  Let that do it's own damage message.
