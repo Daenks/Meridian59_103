@@ -1,61 +1,49 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "blakserv", "blakserv\blakserv.vcproj", "{660FE431-2A8D-41F3-9522-D32CE96839D5}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "util", "util", "{5409487F-DD7C-4265-A8F1-990867259F7D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rmote", "util\rmote\rmote.vcproj", "{6501F184-6BB0-4C58-8FB6-4808723A8119}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rwatson", "util\rwatson\rwatson.vcproj", "{BFC96A3A-777C-470E-9809-3476AEFBC2E5}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scrshot", "util\scrshot\scrshot.vcproj", "{FFA735BC-815C-4D88-8E82-55B80C1F631A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumwin", "util\enumwin\enumwin.vcproj", "{2DC08AC0-6DF5-47BC-BB84-B0D65F61C1B6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "btnpush", "util\btnpush\btnpush.vcproj", "{93AC0585-BA86-40A6-9FD6-A98636E30214}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "inst", "util\inst\inst.vcproj", "{A3EB4EDA-7200-46EC-B47A-45897A33CFE2}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ftptest", "util\ftptest\ftptest.vcproj", "{A6EB2D1C-987D-4E9A-8B21-666A8C948617}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscload", "util\rscload\rscload.vcproj", "{72F8B417-9416-487A-96AC-FBD3E8F6EF2E}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscprint", "util\rscprint\rscprint.vcproj", "{CDF8F959-F6AE-43A1-9848-6BCD66A856E5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{72F8B417-9416-487A-96AC-FBD3E8F6EF2E} = {72F8B417-9416-487A-96AC-FBD3E8F6EF2E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bmpdump", "util\bmpdump\bmpdump.vcproj", "{62913BED-4307-4343-BA2E-B7E1FC5D6971}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paldump", "util\paldump\paldump.vcproj", "{9619B00E-7F87-44A5-BFC6-90E77D116747}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscmerge", "util\rscmerge\rscmerge.vcproj", "{D971EFF2-2537-4C35-97F5-056975431423}"
-	ProjectSection(ProjectDependencies) = postProject
-		{72F8B417-9416-487A-96AC-FBD3E8F6EF2E} = {72F8B417-9416-487A-96AC-FBD3E8F6EF2E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "syscolors", "util\syscolors\syscolors.vcproj", "{64E05E81-D58E-461E-92ED-0075A6DE81B5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{72F8B417-9416-487A-96AC-FBD3E8F6EF2E} = {72F8B417-9416-487A-96AC-FBD3E8F6EF2E}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "palcomp", "util\palcomp\palcomp.vcproj", "{0CA8304D-FD57-4F33-8A0A-873DD6C13AE1}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "porttest", "util\porttest\porttest.vcproj", "{B91E3C08-849A-4E89-A346-E964474E0082}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clientd3d", "clientd3d\clientd3d.vcproj", "{F70560E5-0FF8-44F0-A0C6-B5A90BE84B45}"
-	ProjectSection(ProjectDependencies) = postProject
-		{72F8B417-9416-487A-96AC-FBD3E8F6EF2E} = {72F8B417-9416-487A-96AC-FBD3E8F6EF2E}
-		{0D12DA4E-3BC4-4C64-A0EE-13E622260881} = {0D12DA4E-3BC4-4C64-A0EE-13E622260881}
-		{D96C53B8-2C0F-4A8A-BDAC-3B11818B956A} = {D96C53B8-2C0F-4A8A-BDAC-3B11818B956A}
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clientutil", "clientutil", "{26ACBAB0-A7BD-4157-911A-41CD85E2A292}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "maketrig", "clientd3d\maketrig\trig.vcproj", "{D96C53B8-2C0F-4A8A-BDAC-3B11818B956A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "blakserv", "blakserv\blakserv.vcxproj", "{660FE431-2A8D-41F3-9522-D32CE96839D5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makepal", "clientd3d\makepal\makepal.vcproj", "{0D12DA4E-3BC4-4C64-A0EE-13E622260881}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rmote", "util\rmote\rmote.vcxproj", "{6501F184-6BB0-4C58-8FB6-4808723A8119}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rwatson", "util\rwatson\rwatson.vcxproj", "{BFC96A3A-777C-470E-9809-3476AEFBC2E5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scrshot", "util\scrshot\scrshot.vcxproj", "{FFA735BC-815C-4D88-8E82-55B80C1F631A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enumwin", "util\enumwin\enumwin.vcxproj", "{2DC08AC0-6DF5-47BC-BB84-B0D65F61C1B6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "btnpush", "util\btnpush\btnpush.vcxproj", "{93AC0585-BA86-40A6-9FD6-A98636E30214}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "inst", "util\inst\inst.vcxproj", "{A3EB4EDA-7200-46EC-B47A-45897A33CFE2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ftptest", "util\ftptest\ftptest.vcxproj", "{A6EB2D1C-987D-4E9A-8B21-666A8C948617}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscload", "util\rscload\rscload.vcxproj", "{72F8B417-9416-487A-96AC-FBD3E8F6EF2E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscprint", "util\rscprint\rscprint.vcxproj", "{CDF8F959-F6AE-43A1-9848-6BCD66A856E5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bmpdump", "util\bmpdump\bmpdump.vcxproj", "{62913BED-4307-4343-BA2E-B7E1FC5D6971}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paldump", "util\paldump\paldump.vcxproj", "{9619B00E-7F87-44A5-BFC6-90E77D116747}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rscmerge", "util\rscmerge\rscmerge.vcxproj", "{D971EFF2-2537-4C35-97F5-056975431423}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "syscolors", "util\syscolors\syscolors.vcxproj", "{64E05E81-D58E-461E-92ED-0075A6DE81B5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "palcomp", "util\palcomp\palcomp.vcxproj", "{0CA8304D-FD57-4F33-8A0A-873DD6C13AE1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "porttest", "util\porttest\porttest.vcxproj", "{B91E3C08-849A-4E89-A346-E964474E0082}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clientd3d", "clientd3d\clientd3d.vcxproj", "{F70560E5-0FF8-44F0-A0C6-B5A90BE84B45}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "maketrig", "clientd3d\maketrig\trig.vcxproj", "{D96C53B8-2C0F-4A8A-BDAC-3B11818B956A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makepal", "clientd3d\makepal\makepal.vcxproj", "{0D12DA4E-3BC4-4C64-A0EE-13E622260881}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -144,6 +132,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{26ACBAB0-A7BD-4157-911A-41CD85E2A292} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{6501F184-6BB0-4C58-8FB6-4808723A8119} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{BFC96A3A-777C-470E-9809-3476AEFBC2E5} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{FFA735BC-815C-4D88-8E82-55B80C1F631A} = {5409487F-DD7C-4265-A8F1-990867259F7D}
@@ -159,7 +148,6 @@ Global
 		{64E05E81-D58E-461E-92ED-0075A6DE81B5} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{0CA8304D-FD57-4F33-8A0A-873DD6C13AE1} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{B91E3C08-849A-4E89-A346-E964474E0082} = {5409487F-DD7C-4265-A8F1-990867259F7D}
-		{26ACBAB0-A7BD-4157-911A-41CD85E2A292} = {5409487F-DD7C-4265-A8F1-990867259F7D}
 		{D96C53B8-2C0F-4A8A-BDAC-3B11818B956A} = {26ACBAB0-A7BD-4157-911A-41CD85E2A292}
 		{0D12DA4E-3BC4-4C64-A0EE-13E622260881} = {26ACBAB0-A7BD-4157-911A-41CD85E2A292}
 	EndGlobalSection
