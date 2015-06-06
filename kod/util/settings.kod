@@ -210,6 +210,9 @@ properties:
 
    % Turns damage scaling for chance to hit greater than 100 percent on or off
    piDamageScaling = FALSE
+   
+   % Set map where players start in.
+   piInitialRoomID = RID_NEWB1
 
    % A battler's chance to hit when offense equals defense in per MILLE
    piEqualChanceToHit = 500
@@ -544,6 +547,11 @@ messages:
    GetDamageScaling()
    {
       return piDamageScaling;
+   }
+   
+   GetInitialRoomID()
+   {
+	  return piInitialRoomID;
    }
 
    GetEqualChanceToHit()
