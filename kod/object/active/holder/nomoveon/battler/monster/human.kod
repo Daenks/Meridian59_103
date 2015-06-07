@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FactionTroop is Monster
+Human is Monster
 
 constants:
 
@@ -16,157 +16,164 @@ constants:
 
    ANIM_CAST = 3
    
-   FACTIONTROOP_TRANSLATION_LEGS_MASK = 0xff
-   FACTIONTROOP_TRANSLATION_LEGS_MUL = 1
-   FACTIONTROOP_TRANSLATION_BODY_MASK = 0xff00
-   FACTIONTROOP_TRANSLATION_BODY_MUL = 0x100
-   FACTIONTROOP_TRANSLATION_Skin_MASK = 0xff0000
-   FACTIONTROOP_TRANSLATION_Skin_MUL = 0x10000
+   HUMAN_TRANSLATION_LEGS_MASK = 0xff
+   HUMAN_TRANSLATION_LEGS_MUL = 1
+   HUMAN_TRANSLATION_BODY_MASK = 0xff00
+   HUMAN_TRANSLATION_BODY_MUL = 0x100
+   HUMAN_TRANSLATION_Skin_MASK = 0xff0000
+   HUMAN_TRANSLATION_Skin_MUL = 0x10000
 
-   FACTIONTROOP_TRANSLATION2_HAIR_MASK = 0xff
-   FACTIONTROOP_TRANSLATION2_HAIR_MUL = 1
-   FACTIONTROOP_TRANSLATION2_ARMS_MASK = 0xff00
-   FACTIONTROOP_TRANSLATION2_ARMS_MUL = 0x100
+   HUMAN_TRANSLATION2_HAIR_MASK = 0xff
+   HUMAN_TRANSLATION2_HAIR_MUL = 1
+   HUMAN_TRANSLATION2_ARMS_MASK = 0xff00
+   HUMAN_TRANSLATION2_ARMS_MUL = 0x100
+   
+   SHIRT_MASK = 0x00ff
+   SHIRT_MUL  = 0x0001
+   PANTS_MASK = 0xff00
+   PANTS_MUL  = 0x0100
 
-   NO_ACTION = 1  % Neutral action, our troops don't smile, etc.
+   NO_ACTION = 1  % Neutral action, our Humans don't smile, etc.
 
    EQUIPMENT_DROP_PERCENT = 20
 
 resources:
 
-   FactionTroop_name_rsc = "faction troop"
+   Human_name_rsc = "human"
 
-   FactionTroop_male_icon_rsc = bta.bgf
-   FactionTroop_female_icon_rsc = btb.bgf  
+   Human_male_icon_rsc = bta.bgf
+   Human_female_icon_rsc = btb.bgf  
 
    % a is male, b is female
-   FactionTroop_legs_a_rsc = bfa.bgf
-   FactionTroop_legs_b_rsc = bfb.bgf
+   Human_legs_a_rsc = bfa.bgf
+   Human_legs_b_rsc = bfb.bgf
+   Human_legs_c_rsc = bfc.bgf
+   Human_legs_d_rsc = bfd.bgf
   
-   FactionTroop_rightarm_a_rsc = bra.bgf
-   FactionTroop_rightarm_b_rsc = brb.bgf
+   Human_rightarm_a_rsc = bra.bgf
+   Human_rightarm_b_rsc = brb.bgf
    
-   FactionTroop_leftarm_a_rsc = bla.bgf
-   FactionTroop_leftarm_b_rsc = blb.bgf
+   Human_leftarm_a_rsc = bla.bgf
+   Human_leftarm_b_rsc = blb.bgf
 
-   FactionTroop_desc_rsc = \
-   "This is a member of the local militia."
+   Human_desc_rsc = \
+   "This is a fellow Meridian citizen."
 
-   FactionTroop_dead_male_icona_rsc = playerXa.bgf
-   FactionTroop_dead_male_iconb_rsc = playerXb.bgf
-   FactionTroop_dead_female_icona_rsc = heraXa.bgf
-   FactionTroop_dead_female_iconb_rsc = heraXb.bgf
-   FactionTroop_dead_name_rsc = "dead faction troop"
+   Human_dead_male_icona_rsc = playerXa.bgf
+   Human_dead_male_iconb_rsc = playerXb.bgf
+   Human_dead_female_icona_rsc = heraXa.bgf
+   Human_dead_female_iconb_rsc = heraXb.bgf
+   Human_dead_name_rsc = "dead human"
 
-   FactionTroop_head_male_icon = phax.bgf  %male    
-   FactionTroop_head_female_icon = phkx.bgf  %female 
+   Human_head_male_icon = phax.bgf  %male    
+   Human_head_female_icon = phkx.bgf  %female 
 
-   FactionTroop_eyes_ax_icon = peax.bgf  %male
-   FactionTroop_eyes_bx_icon = pebx.bgf  %male
-   FactionTroop_eyes_cx_icon = pecx.bgf  %male
-   FactionTroop_eyes_dx_icon = pedx.bgf  %male
+   Human_eyes_ax_icon = peax.bgf  %male
+   Human_eyes_bx_icon = pebx.bgf  %male
+   Human_eyes_cx_icon = pecx.bgf  %male
+   Human_eyes_dx_icon = pedx.bgf  %male
 
-   FactionTroop_eyes_kx_icon = pekx.bgf  %female 
-   FactionTroop_eyes_lx_icon = pelx.bgf  %female 
-   FactionTroop_eyes_mx_icon = pemx.bgf  %female 
+   Human_eyes_kx_icon = pekx.bgf  %female 
+   Human_eyes_lx_icon = pelx.bgf  %female 
+   Human_eyes_mx_icon = pemx.bgf  %female 
 
-   FactionTroop_mouth_ax_icon = pmax.bgf  %male
-   FactionTroop_mouth_bx_icon = pmbx.bgf  %male
-   FactionTroop_mouth_cx_icon = pmcx.bgf  %male
+   Human_mouth_ax_icon = pmax.bgf  %male
+   Human_mouth_bx_icon = pmbx.bgf  %male
+   Human_mouth_cx_icon = pmcx.bgf  %male
 
-   FactionTroop_mouth_kx_icon = pmkx.bgf  %female 
-   FactionTroop_mouth_lx_icon = pmlx.bgf  %female 
-   FactionTroop_mouth_mx_icon = pmmx.bgf  %female 
+   Human_mouth_kx_icon = pmkx.bgf  %female 
+   Human_mouth_lx_icon = pmlx.bgf  %female 
+   Human_mouth_mx_icon = pmmx.bgf  %female 
 
-   FactionTroop_nose_ax_icon = pnax.bgf  %male
-   FactionTroop_nose_bx_icon = pnbx.bgf  %male
-   FactionTroop_nose_cx_icon = pncx.bgf  %male
+   Human_nose_ax_icon = pnax.bgf  %male
+   Human_nose_bx_icon = pnbx.bgf  %male
+   Human_nose_cx_icon = pncx.bgf  %male
 
-   FactionTroop_nose_kx_icon = pnkx.bgf  %female 
-   FactionTroop_nose_lx_icon = pnlx.bgf  %female 
-   FactionTroop_nose_mx_icon = pnmx.bgf  %female 
+   Human_nose_kx_icon = pnkx.bgf  %female 
+   Human_nose_lx_icon = pnlx.bgf  %female 
+   Human_nose_mx_icon = pnmx.bgf  %female 
 
-   FactionTroop_hair_cd_icon = ptcd.bgf  %both
-   FactionTroop_hair_bald_icon = blank.bgf %both
+   Human_hair_cd_icon = ptcd.bgf  %both
+   Human_hair_bald_icon = blank.bgf %both
 
-   FactionTroop_hair_ac_icon = ptac.bgf  %male 
-   FactionTroop_hair_ba_icon = ptba.bgf  %male  
-   FactionTroop_hair_ad_icon = ptad.bgf  %male  
-   FactionTroop_hair_bb_icon = ptbb.bgf  %male  
-   FactionTroop_hair_xa_icon = ptxa.bgf  %male  
+   Human_hair_ac_icon = ptac.bgf  %male 
+   Human_hair_ba_icon = ptba.bgf  %male  
+   Human_hair_ad_icon = ptad.bgf  %male  
+   Human_hair_bb_icon = ptbb.bgf  %male  
+   Human_hair_xa_icon = ptxa.bgf  %male  
 
-   FactionTroop_hair_bc_icon = ptbc.bgf  %female
-   FactionTroop_hair_ca_icon = ptca.bgf  %female   
-   FactionTroop_hair_db_icon = ptdb.bgf  %female   
-   FactionTroop_hair_bd_icon = ptbd.bgf  %female   
-   FactionTroop_hair_cb_icon = ptcb.bgf  %female   
-   FactionTroop_hair_dc_icon = ptdc.bgf  %female   
-   FactionTroop_hair_dr_icon = ptdr.bgf  %female   
-   FactionTroop_hair_xb_icon = ptxb.bgf  %female   
+   Human_hair_bc_icon = ptbc.bgf  %female
+   Human_hair_ca_icon = ptca.bgf  %female   
+   Human_hair_db_icon = ptdb.bgf  %female   
+   Human_hair_bd_icon = ptbd.bgf  %female   
+   Human_hair_cb_icon = ptcb.bgf  %female   
+   Human_hair_dc_icon = ptdc.bgf  %female   
+   Human_hair_dr_icon = ptdr.bgf  %female   
+   Human_hair_xb_icon = ptxb.bgf  %female   
 
-   FactionTroop_sound_swish1 = swswish1.wav             %no ouch
-   FactionTroop_sound_swish2 = swswish2.wav             %no ouch
-   FactionTroop_sound_swish3 = swswish3.wav             %no ouch
+   Human_sound_swish1 = swswish1.wav             %no ouch
+   Human_sound_swish2 = swswish2.wav             %no ouch
+   Human_sound_swish3 = swswish3.wav             %no ouch
 
-   FactionTroop_sound_sword1 = sword1.wav             %no ouch
-   FactionTroop_sound_sword2 = sword2.wav             %no ouch
-   FactionTroop_sound_sword3 = sword3.wav             %no ouch
+   Human_sound_sword1 = sword1.wav             %no ouch
+   Human_sound_sword2 = sword2.wav             %no ouch
+   Human_sound_sword3 = sword3.wav             %no ouch
 
-   FactionTroop_sound_metal1 = swrdmtl1.wav             %no ouch
-   FactionTroop_sound_metal2 = swrdmtl2.wav             %no ouch
-   FactionTroop_sound_metal3 = swrdmtl3.wav             %no ouch
+   Human_sound_metal1 = swrdmtl1.wav             %no ouch
+   Human_sound_metal2 = swrdmtl2.wav             %no ouch
+   Human_sound_metal3 = swrdmtl3.wav             %no ouch
 
-   FactionTroop_sound_hit_monster_flesh1 = fhit1b.wav             %no ouch
-   FactionTroop_sound_hit_monster_flesh2 = fhit2b.wav             %no ouch
-   FactionTroop_sound_hit_monster_flesh3 = fhit3b.wav             %no ouch
+   Human_sound_hit_monster_flesh1 = fhit1b.wav             %no ouch
+   Human_sound_hit_monster_flesh2 = fhit2b.wav             %no ouch
+   Human_sound_hit_monster_flesh3 = fhit3b.wav             %no ouch
 
-   FactionTroop_sound_hit_monster_leather1 = lhit1b.wav             %no ouch
-   FactionTroop_sound_hit_monster_leather2 = lhit2b.wav             %no ouch
-   FactionTroop_sound_hit_monster_leather3 = lhit3b.wav             %no ouch
+   Human_sound_hit_monster_leather1 = lhit1b.wav             %no ouch
+   Human_sound_hit_monster_leather2 = lhit2b.wav             %no ouch
+   Human_sound_hit_monster_leather3 = lhit3b.wav             %no ouch
 
-   FactionTroop_sound_hit_monster_metal1 = mhit1b.wav             %no ouch
-   FactionTroop_sound_hit_monster_metal2 = mhit2b.wav             %no ouch
-   FactionTroop_sound_hit_monster_metal3 = mhit3b.wav             %no ouch
+   Human_sound_hit_monster_metal1 = mhit1b.wav             %no ouch
+   Human_sound_hit_monster_metal2 = mhit2b.wav             %no ouch
+   Human_sound_hit_monster_metal3 = mhit3b.wav             %no ouch
 
-   FactionTroop_male_sound_ouch1 = ouchm1.wav     % in increasing order of agony
-   FactionTroop_male_sound_ouch2 = ouchm2.wav
-   FactionTroop_male_sound_ouch3 = ouchm3.wav
-   FactionTroop_male_sound_ouch4 = ouchm4.wav
+   Human_male_sound_ouch1 = ouchm1.wav     % in increasing order of agony
+   Human_male_sound_ouch2 = ouchm2.wav
+   Human_male_sound_ouch3 = ouchm3.wav
+   Human_male_sound_ouch4 = ouchm4.wav
 
-   FactionTroop_female_sound_ouch1 = ouchf1.wav
-   FactionTroop_female_sound_ouch2 = ouchf2.wav
-   FactionTroop_female_sound_ouch3 = ouchf3.wav
-   FactionTroop_female_sound_ouch4 = ouchf4.wav
+   Human_female_sound_ouch1 = ouchf1.wav
+   Human_female_sound_ouch2 = ouchf2.wav
+   Human_female_sound_ouch3 = ouchf3.wav
+   Human_female_sound_ouch4 = ouchf4.wav
 
-   FactionTroop_male_sound_death = pdeath.wav
-   FactionTroop_female_sound_death = pdeathf.wav
+   Human_male_sound_death = pdeath.wav
+   Human_female_sound_death = pdeathf.wav
 
-   FactionTroop_sound_aware = trps1awr.wav
-   FactionTroop_sound_attack = trpsatk.wav
+   Human_sound_aware = trps1awr.wav
+   Human_sound_attack = trpsatk.wav
 
-   FactionTroop_rightarm_gauntlet_male = bre.bgf
-   FactionTroop_rightarm_gauntlet_female = brf.bgf
-   FactionTroop_leftarm_gauntlet_male = ble.bgf
-   FactionTroop_leftarm_gauntlet_female = blf.bgf
+   Human_rightarm_gauntlet_male = bre.bgf
+   Human_rightarm_gauntlet_female = brf.bgf
+   Human_leftarm_gauntlet_male = ble.bgf
+   Human_leftarm_gauntlet_female = blf.bgf
 
 
 classvars:
 
-   vrName = FactionTroop_name_rsc
-   vrDesc = FactionTroop_desc_rsc
-   vrDead_name = FactionTroop_dead_name_rsc
+   vrName = Human_name_rsc
+   vrDesc = Human_desc_rsc
+   vrDead_name = Human_dead_name_rsc
 
    viTreasure_type = TID_NONE
 
    viSpeed = SPEED_FASTER
    viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
-   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
+   viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_MONSTERS | AI_MOVE_FLEE_FRIGHTENERS
 
    viChanceFemale = 50  % percentage chance to be female
 
-   viColorTranslate1 = XLAT_TO_RED     % Shirt
-   viColorTranslate2 = XLAT_TO_BLACK   % Pants
+   viColorTranslate1 = XLAT_TO_BLUE     % Shirt
+   viColorTranslate2 = XLAT_TO_BLUE   % Pants
 
    vcShieldClass = &GuildShield
    viShieldColor1 = XLAT_TO_RED
@@ -181,34 +188,34 @@ classvars:
 
 properties:
 
-   piBaseLevel = 80
-   piBaseDifficulty = 6
+   piBaseLevel = 50
+   piBaseDifficulty = 4
 
    %Here so they can be set
-   vrIcon = FactionTroop_male_icon_rsc
-   vrDead_Icon = FactionTroop_dead_male_icona_rsc
-   vrDead_Legs = FactionTroop_dead_male_iconb_rsc
+   vrIcon = Human_male_icon_rsc
+   vrDead_Icon = Human_dead_male_icona_rsc
+   vrDead_Legs = Human_dead_male_iconb_rsc
    viLevel = 80         % piBaseLevel
-   viDifficulty = 4     % piBaseDifficulty
+   viDifficulty = 2     % piBaseDifficulty
    viGender = GENDER_MALE
    viKarma = 0
 
-   vrSound_hit = FactionTroop_sound_hit_monster_flesh2
-   vrSound_miss = FactionTroop_sound_swish3
-   vrSound_aware = FactionTroop_sound_aware
-   vrSound_death = FactionTroop_male_sound_death
+   vrSound_hit = Human_sound_hit_monster_flesh2
+   vrSound_miss = Human_sound_swish3
+   vrSound_aware = Human_sound_aware
+   vrSound_death = Human_male_sound_death
 
    piAnimation = ANIM_NONE
 
-   prLegs = FactionTroop_legs_a_rsc
-   prRight_arm = FactionTroop_rightarm_a_rsc
-   prLeft_arm = FactionTroop_leftarm_a_rsc
+   prLegs = Human_legs_a_rsc
+   prRight_arm = Human_rightarm_a_rsc
+   prLeft_arm = Human_leftarm_a_rsc
 
-   prHead = FactionTroop_head_male_icon
-   prEyes = FactionTroop_eyes_ax_icon
-   prMouth = FactionTroop_mouth_ax_icon
-   prNose = FactionTroop_nose_ax_icon
-   prToupee = FactionTroop_hair_ac_icon
+   prHead = Human_head_male_icon
+   prEyes = Human_eyes_ax_icon
+   prMouth = Human_mouth_ax_icon
+   prNose = Human_nose_ax_icon
+   prToupee = Human_hair_ac_icon
 
    plUsing = $
    plOverlays = $
@@ -229,8 +236,8 @@ messages:
       Send(self,@SetHair);
       Send(self,@SetFace);
       Send(self,@SetSkinColor);
-      Send(self,@SetTroopShirt,#translation=viColorTranslate1);
-      Send(self,@SetTroopLegs,#translation=viColorTranslate2);
+      Send(self,@SetHumanShirt,#translation=viColorTranslate1);
+      Send(self,@SetHumanLegs,#translation=viColorTranslate2);
       Send(self,@SetShield);
       Send(self,@SetEquipment);
 
@@ -250,18 +257,18 @@ messages:
       if random(1,100) < viChanceFemale
       {
          viGender = GENDER_FEMALE;
-         vrIcon = FactionTroop_female_icon_rsc;
-         prHead = FactionTroop_head_female_icon;
-         prEyes = FactionTroop_eyes_kx_icon;
-         prMouth = FactionTroop_mouth_kx_icon;
-         prNose = FactionTroop_nose_kx_icon;
-         prToupee = FactionTroop_hair_ca_icon;
-         prLegs = FactionTroop_legs_b_rsc;
-         prRight_arm = FactionTroop_rightarm_b_rsc;
-         prLeft_arm = FactionTroop_leftarm_b_rsc;
-         vrDead_Icon = FactionTroop_dead_female_icona_rsc;
-         vrDead_Legs = FactionTroop_dead_female_iconb_rsc;
-         vrSound_death = FactionTroop_female_sound_death;
+         vrIcon = Human_female_icon_rsc;
+         prHead = Human_head_female_icon;
+         prEyes = Human_eyes_kx_icon;
+         prMouth = Human_mouth_kx_icon;
+         prNose = Human_nose_kx_icon;
+         prToupee = Human_hair_ca_icon;
+         prLegs = Human_legs_b_rsc;
+         prRight_arm = Human_rightarm_b_rsc;
+         prLeft_arm = Human_leftarm_b_rsc;
+         vrDead_Icon = Human_dead_female_icona_rsc;
+         vrDead_Legs = Human_dead_female_iconb_rsc;
+         vrSound_death = Human_female_sound_death;
       }
 
       return;
@@ -270,16 +277,7 @@ messages:
    SetHair()
    % Sets the hairdo, color.  Has a chance of putting a helmet on instead.
    {
-      local RandomNumber,Translation,HelmetHair;
-
-      % Helmet?
-      if random(1,100) < 30
-      {
-         HelmetHair = create(&SimpleHelm);
-         Send(self,@AddEquipmentObject,#what=HelmetHair);
-         poHair_Remove = HelmetHair;
-         return;
-      }
+      local RandomNumber,Translation;
 
       % Select a hairdo
       if viGender = GENDER_MALE
@@ -288,35 +286,35 @@ messages:
          % 0 keeps the "default"
          if RandomNumber = 1
          {
-            prToupee = FactionTroop_hair_cd_icon;
+            prToupee = Human_hair_cd_icon;
          }
          else
          {
             if RandomNumber = 2
             {
-               prToupee = FactionTroop_hair_bald_icon;
+               prToupee = Human_hair_bald_icon;
             }
             else
             {
                if RandomNumber = 3
                {
-                  prToupee = FactionTroop_hair_ba_icon;
+                  prToupee = Human_hair_ba_icon;
                }
                else
                {
                   if RandomNumber = 4
                   {
-                     prToupee = FactionTroop_hair_ad_icon;
+                     prToupee = Human_hair_ad_icon;
                   }
                   else
                   {
                      if RandomNumber = 5
                      {
-                        prToupee = FactionTroop_hair_bb_icon;
+                        prToupee = Human_hair_bb_icon;
                      }
                      else
                      {
-                        prToupee = FactionTroop_hair_xa_icon;
+                        prToupee = Human_hair_xa_icon;
                      }
                   }
                }
@@ -328,47 +326,47 @@ messages:
          % 0 keeps the "default"
          if RandomNumber = 1
          {
-            prToupee = FactionTroop_hair_cd_icon;
+            prToupee = Human_hair_cd_icon;
          }
          else
          {
             if RandomNumber = 2
             {
-               prToupee = FactionTroop_hair_bc_icon;
+               prToupee = Human_hair_bc_icon;
             }
             else
             {
                if RandomNumber = 3
                {
-                  prToupee = FactionTroop_hair_db_icon;
+                  prToupee = Human_hair_db_icon;
                }
                else
                {
                   if RandomNumber = 4
                   {
-                     prToupee = FactionTroop_hair_bd_icon;
+                     prToupee = Human_hair_bd_icon;
                   }
                   else
                   {
                      if RandomNumber = 5
                      {
-                        prToupee = FactionTroop_hair_cb_icon;
+                        prToupee = Human_hair_cb_icon;
                      }
                      else
                      {
                         if RandomNumber = 6
                         {
-                           prToupee = FactionTroop_hair_dc_icon;
+                           prToupee = Human_hair_dc_icon;
                         }
                         else
                         {
                            if RandomNumber = 7
                            {
-                              prToupee = FactionTroop_hair_dr_icon;
+                              prToupee = Human_hair_dr_icon;
                            }
                            else
                            {
-                              prToupee = FactionTroop_hair_xb_icon;
+                              prToupee = Human_hair_xb_icon;
                            }
                         }
                      }
@@ -439,8 +437,8 @@ messages:
          }
       }
        
-      piBody_translations2 = piBody_translations2 & ~FACTIONTROOP_TRANSLATION2_HAIR_MASK;
-      piBody_translations2 = piBody_translations2 | (Translation * FACTIONTROOP_TRANSLATION2_HAIR_MUL);
+      piBody_translations2 = piBody_translations2 & ~HUMAN_TRANSLATION2_HAIR_MASK;
+      piBody_translations2 = piBody_translations2 | (Translation * HUMAN_TRANSLATION2_HAIR_MUL);
 
       return;
    }
@@ -456,38 +454,38 @@ messages:
          RandomNumber = random(0,3);
          if RandomNumber = 1
          {
-            prEyes = FactionTroop_eyes_bx_icon;
+            prEyes = Human_eyes_bx_icon;
          }
          else
          {
             if RandomNumber = 2
             {
-               prEyes = FactionTroop_eyes_cx_icon;
+               prEyes = Human_eyes_cx_icon;
             }
             else
             {
-               prEyes = FactionTroop_eyes_dx_icon;
+               prEyes = Human_eyes_dx_icon;
             }
          }
 
          RandomNumber = random(0,2);
          if RandomNumber = 1
          {
-            prNose = FactionTroop_nose_bx_icon;
+            prNose = Human_nose_bx_icon;
          }
          else
          {
-            prNose = FactionTroop_nose_cx_icon;
+            prNose = Human_nose_cx_icon;
          }
 
          RandomNumber = random(0,2);
          if RandomNumber = 1
          {
-            prMouth = FactionTroop_mouth_bx_icon;
+            prMouth = Human_mouth_bx_icon;
          }
          else
          {
-            prMouth = FactionTroop_mouth_cx_icon;
+            prMouth = Human_mouth_cx_icon;
          }
 
       }
@@ -498,31 +496,31 @@ messages:
          RandomNumber = random(0,2);
          if RandomNumber = 1
          {
-            prEyes = FactionTroop_eyes_lx_icon;
+            prEyes = Human_eyes_lx_icon;
          }
          else
          {
-            prEyes = FactionTroop_eyes_mx_icon;
+            prEyes = Human_eyes_mx_icon;
          }
 
          RandomNumber = random(0,2);
          if RandomNumber = 1
          {
-            prNose = FactionTroop_nose_lx_icon;
+            prNose = Human_nose_lx_icon;
          }
          else
          {
-            prNose = FactionTroop_nose_mx_icon;
+            prNose = Human_nose_mx_icon;
          }
 
          RandomNumber = random(0,2);
          if RandomNumber = 1
          {
-            prMouth = FactionTroop_mouth_lx_icon;
+            prMouth = Human_mouth_lx_icon;
          }
          else
          {
-            prMouth = FactionTroop_mouth_mx_icon;
+            prMouth = Human_mouth_mx_icon;
          }
 
       }
@@ -536,8 +534,8 @@ messages:
       local skin_color;
       skin_color = random(PT_BLUE_TO_SKIN1,PT_BLUE_TO_SKIN4);
 
-      piBody_translations = piBody_translations & ~FACTIONTROOP_TRANSLATION_SKIN_MASK;
-      piBody_translations = piBody_translations | (skin_color * FACTIONTROOP_TRANSLATION_SKIN_MUL);
+      piBody_translations = piBody_translations & ~HUMAN_TRANSLATION_SKIN_MASK;
+      piBody_translations = piBody_translations | (skin_color * HUMAN_TRANSLATION_SKIN_MUL);
 
       return;
    }
@@ -547,141 +545,32 @@ messages:
       local oEquipmentItem, iRandomNumber, iBonusModifier;
 
       iRandomNumber = random(1,100);
-      if iRandomNumber <= 35
-      {
-         oEquipmentItem = create(&Longsword);
-         iBonusModifier = 3;
-      }
-      else
-      {
-         if iRandomNumber <= 55
-         {
-            oEquipmentItem = create(&Axe);
-            iBonusModifier = 2;
-         }
-         else
-         {
-            if iRandomNumber <= 65
-            {
-               oEquipmentItem = create(&Hammer);
-               iBonusModifier = 2;
-            }
-            else
-            {
-               if iRandomNumber <= 75
-               {
-                  oEquipmentItem = create(&Mace);
-                  iBonusModifier = 1;
-               }
-               else
-               {
-                  if iRandomNumber <= 80
-                  {
-                     oEquipmentItem = create(&ShortSword);
-                     iBonusModifier = 1;
-                  }
-                  else
-                  {   
-                     if iRandomNumber <= 85
-                     {
-                        oEquipmentItem = create(&Scimitar);
-                        iBonusModifier = 4;
-                     }
-                     else
-                     {
-                        if iRandomNumber <= 90
-                        {
-                          oEquipmentItem = create(&BattleBow);
-                          poArrow = create(&NeruditeArrow);
-                          iBonusModifier = 5;
-                        }
-                        else
-                        {
-                           oEquipmentItem = create(&LongBow);
-                           poArrow = create(&NeruditeArrow);
-                           iBonusModifier = 4;
-                        }
-                     }   
-                  }  
-               }
-            }
-         }
-      }
-                  
+
       viDifficulty = piBaseDifficulty + iBonusModifier;
       Send(self,@AddEquipmentObject,#what=oEquipmentItem);
 
       iRandomNumber = random(1,100);
 
-      if iRandomNumber <= 35
+            if iRandomNumber <= 1100
       {
-         oEquipmentItem = create(&LeatherArmor);
+         oEquipmentItem = create(&Shirt);
          iBonusModifier = 20;
       }
-      else
-      {
-         if iRandomNumber <= 70
-         {
-            oEquipmentItem = create(&ChainArmor);
-            iBonusModifier = 50;
-         }
-         else
-         {
-           if iRandomNumber <= 85
-           {
-              oEquipmentItem = create(&ScaleArmor);
-              iBonusModifier = 75;
-           }
-           else
-           {
-             oEquipmentItem = create(&PlateArmor);
-             iBonusModifier = 100;
-           }
-        }
-     }
-
+      
       viLevel = piBaseLevel + iBonusModifier;
-      Send(self,@SetTroopArmor,#NewArmor=oEquipmentItem);
+      Send(self,@SetHumanArmor,#NewArmor=oEquipmentItem);
 
       % Gauntlets?
       iRandomNumber = random(1,100);
-      if iRandomNumber < 20
-      {
-         oEquipmentItem = create(&Gauntlet);
-         plUsing = Cons(oEquipmentItem,plUsing);
-         viDifficulty = viDifficulty +1;
-         viLevel = viLevel + 20;
-         if viGender = GENDER_MALE
-         {
-            prRight_arm = FactionTroop_rightarm_gauntlet_male;
-            prLeft_arm = FactionTroop_leftarm_gauntlet_male;
-         }
-         else
-         {
-            prRight_arm = FactionTroop_rightarm_gauntlet_female;
-            prLeft_arm = FactionTroop_leftarm_gauntlet_female;
-         }
-      }
 
       return;
    }
 
    SetShield()
    {
-      local oEquipmentItem;
-
-      oEquipmentItem = create(vcShieldClass,#color1=viShieldColor1,#color2=viShieldColor2,
-                              #shape=viShieldShape);
-      if viInsignia <> $
-      {
-         Send(oEquipmentItem,@ChangeGuildInsignia,#insignia=viInsignia);
-      }
-
-      Send(self,@AddEquipmentObject,#what=oEquipmentItem);
-      
       return;
    }
-
+   
    % Next two messages affect the defense messages.
    GetParryAbility(stroke_obj=$)
    {
@@ -815,8 +704,8 @@ messages:
    {
       local iBody_xlat;
 
-      iBody_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_BODY_MASK)
-                        / FACTIONTROOP_TRANSLATION_BODY_MUL;
+      iBody_xlat = (piBody_translations & HUMAN_TRANSLATION_BODY_MASK)
+                        / HUMAN_TRANSLATION_BODY_MUL;
       if iBody_xlat <> 0
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,iBody_xlat);
@@ -832,9 +721,9 @@ messages:
    {
       local iBody_xlat;
       
-      iBody_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_BODY_MASK)
-                        / FACTIONTROOP_TRANSLATION_BODY_MUL;
-      if (piBody_translations & FACTIONTROOP_TRANSLATION_BODY_MASK) <> 0
+      iBody_xlat = (piBody_translations & HUMAN_TRANSLATION_BODY_MASK)
+                        / HUMAN_TRANSLATION_BODY_MUL;
+      if (piBody_translations & HUMAN_TRANSLATION_BODY_MASK) <> 0
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,iBody_xlat);
       }
@@ -897,8 +786,8 @@ messages:
       AddPacket(1,iOverlays);
       AddPacket(4,prLeft_arm,1,HS_LEFT_HAND);
       
-      iArms_xlat = (piBody_translations2 & FACTIONTROOP_TRANSLATION2_ARMS_MASK)
-                        / FACTIONTROOP_TRANSLATION2_ARMS_MUL;
+      iArms_xlat = (piBody_translations2 & HUMAN_TRANSLATION2_ARMS_MASK)
+                        / HUMAN_TRANSLATION2_ARMS_MUL;
       if iArms_xlat <> 0
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,iArms_xlat);
@@ -929,8 +818,8 @@ messages:
       }
 
       AddPacket(4,prLegs,1,HS_LEGS);
-      iLegs_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_LEGS_MASK)
-                        / FACTIONTROOP_TRANSLATION_LEGS_MUL;
+      iLegs_xlat = (piBody_translations & HUMAN_TRANSLATION_LEGS_MASK)
+                        / HUMAN_TRANSLATION_LEGS_MUL;
       if iLegs_xlat <> 0
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,iLegs_xlat);
@@ -938,8 +827,8 @@ messages:
       
       AddPacket(1,ANIMATE_CYCLE,4,100,2,2,2,5);
 
-      iSkin_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_Skin_MASK)
-                        / FACTIONTROOP_TRANSLATION_SKIN_MUL;
+      iSkin_xlat = (piBody_translations & HUMAN_TRANSLATION_Skin_MASK)
+                        / HUMAN_TRANSLATION_SKIN_MUL;
 
       AddPacket(4,prHead,1,HS_HEAD,1,ANIMATE_TRANSLATION,1,iSkin_xlat);
       Addpacket(1,ANIMATE_NONE,2,1);        
@@ -951,8 +840,8 @@ messages:
       if poHair_remove = $
       {  
          AddPacket(4,prToupee,1,HS_TOUPEE,1,ANIMATE_TRANSLATION,1,
-                   (piBody_translations2 & FACTIONTROOP_TRANSLATION2_HAIR_MASK)
-                     / FACTIONTROOP_TRANSLATION2_HAIR_MUL);
+                   (piBody_translations2 & HUMAN_TRANSLATION2_HAIR_MASK)
+                     / HUMAN_TRANSLATION2_HAIR_MUL);
          AddPacket(1,ANIMATE_NONE,2,1); 
       }
 
@@ -1002,8 +891,8 @@ messages:
       }
 
       AddPacket(1, iOverlays);
-      iArms_xlat = (piBody_translations2 & FACTIONTROOP_TRANSLATION2_ARMS_MASK)
-                        / FACTIONTROOP_TRANSLATION2_ARMS_MUL;
+      iArms_xlat = (piBody_translations2 & HUMAN_TRANSLATION2_ARMS_MASK)
+                        / HUMAN_TRANSLATION2_ARMS_MUL;
 
       AddPacket(4,prLeft_arm,1,HS_LEFT_HAND);
       if iArms_Xlat <> 0
@@ -1061,8 +950,8 @@ messages:
       }
 
       AddPacket(4,prLegs,1,HS_LEGS);
-      iLegs_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_LEGS_MASK)
-                        / FACTIONTROOP_TRANSLATION_LEGS_MUL;
+      iLegs_xlat = (piBody_translations & HUMAN_TRANSLATION_LEGS_MASK)
+                        / HUMAN_TRANSLATION_LEGS_MUL;
       if iLegs_xlat <> 0
       {
          AddPacket(1,ANIMATE_TRANSLATION,1,iLegs_xlat);
@@ -1084,8 +973,8 @@ messages:
          }
       }
   
-      iSkin_xlat = (piBody_translations & FACTIONTROOP_TRANSLATION_Skin_MASK)
-                        / FACTIONTROOP_TRANSLATION_Skin_MUL;
+      iSkin_xlat = (piBody_translations & HUMAN_TRANSLATION_Skin_MASK)
+                        / HUMAN_TRANSLATION_Skin_MUL;
       AddPacket(4,prHead,1,HS_HEAD,1,ANIMATE_TRANSLATION,1,iSkin_xlat);
       Addpacket(1,ANIMATE_NONE,2,1); 
       
@@ -1096,8 +985,8 @@ messages:
       if poHair_remove = $
       {  
          AddPacket(4,prToupee,1,HS_TOUPEE,1,ANIMATE_TRANSLATION,
-                   1,(piBody_translations2 & FACTIONTROOP_TRANSLATION2_HAIR_MASK)
-                     / FACTIONTROOP_TRANSLATION2_HAIR_MUL);
+                   1,(piBody_translations2 & HUMAN_TRANSLATION2_HAIR_MASK)
+                     / HUMAN_TRANSLATION2_HAIR_MUL);
          AddPacket(1,ANIMATE_NONE,2,1); 
       }
       
@@ -1109,8 +998,8 @@ messages:
       return;
    }
 
-   SetTroopArmor(NewArmor = $)
-   % Sets the troop's armor icon.
+   SetHumanArmor(NewArmor = $)
+   % Sets the Human's armor icon.
    {
       vrIcon = Send(NewArmor,@GetShirtIcon,#who=self);
       plUsing = cons(NewArmor, plUsing);
@@ -1123,21 +1012,21 @@ messages:
       return;
    }
 
-   SetTroopShirt(translation = 0)
-   % Sets troop shirt color.  Send the xlat value for color, this procedure calculates skin color and figures
+   SetHumanShirt(translation = 0)
+   % Sets Human shirt color.  Send the xlat value for color, this procedure calculates skin color and figures
    %  the two color xlat for you.
    {
       local iShirtXlat, iSkinColor;
       
-      iSkinColor = (piBody_translations & FACTIONTROOP_TRANSLATION_SKIN_MASK)/FACTIONTROOP_TRANSLATION_SKIN_MUL;
+      iSkinColor = (piBody_translations & HUMAN_TRANSLATION_SKIN_MASK)/HUMAN_TRANSLATION_SKIN_MUL;
       iSkinColor = Send(self,@ConvertSkinColorToXLAT,#Skin_color=iSkinColor);
       iShirtXlat = Send(SYS,@EncodeTwoColorXLAT,#color1=translation,#color2=iSkinColor);
 
-      piBody_translations2 = piBody_translations2 & ~FACTIONTROOP_TRANSLATION2_ARMS_MASK;
-      piBody_translations2 = piBody_translations2 | (iShirtXlat * FACTIONTROOP_TRANSLATION2_ARMS_MUL);
+      piBody_translations2 = piBody_translations2 & ~HUMAN_TRANSLATION2_ARMS_MASK;
+      piBody_translations2 = piBody_translations2 | (iShirtXlat * HUMAN_TRANSLATION2_ARMS_MUL);
 
-      piBody_translations = piBody_translations & ~FACTIONTROOP_TRANSLATION_BODY_MASK;
-      piBody_translations = piBody_translations | (iShirtXlat * FACTIONTROOP_TRANSLATION_BODY_MUL);
+      piBody_translations = piBody_translations & ~HUMAN_TRANSLATION_BODY_MASK;
+      piBody_translations = piBody_translations | (iShirtXlat * HUMAN_TRANSLATION_BODY_MUL);
 
       if poOwner <> $
       {
@@ -1147,13 +1036,13 @@ messages:
       return;
    }
 
-   SetTroopLegs(translation = 0)
-   % Sets troop leg color.  Send the xlat value for color, this procedure calculates skin color and figures
+   SetHumanLegs(translation = 0)
+   % Sets Human leg color.  Send the xlat value for color, this procedure calculates skin color and figures
    %  the two color xlat for you.
    {
       local iPantsXlat, iSkinColor;
       
-      iSkinColor = (piBody_translations & FACTIONTROOP_TRANSLATION_SKIN_MASK)/FACTIONTROOP_TRANSLATION_SKIN_MUL;
+      iSkinColor = (piBody_translations & HUMAN_TRANSLATION_SKIN_MASK)/HUMAN_TRANSLATION_SKIN_MUL;
       iSkinColor = Send(self,@ConvertSkinColorToXLAT,#Skin_color=iSkinColor);
 
       % A hack for non-standard skin colors with the "special" pants colors.
@@ -1166,8 +1055,8 @@ messages:
       
       iPantsXlat = Send(SYS,@EncodeTwoColorXLAT,#color1=translation,#color2=iSkinColor);
 
-      piBody_translations = piBody_translations & ~FACTIONTROOP_TRANSLATION_LEGS_MASK;
-      piBody_translations = piBody_translations | (iPantsXlat * FACTIONTROOP_TRANSLATION_LEGS_MUL);
+      piBody_translations = piBody_translations & ~HUMAN_TRANSLATION_LEGS_MASK;
+      piBody_translations = piBody_translations | (iPantsXlat * HUMAN_TRANSLATION_LEGS_MUL);
 
       if poOwner <> $
       {
@@ -1232,12 +1121,12 @@ messages:
             if (oItemAtt <> $) AND Send(oItemAtt,@ReqAddToItem,#oItem=oUsedItem)
             {
                Send(oItemAtt,@AddToItem,#oItem=oUsedItem,#state1=corpse);
-            }
-
-            Send(poOwner,@NewHold,#what=oUsedItem,
-                  #new_row=piRow,#new_col=piCol,
-                  #fine_row=piFine_row,#fine_col=piFine_col);
-         }
+            } 
+            
+            Send(poOwner,@NewHold,#what=oUsedItem, 
+                   #new_row=piRow,#new_col=piCol, 
+                   #fine_row=piFine_row,#fine_col=piFine_col); 
+         } 
          else
          {
             Send(oUsedItem,@Delete);
@@ -1257,8 +1146,8 @@ messages:
          #victim=self,
          #killer=killer,
          #PlayerBodyOverlay=vrDead_Legs,
-         #BodyTranslation=(piBody_translations & FACTIONTROOP_TRANSLATION_BODY_MASK)/FACTIONTROOP_TRANSLATION_BODY_MUL,
-         #LegsTranslation=(piBody_translations & FACTIONTROOP_TRANSLATION_LEGS_MASK)/FACTIONTROOP_TRANSLATION_LEGS_MUL);
+         #BodyTranslation=(piBody_translations & HUMAN_TRANSLATION_BODY_MASK)/HUMAN_TRANSLATION_BODY_MUL,
+         #LegsTranslation=(piBody_translations & HUMAN_TRANSLATION_LEGS_MASK)/HUMAN_TRANSLATION_LEGS_MUL);
    }
 
    ConvertskincolortoXLAT(Skin_color = 0)
@@ -1321,7 +1210,7 @@ messages:
    {
       local iFaction;
       
-      if isClass(what,&User) or isClass(what,&FactionTroop)
+      if isClass(what,&User) or isClass(what,&Human)
       {
          iFaction=Send(what,@GetFaction);
          if iFaction = viFaction
