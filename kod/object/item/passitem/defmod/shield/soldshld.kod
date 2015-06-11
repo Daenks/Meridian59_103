@@ -70,8 +70,8 @@ classvars:
    viWeight = 0
    viBulk = 0
 
-   viDefense_base = 20
-   viDamage_base = 2
+   viDefense_base = 0
+   viDamage_base = 0
 
    viFaction = FACTION_NEUTRAL
    viColor = XLAT_TO_GRAY

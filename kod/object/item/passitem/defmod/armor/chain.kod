@@ -39,8 +39,9 @@ classvars:
    viWeight = 200
    viBulk = 250
 
-   viDefense_base = -50               
-   viDamage_base = 2
+   viDefense_base = -50
+   viDamage_base = 4
+   viMagicDamage_base = 4
 
 properties:
    
@@ -52,15 +53,6 @@ messages:
    ShowShirt()
    {
       return TRUE;
-   }
-
-   GetResistanceModifiers()
-   {
-      return [ [ATCK_WEAP_THRUST,5],
-               [ATCK_WEAP_PIERCE,25],
-               [ATCK_WEAP_BLUDGEON,15],
-               [ATCK_WEAP_SLASH,20]
-             ];
    }
 
    GetHeatDamage()

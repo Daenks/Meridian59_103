@@ -13,6 +13,175 @@ Gem is PassiveItem
 constants:
 
    include blakston.khd
+   
+   % Gems are a rare drop that can be imbued into armor and weapons to
+   %    improve their equipped bonuses.
+   %
+   % === OPTIONS ===
+   % Opt1: Server setting to 'use up' gems or
+   %          to simply 'socket' them (retrievable)
+   %       Default 'use up'
+   %
+   % === GEAR SLOTS ===
+   % 10 maximum:
+   %
+   % 4 body armor
+   % 2 weapon
+   % 2 shield
+   % 1 gauntlets
+   % 1 headgear
+   %
+   % === TYPES ===
+   % Balance considerations should target ~70% of full max value x10 slots.
+   %   Players will reach 70% max value naturally at top tiers, but beyond that
+   %   will be very difficult and take quite some time. 
+   %
+   %   Example: x10 max uni-resist gems reach 100% resistance to 1 element.
+   %               But players won't really reach that. Will really hit ~70%.
+   % 
+   %
+   % Uni-Resist:               Up to 10% resistance to 1 ele    100% max / ~70%
+   % Dual-Resist:              Up to  7% resistance to 2 ele     70% max / ~49%
+   % Tri-Resist:               Up to  4% resistance to 3 ele     40% max / ~28%
+   %   note: stacks with specific resist bonuses
+   %
+   % All-Weapon resist:        Up to  2% resistance to Weapons   20% max / ~14%
+   % All-Magic resist:         Up to  2% resistance to Magic     20% max / ~14%
+   %    note: stacks with Resist Magic
+   %
+   % Health regen:             Up to 10% more health per tick   100% max / ~70%
+   % Mana regen:               Up to  5% more mana per tick      50% max / ~35%
+   % Vigor regen:              Up to 20% more vigor per tick    200% max /~140%
+   %
+   % Max Health:               Up to  +5 virtual max health      +50 max / ~+35
+   % Max Mana:                 Up to  +7 virtual max mana        +70 max / ~+49
+   % Max Vigor:                Up to +10 virtual max vigor      +100 max / ~+70
+   %
+   % Max Mana To 50% Health:   Up to 10% conversion             100% max / ~70%
+   % Max Health to 150% Mana:  Up to 10% conversion             100% max / ~70%
+   %
+   % Elemental damage:         Up to 10% more damage with 1 ele 100% max / ~70%
+   % Elemental penetration:    Up to  4% resistance penetrated   40% max / ~28%
+   % Elemental strike:         Up to  +1 bonus damage of ele     +10 max /  ~+7
+   %    note: includes weapon resist types
+   %
+   % Offense:                  Up to +20 offense rating         +200 max /~+140
+   % Defense:                  Up to +10 defense rating         +100 max / ~+70
+   % Armor:                    Up to +1 armor                    +10 max /  ~+7
+   %    note: specific weapon types such as "+11 offense with scimitars"
+   %    note: specific armor types such as "+7 defense while wearing plate"
+   %
+   % Stat points:              Up to +2 points in 1 stat         +20 max / ~+14
+   %
+   % Karma capacity:           Up -5 or +5 karma max             +50 max / ~+35
+   %
+   % Spellpower:               Up to +3 spellpower in 1 school   +30 max / ~+21
+   %
+   % Higher cash drops:        Up to 1% more cash on kill        10% max /  ~7%
+   % Higher reag drops:        Up to 2% more reagents            20% max / ~14%
+   %
+   % ============================ ALTERNATE SYSTEM
+   % ============ PREDETERMINED GEMS
+   %
+   % All values "up to" these maximums
+   %
+   % Sapphire Teardrop:
+   % 6% increased cold damage
+   % 3% cold resistance
+   % +2 max health
+   %
+   % Emerald Leaf:
+   % +4 max health
+   % +6 max mana
+   % +2 Stamina
+   %
+   % Sunstone:
+   % +2 max health
+   % +3 max mana
+   % +2% chance to dodge
+   %
+   % Amber Disc:
+   % +2 max health
+   % 6% increased acid damage
+   % 3% acid resistance
+   %
+   % Starfire Diamond:
+   % +2 max health
+   % 6% increased holy damage
+   % 3% holy resistance
+   %
+   % Azurite Bijou:
+   % +1 armor
+   % +2 melee damage
+   % +60 offense
+   %
+   % Green Diamond:
+   % +1% chance to dodge
+   % +2 general spellpower
+   % +1 melee damage
+   % 
+   % Chrome Sphere:
+   % +2 max health
+   % +6% increased cold damage
+   % 3% cold resistance
+   %
+   % Citrine Orb:
+   % +1 armor
+   % 3% illusion resistance
+   % 6% increased acid damage
+   %
+   % Black Pearl:
+   % +2 max health
+   % 6% increased unholy damage
+   % 3% unholy resistance
+   %
+   % Aquamarine Shell:
+   % +1 armor
+   % 3% shock resistance
+   % 6% increased cold damage
+   %
+   % Glimmering Moonstone (rare):
+   % 3% resist all
+   %
+   % Tanzanite Briolette:
+   % +1 armor
+   % 3% fire resistance
+   % 6% increased cold damage
+   %
+   % Ruby Rose:
+   % +1 Intelligence
+   % +1 Mysticism
+   %
+   % Elven Crystal:
+   % +1 melee damage
+   % +30 offense
+   % +1 Agility
+   % +1 armor
+   %
+   % Glittering Red Glass:
+   % -2% fire resistance
+   % 6% increased quake damage
+   % 2% illusion resistance
+   %
+   % Scintillating Gem:
+   % +5 max vigor
+   % +2 max health
+   % +3 max mana
+   %
+   % Many-faceted Gemstone:
+   % +2 general spellpower
+   % -5% spell mana cost
+   % +5% mana regeneration
+   %
+   % Hearthstone:
+   % +3 max mana
+   % 3% unholy resistance
+   % 6% increased holy damage
+   %
+   % 
+   %
+   %
+   %
 
 resources:
 

@@ -44,18 +44,12 @@ classvars:
    viGround_group = 3
    viInventory_group = 1
 
-   viDefense_base = 5
-   viDamage_base = 1
+   viDefense_base = 50
+   viDamage_base = 0
 
 properties:
 
 messages:
-
-   GetResistanceModifiers()
-   {
-      return [ [ATCK_WEAP_SLASH,10]
-             ];
-   }
 
 
 end

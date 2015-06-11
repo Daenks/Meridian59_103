@@ -200,6 +200,20 @@ messages:
 
          bFoundProperties = TRUE;
       }
+
+      if Send(self,@GetMagicDamageReduction) <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(Send(self,@GetMagicDamageReduction));
+         AppendTempString(" warding");
+         AppendTempString("\n");
+
+         bFoundProperties = TRUE;
+      }
       
       if Send(self,@GetDefenseBonus) <> 0
       {
@@ -687,6 +701,11 @@ messages:
    }
    
    GetDamageReduction()
+   {
+      return 0;
+   }
+
+   GetMagicDamageReduction()
    {
       return 0;
    }

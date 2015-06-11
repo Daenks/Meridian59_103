@@ -64,21 +64,17 @@ messages:
 
    GetResistanceStrength(iSpellpower = 0)
    {
-      %% strength varies from 5 to 25
-      return (iSpellPower+1)/5 + 5;
+      %% strength varies from 5 to 20
+      return bound((iSpellPower+1)/5,5,20);
    }
 
    GetDuration(iSpellPower = 0)
    {
-      local iDuration;	   
-      
-      % .6 to 4 minutes
-      iDuration = 40 + (iSpellPower * 2); 
-      % translate to milliseconds
-      iDuration = iDuration * 1000;	  
-      
+      local iDuration;	   %%% 3 to 13 minutes
+      iDuration = 180 + iSpellPower * 6;
+      iDuration = iDuration * 1000;	  %% translate to milliseconds
       return iDuration;
-   }
+    }
 
    GetPotionClass()
    {

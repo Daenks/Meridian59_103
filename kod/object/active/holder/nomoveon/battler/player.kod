@@ -5394,7 +5394,7 @@ messages:
       precision=FALSE)
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
-            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
+            iDuration, oSpell, iLimit, origdamage, oWeapon, shrunken,
             bAttackerEmpowered, bShielded, oRod;
 
       if NOT precision
@@ -5419,15 +5419,7 @@ messages:
 
       if NOT absolute
       {
-         % Armor of Gort has a special effect that must go first
-         oGort = Send(SYS,@FindSpellByNum,#Num=SID_ARMOR_OF_GORT);
-         if Send(self,@IsEnchanted,#what=oGort)
-         {
-            damage = Send(oGort,@PriorityModifyDefenseDamage,#who=self,
-                           #what=what,#damage=damage,
-                           #atype=atype,#aspell=aspell);
-         }
-         
+         % Check armor and warding
          for i in plDefense_modifiers
          {
             damage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,
@@ -5435,6 +5427,10 @@ messages:
                            #report_resistance=report_resistance);
             Send(i,@DefendingHit,#who=self,#what=what);
          }
+
+         % Armor and warding cannot reduce damage more than half
+         damage = bound(damage,origdamage/2,$);
+         damage = bound(damage,1,$);
       
          iResistance = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
 
@@ -14508,6 +14504,23 @@ messages:
 
       return iArmor;
    }
+   
+   SumMagicDamageReduction()
+   {
+      local iWarding, d;
+
+      iWarding = 0;
+
+      for d in plDefense_modifiers
+      {
+         if IsClass(d,&DefenseModifier)
+         {
+            iWarding = iWarding + Send(d,@GetMagicDamageReduction);
+         }
+      }
+
+      return iWarding;
+    }
 
    CanEvilTwin()
    {

@@ -19,7 +19,6 @@ BOFS = anon.bof \
        focus.bof \
        freeact.bof \
        gaze.bof \
-       gort.bof \
        haste.bof \
        invis.bof \
        karahol.bof \

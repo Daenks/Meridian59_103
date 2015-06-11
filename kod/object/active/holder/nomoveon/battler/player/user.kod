@@ -146,6 +146,7 @@ resources:
    user_stat_offense = "Offense"
    user_stat_defense = "Defense"
    user_stat_armor = "Armor"
+   user_stat_warding = "Warding"
    user_stat_training = "Training Pts"
    user_stat_hpgainchance = exp.bgf
    user_resist_magic = "Magic Resist"
@@ -2987,7 +2988,7 @@ messages:
 
       if group = 2
       {
-         AddPacket(1,BP_STAT_GROUP, 1,group, 1,26);
+         AddPacket(1,BP_STAT_GROUP, 1,group, 1,27);
 
          Send(self,@SendStatMight);
          Send(self,@SendStatIntellect);
@@ -3002,6 +3003,7 @@ messages:
          Send(self,@SendStatOffense);
          Send(self,@SendStatDefense);
          Send(self,@SendStatArmor);
+         Send(self,@SendStatWarding);
          
          i = 1;
          lCurrentResistances = Send(self,@GetCurrentResistances);
@@ -8000,6 +8002,30 @@ messages:
       return;
    }
 
+   DrawWarding()
+   {
+      if pbLogged_on
+      {
+         AddPacket(1,BP_STAT,1,2);
+         Send(self,@SendStatWarding);
+         SendPacket(poSession);
+      }
+
+      return;
+   }
+
+   SendStatWarding()
+   {
+      local iWarding_send;
+      
+      iWarding_send = Send(self,@SumMagicDamageReduction);
+
+      AddPacket(1,13, 4,user_stat_warding, 1,STAT_VALUE, 1,STAT_INTEGER,
+                4,iWarding_send, 4,0, 4,15, 4,iWarding_send);
+
+      return;
+   }
+
    SendStatResistances(num=1,lCurrentResistances=$)
    {
       local i, bWeaponAll,bWeaponThrust,bWeaponBludgeon,bWeaponSlash,bWeaponPierce,
@@ -8025,13 +8051,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_ALL
             {
-               AddPacket(1,14, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,15, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponAll = TRUE;
             }
          }
          if NOT bWeaponAll
          {
-            AddPacket(1,14, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,15, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 2
@@ -8040,13 +8066,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_THRUST
             {
-               AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,16, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponThrust = TRUE;
             }
          }
          if NOT bWeaponThrust
          {
-            AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,16, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 3
@@ -8055,13 +8081,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_BLUDGEON
             {
-               AddPacket(1,16, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,17, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponBludgeon = TRUE;
             }
          }
          if NOT bWeaponBludgeon
          {
-            AddPacket(1,16, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,17, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 4
@@ -8070,13 +8096,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_SLASH
             {
-               AddPacket(1,17, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,18, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponSlash = TRUE;
             }
          }
          if NOT bWeaponSlash
          {
-            AddPacket(1,17, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,18, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 5
@@ -8085,13 +8111,13 @@ messages:
          {
             if Nth(i,1) = ATCK_WEAP_PIERCE
             {
-               AddPacket(1,18, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,19, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponPierce = TRUE;
             }
          }
          if NOT bWeaponPierce
          {
-            AddPacket(1,18, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,19, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 6
@@ -8100,13 +8126,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_ALL
             {
-               AddPacket(1,19, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,20, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellAll = TRUE;
             }
          }
          if NOT bSpellAll
          {
-            AddPacket(1,19, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,20, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 7
@@ -8115,13 +8141,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_FIRE
             {
-               AddPacket(1,20, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,21, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellFire = TRUE;
             }
          }
          if NOT bSpellFire
          {
-            AddPacket(1,20, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,21, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 8
@@ -8130,13 +8156,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_SHOCK
             {
-               AddPacket(1,21, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,22, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellShock = TRUE;
             }
          }
          if NOT bSpellShock
          {
-            AddPacket(1,21, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,22, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 9
@@ -8145,13 +8171,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_COLD
             {
-               AddPacket(1,22, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,23, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellCold = TRUE;
             }
          }
          if NOT bSpellCold
          {
-            AddPacket(1,22, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,23, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 10
@@ -8160,13 +8186,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_ACID
             {
-               AddPacket(1,23, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,24, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellAcid = TRUE;
             }
          }
          if NOT bSpellAcid
          {
-            AddPacket(1,23, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,24, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 11
@@ -8175,13 +8201,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_HOLY
             {
-               AddPacket(1,24, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,25, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellHoly = TRUE;
             }
          }
          if NOT bSpellHoly
          {
-            AddPacket(1,24, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,25, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 12
@@ -8190,13 +8216,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_UNHOLY
             {
-               AddPacket(1,25, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,26, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellUnholy = TRUE;
             }
          }
          if NOT bSpellUnholy
          {
-            AddPacket(1,25, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,26, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
       if num = 13
@@ -8205,13 +8231,13 @@ messages:
          {
             if Nth(i,1) = -ATCK_SPELL_QUAKE
             {
-               AddPacket(1,26, 4,user_resist_quake, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
+               AddPacket(1,27, 4,user_resist_quake, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellQuake = TRUE;
             }
          }
          if NOT bSpellQuake
          {
-            AddPacket(1,26, 4,user_resist_quake, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
+            AddPacket(1,27, 4,user_resist_quake, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
 

@@ -91,6 +91,10 @@ classvars:
    % Robes go over layer 0 items, such as shirts and pants
    viLayer = 1
 
+   viDefense_base = 100
+   viDamage_base = -2
+   viMagicDamage_base = -2
+
 properties:   
 
 messages:

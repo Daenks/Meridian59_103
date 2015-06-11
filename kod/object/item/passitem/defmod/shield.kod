@@ -63,7 +63,7 @@ messages:
    % Called here, different shields can give different bonuses.
    GetBlockAbility(who = $)
    {
-      return bound(send(who,@GetSkillAbility,#skill_num=SKID_BLOCK) + piDefense_bonus,1,120);
+      return Send(who,@GetSkillAbility,#skill_num=SKID_BLOCK) + piDefense_bonus;
    }
 
    % Shields use the defense bonus as a bonus to block instead.

@@ -64,12 +64,6 @@ messages:
       propagate;
    }
 
-   GetResistanceModifiers()
-   {
-      return [ [ATCK_WEAP_BLUDGEON,-10]
-             ];
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
