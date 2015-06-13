@@ -75,6 +75,11 @@ resources:
    six = "six"
    seven = "seven"
 
+   example_quest_message = "Bring me a %CARGO to complete the quest."
+   example_quest_success = \
+      "Congrats, you have completed the quest. You win a %PRIZE!"
+   example_quest_failure = "You have failed the quest!"
+
    default_message = "Red Sky begins before the next full moon."
    chess_move = "%q to %q %q"
    chess_capture = "%q captures %q"
@@ -2298,7 +2303,16 @@ messages:
                   100,
                   [[ Q_R2_HAS_HEALTH_LEVEL, 75 ], [ Q_R2_DOES_NOT_HAVE_ITEM, &RebelShield ]]
                                                 ], plQuestTemplates );
-
+      % QST_ID_EXAMPLE_QUEST
+      plQuestTemplates = Cons([  piDefaultNumPlayers,\
+                  piDefaultQuestType,\
+                  Q_PLAYER_NOTTRIED_RECENTLY,\
+                  [ 217, 218 ],\
+                  40,\
+                  [],\
+                  100,
+                  [ ]
+                                                ], plQuestTemplates );
       % Now we fix up the faction service quests, since they need to have as many scheduled as members.
       % This worked well enough for low numbers of factioned players, however with large numbers
       % the amount of quests might get a little bulky. Since we don't *need* to have a quest available
@@ -5919,7 +5933,31 @@ messages:
          Debug( "Error building QN #216" );
       }
 
-
+      % template #217 is example quest start.
+      if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_SHOWUP)
+      {
+         Send( self, @SetQuestNodeNPCList, #index = 217,
+               #new_NPC_list = Send( Send( SYS, @GetLibrary ), @GetOccupationList, #cNPC_class = &TosInnkeeper ) );
+      }
+      else
+      {
+         Debug( "Error building QN #217" );
+      }
+      % template #218 is example quest end.
+      if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_ITEMFINDCLASS,
+            #cargolist = [ [ QN_PRIZETYPE_ITEMCLASS, &Mug, 1 ] ],
+            #prizelist = [ [ QN_PRIZETYPE_ITEMCLASS, &Helm, 1 ] ],
+            #timelimit = 20 )  % time limit is 20 seconds
+      {
+         Send( self, @SetQuestNodeNPCModifier, #index = 218, #new_mod = QN_NPCMOD_SAME );
+         Send( self, @SetQuestNodeAssignHint,  #index = 218, #new_hint = example_quest_message );
+         Send( self, @SetQuestNodeSuccessHint, #index = 218, #new_hint = example_quest_success );
+         Send( self, @SetQuestNodeFailureHint, #index = 218, #new_hint = example_quest_failure );
+      }
+      else
+      {
+         Debug( "Error building QN #218" );
+      }
 
 %   % template # is  quest
 %   if Send( self, @AddQuestNodeTemplate, #questnode_type = QN_TYPE_MESSAGE, #NPC_modifier = QN_NPCMOD_NONE,
