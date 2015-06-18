@@ -40,19 +40,22 @@ classvars:
    viSpeed = SPEED_AVERAGE
    viAttack_type = ATCK_WEAP_SLASH
    viAttributes = 0
+   vbIsUndead = TRUE
    viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
    viVisionDistance = 18
    viCashmin = 100
    viCashmax = 200
    viChanceFemale = 60  % percentage chance to be female
 
-   % We use a colored guildshield
    viColorTranslate1 = XLAT_TO_GRAY     % Shirt
    viColorTranslate2 = XLAT_TO_BLACK   % Pants
-   viShieldColor1 = XLAT_TO_RED
-   viShieldColor2 = XLAT_TO_RED
-   viShieldShape = SHIELDSHAPE_HORIZ
-   viInsignia = INSIG_QOR
+
+   % Old guildshield info.
+   % viShieldColor1 = XLAT_TO_RED
+   % viShieldColor2 = XLAT_TO_RED
+   % viShieldShape = SHIELDSHAPE_HORIZ
+   % viInsignia = INSIG_QOR
+   vcShieldClass = &NecromancerShield
 
 properties:
 
@@ -86,19 +89,6 @@ messages:
       viKarma = -40;
 
       return;
-   }
-
-   % maybe put in a DoCast at some point
-   MonsterAttack(what = $)
-   {
-      % add in any attack animation calls
-      Send(self,@DoSlash);
-      return;
-   }
-
-   IsUndead()
-   {
-      return TRUE;
    }
 
 end

@@ -714,7 +714,7 @@ void AdminTable(int len_command_table,admin_table_type command_table[],int sessi
 				char *command)
 {
 	int mode_type,i,index,num_parms,num,num_blak_parm;
-	char *parm_str,*prev_tok;
+	char *parm_str = NULL,*prev_tok;
 	admin_parm_type admin_parm[MAX_ADMIN_PARM];
 	parm_node blak_parm[MAX_ADMIN_BLAK_PARM];
 	val_type blak_val;
@@ -2066,6 +2066,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case PARSESTRING : strcpy(c_name, "ParseString"); break;
 		case SETSTRING : strcpy(c_name, "SetString"); break;
 		case CREATESTRING : strcpy(c_name, "CreateString"); break;
+		case ISSTRING : strcpy(c_name, "IsString"); break;
 		case STRINGSUBSTITUTE : strcpy(c_name, "StringSubstitute"); break;
 		case APPENDTEMPSTRING : strcpy(c_name, "AppendTempString"); break;
 		case CLEARTEMPSTRING : strcpy(c_name, "ClearTempString"); break;
@@ -2077,6 +2078,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case GETTIMEREMAINING : strcpy(c_name, "GetTimeRemaining"); break;
 		case ISTIMER : strcpy(c_name, "IsTimer"); break;
 		case CREATEROOMDATA : strcpy(c_name, "CreateRoomData"); break;
+		case FREEROOM : strcpy(c_name, "FreeRoom"); break;
 		case ROOMDATA : strcpy(c_name, "RoomData"); break;
 		case CANMOVEINROOM : strcpy(c_name, "CanMoveInRoom"); break;
 		case CANMOVEINROOMFINE : strcpy(c_name, "CanMoveInRoomFine"); break;
@@ -2084,6 +2086,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case GETHEIGHT : strcpy(c_name, "GetHeight"); break;
 		case MINIGAMENUMBERTOSTRING : strcpy(c_name, "MinigameNumberToString"); break;
 		case MINIGAMESTRINGTONUMBER : strcpy(c_name, "MinigameStringToNumber"); break;
+		case APPENDLISTELEM : strcpy(c_name, "AppendListElem"); break;
 		case CONS : strcpy(c_name, "Cons"); break;
 		case FIRST : strcpy(c_name, "First"); break;
 		case REST : strcpy(c_name, "Rest"); break;
@@ -2093,6 +2096,8 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case ISLIST : strcpy(c_name, "IsList"); break;
 		case SETFIRST : strcpy(c_name, "SetFirst"); break;
 		case SETNTH : strcpy(c_name, "SetNth"); break;
+		case SWAPLISTELEM : strcpy(c_name, "SwapListElem"); break;
+		case INSERTLISTELEM : strcpy(c_name, "InsertListElem"); break;
 		case DELLISTELEM : strcpy(c_name, "DelListElem"); break;
 		case FINDLISTELEM : strcpy(c_name, "FindListElem"); break;
 		case GETTIME : strcpy(c_name, "GetTime"); break;
@@ -2109,6 +2114,7 @@ void AdminShowCalls(int session_id,admin_parm_type parms[],
 		case RECYCLEUSER : strcpy(c_name, "RecycleUser"); break;
 		case RANDOM : strcpy(c_name, "Random"); break;
 		case RECORDSTAT : strcpy(c_name, "RecordStat"); break;
+		case GETSESSIONIP : strcpy(c_name, "GetSessionIP"); break;
 		case SETCLASSVAR : strcpy(c_name, "SetClassVar"); break;
 			
 		default : 

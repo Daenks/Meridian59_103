@@ -138,6 +138,8 @@ resources:
    Lm_mrcnt_too_costly = "Come back when you have enough money for %s%s."
    Lm_mrcnt_cant_give = \
       "I'm unable to give you %s%s.  Perhaps you carry too much?"
+   Lm_mrcnt_can_give_some = \
+      "It looks like you can only hold some of %s%s. I'll reduce your tally."
 
    Lm_only_receiver = "%s%s says, \"I don't buy things, but I do take gifts.\""
    Lm_buyer_offer_busy = "%s is busy right now with another customer." 
@@ -174,6 +176,9 @@ resources:
    vaultman_deposit_thanks = \
       "Thank you for trusting me to quartermaster your gear."
    vaultman_thanks = "Here is your gear.  Thank you for your patronage."
+   vaultman_withdraw_failed = \
+      "I was unable to complete our transaction.  Please sort your inventory "
+      "and try again."
    vaultman_nowithdraw_cash = \
       "You currently cannot pay the exit fee to get your stuff out."
    vaultman_nodeposit_cash = \
@@ -250,6 +255,9 @@ classvars:
    % viOccupation is what this mob does for a living, used for NPCs.
    viOccupation   = 0
    viKarma        = 0
+
+   % If the monster is undead, set this to TRUE.
+   vbIsUndead = FALSE
 
    % viLevel ranges from 25 to 200 (150 and above is for "boss" mobs)
    %  determines hit points.
@@ -626,6 +634,9 @@ messages:
       {
          Send(poMaster,@RemoveControlledMinion,#what=self);
       }
+
+      % Clear reagent return list.
+      plSpellList = $;
 
       % If this monster is an 'Evil Twin', tell the original it was deleted.
       if poEvilTwinOriginal <> $
@@ -1048,9 +1059,12 @@ messages:
          piState = (piState & VSTATE_VALIDITY_MASK);
       }
 
-      Send(poBrain,@SomethingMoved,#mob=self,#state=piState,
-           #what=what,#new_row=new_row,#new_col=new_col,
-           #fine_row=fine_row,#fine_col=fine_col);
+      if poBrain <> $
+      {
+         Send(poBrain,@SomethingMoved,#mob=self,#state=piState,
+               #what=what,#new_row=new_row,#new_col=new_col,
+               #fine_row=fine_row,#fine_col=fine_col);
+      }
 
       propagate;
    }
@@ -1060,8 +1074,11 @@ messages:
    "appropriateIf were already fighting this person, this doesnt interrupt "
    "our plans."
    {
-      Send(poBrain,@SomethingAttacked,#mob=self,#state=piState,
-           #what=what,#victim=victim,#use_weapon=use_weapon);
+      if poBrain <> $
+      {
+         Send(poBrain,@SomethingAttacked,#mob=self,#state=piState,
+               #what=what,#victim=victim,#use_weapon=use_weapon);
+      }
 
       propagate;
    }
@@ -1154,7 +1171,7 @@ messages:
                AND NOT (IsClass(self,&EvilTwin)
                   AND (NOT Send(self,@IsEnchanted,#byClass=&Seduce))))
                OR IsClass(self,&Reflection) % Flecs follow.
-               OR Send(self,@IsUndead) % So do undead (Animate).
+               OR vbIsUndead % So do undead (Animate).
             {
                Post(self,@GotoMaster);
             }
@@ -1901,7 +1918,7 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage,iResist,iPercentClass,i,each_obj;
+      local iDamage, iResist, iPercentClass, i, each_obj, oRod, bAttackerEmpowered;
 
       if NOT precision
       {
@@ -1917,6 +1934,26 @@ messages:
 
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+
+      % Increase initial damage by 35 percent if attacker damage rod is active
+      bAttackerEmpowered = FALSE;
+      if what <> $
+         AND IsClass(what,&Player)
+      {
+         for oRod in Send(what,@GetHolderPassive)
+         {
+            if IsClass(oRod,&DamageRod)
+               AND Send(oRod,@IsActive)
+            {
+               bAttackerEmpowered = TRUE;
+            }
+         }
+      }
+      
+      if bAttackerEmpowered
+      {
+         damage = damage * 135 / 100;
+      }
 
       % check for any applicable resistances.
 
@@ -3858,7 +3895,7 @@ messages:
    VaultWithdraw(what=$,lItems=$,number_list = $)
    {
       local i, j, iFee, iCash, lStored, oVault, iBulk, oMoney, bFound,
-            oSafeBox, lNumbers, iCount;
+            oSafeBox, lNumbers, iCount, bFailed;
 
       if what=$ OR lItems = $
       {
@@ -3950,16 +3987,17 @@ messages:
          return;
       }         
 
-      if Send(what, @GetBulkMax) <> $ AND
-         (iBulk + Send(what,@GetBulkHold)) > Send(what,@GetBulkMax)
-      {
-         Send(self,@SayToOne,#target=what,#message_rsc=vaultman_no_room);
-
-         return;
-      }   
+      %if Send(what, @GetBulkMax) <> $ AND
+      %   (iBulk + Send(what,@GetBulkHold)) > Send(what,@GetBulkMax)
+      %{
+      %   Send(self,@SayToOne,#target=what,#message_rsc=vaultman_no_room);
+      %
+      %   return;
+      %}   
       
       % The next line added to handle player specified amounts
       lNumbers = number_list;
+      bFailed = FALSE;
 
       % At this point, we're pretty sure it's all legal.      
       for i in lItems
@@ -3971,13 +4009,22 @@ messages:
          {
             if IsClass(i,&NumberItem)
             {               
-               Send(oVault,@WithdrawFromStorage,#what=i,#who=what,
-                    #count=First(lNumbers));
+               if NOT Send(oVault,@WithdrawFromStorage,#what=i,#who=what,
+                    #count=First(lNumbers))
+               {
+                  bFailed = TRUE;
+                  break;
+               }
+
                lNumbers = Rest(lNumbers);
             }
             else
             {
-               Send(oVault,@WithdrawFromStorage,#what=i,#who=what,#count=1); 
+               if NOT Send(oVault,@WithdrawFromStorage,#what=i,#who=what,#count=1)
+               {
+                  bFailed = TRUE;
+                  break;
+               }
             }
             
          }
@@ -3985,13 +4032,27 @@ messages:
 
       if iFee <> 0
       {
-         Send(oMoney,@SubtractNumber,#number=iFee);  
-         Send(self,@SayToOne,#message_rsc=vaultman_Thanks_amount,#target=what,
+         Send(oMoney,@SubtractNumber,#number=iFee);
+         if bFailed
+         {
+            Send(self,@SayToOne,#target=what,#message_rsc=vaultman_withdraw_failed);
+         }
+         else
+         {
+            Send(self,@SayToOne,#message_rsc=vaultman_Thanks_amount,#target=what,
               #parm1=iFee);
+         }
       }
       else
       {
-         Send(self,@SayToOne,#target=what,#message_rsc=vaultman_thanks);
+         if bFailed
+         {
+            Send(self,@SayToOne,#target=what,#message_rsc=vaultman_withdraw_failed);
+         }
+         else
+         {
+            Send(self,@SayToOne,#target=what,#message_rsc=vaultman_thanks);
+         }
       }
 
       return;
@@ -4228,7 +4289,7 @@ messages:
    "This is used for both teachers and sellers"
    {
       local i, j, bFound, oBuy, oMoney, iPrice, lNumbers,
-            iAmount, oItemAtt; 
+            iAmount, oItemAtt, iCan_hold, oSplit; 
 
       % Ensure that buyer and seller are in the same room
       if Send(what,@GetOwner) <> poOwner
@@ -4400,11 +4461,52 @@ messages:
             }
             else
             {
-               % Buyer can't accept the item for some reason.
-               Post(poOwner,@SomeoneSaid,#what=self,#string=Lm_mrcnt_cant_give,
-                     #type=SAY_RESOURCE,#parm1=Send(oBuy,@GetDef),
-                     #parm2=Send(oBuy,@GetName));
-               Send(oBuy,@Delete);
+               % Check if this is a number item we're buying too much of.
+               if IsClass(oBuy,&NumberItem)
+                  AND Send(what,@GetNumberCanHold,#what=oBuy) > 0
+               {
+                  iCan_hold = Send(what,@GetNumberCanHold,#what=oBuy);
+                  if iCan_hold > 0
+                  {
+                     oSplit = Send(oBuy,@Split,#number=iCan_hold);
+                     if Send(oBuy,@ReqNewOwner,#what=oSplit)
+                     {
+                        Send(oMoney,@SubtractNumber,
+                              #number=Send(self,@GetPrice,#what=oBuy,#who=what)*
+                                           Send(oSplit,@GetNumber));
+                        Send(i,@SubtractNumber,#Number=Send(oSplit,@GetNumber));
+                        Send(what,@NewHold,#what=oSplit);
+                        Post(poOwner,@SomeoneSaid,#what=self,
+                              #string=Lm_mrcnt_can_give_some,
+                              #type=SAY_RESOURCE,#parm1=Send(oBuy,@GetDef),
+                              #parm2=Send(oBuy,@GetName));
+                              
+                        Send(self,@RemoveFromConditionalList,
+                           #obj=Send(self,@GetObjectOnConditionalList,
+                           #class=GetClass(i)));
+
+                        Send(self,@AffectMood,#why=MOODMOD_SELL_ITEM,#what=oBuy);
+
+                        if Send(oBuy,@HasAttribute,#ItemAtt=IA_SELL_INFO)
+                        {
+                           oItemAtt = Send(oBuy,@GetAttributeData,
+                                           #ItemAtt=IA_SELL_INFO);
+                           Post(poOwner,@SomeoneSaid,#what=self,
+                               #string=Nth(oItemAtt,2),
+                               #type=SAY_RESOURCE);
+                        }
+                        Send(oBuy,@Delete);
+                     }
+                  }
+               }
+               else
+               {
+                  % Buyer can't accept the item for some reason.
+                  Post(poOwner,@SomeoneSaid,#what=self,#string=Lm_mrcnt_cant_give,
+                        #type=SAY_RESOURCE,#parm1=Send(oBuy,@GetDef),
+                        #parm2=Send(oBuy,@GetName));
+                  Send(oBuy,@Delete);
+               }
             }
          }
          else
@@ -5838,7 +5940,7 @@ messages:
       % that was cast on the monster.
       for i in plSpellList
       {
-         for j in send(i,@GetReagents)
+         for j in Send(Send(SYS,@FindSpellByNum,#num=i),@GetReagents)
          {
             oReagent = Create(First(j),#corpse=corpse,#number=Nth(j,2));
             lTreasureItems = Cons(oReagent,lTreasureItems);
@@ -6398,13 +6500,13 @@ messages:
 
    IsFrightenedOf(target = $)
    {
-      if Send(self,@IsUndead)
+      if vbIsUndead
          AND (poHolySymbolCaster <> $)
          AND (poHolySymbolCaster = target)
       {
          return TRUE;
       }
-      
+
       return FALSE;
    }
 
@@ -6787,7 +6889,7 @@ messages:
 
    IsUndead()
    {
-      return FALSE;
+      return vbIsUndead;
    }
 
    TurnedBy(who = $)
@@ -6799,7 +6901,7 @@ messages:
          return;
       }
 
-      if not Send(self,@IsUndead)
+      if NOT vbIsUndead
       {
          Debug("Somehow turned a monster that isn't undead.");
 
@@ -6863,19 +6965,19 @@ messages:
       return;
    }
 
-   AddToSpellList(spellobject=$)
+   AddToSpellList(spellNum=$)
    {
       local i;
 
       for i in plSpellList
       {
-         if i = spellobject
+         if i = spellNum
          {
             return;
          }
       }
 
-      plSpellList = Cons(spellobject,plSpellList);
+      plSpellList = Cons(spellNum,plSpellList);
 
       return;
    }
