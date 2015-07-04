@@ -83,6 +83,8 @@ classvars:
    viLightColor = LIGHT_SPECTRAL
    viBaseLightIntensity = 60
 
+   viDiscordable = TRUE
+
    viChance_To_Increase = 15
 
    viAffectsCasterOnly = FALSE  % Override for self-only spell
@@ -787,6 +789,11 @@ messages:
    GetDuration(iSpellPower=0)
    {
       return ((50 + iSpellpower)*1000);
+   }
+
+   GetDiscordable()
+   {
+      return viDiscordable;
    }
 
    %%%%% Effect Functions

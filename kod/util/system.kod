@@ -2578,6 +2578,8 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER1,#class=&DesertRiver1);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER2,#class=&DesertRiver2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTBRIDGE,#class=&DesertBridge);
+      
+      Send(self,@CreateOneRoomIfNew,#num=RID_BATTLE_ARENA,#class=&BattleArena);
 
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.
@@ -3357,6 +3359,8 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_BATTLE_CONTROL,#class=&BattleControl);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);

@@ -1,0 +1,1185 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BattleArena is Room
+
+constants:
+
+   include blakston.khd
+
+   MIN_PARTICIPANTS = 1
+
+resources:
+
+   room_battlearena = battlearena1.roo
+   
+   battlearena_name = "Battle Arena"
+   battlearena_music = castle.mp3
+
+   battle_arena_welcome_msg = \
+      "~BYou are a participant."
+
+   battle_arena_begin_warning = \
+      "~BThe battle arena will begin in sixty seconds."
+   begin_canceled = \
+      "~BThe battle has been canceled due to lack of participants."
+
+   battle_arena_spectator_msg = \
+      "~BYou are a spectator."
+
+   cant_fight_yet = \
+      "You may not fight yet."
+
+   battle_arena_participant_msg = \
+      "~BYou are a participant."
+   battle_arena_team_one_assign = \
+      "~BYou have been assigned to team Zaphod."
+   battle_arena_team_two_assign = \
+      "~BYou have been assigned to team Zandramas."
+
+   battle_arena_booted = \
+      "~BYou were booted from the battle arena."
+
+   player_booted = \
+      "~B%s was booted from the battle arena."
+
+   ba_no_cast_rsc = \
+      "You cannot cast %s here."
+
+   battle_over = \
+      "~BThe battle has ended. Team Zaphod reached %i points, and team "
+      "Zandramas reached %i points."
+   kill_report = \
+      "~B%s achieved %i kills."
+
+   battler_killed_battler = \
+      "~B%s of was just killed by %s!"
+   points_update = \
+      "~BTeam Zaphod has %i points, and Team Zandramas has %i points."
+
+   team_one_control_one = \
+      "~BTeam Zaphod has gained control of the northern battle circle!"
+   team_one_control_two = \
+      "~BTeam Zaphod has gained control of the middle battle circle!"
+   team_one_control_three = \
+      "~BTeam Zaphod has gained control of the southern battle circle!"
+
+   team_two_control_one = \
+      "~BTeam Zandramas has gained control of the northern battle circle!"
+   team_two_control_two = \
+      "~BTeam Zandramas has gained control of the middle battle circle!"
+   team_two_control_three = \
+      "~BTeam Zandramas has gained control of the southern battle circle!"
+
+   control_one_contested = \
+      "~BThe northern battle circle has been contested!"
+   control_two_contested = \
+      "~BThe middle battle circle has been contested!"
+   control_three_contested = \
+      "~BThe southern battle circle has been contested!"
+   
+   team_one_victory = \
+      "~BTeam Zaphod has won the battle!"
+   team_two_victory = \
+      "~BTeam Zandramas has won the battle!"
+   
+   highest_killer = \
+      "~B%s was the most brutal fighter, with %i kills."
+      
+   battle_begin_wav = gong.wav
+   battle_end_wav = huzzah.wav
+
+classvars:
+
+   vrName = battlearena_name
+
+   viTeleport_row = 27
+   viTeleport_col = 11
+   
+   viSecondTeleport_row = 27
+   viSecondTeleport_col = 46
+
+   viControlCenterNorth_row = 16
+   viControlCenterNorth_col = 28
+
+   viControlCenterMid_row = 27
+   viControlCenterMid_col = 28
+
+   viControlCenterSouth_row = 39
+   viControlCenterSouth_col = 28
+
+   viPermanent_flags = ROOM_SAFELOGOFF
+
+properties:
+
+   prMusic = battlearena_music
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_10 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_battlearena
+   piRoom_num = RID_BATTLE_ARENA
+
+   pbBattleInSession = FALSE
+   piOverridesDeathFunction = TRUE
+   piChaosZone = TRUE
+
+   plParticipants = $
+
+   plTeamOne = $
+   plTeamTwo = $
+   
+   plKillRecord = $
+   piTeamOneVictoryPoints = 0
+   piTeamTwoVictoryPoints = 0
+
+   ptBeginTimer = $
+   ptContinuousControlTimer = $
+   ptCheckControlTimer = $
+   ptBattleTimer = $
+
+   % Time allotted for players to join after global announcement
+   piWaitStartTime = 30000
+   
+   % Check control every few seconds
+   piCheckControlTime = 10000
+
+   % How long the battle lasts
+   piBattleTime = 300000
+   
+   % Centers of control enchantments
+   poTotemOne = $
+   piTotemOneValue = 0
+   piTotemOneControl = 0
+   poTotemTwo = $
+   piTotemTwoValue = 0
+   piTotemTwoControl = 0
+   poTotemThree = $
+   piTotemThreeValue = 0
+   piTotemThreeControl = 0
+
+messages:
+   
+   FirstUserEntered()
+   {
+      local oBattleControl;
+
+      oBattleControl = Send(SYS,@FindSpellByNum,#num=SID_BATTLE_CONTROL);
+      
+      poTotemOne = Create(&RadiusEnchantmentTotem);
+      Send(self,@NewHold,#what=poTotemOne,
+                         #new_row=viControlCenterNorth_row,
+                         #new_col=viControlCenterNorth_col);
+      Send(oBattleControl,@InitiateNewRadiusEnchantment,
+                          #source=poTotemOne,
+                          #iSpellPower=99);
+
+      poTotemTwo = Create(&RadiusEnchantmentTotem);
+      Send(self,@NewHold,#what=poTotemTwo,
+                         #new_row=viControlCenterMid_row,
+                         #new_col=viControlCenterMid_col);
+      Send(oBattleControl,@InitiateNewRadiusEnchantment,
+                          #source=poTotemTwo,
+                          #iSpellPower=99);
+
+      poTotemThree = Create(&RadiusEnchantmentTotem);
+      Send(self,@NewHold,#what=poTotemThree,
+                         #new_row=viControlCenterSouth_row,
+                         #new_col=viControlCenterSouth_col);
+      Send(oBattleControl,@InitiateNewRadiusEnchantment,
+                          #source=poTotemThree,
+                          #iSpellPower=99);
+      propagate;
+   }
+
+   LastUserLeft()
+   {
+      local oBattleControl;
+
+      oBattleControl = Send(SYS,@FindSpellByNum,#num=SID_BATTLE_CONTROL);
+
+      Send(self,@EndBattle);
+      
+      if poTotemOne <> $
+      {
+         Send(oBattleControl,@CancelRadiusEnchantment,#source=poTotemOne);
+         Send(poTotemOne,@Delete);
+         poTotemOne = $;
+      }
+      
+      if poTotemTwo <> $
+      {
+         Send(oBattleControl,@CancelRadiusEnchantment,#source=poTotemTwo);
+         Send(poTotemTwo,@Delete);
+         poTotemTwo = $;
+      }
+      
+      if poTotemThree <> $
+      {
+         Send(oBattleControl,@CancelRadiusEnchantment,#source=poTotemThree);
+         Send(poTotemThree,@Delete);
+         poTotemThree = $;
+      }
+
+      propagate;
+   }
+
+   ReqSomethingAttack(what = $,victim = $,use_weapon = $,report = TRUE)
+   {
+      local iAttackerTeam, iVictimTeam;
+
+      if NOT pbBattleInSession
+      {
+         Send(what,@MsgSendUser,#message_rsc=cant_fight_yet);
+         return FALSE;
+      }
+
+      if pbBattleInSession
+      {
+         iAttackerTeam = Send(self,@GetPlayerTeam,#who=what);
+         iVictimTeam = Send(self,@GetPlayerTeam,#who=victim);
+         
+         if iAttackerTeam = 0
+            OR iVictimTeam = 0
+         {
+            return FALSE;
+         }
+
+         if iAttackerTeam = iVictimTeam
+         {
+            return FALSE;
+         }
+         
+         if iAttackerTeam <> iVictimTeam
+         {
+            return TRUE;
+         }
+      }
+
+      propagate;
+   }
+   
+   InitiateBattle()
+   {
+      local i, iTeam;
+
+      ptBeginTimer = $; 
+
+      iTeam = Random(0,1);
+      for i in plParticipants
+      {
+         if iTeam = 0
+         {
+            Send(self,@AssignToTeam,#who=i,#team=1);
+            iTeam = 1;
+         }
+         else
+         {
+            Send(self,@AssignToTeam,#who=i,#team=2);
+            iTeam = 0;
+         }
+      }
+
+      pbBattleInSession = TRUE;
+      ptContinuousControlTimer = CreateTimer(self,
+                                 @ContinuousControlUpdate,1000);
+      ptCheckControlTimer = CreateTimer(self,@ReportControl,piCheckControlTime);
+      
+      ptBattleTimer = CreateTimer(self,@BattleTimeout,piBattleTime);
+      
+      Send(self,@SomethingWaveRoom,#wave_rsc=battle_begin_wav);
+
+      return;
+   }
+
+   ContinuousControlUpdate()
+   {
+      local i, iTotemOneChange, iTotemTwoChange, iTotemThreeChange,
+            bOneHasZaphod, bOneHasZandramas, bTwoHasZaphod, bTwoHasZandramas,
+            bThreeHasZaphod, bThreeHasZandramas;
+
+      ptContinuousControlTimer = $;
+
+      iTotemOneChange = 0;
+      iTotemTwoChange = 0;
+      iTotemThreeChange = 0;
+      bOneHasZaphod = FALSE;
+      bOneHasZandramas = FALSE;
+      bTwoHasZaphod = FALSE;
+      bTwoHasZandramas = FALSE;
+      bThreeHasZaphod = FALSE;
+      bThreeHasZandramas = FALSE;
+      
+      if piTotemOneControl = 1
+      {
+         piTeamOneVictoryPoints = piTeamOneVictoryPoints + 25;
+      }
+      
+      if piTotemTwoControl = 1
+      {
+         piTeamOneVictoryPoints = piTeamOneVictoryPoints + 25;
+      }
+      
+      if piTotemThreeControl = 1
+      {
+         piTeamOneVictoryPoints = piTeamOneVictoryPoints + 25;
+      }
+      
+      if piTotemOneControl = 2
+      {
+         piTeamTwoVictoryPoints = piTeamTwoVictoryPoints + 25;
+      }
+      
+      if piTotemTwoControl = 2
+      {
+         piTeamTwoVictoryPoints = piTeamTwoVictoryPoints + 25;
+      }
+      
+      if piTotemThreeControl = 2
+      {
+         piTeamTwoVictoryPoints = piTeamTwoVictoryPoints + 25;
+      }
+      
+      for i in plTeamOne
+      {
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemOne,
+                   #byClass=&BattleControl)
+         {
+            iTotemOneChange = iTotemOneChange - 5;
+            bOneHasZaphod = TRUE;
+         }
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemTwo,
+                   #byClass=&BattleControl)
+         {
+            iTotemTwoChange = iTotemTwoChange - 5;
+            bTwoHasZaphod = TRUE;
+         }
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemThree,
+                   #byClass=&BattleControl)
+         {
+            iTotemThreeChange = iTotemThreeChange - 5;
+            bThreeHasZaphod = TRUE;
+         }
+      }
+      
+      for i in plTeamTwo
+      {
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemOne,
+                   #byClass=&BattleControl)
+         {
+            iTotemOneChange = iTotemOneChange + 5;
+            bOneHasZandramas = TRUE;
+         }
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemTwo,
+                   #byClass=&BattleControl)
+         {
+            iTotemTwoChange = iTotemTwoChange + 5;
+            bTwoHasZandramas = TRUE;
+         }
+         if Send(i,@IsAffectedByRadiusEnchantment,
+                   #caster=poTotemThree,
+                   #byClass=&BattleControl)
+         {
+            iTotemThreeChange = iTotemThreeChange + 5;
+            bThreeHasZandramas = TRUE;
+         }
+      }
+
+      if bOneHasZaphod and bOneHasZandramas
+      {
+         iTotemOneChange = 0;
+      }
+
+      if bTwoHasZaphod and bTwoHasZandramas
+      {
+         iTotemTwoChange = 0;
+      }
+
+      if bThreeHasZaphod and bThreeHasZandramas
+      {
+         iTotemThreeChange = 0;
+      }
+
+      piTotemOneValue = bound(piTotemOneValue+iTotemOneChange,-100,100);
+      piTotemTwoValue = bound(piTotemTwoValue+iTotemTwoChange,-100,100);
+      piTotemThreeValue = bound(piTotemThreeValue+iTotemThreeChange,-100,100);
+
+      if piTotemOneValue <= -100
+         AND piTotemOneControl <> 1
+      {
+         piTotemOneControl = 1;
+         Send(self,@ChangeTexture,#id=1,#new_texture=09645,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_one_control_one);
+            }
+         }
+      }
+
+      if piTotemOneValue >= 100
+         AND piTotemOneControl <> 2
+      {
+         piTotemOneControl = 2;
+         Send(self,@ChangeTexture,#id=1,#new_texture=50061,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_two_control_one);
+            }
+         }
+      }
+      
+      if piTotemOneValue <> -100
+         AND piTotemOneValue <> 100
+         AND piTotemOneControl <> 0
+      {
+         piTotemOneControl = 0;
+         Send(self,@ChangeTexture,#id=1,#new_texture=08915,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=control_one_contested);
+            }
+         }
+      }
+
+      if piTotemTwoValue <= -100
+         AND piTotemTwoControl <> 1
+      {
+         piTotemTwoControl = 1;
+         Send(self,@ChangeTexture,#id=2,#new_texture=09645,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_one_control_two);
+            }
+         }
+      }
+
+      if piTotemTwoValue >= 100
+         AND piTotemTwoControl <> 2
+      {
+         piTotemTwoControl = 2;
+         Send(self,@ChangeTexture,#id=2,#new_texture=50061,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_two_control_two);
+            }
+         }
+      }
+      
+      if piTotemTwoValue <> -100
+         AND piTotemTwoValue <> 100
+         AND piTotemTwoControl <> 0
+      {
+         piTotemTwoControl = 0;
+         Send(self,@ChangeTexture,#id=2,#new_texture=08915,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=control_two_contested);
+            }
+         }
+      }
+
+      if piTotemThreeValue <= -100
+         AND piTotemThreeControl <> 1
+      {
+         piTotemThreeControl = 1;
+         Send(self,@ChangeTexture,#id=3,#new_texture=09645,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_one_control_three);
+            }
+         }
+      }
+
+      if piTotemThreeValue >= 100
+         AND piTotemThreeControl <> 2
+      {
+         piTotemThreeControl = 2;
+         Send(self,@ChangeTexture,#id=3,#new_texture=50061,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_two_control_three);
+            }
+         }
+      }
+      
+      if piTotemThreeValue <> -100
+         AND piTotemThreeValue <> 100
+         AND piTotemThreeControl <> 0
+      {
+         piTotemThreeControl = 0;
+         Send(self,@ChangeTexture,#id=3,#new_texture=08915,#flags=CTF_FLOOR);
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=control_three_contested);
+            }
+         }
+      }
+
+      Send(self,@SomethingChanged,#what=poTotemOne);
+      Send(self,@SomethingChanged,#what=poTotemTwo);
+      Send(self,@SomethingChanged,#what=poTotemThree);
+
+      ptContinuousControlTimer = CreateTimer(self,
+                                 @ContinuousControlUpdate,1000);
+
+      return;
+   }
+   
+   ReportControl(timer=$)
+   {
+      local i;
+
+      for i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=points_update,
+                                       #parm1=piTeamOneVictoryPoints,
+                                       #parm2=piTeamTwoVictoryPoints);
+         }
+      }
+
+      ptCheckControlTimer = CreateTimer(self,@ReportControl,piCheckControlTime);
+      return;
+   }
+
+   BattleTimeout()
+   {
+      ptBattleTimer = $;
+      Send(self,@EndBattle);
+      return;
+   }
+   
+   EndBattle()
+   {
+      local i, n, iHighestKills, oHighestKiller;
+
+      if ptBeginTimer <> $
+      {
+         DeleteTimer(ptBeginTimer);
+         ptBeginTimer = $;
+      }
+
+      if ptBattleTimer <> $
+      {
+         DeleteTimer(ptBattleTimer);
+         ptBattleTimer = $;
+      }
+
+      if ptContinuousControlTimer <> $
+      {
+         DeleteTimer(ptContinuousControlTimer);
+         ptContinuousControlTimer = $;
+      }
+
+      if ptCheckControlTimer <> $
+      {
+         DeleteTimer(ptCheckControlTimer);
+         ptCheckControlTimer = $;
+      }
+
+      if pbBattleInSession
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=battle_over,
+                                          #parm1=piTeamOneVictoryPoints,
+                                          #parm2=piTeamTwoVictoryPoints);
+            }
+         }
+
+         oHighestKiller = $;
+         iHighestKills = 0;
+         for i in plKillRecord
+         {
+            for n in plParticipants
+            {
+               if Nth(i,2) > iHighestKills
+               {
+                  oHighestKiller = Nth(i,1);
+                  iHighestKills = Nth(i,2);
+               }
+               Send(n,@MsgSendUser,#message_rsc=kill_report,
+                                   #parm1=Send(Nth(i,1),@GetName),
+                                   #parm2=Nth(i,2));
+            }
+         }
+         
+         if piTeamOneVictoryPoints >
+            piTeamTwoVictoryPoints
+         {
+            Send(self,@TeamVictory,#team=1);
+         }
+         
+         if piTeamTwoVictoryPoints >
+            piTeamOneVictoryPoints
+         {
+            Send(self,@TeamVictory,#team=2);
+         }
+         
+         Send(self,@HighestKillerReward,#who=oHighestKiller,
+                                        #iHighestKills=iHighestKills);
+      }
+
+      plParticipants = $;
+      plTeamOne = $;
+      plTeamTwo = $;
+      plKillRecord = $;
+      piTeamOneVictoryPoints = 0;
+      piTeamTwoVictoryPoints = 0;
+      pbBattleInSession = FALSE;
+      piTotemOneValue = 0;
+      piTotemTwoValue = 0;
+      piTotemThreeValue = 0;
+      piTotemOneControl = 0;
+      piTotemTwoControl = 0;
+      piTotemThreeControl = 0;
+      Send(self,@ChangeTexture,#id=1,#new_texture=08915,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=2,#new_texture=08915,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=3,#new_texture=08915,#flags=CTF_FLOOR);
+
+      Send(self,@SomethingChanged,#what=poTotemOne);
+      Send(self,@SomethingChanged,#what=poTotemTwo);
+      Send(self,@SomethingChanged,#what=poTotemThree);
+      
+      Send(self,@SomethingWaveRoom,#wave_rsc=battle_end_wav);
+
+      if pbUser_in_room
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               if Send(First(i),@IsInSpectatorMode)
+               {
+                  Send(First(i),@DeactivateSpectatorMode);
+               }
+               Send(self,@AddParticipant,#who=First(i));
+            }
+         }
+      }
+
+      return;
+   }
+   
+   TeamVictory(team=0)
+   {
+      local i;
+
+      if team = 1
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_one_victory);
+            }
+         }
+      }
+
+      if team = 2
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=team_two_victory);
+            }
+         }
+      }
+
+      return;
+   }
+
+   HighestKillerReward(who=$,iHighestKills=0)
+   {
+      local i;
+
+      if who <> $
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=highest_killer,
+                                          #parm1=Send(who,@GetName),
+                                          #parm2=iHighestKills);
+            }
+         }
+      }
+
+      return;
+   }
+   
+   AssignToTeam(who=$,team=0)
+   {
+      if plTeamOne <> $
+         AND FindListElem(plTeamOne,who)
+      {
+         plTeamOne = DelListElem(plTeamOne,who);
+      }
+
+      if plTeamTwo <> $
+         AND FindListElem(plTeamTwo,who)
+      {
+         plTeamTwo = DelListElem(plTeamTwo,who);
+      }
+
+      if team = 1
+      {
+         Send(who,@MsgSendUser,#message_rsc=battle_arena_team_one_assign);
+         plTeamOne = Cons(who,plTeamOne);
+         Send(SYS,@UtilGoNearSquare,#what=who,#where=self,
+              #new_row=viTeleport_row,
+              #new_col=viTeleport_col,
+              #new_angle=ANGLE_EAST);
+      }
+
+      if team = 2
+      {
+         Send(who,@MsgSendUser,#message_rsc=battle_arena_team_two_assign);
+         plTeamTwo = Cons(who,plTeamTwo);
+         Send(SYS,@UtilGoNearSquare,#what=who,#where=self,
+              #new_row=viSecondTeleport_row,
+              #new_col=viSecondTeleport_col,
+              #new_angle=ANGLE_WEST);
+      }
+
+      return;
+   }
+   
+   OverrideDeathFunction(who=$,what=$)
+   {
+      local i, n, iKillerTeam, iVictimTeam;
+      
+      for i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=battler_killed_battler,
+                                       #parm1=Send(who,@GetName),
+                                       #parm2=Send(what,@GetName));
+         }
+      }
+
+      Send(who,@SetHealth,#amount=Send(who,@GetMaxHealth));
+      Send(who,@GainMana,#amount=Send(who,@GetMaxMana),#bCapped=TRUE);
+      Send(who,@RechargeAllRods);
+
+      iKillerTeam = Send(self,@GetPlayerTeam,#who=what);
+      iVictimTeam = Send(self,@GetPlayerTeam,#who=who);
+
+      if iKillerTeam = 1
+      {
+            piTeamOneVictoryPoints = piTeamOneVictoryPoints +
+               Send(who,@GetBaseMaxHealth);
+      }
+
+      if iKillerTeam = 2
+      {
+            piTeamTwoVictoryPoints = piTeamTwoVictoryPoints +
+               Send(who,@GetBaseMaxHealth);
+      }
+
+      if iVictimTeam = 1
+      {
+         Send(SYS,@UtilGoNearSquare,#what=who,#where=self,
+              #new_row=viTeleport_row,
+              #new_col=viTeleport_col,
+              #new_angle=ANGLE_EAST);
+      }
+
+      if iVictimTeam = 2
+      {
+         Send(SYS,@UtilGoNearSquare,#what=who,#where=self,
+              #new_row=viSecondTeleport_row,
+              #new_col=viSecondTeleport_col,
+              #new_angle=ANGLE_WEST);
+      }
+
+      for i in plKillRecord
+      {
+         if First(i) = what
+         {
+            SetNth(i,2,Nth(i,2)+1);
+            return;
+         }
+      }
+
+      plKillRecord = Cons([what,1],plKillRecord);
+
+      return;
+   }
+
+   NewHoldObject(what=$)
+   {
+      local oTarget, i, count;
+      
+      if IsClass(what,&User)
+      {
+         if pbBattleInSession
+         {
+            Send(self,@SpectateUser,#who=what);
+
+            propagate;
+         }
+         else
+         {
+            Post(self,@AddParticipant,#who=what);
+         }
+      }
+
+      propagate;
+   }
+
+   AddParticipant(who=$)
+   {
+      local i;
+
+      plParticipants = Cons(who,plParticipants);
+      Post(who,@MsgSendUser,#message_rsc=battle_arena_welcome_msg);
+
+      if Length(plParticipants) >= MIN_PARTICIPANTS
+         AND ptBeginTimer = $
+         AND NOT pbBattleInSession
+      {
+         ptBeginTimer =
+            CreateTimer(self,@InitiateBattle,piWaitStartTime);
+         
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,
+                             #message_rsc=battle_arena_begin_warning);
+            }
+         }
+      }
+      return;
+   }
+
+   SpectateUser(who=$,inform=TRUE)
+   {
+      local i, p;
+
+      if plParticipants <> $
+         AND FindListElem(plParticipants,who) <> 0
+      {
+         plParticipants = DelListElem(plParticipants,who);
+      }
+
+      if plTeamOne <> $
+         AND FindListElem(plTeamOne,who) <> 0
+      {
+         plTeamOne = DelListElem(plTeamOne,who);
+      }
+
+      if plTeamTwo <> $
+         AND FindListElem(plTeamTwo,who) <> 0
+      {
+         plTeamTwo = DelListElem(plTeamTwo,who);
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=battle_arena_spectator_msg);
+      Send(who,@SetHealth,#amount=Send(who,@GetMaxHealth));
+      Send(who,@ActivateSpectatorMode);
+
+      return;
+   }
+
+   BootUser(who=$,inform=TRUE,booting_all=FALSE)
+   {
+      local i, p;
+      
+      if plParticipants <> $
+         AND FindListElem(plParticipants,who) <> 0
+      {
+         plParticipants = DelListElem(plParticipants,who);
+      }
+
+      if plTeamOne <> $
+         AND FindListElem(plTeamOne,who) <> 0
+      {
+         plTeamOne = DelListElem(plTeamOne,who);
+      }
+
+      if plTeamTwo <> $
+         AND FindListElem(plTeamTwo,who) <> 0
+      {
+         plTeamTwo = DelListElem(plTeamTwo,who);
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=battle_arena_booted);
+
+      if Send(who,@GetOwner) = $
+         OR Send(who,@GetOwner) = self
+      {
+         Send(who,@DeactivateSpectatorMode);
+         Send(who,@AdminGoToLastSafeRoom,#from_special=TRUE);
+      }
+
+      if inform
+      {
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=player_booted,
+                                #parm1=Send(who,@GetTrueName));
+            }
+         }
+      }
+
+      if plTeamOne = $
+         OR plTeamTwo = $
+         OR plParticipants = $
+      {
+         Send(self,@EndBattle);
+      }
+
+      if NOT booting_all
+      {
+         if plParticipants = $
+         {
+            Send(self,@BootAllUsers);
+         }
+      }
+
+      return;
+   }
+
+   BootAllUsers()
+   {
+      local i;
+
+      % Boot all participants
+      for i in plParticipants
+      {
+         Send(self,@BootUser,#who=i,#inform=FALSE,#booting_all=TRUE);
+      }
+
+      % Boot everyone who remains (spectators)
+      for i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(self,@BootUser,#who=First(i),#inform=FALSE,
+                                #booting_all=TRUE);
+         }
+      }
+      
+      return;
+   }
+
+   LeaveHold(what=$)
+   {
+      local i;
+
+      if IsClass(what,&User)
+      {
+         if Send(what,@IsInSpectatorMode)
+         {
+            Send(what,@DeactivateSpectatorMode);
+         }
+         Post(self,@BootUser,#who=what);
+      }
+
+      if ptBeginTimer <> $
+      {
+         DeleteTimer(ptBeginTimer);
+         ptBeginTimer = $;
+         
+         for i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@MsgSendUser,#message_rsc=begin_canceled);
+            }
+         }
+         propagate;
+      }
+
+      propagate;
+   }
+
+   CanHavePlayerPortal(who = $)
+   {
+      return FALSE;
+   }
+
+   ReqSpellCast(who = $, oSpell = $, lItems = $)
+   {
+      if IsClass(oSpell,&Elusion)
+         OR IsClass(oSpell,&Rescue)
+         OR IsClass(oSpell,&DeathRift)
+         OR IsClass(oSpell,&Truce)
+         OR IsClass(oSpell,&Jig)
+      {
+         % We have to provide the fail message here.
+         Send(who,@MsgSendUser,#message_rsc=ba_no_cast_rsc,
+               #parm1=Send(oSpell,@GetName));
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   GetPlayerTeam(who=$)
+   {
+      local i;
+      
+      for i in plTeamOne
+      {
+         if i = who
+         {
+            return 1;
+         }
+      }
+      
+      for i in plTeamTwo
+      {
+         if i = who
+         {
+            return 2;
+         }
+      }
+      
+      return 0;
+   }
+
+   ChoosePlayerMinimapDot(who=$,what=$)
+   {
+      local iWhoTeam, iWhatTeam;
+      
+      iWhoTeam = Send(self,@GetPlayerTeam,#who=who);
+      iWhatTeam = Send(self,@GetPlayerTeam,#who=what);
+
+      if iWhoTeam = 0
+      {
+         if iWhatTeam = 1
+         {
+            return MM_PLAYER | MM_PLAYER_IS_GUILDMATE;
+         }
+         
+         if iWhatTeam = 2
+         {
+            return MM_PLAYER | MM_PLAYER_IS_ENEMY;
+         }
+      }
+
+      if iWhoTeam = iWhatTeam
+      {
+         return MM_PLAYER | MM_PLAYER_IS_FRIEND;
+      }
+      else
+      {
+         return MM_PLAYER | MM_PLAYER_IS_ENEMY;
+      }
+
+      return MM_NONE;
+   }
+
+   Delete()
+   {
+      Send(self,@EndBattle);
+
+      propagate;
+   }
+   
+   GetTotemLightIntensity(what=$)
+   {
+      if what = poTotemOne
+      {
+         return Abs(piTotemOneValue * 255 / 100);
+      }
+      if what = poTotemTwo
+      {
+         return Abs(piTotemTwoValue * 255 / 100);
+      }
+      if what = poTotemThree
+      {
+         return Abs(piTotemThreeValue * 255 / 100);
+      }
+      
+      return 5;
+   }
+   
+   GetTotemLightColor(what=$)
+   {
+      if what = poTotemOne
+      {
+         if piTotemOneValue > 0
+         {
+            return LIGHT_BLUE;
+         }
+         
+         if piTotemOneValue < 0
+         {
+            return LIGHT_RED;
+         }
+      }
+      if what = poTotemTwo
+      {
+         if piTotemTwoValue > 0
+         {
+            return LIGHT_BLUE;
+         }
+         
+         if piTotemTwoValue < 0
+         {
+            return LIGHT_RED;
+         }
+      }
+      if what = poTotemThree
+      {
+         if piTotemThreeValue > 0
+         {
+            return LIGHT_BLUE;
+         }
+         
+         if piTotemThreeValue < 0
+         {
+            return LIGHT_RED;
+         }
+      }
+      
+      return LIGHT_GREEN;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

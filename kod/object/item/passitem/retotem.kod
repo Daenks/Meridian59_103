@@ -1,0 +1,75 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RadiusEnchantmentTotem is PassiveItem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   re_totem_name_rsc = "foci"
+   re_totem_icon_rsc = totem.bgf
+   re_totem_desc_rsc = \
+      "This mystical object centers a radius enchantment."
+
+classvars:
+
+   vrName = re_totem_name_rsc
+   vrIcon = re_totem_icon_rsc
+   vrDesc = re_totem_desc_rsc
+   viUse_type = ITEM_USE_HAND
+   viUse_amount = 1
+
+   viBulk = 100
+   viWeight = 100
+
+properties:
+
+   viObject_flags = OF_NOEXAMINE
+
+   piLightFlags = LIGHT_FLAG_ON
+
+messages:
+
+   SendLightingInformation()
+   {
+      local iLightIntensity, iLightColor;
+
+      iLightIntensity = 0;
+      iLightColor = LIGHT_GREEN;
+      
+      if poOwner <> $
+         AND IsClass(poOwner,&BattleArena)
+      {
+         iLightIntensity = Send(poOwner,@GetTotemLightIntensity,#what=self);
+         iLightColor = Send(poOwner,@GetTotemLightColor,#what=self);
+      }
+
+      AddPacket(2,piLightFlags);
+      AddPacket(1,iLightIntensity);
+      AddPacket(2,iLightColor);
+
+      return;
+   }
+
+   DestroyDisposable()
+   {
+      return FALSE;
+   }
+
+   CanSweep()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -115,8 +115,9 @@ messages:
 
       for i in Send(who,@GetRadiusEnchantments)
       {
-         if iSpellPower = $
-            OR Random(1,100) < iSpellPower
+         if (iSpellPower = $
+            OR Random(1,100) < iSpellPower)
+            AND Send(Nth(i,1),@GetDiscordable)
          {
             Send(Nth(i,1),@CancelRadiusEnchantment,#source=Nth(i,3),#event=EVENT_STEER);
          }
@@ -158,8 +159,12 @@ messages:
          AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
       {
          oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
-         Send(oRoom,@RemoveEnchantment,#what=Nth(oEnchantment,2));
-         bRemovedSomething = TRUE;
+         
+         if Send(Nth(oEnchantment,2),@GetDiscordable)
+         {
+            Send(oRoom,@RemoveEnchantment,#what=Nth(oEnchantment,2));
+            bRemovedSomething = TRUE;
+         }
 
          % Re-get the information
          lEnchantments = send(oRoom,@GetEnchantmentList);
@@ -174,6 +179,11 @@ messages:
          {
             % Only half chance to discord a Jala song
             iModifiedChance = (iModifiedChance * JALA_PERCENT) / 100;
+         }
+         
+         if NOT Send(oSpell,@GetDiscordable)
+         {
+            iModifiedChance = 0;
          }
          
          if iChance = $ OR iModifiedChance > random(1,100)

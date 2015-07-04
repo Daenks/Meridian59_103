@@ -1,0 +1,72 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BattleControl is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   Battle_Control_name_rsc = "battle control"
+   Battle_Control_icon_rsc = iumbrela.bgf
+   Battle_Control_desc_rsc = \
+      "Measures control of an area."
+
+   Battle_Control_cast = "Nobody should ever see this message."
+   Battle_Control_starts = "Nobody should ever see this message. %s"
+   Battle_Control_ends = "Nobody should ever see this message. %s"
+   Battle_Control_caster_ends = "Nobody should ever see this message."
+   Battle_Control_caster_enter = "Nobody should ever see this message."
+   Battle_Control_enter = "You enter the control radius surrounding the %s."
+   Battle_Control_leave = "You have passed outside the control radius "
+                          "surrounding the %s."
+
+classvars:
+
+   radius_ench_cast = Battle_Control_cast
+   radius_ench_starts = Battle_Control_starts
+   radius_ench_ends = Battle_Control_ends
+   radius_ench_caster_ends = Battle_Control_caster_ends
+   radius_ench_caster_enter = Battle_Control_caster_enter
+   radius_ench_enter = Battle_Control_enter
+   radius_ench_leave = Battle_Control_leave
+   
+   vrName = Battle_Control_name_rsc
+   vrIcon = Battle_Control_icon_rsc
+   vrDesc = Battle_Control_desc_rsc
+
+   viSpell_num = SID_BATTLE_CONTROL
+   viMana = 15
+   viManaDrain = 7
+   viDrainTime = 5000
+   viSchool = SS_KRAANAN
+   viSpell_level = 6
+
+   viIndefinite = ARTICLE_AN
+   viChance_To_Increase = 35
+   viMeditate_ratio = 30
+   viBaseRange = 2
+   viCast_Time = 2000
+
+   viAffectsEveryone = TRUE
+
+   viDiscordable = FALSE
+
+   viLightColor = LIGHT_BLUE
+   viBaseLightIntensity = 180
+
+properties:
+   
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

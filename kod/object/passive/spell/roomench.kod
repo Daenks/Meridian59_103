@@ -28,6 +28,8 @@ classvars:
    vrName = RoomEnchantment_name_rsc
    vrIcon = RoomEnchantment_icon_rsc
    vrDesc = RoomEnchantment_desc_rsc
+   
+   viDiscordable = TRUE
 
 properties:
 
@@ -83,6 +85,11 @@ messages:
       Send(self,@CreateStatsDesc,#who=who);      
 
       return GetTempString();
+   }
+
+   GetDiscordable()
+   {
+      return viDiscordable;
    }
 
 end

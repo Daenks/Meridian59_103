@@ -2640,6 +2640,12 @@ messages:
             return MM_NONE;
          }
 
+         if poOwner <> $
+            AND IsClass(poOwner,&BattleArena)
+         {
+            return Send(poOwner,@ChoosePlayerMinimapDot,#who=self,#what=what);
+         }
+
          oIllusion = Send(what,@GetIllusionForm);
 
          if NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
@@ -4737,6 +4743,31 @@ messages:
                                  #lClassOrder=plClassOrderPreferences);
             Send(self,@ToCliInventory);
             Send(self,@ToCliUseList);
+            return;
+         }
+
+         if StringEqual(String,"join battle arena")
+         {
+            if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
+               OR Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+               OR Send(poOwner,@GetRoomNum) = RID_FIELD1
+            {
+               Send(self,@MsgSendUser,#message_rsc=survival_err_not_safe);
+
+               return;
+            }
+
+            Send(Send(SYS,@FindRoomByNum,#num=RID_BATTLE_ARENA),@Teleport,
+                          #what=self);
+
+            return;
+         }
+
+         if StringEqual(String,"leave battle arena")
+            AND IsClass(poOwner,&BattleArena)
+         {
+            Send(poOwner,@BootUser,#who=self);
+
             return;
          }
 
