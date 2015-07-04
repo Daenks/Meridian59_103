@@ -388,6 +388,10 @@ resources:
    survival_err_cant_join = \
       "That survival arena has already begun, and you cannot join."
    
+   survival_drop_token = \
+      "You suddenly lose your grasp on the token as you are "
+      "pulled across dimensions."
+   
    phased_out_cant_drop = "You can't drop items while phased out of existence."
                                
    reagentbag_auto_on = "You start putting new reagents in your bag."
@@ -4625,6 +4629,14 @@ messages:
             if Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
                      @FindRoomByGuild,#oGuild=poGuild),@GetAllowJoins)
             {
+               for i in plPassive
+               {
+                  if IsClass(i,&Token)
+                  {
+                     Send(self,@DropItem,#droppedItem=i);
+                     Send(self,@MsgSendUser,#message_rsc=survival_drop_token);
+                  }
+               }
                Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
                      @FindRoomByGuild,#oGuild=poGuild),@Teleport,#what=self);
             }
@@ -4761,6 +4773,14 @@ messages:
             if Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
                      @FindPublicRoom),@GetAllowJoins)
             {
+               for i in plPassive
+               {
+                  if IsClass(i,&Token)
+                  {
+                     Send(self,@DropItem,#droppedItem=i);
+                     Send(self,@MsgSendUser,#message_rsc=survival_drop_token);
+                  }
+               }
                Send(Send(Send(SYS,@GetSurvivalRoomMaintenance),
                      @FindPublicRoom),@Teleport,#what=self);
             }

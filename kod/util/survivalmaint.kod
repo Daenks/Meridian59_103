@@ -22,6 +22,10 @@ resources:
    
    public_ended = \
       "The public co-op survival arena has ended at level %i."
+      
+   survival_drop_token = \
+      "You suddenly lose your grasp on the token as you are "
+      "pulled across dimensions."
 
 properties:
 
@@ -79,7 +83,7 @@ messages:
               lSurvivalOptions=$,poForceBaseRoom=$)
    {
       local poRoom, poBaseRoom, plAllRooms, iRID, i, plPlayersLoggedOn, z,
-            plExcludedRoomsObjs, iNatural, iPvP, o;
+            plExcludedRoomsObjs, iNatural, iPvP, o, lInventory;
       
       if guild_survival = TRUE
          AND NOT piGuildSurvivalEnabled
@@ -214,6 +218,16 @@ messages:
       {
          plSurvivalRooms = Cons(poRoom,plSurvivalRooms);
          Send(Send(SYS,@GetStatistics),@AddToRoomCount,#iNum=iRID);
+         %Prevent taking a token to the survival room
+         lInventory = Send(who,@GetHolderPassive);
+         for i in lInventory
+         {
+            if IsClass(i,&Token)
+            {
+               Send(who,@DropItem,#droppedItem=i);
+               Send(who,@MsgSendUser,#message_rsc=survival_drop_token);
+            }
+         }
          Send(poRoom,@Teleport,#what=who);
 
          if iPublic
