@@ -1,0 +1,338 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+StaticGem is Gem
+
+   % Static gems are premade gems with manually crafted lore and themes.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gem_static_name_rsc = "static gem"
+   gem_static_icon_rsc = ruby.bgf
+   gem_static_desc_rsc = \
+	"This gem was created by hand with specific values."
+	
+classvars:
+   
+   vrName = gem_static_name_rsc
+   vrIcon = gem_static_icon_rsc
+   vrDesc = gem_static_desc_rsc
+
+   viValue_average = 75000
+   viWeight = 1
+   viBulk = 1
+
+   % Compared to mob level
+   viRarity = 50
+
+   % In which types of gear can this gem be inserted?
+   % Most go in body armors, shields, helms, etc.
+   viArmorGem = TRUE
+   viWeaponGem = FALSE
+
+   % Percentage resistance increase for a specific element
+   viResistanceType = 0
+   viResistanceStrength = 0
+
+   viSecondaryResistanceType = 0
+   viSecondaryResistanceStrength = 0
+   
+   viTertiaryResistanceType = 0
+   viTertiaryResistanceStrength = 0
+
+   % Percentage damage increase for a specific element
+   viEmpowermentType = 0
+   viEmpowermentStrength = 0
+   viSecondaryEmpowermentType = 0
+   viSecondaryEmpowermentStrength = 0
+   viTertiaryEmpowermentType = 0
+   viTertiaryEmpowermentStrength = 0
+
+   viPowerSchool = 0
+   viPowerBonus = 0
+   viSecondaryPowerSchool = 0
+   viSecondaryPowerBonus = 0
+   viTertiaryPowerSchool = 0
+   viTertiaryPowerBonus = 0
+   viAllSchoolBonus = 0
+
+   viMaxHealthIncrease = 0
+   viMaxManaIncrease = 0
+   viMaxVigorIncrease = 0
+
+   viMightIncrease = 0
+   viIntellectIncrease = 0
+   viStaminaIncrease = 0
+   viAgilityIncrease = 0
+   viMysticismIncrease = 0
+   viAimIncrease = 0
+
+   viVisualDampening = 0
+   viBindDampening = 0
+
+   viDamageBonus = 0
+   viOffenseBonus = 0
+   viDefenseBonus = 0
+
+properties:
+
+   
+messages:
+
+   ModifyDamage(damage=0,who=$,target=$)
+   {
+      return damage + viDamageBonus;
+   }
+   
+   GetDamageBonus()
+   {
+      return Send(self,@ModifyDamage);
+   }
+   
+   GetResistanceModifiers()
+   {
+      return Send(self,@ModifyResistance);
+   }
+   
+   GetEmpowermentModifiers()
+   {
+      return Send(self,@ModifyEmpowerment);
+   }
+   
+   GetMaxHealthBonus()
+   {
+      return viMaxHealthIncrease;
+   }
+   
+   GetMaxManaBonus()
+   {
+      return viMaxManaIncrease;
+   }
+   
+   GetMaxVigorBonus()
+   {
+      return viMaxVigorIncrease;
+   }
+
+   GetMightBonus()
+   {
+      return viMightIncrease;
+   }
+
+   GetIntellectBonus()
+   {
+      return viIntellectIncrease;
+   }
+
+   GetStaminaBonus()
+   {
+      return viStaminaIncrease;
+   }
+
+   GetAgilityBonus()
+   {
+      return viAgilityIncrease;
+   }
+
+   GetMysticismBonus()
+   {
+      return viMysticismIncrease;
+   }
+
+   GetAimBonus()
+   {
+      return viAimIncrease;
+   }
+
+   GetBaseSpellModifier(oSpell=$)
+   {
+      return Send(self,@ModifySpellPower,#oSpell=oSpell);
+   }
+
+   GetVisualDampening()
+   {
+      return Send(self,@ModifyVisualDampening);
+   }
+
+   GetBindDampening()
+   {
+      return Send(self,@ModifyBindDampening);
+   }
+
+   GetHitBonus()
+   {
+      return Send(self,@ModifyHitRoll);
+   }
+
+   GetDefenseBonus()
+   {
+      return Send(self,@ModifyDefensePower);
+   }
+
+   ModifyResistance(resistance_list=$)
+   {
+      if viResistanceType <> 0
+      {
+         resistance_list = Send(SYS,@AddResistance,#what=viResistanceType,
+                                 #value=viResistanceStrength,
+                                 #resistance_list=resistance_list);
+      }
+
+      if viSecondaryEmpowermentType <> 0
+      {
+         resistance_list = Send(SYS,@AddResistance,
+                                 #what=viSecondaryEmpowermentType,
+                                 #value=viSecondaryResistanceStrength,
+                                 #resistance_list=resistance_list);
+      }
+
+      if viTertiaryResistanceType <> 0
+      {
+         resistance_list = Send(SYS,@AddResistance,
+                                 #what=viTertiaryResistanceType,
+                                 #value=viTertiaryResistanceStrength,
+                                 #resistance_list=resistance_list);
+      }
+
+      return resistance_list;
+   }
+
+   ModifyEmpowerment(empowerment_list=$)
+   {
+      if viEmpowermentType <> 0
+      {
+         empowerment_list = Send(SYS,@AddEmpowerment,#what=viEmpowermentType,
+                                 #value=viEmpowermentStrength,
+                                 #empowerment_list=empowerment_list);
+      }
+
+      if viSecondaryResistanceType <> 0
+      {
+         empowerment_list = Send(SYS,@AddEmpowerment,
+                                 #what=viSecondaryResistanceType,
+                                 #value=viSecondaryEmpowermentStrength,
+                                 #empowerment_list=empowerment_list);
+      }
+
+      if viTertiaryEmpowermentType <> 0
+      {
+         empowerment_list = Send(SYS,@AddEmpowerment,
+                                 #what=viTertiaryEmpowermentType,
+                                 #value=viTertiaryEmpowermentStrength,
+                                 #empowerment_list=empowerment_list);
+      }
+
+      return empowerment_list;
+   }
+
+   ModifyMaxHealth(max_health = 0)
+   {
+      return max_health + viMaxHealthIncrease;
+   }
+
+   ModifyMaxMana(max_mana = 0)
+   {
+      return max_mana + viMaxManaIncrease;
+   }
+
+   ModifyMaxVigor(max_vigor = 0)
+   {
+      return max_vigor + viMaxVigorIncrease;
+   }
+   
+   ModifyMight(might = 0)
+   {
+      return might + viMightIncrease;
+   }
+   
+   ModifyIntellect(intellect = 0)
+   {
+      return intellect + viIntellectIncrease;
+   }
+   
+   ModifyStamina(stamina = 0)
+   {
+      return stamina + viStaminaIncrease;
+   }
+   
+   ModifyAgility(agility = 0)
+   {
+      return agility + viAgilityIncrease;
+   }
+   
+   ModifyMysticism(mysticism = 0)
+   {
+      return mysticism + viMysticismIncrease;
+   }
+   
+   ModifyAim(aim = 0)
+   {
+      return aim + viAimIncrease;
+   }
+
+   ModifySpellPower(iModifier=0,oSpell=$,oCaster=$)
+   {
+      local iBonus;
+      
+      iBonus = 0;
+      if viPowerSchool <> 0
+         AND Send(oSpell,@GetSchool) = viPowerSchool
+      {
+         iBonus = iBonus + viPowerBonus;
+      }
+      
+      if viSecondaryPowerSchool <> 0
+         AND Send(oSpell,@GetSchool) = viSecondaryPowerSchool
+      {
+         iBonus = iBonus + viSecondaryPowerBonus;
+      }
+      
+      if viTertiaryPowerSchool <> 0
+         AND Send(oSpell,@GetSchool) = viTertiaryPowerSchool
+      {
+         iBonus = iBonus + viTertiaryPowerBonus;
+      }
+      
+      iBonus = iBonus + viAllSchoolBonus;
+
+      return iModifier + iBonus;
+   }
+
+   ModifyVisualDampening(visual_dampening=0)
+   {
+      return visual_dampening + viVisualDampening;
+   }
+
+   ModifyBindDampening(bind_dampening=0)
+   {
+      return bind_dampening + viBindDampening;
+   }
+   
+   ModifyHitRoll(hit_roll=0)
+   {
+      return hit_roll + viOffenseBonus;
+   }
+   
+   ModifyDefensePower(defense_power=0)
+   {
+      return defense_power + viDefenseBonus;
+   }
+   
+   GetRarity()
+   {
+      return viRarity;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

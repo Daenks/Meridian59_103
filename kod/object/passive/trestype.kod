@@ -229,7 +229,8 @@ messages:
 
    GenerateTreasure(level=1,who=$,mob=$,tokengen=TRUE,corpse=$)
    {
-      local i, lItem_info, iRnd, iCount, oObj, iNumber, iStatTokenChance;
+      local i, lItem_info, iRnd, iCount, oObj, iNumber, iStatTokenChance,
+            lImbueGems;
 
       % Check for a token generation here.
       if who <> $
@@ -312,6 +313,34 @@ messages:
             }
          }
       }
+      
+      if Send(Send(SYS,@GetSettings),@GetImbueGemDropsEnabled)
+         AND Random(1,100) <= 5
+      {
+         iRnd = Random(1,level);
+         
+         lImbueGems = [[&AmberDisc,50],
+                       [&BlackPearl,50],
+                       [&BlazingTourmaline,50],
+                       [&EmeraldLeaf,30],
+                       [&JadePrism,10],
+                       [&QuicksilverNodule,4],
+                       [&SapphireTeardrop,4],
+                       [&StarfireDiamond,2]];
+         
+         for i in lImbueGems
+         {
+            if iRnd <= Nth(i,2)
+            {
+               oObj = Create(Nth(i,1),#corpse=corpse);
+               return oObj;
+            }
+            else
+            {
+               iRnd = iRnd - Nth(i,2);
+            }
+         }
+      }
 
       iCount=0;
       iRnd = Random(0,100);
@@ -327,6 +356,11 @@ messages:
             else
             {
                oObj = Create(First(lItem_info),#corpse=corpse);
+               if Send(Send(SYS,@GetSettings),@GetGenerateLootSocketsEnabled)
+                  AND IsClass(oObj,&DefenseModifier)
+               {
+                  Send(self,@GenerateSockets,#oDefenseModifier=oObj);
+               }
             }
             
             if IsClass(oObj,&Money)
@@ -350,12 +384,6 @@ messages:
    "appropriate armors."
    {
       local iRandom, iNumSockets, iDifficultyBonus;
-
-      % Nerudite armor can't have sockets. It's anti-magic!
-      if IsClass(oDefenseModifier,&NeruditeArmor)
-      {
-         return;
-      }
       
       % Orc shields always have 1 socket - but only if they're
       % dropped by a monster.  Most orc shields come from the Orc

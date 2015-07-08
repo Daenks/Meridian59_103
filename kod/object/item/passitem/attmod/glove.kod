@@ -1,0 +1,381 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Glove is AttackModifier
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+  
+   glove_name_rsc = "gloves"
+   glove_icon_rsc = gauntlet.bgf
+   glove_desc_rsc = \
+      "These polished chrome gloves offer engraved conduits that enhance "
+      "specific elements."
+
+   glove_condition_exc = " shine with the glint of perfection."
+   glove_condition_exc_mended = \
+      " are in excellent condition, but have been patched before."
+   glove_condition_good = " are tarnished and scarred but still usable."
+   glove_condition_med = " have been harshly dented in several places."
+   glove_condition_poor = \
+      " are in danger of falling apart.  Large plates of metal "
+      "have been torn away during battle."
+   glove_condition_broken = " are ruined and offer no benefit."
+   glove_broken = "Your %s are a tangled mess of metal."
+
+   standardshirt_rightarm_glove_male = bre.bgf
+   standardshirt_rightarm_glove_female =brf.bgf
+   standardshirt_leftarm_glove_male = ble.bgf
+   standardshirt_leftarm_glove_female = blf.bgf
+
+   barearm_rightarm_glove_male = bri.bgf
+   barearm_rightarm_glove_female =brj.bgf
+   barearm_leftarm_glove_male = bli.bgf
+   barearm_leftarm_glove_female = blj.bgf
+
+classvars:
+
+   vrName = glove_name_rsc
+   vrIcon = glove_icon_rsc
+   vrDesc = glove_desc_rsc
+   vrPoss_article = object_article_cap_these_rsc
+
+   vrItem_broken = glove_broken
+
+   viUse_type = ITEM_USE_GAUNTLET
+   viItem_type = ITEMTYPE_ARMOR
+   viUse_amount = 1
+
+   viHits_init_min = 300
+   viHits_init_max = 450
+
+   viValue_average = 400
+   viBulk = 50
+   viWeight = 50
+
+   viGround_group = 1
+   viInventory_group = 2
+   viBroken_group = 3
+
+   vbShow_condition = TRUE
+   vrCondition_exc = glove_condition_exc 
+   vrCondition_exc_mended = glove_condition_exc_mended 
+   vrCondition_good = glove_condition_good 
+   vrCondition_med = glove_condition_med 
+   vrCondition_poor = glove_condition_poor 
+   vrCondition_broken = glove_condition_broken
+
+   viDefense_base = 15
+   viDamage_base = 1
+   
+   viEmpowermentType = 0
+   viEmpowermentStrength = 0
+
+properties:
+
+   piDefense_bonus = 15
+   piAttack_bonus = 20
+
+   piEmpowermentType = 0
+   piEmpowermentStrength = 0
+
+messages:
+
+   ReqUseSomething(what = $)
+   {
+      if IsClass(what,&Gauntlet)
+         OR IsClass(what,&Glove)
+      {
+         if Send(poOwner,@TryUnuseItem,#what=self)
+         {
+            propagate;
+         }
+         else
+         {
+            return FALSE;
+         }
+      }
+
+      propagate;
+   }
+
+   NewUsed(what = $)
+   {
+      local i, oFound, iPriority;
+
+      oFound=$;
+      for i in Send(what,@GetPlayerUsing)
+      {
+         iPriority = Send(i,@ItemChangesArms);
+         if iPriority <> 0
+         {
+            if oFound = $ 
+            {
+               oFound = i;
+            }
+            else
+            {
+               if iPriority > Send(oFound,@ItemChangesArms)
+               {
+                  oFound = i;
+               }
+            }
+         }
+      }
+
+      if oFound <> $
+      {
+         Send(oFound,@DoPlayerArt);
+      }
+      else
+      {
+         Send(what,@ResetPlayerArms);
+      }
+
+      % We're also a defense modifier
+      Send(what,@AddDefenseModifier,#what=self);
+
+      propagate;
+   }
+
+   NewUnused(what = $)
+   {
+      local i, oFound, iPriority;
+
+      oFound=$;
+      for i in Send(what,@GetPlayerUsing)
+      {
+         iPriority = Send(i,@ItemChangesArms);
+         if iPriority <> 0
+         {
+            if oFound <> $ 
+            {
+               if iPriority > Send(oFound,@ItemChangesArms)
+               {
+                  oFound = i;
+               }
+            }
+            else
+            {
+               oFound = i;
+            }
+         }
+      }
+
+      if oFound <> $
+      {
+         Send(oFound,@DoPlayerArt); 
+      }
+      else
+      {
+         Send(what,@ResetPlayerArms);
+      }
+
+      % We're also a defense modifier
+      Send(what,@RemoveDefenseModifier,#what=self);
+
+      propagate;
+   }
+
+   DefaultValues()
+   {
+      local lTypes, lStrengths, iRandom;
+
+      piDefense_bonus = viDefense_base;
+
+      lTypes = [-ATCK_SPELL_FIRE,
+                -ATCK_SPELL_SHOCK,
+                -ATCK_SPELL_COLD,
+                -ATCK_SPELL_ACID];
+                
+      piEmpowermentType = Nth(lTypes, Random(1,Length(lTypes)));
+      
+      iRandom = Random(1,1000);
+      
+      if iRandom <= 1000
+      {
+         piEmpowermentStrength = 1;
+      }
+      
+      if iRandom <= 600
+      {
+         piEmpowermentStrength = 2;
+      }
+      
+      if iRandom <= 400
+      {
+         piEmpowermentStrength = 3;
+      }
+      
+      if iRandom <= 200
+      {
+         piEmpowermentStrength = 4;
+      }
+      
+      if iRandom <= 100
+      {
+         piEmpowermentStrength = 5;
+      }
+      
+      if iRandom <= 50
+      {
+         piEmpowermentStrength = 6;
+      }
+      
+      if iRandom <= 25
+      {
+         piEmpowermentStrength = 7;
+      }
+      
+      if iRandom <= 12
+      {
+         piEmpowermentStrength = 8;
+      }
+      
+      if iRandom <= 6
+      {
+         piEmpowermentStrength = 9;
+      }
+      
+      if iRandom <= 3
+      {
+         piEmpowermentStrength = 10;
+      }
+      
+      if iRandom <= 1
+      {
+         piEmpowermentStrength = 11;
+      }
+
+      propagate;
+   }
+
+   OverrideArms()
+   {
+      return TRUE;
+   }
+
+   GetOverrideRightArm(who=$)
+   {
+      local i, bFound;
+
+      bFound = FALSE;
+      for i in Send(who,@GetPlayerUsing)
+      {
+         if IsClass(i,&TankTop)
+         {
+            bFound = TRUE;
+
+            break;
+         }
+      }
+
+      if bFound
+      {
+         if Send(who,@GetGender) = GENDER_MALE
+         {
+            return barearm_rightarm_glove_male;
+         }
+      
+         return barearm_rightarm_glove_female;
+      }
+
+      if Send(who,@GetGender) = GENDER_MALE
+      {
+         return standardshirt_rightarm_glove_male;
+      }
+
+      return standardshirt_rightarm_glove_female;
+   }
+
+   GetOverrideLeftArm(who=$)
+   {
+      local i, bFound;
+
+      bFound = FALSE;
+      for i in Send(who,@GetPlayerUsing)
+      {
+         if IsClass(i,&TankTop)
+         {
+            bFound = TRUE;
+
+            break;
+         }
+      }
+
+      if bFound
+      {
+         if Send(who,@GetGender) = GENDER_MALE
+         {
+            return barearm_leftarm_glove_male;
+         }
+      
+         return barearm_leftarm_glove_female;
+      }
+
+      if Send(who,@GetGender) = GENDER_MALE
+      {
+         return standardshirt_leftarm_glove_male;
+      }
+
+      return standardshirt_leftarm_glove_female;
+   }
+
+   % No alterations when we hit the target....
+   WeaponHitTarget()
+   {
+      return;
+   }
+
+   ModifyDefensePower(defense_power=$)
+   {
+      return defense_power + piDefense_bonus;
+   }
+
+   ModifyDefenseDamage(who = $,what = $,damage = $)
+   {
+      return damage;
+   }
+
+   CanMend()
+   {
+      local i, oItemAtt;
+
+      for i in plItem_Attributes
+      {
+         oItemAtt = Send(SYS,@FindItemAttByNum,
+                         #num=Send(self,@GetNumFromCompound,#compound=First(i)));
+         if oItemAtt = $
+         {
+            Debug("Illegal ItemAtt in list!");
+
+            continue;
+         }
+
+         if NOT Send(oItemAtt,@ItemCanMend,#oItem=self)
+         {
+            return FALSE;
+         }
+      }
+
+      return TRUE;
+   }
+
+   GetEmpowermentModifiers()
+   {
+      return [[piEmpowermentType, piEmpowermentStrength]];
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

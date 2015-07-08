@@ -150,7 +150,9 @@ messages:
       %  number items you have left, or the condition of your 
       %  weapon.
       local rItem_condition, iHit_percent, i, bFoundProperties, oSpell, iHigh_level, n,
-                             iFarenPower, iRiijaPower, iKraananPower, iJalaPower, iShalPower, iQorPower, iInstrumentPower;
+                             iFarenPower, iRiijaPower, iKraananPower, 
+                             iJalaPower, iShalPower, iQorPower,
+                             iInstrumentPower, iStatBonus, lProperties;
 
       for i in plObject_attributes
       {
@@ -412,14 +414,15 @@ messages:
          }
       }
       
-      If Send(self,@GetCurrentResistances) <> $
+      lProperties = Send(self,@GetCurrentResistances);
+      if lProperties <> $
       {
          if NOT bFoundProperties
          {
             AppendTempString(special_properties_header);
          }
          
-         for i in Send(self,@GetCurrentResistances)
+         for i in lProperties
          {
             AppendTempString(Nth(i,2));
             AppendTempString("\% ");
@@ -428,6 +431,179 @@ messages:
          }
          bFoundProperties = TRUE;
       }
+
+      lProperties = Send(self,@GetCurrentEmpowerments);
+      if lProperties <> $
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+         
+         for i in lProperties
+         {
+            AppendTempString(Nth(i,2));
+            AppendTempString("\% ");
+            AppendTempString(Send(SYS,@GetEmpowermentName,#type=Nth(i,1)));
+            AppendTempString("\n");
+         }
+         bFoundProperties = TRUE;
+      }
+      
+      iStatBonus = Send(self,@GetMaxHealthBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" max health");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+      
+      iStatBonus = Send(self,@GetMaxManaBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" max mana");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+      
+      iStatBonus = Send(self,@GetMaxVigorBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" max vigor");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetMightBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Might");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetIntellectBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Intellect");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetStaminaBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Stamina");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetAgilityBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Agility");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetMysticismBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Mysticism");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetAimBonus);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString(" Aim");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetVisualDampening);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString("\% visual spell dampening");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+
+      iStatBonus = Send(self,@GetBindDampening);
+      if iStatBonus <> 0
+      {
+         if NOT bFoundProperties
+         {
+            AppendTempString(special_properties_header);
+         }
+
+         AppendTempString(iStatBonus);
+         AppendTempString("\% bind spell dampening");
+         AppendTempString("\n");
+         bFoundProperties = TRUE;
+      }
+      
       
       if Send(self,@GetAttackType) <> 0
       {
@@ -671,6 +847,11 @@ messages:
       return 0;
    }
    
+   ModifyHitRoll(hit_roll=0)
+   {
+      return hit_roll;
+   }
+   
    GetDefenseBonus()
    {
       return 0;
@@ -700,7 +881,67 @@ messages:
    {
       return $;
    }
+
+   GetEmpowermentModifiers()
+   {
+      return $;
+   }
+
+   GetMaxHealthBonus()
+   {
+      return 0;
+   }
+
+   GetMaxManaBonus()
+   {
+      return 0;
+   }
+
+   GetMaxVigorBonus()
+   {
+      return 0;
+   }
+
+   GetMightBonus()
+   {
+      return 0;
+   }
+
+   GetIntellectBonus()
+   {
+      return 0;
+   }
+
+   GetStaminaBonus()
+   {
+      return 0;
+   }
+
+   GetAgilityBonus()
+   {
+      return 0;
+   }
+
+   GetMysticismBonus()
+   {
+      return 0;
+   }
+
+   GetAimBonus()
+   {
+      return 0;
+   }
    
+   GetVisualDampening()
+   {
+      return 0;
+   }
+   
+   GetBindDampening()
+   {
+      return 0;
+   }
+
    DoBaseDesc()
    {
       local lData;
@@ -2227,6 +2468,21 @@ messages:
       
       return lCurrentResistances;
    }
+  
+   GetCurrentEmpowerments()
+   {
+      local lCurrentEmpowerments, oObjectAttribute;
+      
+      lCurrentEmpowerments = Send(self,@GetEmpowermentModifiers);
+      
+      for oObjectAttribute in plObject_attributes
+      {
+         lCurrentEmpowerments = Send(oObjectAttribute,@ModifyEmpowerment,
+                                                      #empowerment_list=lCurrentEmpowerments);
+      }
+      
+      return lCurrentEmpowerments;
+   }
 
    ModifyResistance(resistance_list=$)
    {
@@ -2240,6 +2496,49 @@ messages:
       }
       
       return resistance_list;
+   }
+
+   ModifyEmpowerment(empowerment_list=$)
+   {
+      local oEmpowerment, lCurrentEmpowerments;
+      
+      lCurrentEmpowerments = Send(self,@GetCurrentEmpowerments);
+      
+      for oEmpowerment in lCurrentEmpowerments
+      {
+         empowerment_list = Send(SYS,@AddEmpowerment,
+                                     #what=Nth(oEmpowerment,1),
+                                     #value=Nth(oEmpowerment,2),
+                                     #empowerment_list=empowerment_list);
+      }
+      
+      return empowerment_list;
+   }
+   
+   ModifyVisualDampening(visual_dampening=0)
+   {
+      local oAttribute;
+      
+      for oAttribute in plObject_attributes
+      {
+         visual_dampening = Send(oAttribute,@ModifyVisualDampening,
+                                 #visual_dampening=visual_dampening);
+      }
+
+      return visual_dampening;
+   }
+   
+   ModifyBindDampening(bind_dampening=0)
+   {
+      local oAttribute;
+      
+      for oAttribute in plObject_attributes
+      {
+         bind_dampening = Send(oAttribute,@ModifyBindDampening,
+                                 #bind_dampening=bind_dampening);
+      }
+
+      return bind_dampening;
    }
 
    AddRadiusEnchantment(what=$,iPower=0,source=$)

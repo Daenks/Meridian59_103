@@ -32,6 +32,12 @@ resources:
    
    dazzle_break_rod_active = \
       "Darkening energies dissipate your spell before you even begin!"
+   
+   dazzle_immune = \
+      "%s%s is completely immune to dazzle!"
+   dazzle_you_are_immune = \
+      "Your complete visual dampening field prevents the casting of this "
+      "spell entirely."
 
 classvars:
 
@@ -138,6 +144,20 @@ messages:
             }
          }
       }
+      
+      if Send(target,@GetVisualDampening) >= 100
+      {
+         Send(who,@MsgSendUser,#message_rsc=dazzle_immune,
+                               #parm1=Send(target,@GetDef),
+                               #parm2=Send(target,@GetName));
+         return FALSE;
+      }
+      
+      if Send(who,@GetVisualDampening) >= 100
+      {
+         Send(who,@MsgSendUser,#messsage_rsc=dazzle_you_are_immune);
+         return FALSE;
+      }
 
       propagate;
    }
@@ -157,7 +177,7 @@ messages:
 
    DoDazzle(what=$,oTarget=$,iDurationSecs=0)
    {
-      local oSpell, iDuration;
+      local oSpell, iDuration, iCasterVisualDampening, iTargetVisualDampening;
 
       iDuration = iDurationSecs;
 
@@ -176,6 +196,33 @@ messages:
       % Convert duration to milliseconds
       iDuration = bound(iDuration,3,15);
       iDuration = iDuration * 1000;
+
+      iCasterVisualDampening = Send(what,@GetVisualDampening);
+      iTargetVisualDampening = Send(oTarget,@GetVisualDampening);
+      
+      if iTargetVisualDampening >= 100
+      {
+         Send(what,@MsgSendUser,#message_rsc=dazzle_immune,
+                               #parm1=Send(oTarget,@GetDef),
+                               #parm2=Send(oTarget,@GetName));
+         return FALSE;
+      }
+      
+      if iCasterVisualDampening >= 100
+      {
+         Send(what,@MsgSendUser,#messsage_rsc=dazzle_you_are_immune);
+         return FALSE;
+      }
+
+      if iCasterVisualDampening <> 0
+         OR iTargetVisualDampening <> 0
+      {
+         iDuration = (iDuration * 
+                  bound(100-iCasterVisualDampening,0,100) *
+                  bound(100-iTargetVisualDampening,0,100)) / (100 * 100);
+
+         iDuration = bound(iDuration,1000,$);
+      }
 
       if IsClass(oTarget,&Player)
       {

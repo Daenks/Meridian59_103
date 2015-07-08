@@ -159,6 +159,18 @@ messages:
       propagate;
    }
 
+   GetResistanceModifiers()
+   {
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         propagate;
+      }
+
+      % Up to 5 percent weapon resistance at max rank.
+      return [ [ATCK_WEAP_ALL, bound(piFactionRank/2,0,5)]
+             ];
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

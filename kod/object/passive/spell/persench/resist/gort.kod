@@ -7,8 +7,8 @@
 % Meridian is a registered trademark.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%S%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ArmorOfGort is PersonalEnchantment
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ArmorOfGort is ResistanceEnchantment
 
 constants:
 
@@ -63,6 +63,8 @@ classvars:
    viFlash = FLASH_GOOD_SELF
 
    viDefensive = TRUE
+   
+   viResistanceType = ATCK_WEAP_ALL
 
 properties:
 
@@ -90,38 +92,54 @@ messages:
    GetStateValue(who=$,iSpellPower=0,Target=$)
    {
       Send(Target,@AddDefenseModifier,#what=self);
+      
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         return iSpellPower;
+      }
 
-      return iSpellPower;
+      return Send(self,@GetResistanceStrength,#iSpellPower=iSpellPower);
+   }
+
+   GetResistanceStrength(iSpellpower=0)
+   {
+      %% Strength varies from 2 to 10
+      return bound((iSpellPower+1)/10,2,10);
    }
 
    PriorityModifyDefenseDamage(who=$,what=$,damage=$,atype=0,aspell =0)
    {
       local iSpellPower, iAbsorbed, iMax, iFinalDamage, iFinalAbsorbed;
 
-      iSpellPower = Send(who,@GetEnchantedState,#what=self);
-      iMax = 1500;
-      iAbsorbed = bound(random(0,iSpellPower*4),0,400);
-
-      if aspell <> 0
+      iFinalDamage = damage;
+      iFinalAbsorbed = 0;
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
       {
-         % Reduce damage if part of the damage is spell
-         if atype <> 0
+         iSpellPower = Send(who,@GetEnchantedState,#what=self);
+         iMax = 1500;
+         iAbsorbed = bound(random(0,iSpellPower*4),0,400);
+
+         if aspell <> 0
          {
-            % Only 1/2 of the damage reduction if we're doing both weapon
-            %  and spell damage types.
-            iAbsorbed = iAbsorbed / 2;
-            iMax = 2000;
+            % Reduce damage if part of the damage is spell
+            if atype <> 0
+            {
+               % Only 1/2 of the damage reduction if we're doing both weapon
+               %  and spell damage types.
+               iAbsorbed = iAbsorbed / 2;
+               iMax = 2000;
+            }
+            else
+            {
+               % If we're doing pure spell damage, we get no reduction.
+               iAbsorbed = 0;
+               iMax = 2500;
+            }
          }
-         else
-         {
-            % If we're doing pure spell damage, we get no reduction.
-            iAbsorbed = 0;
-            iMax = 2500;
-         }
-      }
       
-      iFinalDamage = Bound(damage-iAbsorbed,1,iMax);
-      iFinalAbsorbed = damage - iFinalDamage;
+         iFinalDamage = Bound(iFinalDamage-iAbsorbed,1,iMax);
+         iFinalAbsorbed = damage - iFinalDamage;
+      }
       
       If IsClass(what,&User)
          AND iFinalAbsorbed > 0
@@ -149,11 +167,6 @@ messages:
       return iFinalDamage;
    }
 
-   ModifyDefenseDamage(who=$,what=$,damage=$,atype=0,aspell=0)
-   {
-      return damage;
-   }
-
    EndEnchantment(who=$,report=TRUE,state=0)
    {
       Send(who,@RemoveDefenseModifier,#what=self);
@@ -163,13 +176,27 @@ messages:
 
    EffectDesc(who=$)
    {
-      AppendTempString("\n\n");
-      AppendTempString("Your current ");
-      AppendTempString(Send(self,@GetName));
-      AppendTempString(" enchantment adds 1-");
-      AppendTempString(Send(who,@GetEnchantedState,#what=self)/25);
-      AppendTempString(" armor or reduces non-magical damage to 15, partially magical damage to 20, and fully magical damage to 25. ");
-      AppendTempString(" Only the better of these two effects applies. Armor of Gort modifies damage received before any other armor or spells.");
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         AppendTempString("\n\n");
+         AppendTempString("Your current ");
+         AppendTempString(Send(self,@GetName));
+         AppendTempString(" enchantment adds 1-");
+         AppendTempString(Send(who,@GetEnchantedState,#what=self)/25);
+         AppendTempString(" armor or reduces non-magical damage to 15, partially magical damage to 20, and fully magical damage to 25. ");
+         AppendTempString(" Only the better of these two effects applies. Armor of Gort modifies damage received before any other armor or spells.");
+      }
+      else
+      {
+         AppendTempString("\n\n");
+         AppendTempString("Your current ");
+         AppendTempString(Send(self,@GetName));
+         AppendTempString(" enchantment adds ");
+         AppendTempString(Send(who,@GetEnchantedState,#what=self));
+         AppendTempString("\% ");
+         AppendTempString(Send(SYS,@GetResistanceName,#type=viResistanceType));
+         AppendTempString(".");
+      }
 
       propagate;
    }

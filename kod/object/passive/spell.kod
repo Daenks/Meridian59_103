@@ -2621,6 +2621,21 @@ messages:
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
    }
+   
+   ModifyEmpowerment(empowerment_list=$)
+   {
+      return empowerment_list;
+   }
+   
+   ModifyVisualDampening(visual_dampening=0)
+   {
+      return visual_dampening;
+   }
+   
+   ModifyBindDampening(bind_dampening=0)
+   {
+      return bind_dampening;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

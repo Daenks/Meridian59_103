@@ -1918,7 +1918,8 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage, iResist, iPercentClass, i, each_obj, oRod, bAttackerEmpowered;
+      local iDamage, iResist, iPercentClass, i, each_obj, oRod,
+         bAttackerEmpowered, lCurrentEmpowerments, iEmpowermentPercentage;
 
       if NOT precision
       {
@@ -1934,6 +1935,19 @@ messages:
 
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+      
+      % Empowerments e.g. 6% increased acid damage
+      lCurrentEmpowerments = Send(what,@GetCurrentEmpowerments);
+      iEmpowermentPercentage = 0;
+      for i in lCurrentEmpowerments
+      {
+         if atype & Nth(i,1)
+            OR aspell & Nth(i,1)
+         {
+            iEmpowermentPercentage = iEmpowermentPercentage + Nth(i,2);
+         }
+      }
+      damage = (damage * (100+iEmpowermentPercentage))/100;
 
       % Increase initial damage by 35 percent if attacker damage rod is active
       bAttackerEmpowered = FALSE;

@@ -276,6 +276,11 @@ messages:
       return $;
    }
    
+   GetBaseEmpowerments()
+   {
+      return $;
+   }
+   
    GetCurrentResistances()
    "Object attributes, such as spells and items, can change resistances temporarily."
    {
@@ -310,6 +315,128 @@ messages:
       
       return plCurrentResistances;
    }
+   
+   GetCurrentEmpowerments()
+   "Object attributes, such as spells and items, can change empowerments temporarily."
+   {
+      local oObjectAttribute, plCurrentEmpowerments, oEquipment, oEnchantment;
+
+      plCurrentEmpowerments = Send(SYS,@ListCopy,#source=Send(self,@GetBaseEmpowerments));
+      
+      for oObjectAttribute in plObject_attributes
+      {
+         plCurrentEmpowerments = Send(oObjectAttribute,@ModifyEmpowerment,
+                                  #resistance_list=plCurrentEmpowerments);
+      }
+      
+      for oEquipment in Send(self,@GetEquippedItems)
+      {
+         plCurrentEmpowerments = Send(oEquipment,@ModifyEmpowerment,
+                                     #empowerment_list=plCurrentEmpowerments);
+      }
+      
+      If IsClass(self,&User)
+      {
+         for oEnchantment in Send(self,@GetEnchantmentList)
+         {
+            if Length(oEnchantment) > 2
+            {
+               plCurrentEmpowerments = Send(Nth(oEnchantment,2),
+                  @ModifyEmpowerment,
+                  #empowerment_list=plCurrentEmpowerments,
+                  #iState=Nth(oEnchantment,3));
+            }
+            else
+            {
+               plCurrentEmpowerments = Send(Nth(oEnchantment,2),
+                  @ModifyEmpowerment,
+                  #empowerment_list=plCurrentEmpowerments);
+            }
+         }
+      }
+      
+      return plCurrentEmpowerments;
+   }
+   
+   GetVisualDampening()
+   {
+      local oObjectAttribute, iCurrentVisualDampening, oEquipment, oEnchantment;
+
+      iCurrentVisualDampening = 0;
+      for oObjectAttribute in plObject_attributes
+      {
+         iCurrentVisualDampening = Send(oObjectAttribute,@ModifyVisualDampening,
+                                  #visual_dampening=iCurrentVisualDampening);
+      }
+      
+      for oEquipment in Send(self,@GetEquippedItems)
+      {
+         iCurrentVisualDampening = Send(oEquipment,@ModifyVisualDampening,
+                                     #visual_dampening=iCurrentVisualDampening);
+      }
+      
+      If IsClass(self,&User)
+      {
+         for oEnchantment in Send(self,@GetEnchantmentList)
+         {
+            if Length(oEnchantment) > 2
+            {
+               iCurrentVisualDampening = Send(Nth(oEnchantment,2),
+                  @ModifyVisualDampening,
+                  #visual_dampening=iCurrentVisualDampening,
+                  #iState=Nth(oEnchantment,3));
+            }
+            else
+            {
+               iCurrentVisualDampening = Send(Nth(oEnchantment,2),
+                  @ModifyVisualDampening,
+                  #visual_dampening=iCurrentVisualDampening);
+            }
+         }
+      }
+      
+      return iCurrentVisualDampening;
+   }
+   
+   GetBindDampening()
+   {
+      local oObjectAttribute, iCurrentBindDampening, oEquipment, oEnchantment;
+
+      iCurrentBindDampening = 0;
+      for oObjectAttribute in plObject_attributes
+      {
+         iCurrentBindDampening = Send(oObjectAttribute,@ModifyBindDampening,
+                                  #bind_dampening=iCurrentBindDampening);
+      }
+      
+      for oEquipment in Send(self,@GetEquippedItems)
+      {
+         iCurrentBindDampening = Send(oEquipment,@ModifyBindDampening,
+                                     #bind_dampening=iCurrentBindDampening);
+      }
+      
+      If IsClass(self,&User)
+      {
+         for oEnchantment in Send(self,@GetEnchantmentList)
+         {
+            if Length(oEnchantment) > 2
+            {
+               iCurrentBindDampening = Send(Nth(oEnchantment,2),
+                  @ModifyBindDampening,
+                  #bind_dampening=iCurrentBindDampening,
+                  #iState=Nth(oEnchantment,3));
+            }
+            else
+            {
+               iCurrentBindDampening = Send(Nth(oEnchantment,2),
+                  @ModifyBindDampening,
+                  #bind_dampening=iCurrentBindDampening);
+            }
+         }
+      }
+      
+      return iCurrentBindDampening;
+   }
 
    GetEquippedItems()
    "Support for items equipped by players, but also some monsters, such as troops."
@@ -321,43 +448,97 @@ messages:
    "Given bitvectors of attack type and spell, find the resistance modifier "
    "which applies. Largest resistance plus worst weakness gives the modifier."
    {
-      local j, iResType, iMaxRes, iMinRes, iResistance, resistance_list;
+      local j, iResType, iMaxRes, iMinRes, iResistance, resistance_list,
+         iWeaponResist, iMagicResist, iCombinedPrimaryResist, iFinalRes;
 
       iMaxRes = NO_RESISTANCE;
       iMinRes = NO_RESISTANCE;
       
       resistance_list = Send(self,@GetCurrentResistances);
 
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         for j in resistance_list
+         {
+            iResType = Nth(j,1);
+            if iResType > 0   
+            {
+               % It's a resistance to weapon type
+
+               if (atype & iResType) <> 0
+                  OR (atype <> 0 AND iResType = ATCK_WEAP_ALL)
+               {
+                  iResistance = Nth(j,2);
+
+                  if iResistance > iMaxRes
+                  {
+                     iMaxRes = iResistance;
+                  }
+
+                  if iResistance < iMinRes
+                  {
+                     iMinRes = iResistance;
+                  }
+               }
+            }
+            else
+            {
+               % It's a resistance to spell type
+               iResType = -iResType;
+
+               if (aspell & iResType) <> 0
+                  OR (aspell <> 0 AND iResType = ATCK_SPELL_ALL)
+               {
+                  iResistance = Nth(j,2);
+
+                  if iResistance > iMaxRes
+                  {
+                     iMaxRes = iResistance;
+                  }
+
+                  if iResistance < iMinRes
+                  {
+                     iMinRes = iResistance;
+                  }
+               }
+            }
+         }
+
+         % clip to max/min values
+         iMaxRes = bound(iMaxRes,$,MAX_RESISTANCE);
+         iMinRes = bound(iMinRes,MIN_RESISTANCE,$);
+
+         return iMaxRes + iMinRes;
+      }
+      
+      iWeaponResist = 0;
+      iMagicResist = 0;
       for j in resistance_list
       {
          iResType = Nth(j,1);
-         if iResType > 0   
+         if iResType > 0
          {
             % It's a resistance to weapon type
-
-            if (atype & iResType) <> 0
-               OR (atype <> 0 AND iResType = ATCK_WEAP_ALL)
+            if iResType = ATCK_WEAP_ALL
+               AND atype <> 0
             {
-               iResistance = Nth(j,2);
-               
-               if iResistance > iMaxRes
-               {
-                  iMaxRes = iResistance;
-               }
-
-               if iResistance < iMinRes
-               {
-                  iMinRes = iResistance;
-               }
+               iWeaponResist = Nth(j,2);
+               continue;
             }
          }
          else
          {
             % It's a resistance to spell type
             iResType = -iResType;
-
-            if (aspell & iResType) <> 0
-               OR (aspell <> 0 AND iResType = ATCK_SPELL_ALL)
+            
+            if iResType = ATCK_SPELL_ALL
+               AND aspell <> 0
+            {
+               iMagicResist = Nth(j,2);
+               continue;
+            }
+            
+            if aspell & iResType <> 0
             {
                iResistance = Nth(j,2);
                
@@ -365,7 +546,7 @@ messages:
                {
                   iMaxRes = iResistance;
                }
-
+               
                if iResistance < iMinRes
                {
                   iMinRes = iResistance;
@@ -373,12 +554,23 @@ messages:
             }
          }
       }
+      
+      if iWeaponResist <> 0
+         AND iMagicResist <> 0
+      {
+         % Partially magical attacks halve both primary resistances,
+         %    but are also reduced by both.
+         iWeaponResist = iWeaponResist/2;
+         iMagicResist = iMagicResist/2;
+      }
+      
+      iCombinedPrimaryResist = bound(iWeaponResist + iMagicResist,
+                                        MIN_RESISTANCE,MAX_RESISTANCE);
+      iFinalRes = bound(iMaxRes + iMinRes,MIN_RESISTANCE,MAX_RESISTANCE);
 
-      % clip to max/min values
-      iMaxRes = bound(iMaxRes,$,MAX_RESISTANCE);
-      iMinRes = bound(iMinRes,MIN_RESISTANCE,$);
+      iFinalRes = 100 - (((100-iCombinedPrimaryResist) * (100-iFinalRes))/100);
 
-      return iMaxRes + iMinRes;
+      return bound(iFinalRes,MIN_RESISTANCE,MAX_RESISTANCE);
    }
 
    GetDamageFromResistance(what = $, value = $)

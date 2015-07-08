@@ -224,6 +224,14 @@ properties:
 
    % This amount is added to a battler's offense and defense and serves as a baseline for calculation.
    piBaseRating = 0
+   
+   % Expansion settings
+   % If Direct Armor is true, old rules are used. Turn it off to switch to new system of resists only.
+   pbDirectArmorEnabled = TRUE
+   % If Imbue Gems is true, imbue gems will drop from mobs.
+   pbImbueGemDropsEnabled = FALSE
+   % If Generate Loot Sockets is enabled, defense gear dropped by mobs will try to generate sockets
+   pbGenerateLootSocketsEnabled = FALSE
 
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
@@ -582,6 +590,21 @@ messages:
    GetBroadcastManaCost()
    {
       return piBroadcastManaPercent;
+   }
+   
+   GetDirectArmorEnabled()
+   {
+      return pbDirectArmorEnabled;
+   }
+   
+   GetImbueGemDropsEnabled()
+   {
+      return pbImbueGemDropsEnabled;
+   }
+   
+   GetGenerateLootSocketsEnabled()
+   {
+      return pbGenerateLootSocketsEnabled;
    }
 
 end

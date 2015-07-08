@@ -254,6 +254,21 @@ resources:
    quake_resistance_name = "quake resistance"
    unknown_resistance_name = "unknown resistance"
 
+   weapon_empowerment_name = "increased weapon damage"
+   pierce_empowerment_name = "increased pierce damage"
+   slash_empowerment_name = "increased slash damage"
+   bludgeon_empowerment_name = "increased bludgeon damage"
+   thrust_empowerment_name = "increased thrust damage"
+   magic_empowerment_name = "increased magic damage"
+   fire_empowerment_name = "increased fire damage"
+   cold_empowerment_name = "increased cold damage"
+   shock_empowerment_name = "increased shock damage"
+   acid_empowerment_name = "increased acid damage"
+   holy_empowerment_name = "increased holy damage"
+   unholy_empowerment_name = "increased unholy damage"
+   quake_empowerment_name = "increased quake damage"
+   unknown_empowerment_name = "increased unknown damage"
+
    weapon_damage_name = "weapon"
    pierce_damage_name = "pierce"
    slash_damage_name = "slash"
@@ -5237,6 +5252,7 @@ messages:
       plItemTemplates = cons(create(&Prism),plItemTemplates);
       plItemTemplates = cons(create(&JewelOfFroz),plItemTemplates);
       plItemTemplates = cons(create(&Gauntlet),plItemTemplates);
+      plItemTemplates = cons(create(&Glove),plItemTemplates);
       plItemTemplates = cons(create(&Torch),plItemTemplates);
 
       plItemTemplates = cons(create(&PotionSplitter),plItemTemplates);
@@ -5264,6 +5280,18 @@ messages:
       plItemTemplates = cons(create(&GemBludgeonResistance),plItemTemplates);
       plItemTemplates = cons(create(&GemPierceResistance),plItemTemplates);
       plItemTemplates = cons(create(&GemRemove),plItemTemplates);
+      
+      % Static Gems
+      plItemTemplates = cons(create(&AmberDisc),plItemTemplates);
+      plItemTemplates = cons(create(&BlackPearl),plItemTemplates);
+      plItemTemplates = cons(create(&EmeraldLeaf),plItemTemplates);
+      plItemTemplates = cons(create(&SapphireTeardrop),plItemTemplates);
+      plItemTemplates = cons(create(&StarfireDiamond),plItemTemplates);
+      plItemTemplates = cons(create(&JadePrism),plItemTemplates);
+      plItemTemplates = cons(create(&BlazingTourmaline),plItemTemplates);
+      plItemTemplates = cons(create(&QuicksilverNodule),plItemTemplates);
+      plItemTemplates = cons(create(&AzuriteBijou),plItemTemplates);
+      plItemTemplates = cons(create(&GlimmeringMoonstone),plItemTemplates);
 
       % God Gifts
       plItemTemplates = cons(create(&SpecialGiftTwo),plItemTemplates);
@@ -7288,6 +7316,64 @@ messages:
        
        return unknown_resistance_name;
     }
+
+    GetEmpowermentName(type=ATCK_WEAP_ALL)
+    {
+       if type = ATCK_WEAP_ALL
+       {
+          return weapon_empowerment_name;
+       }
+       if type = ATCK_WEAP_PIERCE
+       {
+          return pierce_empowerment_name;
+       }
+       if type = ATCK_WEAP_SLASH
+       {
+          return slash_empowerment_name;
+       }
+       if type = ATCK_WEAP_THRUST
+       {
+          return thrust_empowerment_name;
+       }
+       if type = ATCK_WEAP_BLUDGEON
+       {
+          return bludgeon_empowerment_name;
+       }
+       if type = -ATCK_SPELL_ALL
+       {
+          return magic_empowerment_name;
+       }
+       if type = -ATCK_SPELL_FIRE
+       {
+          return fire_empowerment_name;
+       }
+       if type = -ATCK_SPELL_COLD
+       {
+          return cold_empowerment_name;
+       }
+       if type = -ATCK_SPELL_SHOCK
+       {
+          return shock_empowerment_name;
+       }
+       if type = -ATCK_SPELL_ACID
+       {
+          return acid_empowerment_name;
+       }
+       if type = -ATCK_SPELL_HOLY
+       {
+          return holy_empowerment_name;
+       }
+       if type = -ATCK_SPELL_UNHOLY
+       {
+          return unholy_empowerment_name;
+       }
+       if type = -ATCK_SPELL_QUAKE
+       {
+          return quake_empowerment_name;
+       }
+       
+       return unknown_resistance_name;
+    }
     
     GetAttackDamageTypeName(type=ATCK_WEAP_ALL)
     {
@@ -7446,6 +7532,31 @@ messages:
       resistance_list = Cons([what,value],resistance_list);
 
       return resistance_list;
+   }
+
+   AddEmpowerment(what = $, value = NO_RESISTANCE, empowerment_list = $)
+   "Adds an empowerment of type (what) and value (value).  "
+   "If an empowerment already exists, the new value will be added to the old."
+   {
+      local i;
+
+      for i in empowerment_list
+      {
+         if Nth(i,1) = what
+         {
+            SetNth(i,2,value + Nth(i,2));
+            if Nth(i,2) = NO_RESISTANCE
+            {
+               empowerment_list = DelListElem(empowerment_list,i);
+            }
+
+            return empowerment_list;
+         }
+      } 
+
+      empowerment_list = Cons([what,value],empowerment_list);
+
+      return empowerment_list;
    }
 
    RemoveAllResistances(resistance_list = $)
@@ -7642,6 +7753,22 @@ messages:
       }
       
       return $;
+   }
+   
+   FindAllItemsOfClass(cClass=$)
+   {
+      local i, lItems;
+
+      lItems = $;
+      for i in plItemTemplates
+      {
+         if IsClass(i,cClass)
+         {
+            lItems = Cons(i,lItems);
+         }
+      }
+      
+      return lItems;
    }
 
 end

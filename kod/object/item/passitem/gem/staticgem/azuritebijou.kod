@@ -1,0 +1,80 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AzuriteBijou is StaticGem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gem_azurite_bijou_name_rsc = "azurite bijou"
+   gem_azurite_bijou_icon_rsc = sapphire.bgf
+   gem_azurite_bijou_desc_rsc = \
+	"A lurking force within this rare crystal begs to be employed in the "
+    "business of violence."
+
+classvars:
+   
+   vrName = gem_azurite_bijou_name_rsc
+   vrIcon = gem_azurite_bijou_icon_rsc
+   vrDesc = gem_azurite_bijou_desc_rsc
+   
+   viArmorGem = FALSE
+   viWeaponGem = TRUE
+
+   viDamageBonus = 1
+   viOffenseBonus = 30
+
+   viEmpowermentType = ATCK_WEAP_SLASH
+   viEmpowermentStrength = 6
+
+properties:
+   
+messages:
+   
+   AttributeDesc()
+   {
+      AppendTempString("An attached ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" adds ");
+      
+      if viDamageBonus <> 0
+      {
+         AppendTempString(viDamageBonus);
+         AppendTempString(" weapon damage");
+      }
+
+      AppendTempString(", ");
+      
+      if viOffenseBonus <> 0
+      {
+         AppendTempString(viOffenseBonus);
+         AppendTempString(" offense");
+      }
+
+      AppendTempString(", and ");
+      
+      if viEmpowermentType <> 0
+      {
+         AppendTempString(viEmpowermentStrength);
+         AppendTempString("\% ");
+         AppendTempString(Send(SYS,@GetEmpowermentName,
+                          #type=viEmpowermentType));
+      }
+
+      AppendTempString(". ");
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

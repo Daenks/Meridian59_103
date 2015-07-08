@@ -30,6 +30,11 @@ resources:
    
    hold_break_rod_active = \
       "Flowing energies dissipate your spell before you even begin!"
+   
+   hold_immune = \
+      "%s%s is immune to to binding magics!"
+   hold_you_are_immune = \
+      "Your complete bind dampening aura prevents the casting of this spell."
 
 classvars:
 
@@ -138,6 +143,20 @@ messages:
             }
          }
       }
+      
+      if Send(target,@GetBindDampening) >= 100
+      {
+         Send(who,@MsgSendUser,#message_rsc=hold_immune,
+                               #parm1=Send(target,@GetDef),
+                               #parm2=Send(target,@GetName));
+         return FALSE;
+      }
+      
+      if Send(who,@GetBindDampening) >= 100
+      {
+         Send(who,@MsgSendUser,#messsage_rsc=hold_you_are_immune);
+         return FALSE;
+      }
 
       propagate;   % Check other things higher up
    }
@@ -240,7 +259,8 @@ messages:
           bAllowFreeAction=TRUE)
    "Holds target for durationsecs seconds."
    {
-      local i, oSpell, iTotalDuration;
+      local i, oSpell, iTotalDuration, iCasterBindDampening, 
+            iTargetBindDampening;
 
       if oTarget = $
       {
@@ -286,6 +306,34 @@ messages:
 
             iTotalDuration = bound(iTotalDuration,500,10000);
          }
+      }
+
+      iCasterBindDampening = Send(what,@GetBindDampening);
+      iTargetBindDampening = Send(oTarget,@GetBindDampening);
+      
+      if iTargetBindDampening >= 100
+      {
+         Send(what,@MsgSendUser,#message_rsc=hold_immune,
+                               #parm1=Send(oTarget,@GetDef),
+                               #parm2=Send(oTarget,@GetName));
+         return FALSE;
+      }
+      
+      if iCasterBindDampening >= 100
+      {
+         Send(what,@MsgSendUser,#messsage_rsc=hold_you_are_immune);
+         return FALSE;
+      }
+
+      if iCasterBindDampening <> 0
+         OR iTargetBindDampening <> 0
+      {
+         iTotalDuration = (iTotalDuration * 
+                  bound(100-iCasterBindDampening,0,100) *
+                  bound(100-iTargetBindDampening,0,100)) /
+                  (100 * 100);
+
+         iTotalDuration = bound(iTotalDuration,500,$);
       }
 
       Send(oTarget,@StartEnchantment,#what=self,#time=iTotalDuration,

@@ -1,0 +1,79 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SapphireTeardrop is StaticGem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gem_sapphire_teardrop_name_rsc = "sapphire teardrop"
+   gem_sapphire_teardrop_icon_rsc = sapphire.bgf
+   gem_sapphire_teardrop_desc_rsc = \
+	"This fragment of an ancient glacier remains chill to the touch."
+	
+classvars:
+   
+   vrName = gem_sapphire_teardrop_name_rsc
+   vrIcon = gem_sapphire_teardrop_icon_rsc
+   vrDesc = gem_sapphire_teardrop_desc_rsc
+   
+   viResistanceType = -ATCK_SPELL_COLD
+   viResistanceStrength = 3
+   
+   viEmpowermentType = -ATCK_SPELL_COLD
+   viEmpowermentStrength = 6
+   
+   viMaxHealthIncrease = 2
+
+properties:
+   
+messages:
+   
+   AttributeDesc()
+   {
+      AppendTempString("An attached ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" adds ");
+      
+      if viResistanceType <> 0
+      {
+         AppendTempString(viResistanceStrength);
+         AppendTempString("\% ");
+         AppendTempString(Send(SYS,@GetResistanceName,#type=viResistanceType));
+      }
+
+      AppendTempString(", ");
+      
+      if viEmpowermentType <> 0
+      {
+         AppendTempString(viEmpowermentStrength);
+         AppendTempString("\% ");
+         AppendTempString(Send(SYS,@GetEmpowermentName,
+                          #type=viEmpowermentType));
+      }
+
+      AppendTempString(", and ");
+
+      if viMaxHealthIncrease <> 0
+      {
+         AppendTempString(viMaxHealthIncrease);
+         AppendTempString(" max health");
+      }
+      
+      AppendTempString(". ");
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

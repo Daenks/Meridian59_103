@@ -204,19 +204,21 @@ messages:
       return;
    }
 
-   ModifyDamage(damage=$)
+   ModifyDamage(damage=0,who=$,target=$)
    {
       local i;
 
       for i in plSocketed
       {
-         damage = Send(i,@ModifyDamage,#damage=damage);
+         damage = Send(i,@ModifyDamage,#damage=damage,
+                                       #who=who,
+                                       #target=target);
       }
 
       return damage;
    }
 
-   ModifyHitRoll(hit_roll=$)
+   ModifyHitRoll(hit_roll=0)
    {
       local i;
 
@@ -228,7 +230,7 @@ messages:
       return hit_roll;
    }
 
-   ModifyDefenseDamage(damage=$)
+   ModifyDefenseDamage(damage=0)
    {
       local i;
 
@@ -240,7 +242,7 @@ messages:
       return damage;
    }
 
-   ModifyDefensePower(defense_power=$)
+   ModifyDefensePower(defense_power=0)
    {
       local i;
 
@@ -266,6 +268,19 @@ messages:
       return resistance_list;
    }
 
+   ModifyEmpowerment(empowerment_list=$)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         empowerment_list = Send(i,@ModifyEmpowerment,
+                                 #empowerment_list=empowerment_list);
+      }
+
+      return empowerment_list;
+   }
+
    ModifySpellPower(iModifier=0,oSpell=$,oCaster=$)
    {
       local i;
@@ -278,6 +293,141 @@ messages:
 
       return iModifier;
    }
+
+   ModifyMaxHealth(max_health = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         max_health = Send(i,@ModifyMaxHealth,#max_health=max_health);
+      }
+
+      return max_health;
+   }
+
+   ModifyMaxMana(max_mana = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         max_mana = Send(i,@ModifyMaxMana,#max_mana=max_mana);
+      }
+
+      return max_mana;
+   }
+
+   ModifyMaxVigor(max_vigor = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         max_vigor = Send(i,@ModifyMaxVigor,#max_vigor=max_vigor);
+      }
+
+      return max_vigor;
+   }
+   
+   ModifyMight(might = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         might = Send(i,@ModifyMight,#might=might);
+      }
+
+      return might;
+   }
+   
+   ModifyIntellect(intellect = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         intellect = Send(i,@ModifyIntellect,#intellect=intellect);
+      }
+
+      return intellect;
+   }
+   
+   ModifyStamina(stamina = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         stamina = Send(i,@ModifyStamina,#stamina=stamina);
+      }
+
+      return stamina;
+   }
+   
+   ModifyAgility(agility = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         agility = Send(i,@ModifyAgility,#agility=agility);
+      }
+
+      return agility;
+   }
+   
+   ModifyMysticism(mysticism = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         mysticism = Send(i,@ModifyMysticism,#mysticism=mysticism);
+      }
+
+      return mysticism;
+   }
+   
+   ModifyAim(aim = 0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         aim = Send(i,@ModifyAim,#aim=aim);
+      }
+
+      return aim;
+   }
+
+   ModifyVisualDampening(visual_dampening=0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         visual_dampening = Send(i,@ModifyVisualDampening,
+                                   #visual_dampening=visual_dampening);
+      }
+
+      return visual_dampening;
+   }
+
+   ModifyBindDampening(bind_dampening=0)
+   {
+      local i;
+
+      for i in plSocketed
+      {
+         bind_dampening = Send(i,@ModifyBindDampening,
+                                   #bind_dampening=bind_dampening);
+      }
+
+      return bind_dampening;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

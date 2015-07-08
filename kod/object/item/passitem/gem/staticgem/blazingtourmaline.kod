@@ -1,0 +1,55 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BlazingTourmaline is StaticGem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gem_blazing_tourmaline_name_rsc = "blazing tourmaline"
+   gem_blazing_tourmaline_icon_rsc = diamond.bgf
+   gem_blazing_tourmaline_desc_rsc = \
+      "This fragment of some ancient beast's eye still burns with "
+      "the fury of long-ago hunts."
+
+classvars:
+   
+   vrName = gem_blazing_tourmaline_name_rsc
+   vrIcon = gem_blazing_tourmaline_icon_rsc
+   vrDesc = gem_blazing_tourmaline_desc_rsc
+   
+   viVisualDampening = 10
+
+properties:
+   
+messages:
+   
+   AttributeDesc()
+   {
+      AppendTempString("An attached ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" adds ");
+      
+      if viVisualDampening <> 0
+      {
+         AppendTempString(viVisualDampening);
+         AppendTempString("\% visual dampening");
+      }
+
+      AppendTempString(". ");
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

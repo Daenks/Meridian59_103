@@ -1,0 +1,54 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+QuicksilverNodule is StaticGem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gem_quicksilver_nodule_name_rsc = "quicksilver nodule"
+   gem_quicksilver_nodule_icon_rsc = diamond.bgf
+   gem_quicksilver_nodule_desc_rsc = \
+      "The essence of freedom has crystallized in this odd gem."
+
+classvars:
+   
+   vrName = gem_quicksilver_nodule_name_rsc
+   vrIcon = gem_quicksilver_nodule_icon_rsc
+   vrDesc = gem_quicksilver_nodule_desc_rsc
+   
+   viBindDampening = 10
+
+properties:
+   
+messages:
+   
+   AttributeDesc()
+   {
+      AppendTempString("An attached ");
+      AppendTempString(Send(self,@GetName));
+      AppendTempString(" adds ");
+      
+      if viBindDampening <> 0
+      {
+         AppendTempString(viBindDampening);
+         AppendTempString("\% bind dampening");
+      }
+
+      AppendTempString(". ");
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

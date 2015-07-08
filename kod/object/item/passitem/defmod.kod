@@ -39,6 +39,16 @@ properties:
    piDefense_bonus = 0              %% piDefense_bonus adds to player's defense. Ranges from 1 to 50
    piDamage_reduce = 0              %% piDamage_reduce is the maximum amount of damage that will be reduced.
 
+   piHealth_change = 0
+   piMana_change = 0
+      
+   piMight_change = 0
+   piIntellect_change = 0
+   piStamina_change = 0
+   piAgility_change = 0
+   piMysticism_change = 0
+   piAim_change = 0
+
 messages:
 
    ReqUseSomething(what = $)
@@ -71,6 +81,48 @@ messages:
 
    NewUsed(what = $)
    {
+      local i, iHealthMod, iManaMod, iMightMod, iIntellectMod, 
+         iStaminaMod, iAgilityMod, iMysticismMod, iAimMod, oAttribute;
+
+      iHealthMod = 0;
+      iManaMod = 0;
+      iMightMod = 0;
+      iIntellectMod = 0;
+      iStaminaMod = 0;
+      iAgilityMod = 0;
+      iMysticismMod = 0;
+      iAimMod = 0;
+      for oAttribute in plObject_attributes
+      {
+         iHealthMod = iHealthMod +
+                      Send(oAttribute,@ModifyMaxHealth,#max_health=iHealthMod);
+         iManaMod = iManaMod +
+                    Send(oAttribute,@ModifyMaxMana,#max_mana=iManaMod);
+         iMightMod = iMightMod +
+                    Send(oAttribute,@ModifyMight,#might=iMightMod);
+         iIntellectMod = iIntellectMod +
+                    Send(oAttribute,@ModifyIntellect,#intellect=iIntellectMod);
+         iStaminaMod = iStaminaMod +
+                    Send(oAttribute,@ModifyStamina,#stamina=iStaminaMod);
+         iAgilityMod = iAgilityMod +
+                    Send(oAttribute,@ModifyAgility,#agility=iAgilityMod);
+         iMysticismMod = iMysticismMod +
+                    Send(oAttribute,@ModifyMysticism,#mysticism=iMysticismMod);
+         iAimMod = iAimMod +
+                    Send(oAttribute,@ModifyAim,#aim=iAimMod);
+      }
+      
+      piHealth_change = Send(poOwner,@GainMaxHealth,#amount=iHealthMod);
+      piMana_change = Send(poOwner,@NewMaxMana,#amount=iManaMod);
+      Send(poOwner,@SetVigorRestThreshold,#amount=80);
+      
+      piMight_change = Send(poOwner,@AddMight,#amount=iMightMod);
+      piIntellect_change = Send(poOwner,@AddIntellect,#amount=iIntellectMod);
+      piStamina_change = Send(poOwner,@AddStamina,#amount=iStaminaMod);
+      piAgility_change = Send(poOwner,@AddAgility,#amount=iAgilityMod);
+      piMysticism_change = Send(poOwner,@AddMysticism,#amount=iMysticismMod);
+      piAim_change = Send(poOwner,@AddAim,#amount=iAimMod);
+
       If NOT IsClass(self,&Torch)
       {
          Send(what,@AddDefenseModifier,#what=self);
@@ -85,6 +137,27 @@ messages:
       {
          Send(what,@RemoveDefenseModifier,#what=self);
       }
+
+      Send(poOwner,@GainMaxHealth,#amount=-piHealth_change);
+      Send(poOwner,@NewMaxMana,#amount=-piMana_change);
+      Send(poOwner,@SetVigorRestThreshold,#amount=80);
+      
+      Send(poOwner,@AddMight,#amount=-piMight_change);
+      Send(poOwner,@AddIntellect,#amount=-piIntellect_change);
+      Send(poOwner,@AddStamina,#amount=-piStamina_change);
+      Send(poOwner,@AddAgility,#amount=-piAgility_change);
+      Send(poOwner,@AddMysticism,#amount=-piMysticism_change);
+      Send(poOwner,@AddAim,#amount=-piAim_change);
+
+      piHealth_change = 0;
+      piMana_change = 0;
+      
+      piMight_change = 0;
+      piIntellect_change = 0;
+      piStamina_change = 0;
+      piAgility_change = 0;
+      piMysticism_change = 0;
+      piAim_change = 0;
 
       propagate;
    }
@@ -111,25 +184,28 @@ messages:
       }
 
       iDamageReduce = 0;
-      if piDamage_reduce <> 0
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
       {
-         iDamageReduce = random(piDamage_reduce*33,piDamage_reduce*100);
-         iDamageReduce = bound(iDamageReduce,0,(damage-100));
-      }
-
-      if aspell <> 0
-      {
-         % Reduce damage if part of the damage is spell
-         if atype <> 0
+         if piDamage_reduce <> 0
          {
-            % Only 2/3 of the damage reduction if we're doing both weapon
-            % and spell damage types.
-            iDamageReduce = iDamageReduce * 2 / 3;
+            iDamageReduce = random(piDamage_reduce*33,piDamage_reduce*100);
+            iDamageReduce = bound(iDamageReduce,0,(damage-100));
          }
-         else
+
+         if aspell <> 0
          {
-            % If we're doing pure spell damage, we get no reduction.
-            iDamageReduce = 0;
+            % Reduce damage if part of the damage is spell
+            if atype <> 0
+            {
+               % Only 2/3 of the damage reduction if we're doing both weapon
+               % and spell damage types.
+               iDamageReduce = iDamageReduce * 2 / 3;
+            }
+            else
+            {
+               % If we're doing pure spell damage, we get no reduction.
+               iDamageReduce = 0;
+            }
          }
       }
       
@@ -181,14 +257,172 @@ messages:
    
    GetDamageReduction()
    {
-      return piDamage_reduce;
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         return piDamage_reduce;
+      }
+
+      return 0;
    }
   
    GetDefenseBonus()
    {
       return piDefense_bonus;
    }
+
+   GetMaxHealthBonus()
+   {
+      local oAttribute, iMaxHealthBonus;
+
+      iMaxHealthBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iMaxHealthBonus = Send(oAttribute,@ModifyMaxHealth,
+                                           #max_health=iMaxHealthBonus);
+      }
+      
+      return iMaxHealthBonus;
+   }
+
+   GetMaxManaBonus()
+   {
+      local oAttribute, iMaxManaBonus;
+
+      iMaxManaBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iMaxManaBonus = Send(oAttribute,@ModifyMaxMana,
+                                           #max_mana=iMaxManaBonus);
+      }
+      
+      return iMaxManaBonus;
+   }
+
+   GetMaxVigorBonus()
+   {
+      local oAttribute, iMaxVigorBonus;
+
+      iMaxVigorBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iMaxVigorBonus = Send(oAttribute,@ModifyMaxVigor,
+                                           #max_vigor=iMaxVigorBonus);
+      }
+      
+      return iMaxVigorBonus;
+   }
+
+   GetMightBonus()
+   {
+      local oAttribute, iMightBonus;
+
+      iMightBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iMightBonus = Send(oAttribute,@ModifyMight,
+                                           #might=iMightBonus);
+      }
+      
+      return iMightBonus;
+   }
+
+   GetIntellectBonus()
+   {
+      local oAttribute, iIntellectBonus;
+
+      iIntellectBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iIntellectBonus = Send(oAttribute,@ModifyIntellect,
+                                           #intellect=iIntellectBonus);
+      }
+      
+      return iIntellectBonus;
+   }
+
+   GetStaminaBonus()
+   {
+      local oAttribute, iStaminaBonus;
+
+      iStaminaBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iStaminaBonus = Send(oAttribute,@ModifyStamina,
+                                           #stamina=iStaminaBonus);
+      }
+      
+      return iStaminaBonus;
+   }
+
+   GetAgilityBonus()
+   {
+      local oAttribute, iAgilityBonus;
+
+      iAgilityBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iAgilityBonus = Send(oAttribute,@ModifyAgility,
+                                           #agility=iAgilityBonus);
+      }
+      
+      return iAgilityBonus;
+   }
+
+   GetMysticismBonus()
+   {
+      local oAttribute, iMysticismBonus;
+
+      iMysticismBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iMysticismBonus = Send(oAttribute,@ModifyMysticism,
+                                           #mysticism=iMysticismBonus);
+      }
+      
+      return iMysticismBonus;
+   }
+
+   GetAimBonus()
+   {
+      local oAttribute, iAimBonus;
+
+      iAimBonus = 0;
+      for oAttribute in plObject_attributes
+      {
+         iAimBonus = Send(oAttribute,@ModifyAim,
+                                     #aim=iAimBonus);
+      }
+      
+      return iAimBonus;
+   }
    
+   GetVisualDampening()
+   {
+      local oAttribute, iVisualDampening;
+
+      iVisualDampening = 0;
+      for oAttribute in plObject_attributes
+      {
+         iVisualDampening = Send(oAttribute,@ModifyVisualDampening,
+                                     #visual_dampening=iVisualDampening);
+      }
+      
+      return iVisualDampening;
+   }
+   
+   GetBindDampening()
+   {
+      local oAttribute, iBindDampening;
+
+      iBindDampening = 0;
+      for oAttribute in plObject_attributes
+      {
+         iBindDampening = Send(oAttribute,@ModifyBindDampening,
+                                     #bind_dampening=iBindDampening);
+      }
+      
+      return iBindDampening;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

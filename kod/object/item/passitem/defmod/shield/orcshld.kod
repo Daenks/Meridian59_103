@@ -86,7 +86,14 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,15],
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         return [ [ATCK_WEAP_PIERCE,15],
+                  [-ATCK_SPELL_HOLY,-20]
+                ];
+      }
+
+      return [ [ATCK_WEAP_ALL,10],
                [-ATCK_SPELL_HOLY,-20]
              ];
    }
@@ -101,7 +108,6 @@ messages:
 
       return;
    }   
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -55,12 +55,17 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_SLASH,10],
-               [ATCK_WEAP_BLUDGEON,10],
-               [ATCK_WEAP_THRUST,10]
+      if Send(Send(SYS,@GetSettings),@GetDirectArmorEnabled)
+      {
+         return [ [ATCK_WEAP_SLASH,10],
+                  [ATCK_WEAP_BLUDGEON,10],
+                  [ATCK_WEAP_THRUST,10]
+                ];
+      }
+
+      return [ [ATCK_WEAP_ALL,5]
              ];
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

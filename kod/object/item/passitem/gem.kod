@@ -35,7 +35,7 @@ properties:
 
    poSocketedObject = $
 
-   viObject_flags = OF_APPLYABLE
+   viObject_flags = OF_APPLYABLE | OF_GETTABLE
 
 messages:
    
@@ -92,22 +92,22 @@ messages:
       return;
    }
    
-   ModifyDamage(damage=$)
+   ModifyDamage(damage=0)
    {
       return damage;
    }
    
-   ModifyHitRoll(hit_roll=$)
+   ModifyHitRoll(hit_roll=0)
    {
       return hit_roll;
    }
    
-   ModifyDefenseDamage(damage=$)
+   ModifyDefenseDamage(damage=0)
    {
       return damage;
    }
    
-   ModifyDefensePower(defense_power=$)
+   ModifyDefensePower(defense_power=0)
    {
       return defense_power;
    }
@@ -115,6 +115,71 @@ messages:
    ModifyResistance(resistance_list=$)
    {
       return resistance_list;
+   }
+   
+   ModifyEmpowerment(empowerment_list=$)
+   {
+      return empowerment_list;
+   }
+   
+   ModifyMaxHealth(max_health = 0)
+   {
+      return max_health;
+   }
+
+   ModifyMaxMana(max_mana = 0)
+   {
+      return max_mana;
+   }
+
+   ModifyMaxVigor(max_vigor = 0)
+   {
+      return max_vigor;
+   }
+   
+   ModifyMight(might = 0)
+   {
+      return might;
+   }
+   
+   ModifyIntellect(intellect = 0)
+   {
+      return intellect;
+   }
+   
+   ModifyStamina(stamina = 0)
+   {
+      return stamina;
+   }
+   
+   ModifyAgility(agility = 0)
+   {
+      return agility;
+   }
+   
+   ModifyMysticism(mysticism = 0)
+   {
+      return mysticism;
+   }
+
+   ModifyAim(aim = 0)
+   {
+      return aim;
+   }
+   
+   ModifySpellPower(iModifier=0,oSpell=$,oCaster=$)
+   {
+      return iModifier;
+   }
+
+   ModifyVisualDampening(visual_dampening=0)
+   {
+      return visual_dampening;
+   }
+
+   ModifyBindDampening(bind_dampening=0)
+   {
+      return bind_dampening;
    }
 
    Delete()

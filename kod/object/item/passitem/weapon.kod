@@ -505,7 +505,7 @@ messages:
 
    GetDamage(target=$)
    {
-      local iDamage, i, oWeapAtt;
+      local iDamage, i, oWeapAtt, oAttribute;
 
       % First, get base damage.
       iDamage = Send(self,@GetBaseDamage,#who=poOwner,#target=target);
@@ -520,6 +520,14 @@ messages:
             iDamage = Send(oWeapAtt,@ModifyDamage,#damage=iDamage,#wielder=poOwner,
                            #target=target,#lData=i);
          }
+      }
+      
+      for oAttribute in plObject_attributes
+      {
+         iDamage = Send(oAttribute,@ModifyDamage,
+                                   #damage=iDamage,
+                                   #who=poOwner,
+                                   #target=target);
       }
 
       iDamage = iDamage + piDamageBonus;
