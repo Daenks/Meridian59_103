@@ -24,7 +24,8 @@ DIRS = \
    bunny \
    wolf \
    elephant \
-   chupacabra
+   chupacabra \
+   retextures
 
 all:
 	@-for %i in ($(BGFS)) do \
