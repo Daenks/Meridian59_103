@@ -105,27 +105,39 @@ messages:
 
       if oWeapon=$
       {
-         % Talented people can disarm even bare-handed.
-         iAbil = Send(who,@GetSkillAbility,#Skill_num=SKID_BRAWLING);
-         if iAbil < BRAWL_THRESHOLD
+         if IsClass(who,&Monster)
          {
-            return FALSE;
-         }
+            iModifier = Send(who,@GetLevel);
+         } 
+         else
+         {
+            % Talented people can disarm even bare-handed.
+            iAbil = Send(who,@GetSkillAbility,#Skill_num=SKID_BRAWLING);
+            if iAbil < BRAWL_THRESHOLD
+            {
+               return FALSE;
+            }
          
-         iModifier = iAbil;
+            iModifier = iAbil;
+         }
       }
       else
       {
          iModifier = Send(oWeapon,@GetDisarmBonus);
       }
       
-      if not (Send(self,@CanPayCosts,#who=who) and Send(self,@PayCosts,#who=who,#modifier=iModifier))
+      if IsClass(who,&Player)
+         AND NOT (Send(self,@CanPayCosts,#who=who)
+            AND Send(self,@PayCosts,#who=who,#modifier=iModifier))
       {
          return FALSE;
       }
 
-      % Get player's ability in this skill.
-      iAbil = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      if IsClass(who,&Player)
+      {
+         % Get player's ability in this skill.
+         iAbil = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      }
 
       if (IsClass(oTarget,&Player)) and (Send(SYS,@IsPKAllowed) or Send(Send(who,@GetOwner),@IsArena))
       {
@@ -145,23 +157,37 @@ messages:
             {
                % Success!  They dropped it!
                Send(oTarget,@DropItem,#droppedItem=oOppWeapon);
-               send(who,@MsgSendUser,#message_rsc=Disarm_dropped,
-                    #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+               
+               if IsClass(who,&Player)
+               {
+                  send(who,@MsgSendUser,#message_rsc=Disarm_dropped,
+                       #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+               }
+
                send(oTarget,@MsgSendUser,#message_rsc=Disarm_opp_dropped,
-                    #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
+                    #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName));
             }
                else
             {
-               Send(oTarget,@UnuseItem,#what=oOppWeapon);
-               send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
-                    #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+               % Why would we send this a second time? TryUnuse already unuses...
+               %Send(oTarget,@UnuseItem,#what=oOppWeapon);
+               
+               if IsClass(who,&Player)
+               {
+                  send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
+                       #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+               }
+
                send(oTarget,@MsgSendUser,#message_rsc=Disarm_opp_unwield,
-                    #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
+                    #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName));
             }
             % Disarming players takes a bit more vigor than usual, about 5x more.
             % This adds the additional 4x extra in addition to the amount already taken
             % This is because it's much more harmful to players.
-            send(who,@AddExertion,#amount=4 * (1000 * viSkillExertion));
+            if IsClass(who,&Player)
+            {
+               send(who,@AddExertion,#amount=4 * (1000 * viSkillExertion));
+            }
          }
       }
       else
@@ -174,14 +200,22 @@ messages:
             return FALSE;
          }
          
-         send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
+         if IsClass(who,&Player)
+         {
+            send(who,@MsgSendUser,#message_rsc=Disarm_unwield,
               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+         }
               
          % The better you are, the better your weapon, the longer your stun is.
          % The bigger the monster is, the shorter the stun is.
          % Stun between 2 and 6 seconds.
          iAbil = bound((iAbil + iModifier - Send(oTarget,@GetLevel)/2)/10,2,6);
          Send(oHoldSpell,@DoHold,#what=who,#otarget=oTarget,#idurationsecs=iAbil,#report=FALSE);
+      }
+      
+      if IsClass(who,&Monster)
+      {
+         return;
       }
 
       propagate;

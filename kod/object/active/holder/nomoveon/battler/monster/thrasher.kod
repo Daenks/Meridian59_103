@@ -178,7 +178,7 @@ messages:
          }
       }
 
-      return;
+      propagate;
    }
 
    %%% Thrasher dormant code.

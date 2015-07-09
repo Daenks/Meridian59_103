@@ -185,6 +185,12 @@ messages:
             return;
          }
       }
+      
+      if IsClass(oTarget,&Monster)
+         AND Send(oTarget,@GetBlindResistance) <> 0
+      {
+         iDuration = (iDuration * (100-Send(oTarget,@GetBlindResistance)))/100;
+      }
 
       % Bound and convert duration to milliseconds
       iDuration = bound(iDuration,3,20);
