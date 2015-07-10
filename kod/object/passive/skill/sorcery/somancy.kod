@@ -1,0 +1,90 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Somancy is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   somancy_name_rsc = "somancy"
+   somancy_icon_rsc = lightnin.bgf
+   somancy_desc_rsc = \
+      "Through mastery of one's body, a master mage can cast undirected "
+      "spells without the need to see or move. The strain reduces "
+      "spellpower, but the magics still function, regardless of whether "
+      "the caster is held, blind, dazzled, or otherwise incapacitated."
+
+   somancy_activated = \
+      "Despite your hindrances, you pull magic from deep inside your "
+      "physical core, at the cost of %i reduced spellpower."
+
+classvars:
+
+   vrName = somancy_name_rsc
+   vrIcon = somancy_icon_rsc
+   vrDesc = somancy_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_SOMANCY
+   viSchool = SKS_SORCERY
+   viSkill_Level = 6
+   viChance_to_Increase = 30
+   viMeditate_ratio = 250
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetStamina);
+   }
+   
+   SomancyPenalty(who=$,oSpell=$,iSpellPower=0)
+   {
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iSpellAbility = Send(who,@GetSpellAbility,
+                               #spell_num=Send(oSpell,@GetSpellNum));
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iInitialCost = iSpellPower;
+      iCoefficient = Bound(100 - 
+                          ((iAbility+1)/4) - 
+                          ((iSpellAbility+1)/4),50,100);
+
+      % Lowest penalty is half of spellpower
+      iSacrifice = (iInitialCost * iCoefficient)/100;
+
+      Send(self,@DoSkill,#who=who,#iSacrifice=iSacrifice);
+      
+      return iSacrifice;
+   }
+
+   DoSkill(who=$,iSacrifice=0)
+   {
+      Send(who,@MsgSendUser,#message_rsc=somancy_activated,
+                            #parm1=iSacrifice);
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

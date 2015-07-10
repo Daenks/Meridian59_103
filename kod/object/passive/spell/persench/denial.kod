@@ -54,6 +54,8 @@ classvars:
    vbCanCastOnOthers = FALSE
 
    vrSucceed_wav = denial_sound
+   
+   vbCanBeReserved = FALSE
 
 properties:
 

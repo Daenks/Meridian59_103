@@ -1,0 +1,50 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LinkFour is SpiritLink
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   link_four_name_rsc = "major spirit link"
+   link_four_icon_rsc = imanafoc.bgf
+   link_four_desc_rsc = \
+      "Major spirit link allows a spellcaster to reserve a portion of his "
+      "spirit to permanently maintain powerful personal enchantments."
+
+classvars:
+
+   vrName = link_four_name_rsc
+   vrIcon = link_four_icon_rsc
+   vrDesc = link_four_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LINK_FOUR
+   viSchool = SKS_SORCERY
+   viSkill_Level = 4
+   viChance_to_Increase = 20
+   viMeditate_ratio = 70
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viReserveLevel = 4
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

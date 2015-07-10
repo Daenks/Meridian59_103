@@ -1934,6 +1934,40 @@ messages:
 
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+         
+      if IsClass(what,&Player)
+      {
+         if (aspell & ATCK_SPELL_HOLY
+            OR aspell & ATCK_SPELL_UNHOLY)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_DEVOTION) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_DEVOTION),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+         if (aspell & ATCK_SPELL_COLD
+            OR aspell & ATCK_SPELL_ACID)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENTROPY) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENTROPY),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+         if (aspell & ATCK_SPELL_FIRE
+            OR aspell & ATCK_SPELL_SHOCK)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENERGY) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENERGY),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+      }
 
       % Increase initial damage by 35 percent if attacker damage rod is active
       bAttackerEmpowered = FALSE;

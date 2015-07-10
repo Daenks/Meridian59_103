@@ -1,0 +1,51 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Energy is DamageMastery
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   energy_name_rsc = "energy"
+   energy_icon_rsc = iblfire.bgf
+   energy_desc_rsc = \
+      "A practiced mage can acquire great skill at employing energetic "
+      "elements."
+
+classvars:
+
+   vrName = energy_name_rsc
+   vrIcon = energy_icon_rsc
+   vrDesc = energy_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_DEVOTION
+   viSchool = SKS_SORCERY
+   viSkill_Level = 4
+   viChance_to_Increase = 20
+   viMeditate_ratio = 90
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viDamageTypeOne = ATCK_SPELL_FIRE
+   viDamageTypeTwo = ATCK_SPELL_SHOCK
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

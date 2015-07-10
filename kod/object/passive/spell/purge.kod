@@ -123,6 +123,15 @@ messages:
             }
          }
       }
+      
+      if NOT bHasEnchantment
+      {
+         lEnchantment = Send(target,@GetReservedSpells);
+         if lEnchantment <> $
+         {
+            bHasEnchantment = TRUE;
+         }
+      }
 
       if NOT bHasEnchantment
       {
@@ -246,6 +255,13 @@ messages:
          {
             lEnchantments = cons(oSpell,lEnchantments);
          }
+      }
+      
+      lList = Send(who,@GetReservedSpells);
+      
+      for oEnchantment in lList
+      {
+         lEnchantments = Cons(Nth(oEnchantment,1),lEnchantments);
       }
 
       iNumEnchantments = length(lEnchantments);

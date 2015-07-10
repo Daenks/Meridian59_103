@@ -36,6 +36,9 @@ resources:
       "You cannot cast enchantments upon others here."
 
    spell_blank_template = "%q"
+   
+   unreserved_pers_ench = \
+      "You cancel your %s personal enchantment reservation."
 
 classvars:
 
@@ -65,13 +68,22 @@ classvars:
    viDefensive = FALSE
    viOffensive = FALSE
    viResistanceType = 0
+   
+   vbCanBeReserved = TRUE
+   viPercentManaReserved = 10
 
 properties:
 
 messages:
 
-   GetNumSpellTargets()
+   GetNumSpellTargets(who=$)
    {
+      if who <> $
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return 0;
+      }
+
       if vbCanCastonOthers
       {
          return 1;
@@ -128,6 +140,16 @@ messages:
       % Check for enchantment already applied
       if Send(oTarget,@IsEnchanted,#what=self)
       {
+         if Send(who,@HasReservedSpell,#oSpell=self)
+         {
+            if Send(who,@UnReserveSpell,#oSpell=self)
+            {
+               Send(who,@MsgSendUser,#message_rsc=unreserved_pers_ench,
+                                     #parm1=Send(self,@GetName));
+            }
+            return FALSE;
+         }
+
          % Can you override an existing enchantment on yourself?
          if who = oTarget AND
             Send(Send(SYS,@GetSettings),@CanRecastSelfEnchantment)
@@ -159,10 +181,29 @@ messages:
       propagate;
    }
 
+   GetTargets(who=$,lTargets=$)
+   {
+      if Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return [who];
+      }
+
+      return lTargets;
+   }
+
    CastSpell(who=$,iSpellPower=0,lTargets=$,bItemCast=FALSE)
    {
 
       local oTarget, lType;
+
+      if NOT bItemCast
+         AND vbCanBeReserved
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         Send(who,@UseReserveSkill,#oSpell=self,
+                                   #iSpellPower=iSpellPower);
+         propagate;
+      }
 
       lType = [self,viDefensive,viOffensive,viResistanceType];
 
@@ -275,6 +316,8 @@ messages:
       oSpell = GetClass(self);
       oList = Send(who,@GetEnchantmentList);
       
+      iDuration = $;
+
       for i in oList
       {
          if Nth(i,2) = self
@@ -293,6 +336,16 @@ messages:
 
       if iDuration = $
       {
+         if Send(who,@HasReservedSpell,#oSpell=self)
+         {
+            AppendTempString("\n\n");
+            AppendTempString("Your current ");
+            AppendTempString(Send(self,@GetName));
+            AppendTempString(" enchantment is reserving ");
+            AppendTempString(Send(who,@GetPercentManaReserved,#oSpell=self));
+            AppendTempString(" percent of your maximum mana.");
+         }
+
          return;
       }
 
@@ -342,6 +395,16 @@ messages:
       Send(self,@CreateStatsDesc,#who=who);
 
       return GetTempString();
+   }
+   
+   GetPercentManaReserved()
+   {
+      return viPercentManaReserved;
+   }
+   
+   CanBeReserved()
+   {
+      return vbCanBeReserved;
    }
 
 end

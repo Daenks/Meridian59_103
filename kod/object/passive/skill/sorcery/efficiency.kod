@@ -1,0 +1,77 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Efficiency is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   efficiency_name_rsc = "efficiency"
+   efficiency_icon_rsc = ihaste.bgf
+   efficiency_desc_rsc = \
+      "Initiates of Sorcery first take on the arduous task of practicing "
+      "spellcasting over and over until it becomes almost automatic. This "
+      "endless journey often lasts until long after the initiate has become "
+      "a master."
+
+classvars:
+
+   vrName = efficiency_name_rsc
+   vrIcon = efficiency_icon_rsc
+   vrDesc = efficiency_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_EFFICIENCY
+   viSchool = SKS_SORCERY
+   viSkill_Level = 1
+   viChance_to_Increase = 8
+   viMeditate_ratio = 500
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetStamina);
+   }
+   
+   GetVigorReduction(who=$,oSpell=$)
+   {
+      local iAbility, iExertion;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iExertion = Send(oSpell,@GetExertion);
+
+      if Random(1,100) <= iAbility
+      {
+         Send(self,@DoSkill,#who=who);
+         
+         return Bound((iExertion*((iAbility+1)/5))/100,1,$);
+      }
+      
+      return 0;
+   }
+
+   DoSkill(who=$)
+   {
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

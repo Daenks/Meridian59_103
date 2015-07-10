@@ -3106,7 +3106,7 @@ messages:
          oSpell = Send(SYS,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,
                                                      #compound=i));
          Send(self,@ToCliObject,#what=oSpell);
-         AddPacket(1,Send(oSpell,@GetNumSpellTargets));
+         AddPacket(1,Send(oSpell,@GetNumSpellTargets,#who=self));
          AddPacket(1,Send(oSpell,@GetSchool));
       }
       
@@ -3141,7 +3141,7 @@ messages:
          AddPacket(1, BP_SPELL_ADD);
          
          Send(self,@ToCliObject,#what=oSpell);
-         AddPacket(1,Send(oSpell,@GetNumSpellTargets));
+         AddPacket(1,Send(oSpell,@GetNumSpellTargets,#who=self));
          AddPacket(1,Send(oSpell,@GetSchool));
          SendPacket(poSession);
 
@@ -3169,6 +3169,11 @@ messages:
       if pbLogged_on
       {
          Send(self,@ToCliStats,#group=4);
+         
+         if IsClass(oSkill,&SpiritLink)
+         {
+            Send(self,@ToCliSpells);
+         }
       }
       
       return;
