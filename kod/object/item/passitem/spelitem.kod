@@ -198,9 +198,9 @@ messages:
 
    ReqNewApply(what=$,apply_on=$)
    {
-      % Prevent use if you can't fight.
+      % Prevent use if you can't move.
       if (IsClass(what,&Player))
-         AND (Send(what,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT))
+         AND (Send(what,@CheckPlayerFlag,#flag=PFLAG_NO_MOVE))
          OR pbDisabled
          OR (IsClass(apply_on,&Player)
              AND Send(apply_on,@IsInCannotInteractMode))
