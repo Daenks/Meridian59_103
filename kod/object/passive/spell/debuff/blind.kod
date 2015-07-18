@@ -174,15 +174,23 @@ messages:
 
       iDuration = iDurationSecs;
       
-      oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
-      if Send(oTarget,@IsEnchanted,#what=oSpell)
+      if IsClass(oTarget,&Player)
+         AND IsClass(what,&Player)
       {
-         iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
-                          #iDuration=iDuration);
-         if iDuration = $
+         iDuration = iDuration / 2;
+      }
+      else
+      {
+         oSpell = Send(SYS,@FindSpellByNum,#NUM=SID_EAGLE_EYES);
+         if Send(oTarget,@IsEnchanted,#what=oSpell)
          {
-            % Resisted completely.
-            return;
+            iDuration = Send(oSpell,@DoEagleEyes,#oCaster=what,#oTarget=oTarget,
+                             #iDuration=iDuration);
+            if iDuration = $
+            {
+               % Resisted completely.
+               return;
+            }
          }
       }
 
