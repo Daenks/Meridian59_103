@@ -110,8 +110,8 @@ messages:
          Send(who,@RemoveEnchantment,#what=oHoldSpell,#report=FALSE);
       }
 
-      % Lasts 1/6 the time of the bonus.
-      iDuration = (Send(self,@GetDuration,#iSpellPower=state)) / 6;
+      % Hold effect lasts 8 sec at low spellpower, 2 sec at high sp.
+      iDuration = Bound(((100-state) * 100 + 2000),2000,8000);
       Send(oHoldSpell,@DoSpell,#what=self,#oTarget=who,#iDuration=iDuration,
             #report=TRUE,#bAllowFreeAction=FALSE);
 
@@ -144,7 +144,7 @@ messages:
       AppendTempString(" offense and 1-");
       AppendTempString(1 + (Send(who,@GetEnchantedState,#what=self) / 20));
       AppendTempString(" attack damage. When it expires, it will paralyze you for ");
-      AppendTempString((40 + (Send(who,@GetEnchantedState,#what=self) / 2)) / 6);
+      AppendTempString(Bound(((100-(Send(who,@GetEnchantedState,#what=self))) + 20) / 10,2,8));
       AppendTempString(" seconds.");
 
       propagate;
