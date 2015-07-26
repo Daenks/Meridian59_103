@@ -13233,10 +13233,7 @@ messages:
       {
          if IsClass(i,&Instrument)
          {
-            if IsClass(i,&Instrument)
-            {
-               iPower = iPower + Send(i,@GetInstrumentLevel);
-            }
+            iPower = iPower + Send(i,@GetInstrumentLevel);
          }
       }
 
