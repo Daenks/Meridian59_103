@@ -31,7 +31,7 @@ resources:
    Invigorate_caster_enter = "You feel the tiredness of your muscles diminish."
    Invigorate_enter = "%s's invigorating song eases the tiredness of your muscles."
    Invigorate_leave = "You can no longer hear the invigorating notes of %s's song."
-   
+
 classvars:
 
    radius_ench_cast = Invigorate_cast
@@ -53,10 +53,9 @@ classvars:
    viMana = 5           % Mana is amount used upon inititiation
    viManaDrain = 1      % Drain is amount used every viDrainTime milliseconds
    viDrainTime = 5000   % Drain some mana every viDrainTime milliseconds
-   viBaseRange = 12
-   
+
    viPeriodicEffect = TRUE
-   
+
    viSpellExertion = 1
    viChance_To_Increase = 20
    viMeditate_ratio = 10
@@ -66,7 +65,7 @@ classvars:
 properties:
 
    prMusic = Invigorate_song
-      
+
 messages:
 
    ResetReagents()
@@ -86,7 +85,7 @@ messages:
    PeriodicEffect(lEnchanted=$,iPower=0,iRange=0,source=$)
    {
       local oUser, lState;
-      
+
       for oUser in lEnchanted
       {
          if IsClass(oUser,&User)
@@ -100,7 +99,7 @@ messages:
             }
          }
       }
-      
+
       return;
    }
 

@@ -1,5 +1,4 @@
-% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
-% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse..
 % All rights reserved.
 %
 % This software is distributed under a license that is described in
@@ -13234,9 +13233,9 @@ messages:
       {
          if IsClass(i,&Instrument)
          {
-            if Send(i,@GetInstrumentLevel) > iPower
+            if IsClass(i,&Instrument)
             {
-               iPower = Send(i,@GetInstrumentLevel);
+               iPower = iPower + Send(i,@GetInstrumentLevel);
             }
          }
       }
