@@ -22,7 +22,7 @@ resources:
       "Surrounds the caster with a powerful field which deflects "
       "damage from extreme blows.  "
       "Requires two blue dragon scales to cast."
-   
+
    ArmorOfGort_already_enchanted_rsc = "You already have the Armor of Gort."
 
    ArmorOfGort_on_rsc = \
@@ -119,7 +119,7 @@ messages:
             iMax = 2500;
          }
       }
-      
+
       iFinalDamage = Bound(damage-iAbsorbed,1,iMax);
       iFinalAbsorbed = damage - iFinalDamage;
       

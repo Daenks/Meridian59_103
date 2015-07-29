@@ -115,7 +115,7 @@ messages:
    {
       return &CloakPotion;
    }
-  
+
    EffectDesc(who=$)
    {
       AppendTempString("\n\n");

@@ -21,7 +21,7 @@ resources:
    resistmagic_desc_rsc = \
       "The war god fortifies you against magic attacks.  "
       "Requires a blue dragon scale to cast."
-   
+
    resistmagic_already_enchanted = "You are already resisting magic."
    resistmagic_success = "Kraanan fortifies %s%s against magic attacks."
    resistmagic_on = "Kraanan fortifies you against magic attacks."
@@ -60,7 +60,7 @@ messages:
       plReagents = Cons([&BlueDragonScale,1],plReagents);
 
       return;
-   }	 
+   }
 
    GetResistanceStrength(iSpellpower = 0)
    {
@@ -70,13 +70,13 @@ messages:
 
    GetDuration(iSpellPower = 0)
    {
-      local iDuration;	   
+      local iDuration;
       
       % .6 to 4 minutes
-      iDuration = 40 + (iSpellPower * 2); 
+      iDuration = 40 + (iSpellPower * 2);
       % translate to milliseconds
-      iDuration = iDuration * 1000;	  
-      
+      iDuration = iDuration * 1000;
+
       return iDuration;
    }
 

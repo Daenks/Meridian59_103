@@ -41,7 +41,7 @@ messages:
       if (vrAlreadyEnchanted = $) OR (vrEnchantment_On = $) OR (vrEnchantment_Off = $) OR (vrSuccess = $)
       {
          Debug("Haven't set messages for this spell!  Aborting cast.");
-         
+
          return FALSE;
       }
 

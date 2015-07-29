@@ -22,7 +22,7 @@ resources:
       "Invokes Kraanan's blessing, increasing the accuracy "
       "and damage of attacks.  "
       "Requires two mushrooms and two sapphires to cast."
-   
+
    bless_already_enchanted_rsc = "You are already blessed."
    bless_on_rsc = "Kraanan fills you with the spirit of battle."
    bless_off_rsc = "The spirit of battle has left you."
@@ -104,7 +104,7 @@ messages:
    {
       return hit_roll + Send(who,@GetEnchantedState,#what=self);
    }
-   
+
    ModifyDamage(who=$,what=$,damage=$)
    {
       return damage + Random(0,send(who,@GetEnchantedState,#what=self)/33);

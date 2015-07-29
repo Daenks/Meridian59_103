@@ -21,7 +21,7 @@ resources:
    Eavesdrop_desc_rsc = \
       "Riija grants the ability to hear distant conversations, allowing you "
       "to spy on others.  Requires two dragonfly eyes."
-   
+
    Eavesdrop_on_rsc = "The sounds of a nearby room fill your mind."
    Eavesdrop_off_rsc = "The distant sounds become impossible to hear."
    Eavesdrop_already_enchanted_rsc = \
@@ -49,7 +49,7 @@ classvars:
    viSpellExertion = 1
 
    viManaDrain = 1       % Drain is amount used every so often
-   
+
    viChance_To_Increase = 20
    viMeditate_ratio = 20
    vrSucceed_wav = Eavesdrop_sound
@@ -102,7 +102,7 @@ messages:
 
       return;
    }
-   
+
    EndEnchantment(who=$,state=0)
    {
       Send(Nth(state,2),@Delete);
@@ -155,7 +155,7 @@ messages:
       {
          Send(who,@MsgSendUser,#message_rsc=Eavesdrop_no_rooms);
       }
-      
+
       iLength = Random(1,iLength);
       oRoom = Send(SYS,@FindRoomByNum,#num=nth(lRooms,iLength));
 
@@ -165,7 +165,7 @@ messages:
 
       oListener = Create(&Listener,#Enchanted=who,#iSpellpower=iSpellpower);
       Send(oRoom,@NewHold,#what=oListener,#new_row=iRow,#new_col=iCol);
-   
+
       return [Send(self,@GetDuration,#iSpellpower=iSpellpower),oListener];
    }
 
@@ -188,7 +188,7 @@ messages:
       %% Get yell list from current room and select a room to eavesdrop.
       oRoom = Send(who,@GetOwner);
       lRooms = Send(oRoom,@GetYellZone);
-      
+
       %% Eliminate the room we're in, unless there is no yell list.
       if FindListElem(lRooms,Send(oRoom,@GetRoomNum))
       {
