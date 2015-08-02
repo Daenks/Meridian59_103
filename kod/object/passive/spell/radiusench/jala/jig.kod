@@ -33,7 +33,7 @@ resources:
    Jig_leave = "You have passed outside the range of %s's song, you lose your compulsion to dance."
 
    Jig_cannot_do_that = "You can't do that while you're dancing to %s's song!"
-   
+
 classvars:
 
    radius_ench_cast = Jig_cast
@@ -43,7 +43,7 @@ classvars:
    radius_ench_caster_enter = Jig_caster_enter
    radius_ench_enter = Jig_enter
    radius_ench_leave = Jig_leave
-   
+
    vrName = jig_name_rsc
    vrIcon = jig_icon_rsc
    vrDesc = jig_desc_rsc
@@ -65,7 +65,7 @@ classvars:
 properties:
 
    prMusic = jig_song
-      
+
 messages:
 
    ResetReagents()
@@ -82,17 +82,17 @@ messages:
       {
          Send(what,@DoDance);
       }
-      
+
       propagate;
    }
-   
+
    EndSpecialEffect(what=$,iPower=0,source=$)
    {
       if IsClass(what,&User)
       {
          Send(what,@StopDancing);
       }
-      
+
       propagate;
    }
 
