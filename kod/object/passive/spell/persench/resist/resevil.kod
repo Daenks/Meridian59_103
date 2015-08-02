@@ -79,7 +79,7 @@ messages:
       iDuration = iDuration * 1000;	  %% translate to milliseconds
       return iDuration;
    }
-      
+
    CanBeRemovedByPlayer()
    {
       return FALSE;

@@ -169,7 +169,7 @@ messages:
       AppendTempString(" enchantment will reflect enemy splash and bolt spells ");
       AppendTempString(Send(who,@GetEnchantedState,#what=self));
       AppendTempString("\% of the time.");
-      
+
       propagate;
    }
 

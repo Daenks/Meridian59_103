@@ -28,7 +28,7 @@ resources:
    resistgood_success = "The spirt of Qor enters %s%s's body, protecting them from the forces of good."
    resistgood_on = "The spirit of Qor enters your body, protecting you from the forces of good."
    resistgood_off = "You no longer have resistance to good."
- 
+
 classvars:
 
    viPersonal_ench = TRUE
@@ -41,9 +41,9 @@ classvars:
 
    viSpell_num = SID_UNHOLY_RESOLVE
    viSchool = SS_QOR
-   viSpell_level = 1
+   viSpell_level = 3
    viMana = 3
-   
+
    viChance_To_Increase = 35
    viFlash = FLASH_GOOD_SELF
 
@@ -78,12 +78,11 @@ messages:
       iDuration = iDuration * 1000;	  %% translate to milliseconds
       return iDuration;
    }
-      
+
    CanBeRemovedByPlayer()
    {
       return FALSE;
    }
-   
-end
 
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
