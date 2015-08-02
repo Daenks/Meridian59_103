@@ -300,20 +300,17 @@ messages:
          Send(self,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=TRUE);
       }
 
-      for i in plEnchantments
-      {
+      foreach i in plEnchantments      {
          Send(nth(i,2),@SetSpellPlayerFlag,#who=self);
       }
 
-      for i in plUsing
-      {
+      foreach i in plUsing      {
          Send(i,@SetItemPlayerFlag,#who=self);
       }
 
       if poOwner <> $
       {
-         for i in Send(poOwner,@GetEnchantmentList)
-         {
+         foreach i in Send(poOwner,@GetEnchantmentList)         {
             Send(nth(i,2),@SetSpellPlayerFlag,#who=self,#state=nth(i,3));
          }
       }
@@ -1087,8 +1084,7 @@ messages:
             % Make everyone think we left the room.
             lObjects = Send(poOwner,@GetHolderActive);
 
-            for i in lObjects
-            {
+            foreach i in lObjects            {
                oObject = Send(poOwner,@HolderExtractObject,#data=i);
 
                if IsClass(oObject,&User)
@@ -1196,8 +1192,7 @@ messages:
 
             lObjects = Send(poOwner,@GetHolderActive);
 
-            for i in lObjects
-            {
+            foreach i in lObjects            {
                oObject = Send(poOwner,@HolderExtractObject,#data=i);
 
                if IsClass(oObject,&User)
@@ -1300,8 +1295,7 @@ messages:
       }
 
       %
-      % These commands only work for people with say commands.  But, the contain the word
-      % "monster", so they gotta come before the monster generating ones.
+      % These commands only work for people with say commands.  But, the contain the word      % "monster", so they gotta come before the monster generating ones.
       %
       % Guides and above can use these.
       %
@@ -1364,8 +1358,7 @@ messages:
       {
          bFound = FALSE;
          lTemplate = Send(SYS,@GetMonsterTemplates);
-         for i in lTemplate
-         {
+         foreach i in lTemplate         {
             if StringContain(string,Send(i,@GetName))
             {
                bFound = TRUE;
@@ -1465,8 +1458,7 @@ messages:
          % This means: Did we just want to find and report the bard's holdings?
          bFound = FALSE;
 
-         for i in Send(SYS,@GetMonsterTemplates)
-         {
+         foreach i in Send(SYS,@GetMonsterTemplates)         {
             if StringContain(temp,Send(i,@GetName))
             {
                StringSubstitute(temp,Send(i,@GetName),"");
@@ -1526,13 +1518,11 @@ messages:
       if StringEqual(string,dm_clear_abilities_command)
          OR StringEqual(string,"clear abilities")
       {
-         for i in Send(self,@GetSpellList)
-         {
+         foreach i in Send(self,@GetSpellList)         {
             Send(self,@RemoveSpell,#isDM=TRUE,#num=Send(self,@DecodeSpellNum,#compound=i));
          }
 
-         for i in Send(self,@GetSkillList)
-         {
+         foreach i in Send(self,@GetSkillList)         {
             Send(self,@RemoveSkill,#num=Send(self,@DecodeSkillNum,#compound=i));
          }
 
@@ -1549,16 +1539,14 @@ messages:
       if StringEqual(string,dm_clear_inventory_command)
          OR StringEqual(string,"clear inventory")
       {
-         for i in plActive
-         {
+         foreach i in plActive         {
             if Send(i,@ReqDMDelete)
             {
                Send(i,@Delete);
             }
          }
 
-         for i in plPassive
-         {
+         foreach i in plPassive         {
             if Send(i,@ReqDMDelete)
             {
                Send(i,@Delete);
@@ -1581,8 +1569,7 @@ messages:
          if StringEqual(string,dm_get_spells_command)
             OR StringEqual(string,"get spells")
          {
-            for i in Send(SYS,@GetSpells)
-            {
+            foreach i in Send(SYS,@GetSpells)            {
                % Don't give any spells that aren't player spells (diseases, etc).
                if IsClass(i,&Spell)
                {
@@ -1601,8 +1588,7 @@ messages:
          if StringEqual(string,dm_get_skills_command)
             OR StringEqual(string,"get skills")
          {
-            for i in Send(SYS,@GetSkills)
-            {
+            foreach i in Send(SYS,@GetSkills)            {
                % Don't give any spells that aren't player spells (diseases, etc).
                if IsClass(i,&Skill)
                {
@@ -1808,8 +1794,7 @@ messages:
          {
             temp = Send(poOwner,@GetHolderActive);
 
-            for i in temp
-            {
+            foreach i in temp            {
                if IsClass(First(i),&Monster)
                {
                   Send(First(i),@RandomTimer,#test=TRUE);
@@ -1866,8 +1851,7 @@ messages:
             iGiven = 0;
             lTemplate = Send(SYS,@GetItemTemplates);
 
-            for i in lTemplate
-            {
+            foreach i in lTemplate            {
                if StringContain(string,Send(i,@GetTrueName))
                   AND NOT Send(i,@IsItemType,#type=ITEMTYPE_SPECIAL)
                {
@@ -1893,8 +1877,7 @@ messages:
             bFound = FALSE;
             lTemplate = Send(SYS,@GetItemTemplates);
 
-            for i in lTemplate
-            {
+            foreach i in lTemplate            {
                if StringContain(string,Send(i,@GetTrueName))
                   AND NOT Send(i,@IsItemType,#type=ITEMTYPE_SPECIAL)
                {
@@ -2006,8 +1989,7 @@ messages:
       prToupee = player_toupee_q_rsc;
 
       lTemplate = Send(self,@GetPlayerUsing);
-      for i in lTemplate
-      {
+      foreach i in lTemplate      {
          Send(self,@UnuseItem,#what=i);
       }
 
@@ -2484,8 +2466,7 @@ messages:
       }
 
       lTemplate = Send(SYS,@GetItemTemplates);
-      for i in lTemplate
-      {
+      foreach i in lTemplate      {
          if Send(i,@IsItemType,#type=type)
             AND NOT Send(i,@IsItemType,#type=ITEMTYPE_SPECIAL)
          {
@@ -2871,10 +2852,8 @@ messages:
       }
 
       ClearTempString();
-      for i in plMonsterBudgetTypes
-      {
-         for j in Send(SYS,@GetMonsterTemplates)
-         {
+      foreach i in plMonsterBudgetTypes      {
+         foreach j in Send(SYS,@GetMonsterTemplates)         {
             if GetClass(j) = i
             {
                if length(plMonsterBudgetTypes) > 1
@@ -2935,8 +2914,7 @@ messages:
          plMonsterBudgetTypes = cons(cMonster, plMonsterBudgetTypes);
       }
 
-      for i in Send(SYS,@GetMonsterTemplates)
-      {
+      foreach i in Send(SYS,@GetMonsterTemplates)      {
          if GetClass(i) = cMonster
          {
             piMonsterBudgetTotalLevels = piMonsterBudgetTotalLevels + Send(i,@GetLevel);

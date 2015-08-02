@@ -282,7 +282,7 @@ messages:
       local i, each_obj, count, iRow, iCol;
       count = 0;
       
-      for i in plActive
+      foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
 	 iRow = send(each_obj,@getrow);
@@ -298,7 +298,7 @@ messages:
       local i, each_obj, iRow, iCol, bAOne, bATwo;
       bAOne = FALSE;
       bATwo = FALSE;
-      for i in plActive
+      foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
 	 iRow = send(each_obj,@getrow);
@@ -320,7 +320,7 @@ messages:
       bBThree = FALSE;
       bBFour = FALSE;
       
-      for i in plActive
+      foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
 	 iRow = send(each_obj,@getrow);
