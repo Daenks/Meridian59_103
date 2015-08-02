@@ -874,7 +874,7 @@ messages:
          OR (piDeadline-GetTime()) >= 1
       {
          % deadline met, or not yet started (for first node)
-         for lPrize in Send(oQuestEngine,@GetRandomPrizeFromQuestNodeTemplate,
+         foreach lPrize in Send(oQuestEngine,@GetRandomPrizeFromQuestNodeTemplate,
                             #index=piQuestNodeTemplateIndex)
          {
             Send(self,@AwardPrizeOrPenalty,#prize=lPrize,
@@ -1750,7 +1750,7 @@ messages:
       lQuesters = Send(poQuest,@GetQuesters);
 
       % penalties to the participants
-      for lPenalty in Send(oQuestEngine,@GetRandomPenaltyFromQuestNodeTemplate,
+      foreach lPenalty in Send(oQuestEngine,@GetRandomPenaltyFromQuestNodeTemplate,
                            #index=piQuestNodeTemplateIndex)
       {
          Send(self,@AwardPrizeOrPenalty,#prize=lPenalty,#recipients=lQuesters);

@@ -928,7 +928,7 @@ messages:
 
       % Get rid of any active quests so any new ones get scheduled with the
       % body instead.
-      for oQ in Nth(Send(oQE,@GetQuestTemplate,#index=QST_ID_ESTABLISH_NECROGUILD)
+      foreach oQ in Nth(Send(oQE,@GetQuestTemplate,#index=QST_ID_ESTABLISH_NECROGUILD)
                      ,QT_ACTIVE_QUESTS)
       {
          Send(oQ,@DeadlineExpired);

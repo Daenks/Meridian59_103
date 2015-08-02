@@ -270,7 +270,7 @@ messages:
 
       % Take stuff the user put there.
       oHolder = Send(SYS,@GetSystemHolder1);
-      for lTake_items in [ Send(oHolder,@GetHolderActive),
+      foreach lTake_items in [ Send(oHolder,@GetHolderActive),
                            Send(oHolder,@GetHolderPassive) ]
       {
          foreach i in lTake_items

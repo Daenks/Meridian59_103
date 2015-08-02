@@ -136,7 +136,7 @@ messages:
                      RID_B6, RID_C6, RID_D6, RID_E6, RID_F6, RID_G6, RID_H6, RID_I6
                    ];
                   
-      for i in [ RID_C7, RID_D7, RID_E7, RID_F7, RID_H7, RID_I7,
+      foreach i in [ RID_C7, RID_D7, RID_E7, RID_F7, RID_H7, RID_I7,
                  RID_F8, RID_TOS, RID_MARION, RID_JASWEST, RID_CORNOTH, RID_BAR_NORTH ]
       {
          plFlagRIDs = cons(i,plFlagRIDs);

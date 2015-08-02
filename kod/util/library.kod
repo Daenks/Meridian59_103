@@ -869,7 +869,7 @@ messages:
 
       %Add in the cond sellers to the mob lib, and permquesters too.
       foreach i in lSellers { Send(i,@InitCondSale); }
-      For i in lPermQs { Send(i,@InitPermQuest); }
+      foreach i in lPermQs { Send(i,@InitPermQuest); }
 
       return;
    }
@@ -3474,7 +3474,7 @@ messages:
             lPerm=Nth(i,2);
             lTemp=Nth(i,3);
             foreach j in lPerm {if j=id OR id=(-1) {lPerm=DelListElem(lPerm,j);}}
-            for j in lTemp {if j=id OR id=(-1) {lTemp=DelListElem(lTemp,j);}}
+            foreach j in lTemp {if j=id OR id=(-1) {lTemp=DelListElem(lTemp,j);}}
             if lPerm=$ AND lTemp=$ {plQuestUsers=DelListElem(plQuestUsers,i);}
 %            else { SetNth(plQuestUsers,iCount,[who,lPerm,lTemp]);} % (DISABLED -- AJM)
             return;
@@ -3531,7 +3531,7 @@ messages:
          if First(i) = who
          {
             foreach j in Nth(i,2) { if j = questID { return TRUE; } }
-            for j in Nth(i,3) { if j = questID { return TRUE; } }
+            foreach j in Nth(i,3) { if j = questID { return TRUE; } }
             return FALSE;
          }
       }

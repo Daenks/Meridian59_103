@@ -82,7 +82,8 @@ messages:
 
       if pbDebug
       {
-         foreach atcker in plAttackers         {
+         foreach atcker in plAttackers
+         {
             Debug("plAttackers: ",atcker);
          }
       }
@@ -97,16 +98,19 @@ messages:
       lInventoryContents = [plActive,plPassive];
       
       % Autogive loot to all players in plAttackers that are present
-      foreach oAttacker in plAttackers      {
+      foreach oAttacker in plAttackers
+      {
          if Send(self,@GetOwner) = Send(oAttacker,@GetOwner)
          {
-            foreach lTreasure in lInventoryContents            {
+            foreach lTreasure in lInventoryContents
+            {
                if pbDebug
                {
                   Debug("treasure list",lTreasure);
                }
                %Send(oAttacker,@NewHold,#what=lTreasure);
-               foreach oTreasure in lTreasure               {
+               foreach oTreasure in lTreasure
+               {
                   if pbDebug
                   {
                      Debug("treasure object",Send(oTreasure,@GetName));
@@ -131,21 +135,25 @@ messages:
          }
       }
       
-      foreach lTreasure in lInventoryContents      {
-         foreach oTreasure in lTreasure         {
+      foreach lTreasure in lInventoryContents
+      {
+         foreach oTreasure in lTreasure
+         {
             if Send(oTreasure,@DropOnDeath)
             {
                Send(oTreasure,@Delete);
             }
          }
       }
-      foreach oTreasure in plActive      {
+      foreach oTreasure in plActive
+      {
          if Send(oTreasure,@DropOnDeath)
             {
                Send(oTreasure,@Delete);
             }
       }
-      foreach oTreasure in plPassive      {
+      foreach oTreasure in plPassive
+      {
          if Send(oTreasure,@DropOnDeath)
             {
                Send(oTreasure,@Delete);
@@ -153,7 +161,8 @@ messages:
       }
 
       % Delete all elements in plAttackers.
-      foreach oAttacker in plAttackers      {
+      foreach oAttacker in plAttackers
+      {
          plAttackers = DelListElem(plAttackers,oAttacker);
       }
 

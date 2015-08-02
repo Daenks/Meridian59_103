@@ -120,7 +120,7 @@ messages:
                " isn't already on a quest of type ",piQuestTemplateIndex);
       }
 
-      for oQuest in Nth(Send(oQuestEngine,@GetQuestTemplate,
+      foreach oQuest in Nth(Send(oQuestEngine,@GetQuestTemplate,
                               #index=piQuestTemplateIndex),QT_ACTIVE_QUESTS)
       {
          foreach oQuester in Send(oQuest,@GetQuesters)
