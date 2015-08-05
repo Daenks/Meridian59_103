@@ -5160,6 +5160,7 @@ messages:
       plMonsterTemplates = cons(create(&GroundWorm),plMonsterTemplates);
       plMonsterTemplates = cons(create(&GroundWormLarva),plMonsterTemplates);
       plMonsterTemplates = cons(create(&GroundWormQueen),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&Human),plMonsterTemplates);
       plMonsterTemplates = cons(create(&RebelTroop),plMonsterTemplates);
       plMonsterTemplates = cons(create(&DukeTroop),plMonsterTemplates);
       plMonsterTemplates = cons(create(&PrincessTroop),plMonsterTemplates);
