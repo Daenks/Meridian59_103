@@ -149,9 +149,7 @@ messages:
    "When someone attacks with this weapon, they send us their attack value "
    "and we change it based on quality of weapon"
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
-
-      iBaseHit = hit_roll;
+      local oWeapAtt, i;
 
       if viHit_roll_modifier < 0
       {
@@ -159,10 +157,15 @@ messages:
       }
       else
       {
-         hit_roll = hit_roll + ((viHit_roll_modifier*piHits)/piHits_Init);
+         if piHits >= (piHits_Init/2)
+         {
+            hit_roll = hit_roll + viHit_roll_modifier;
+         }
+         else
+         {
+            hit_roll = hit_roll + ((viHit_roll_modifier*piHits*2)/piHits_Init);
+         }
       }
-      
-      iWeapHit = hit_roll;
 
       for i in plItem_Attributes
       {

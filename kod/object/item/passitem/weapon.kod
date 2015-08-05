@@ -256,33 +256,81 @@ messages:
       % Weapon type
       if viWeaponType = WEAPON_TYPE_BLUDGEON
       {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_MID;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_HITMOD_MID;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_HITMOD_MID*piHits*2)/piHits_Init);
+         }
       }
 
       if viWeaponType = WEAPON_TYPE_THRUST
       {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_HIGH;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_HITMOD_HIGH;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_HITMOD_HIGH*piHits*2)/piHits_Init);
+         }
       }
 
       if viWeaponType = WEAPON_TYPE_SLASH
       {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_LOW;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_HITMOD_LOW;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_HITMOD_LOW*piHits*2)/piHits_Init);
+         }
       }
 
       % Weapon quality modifiers
       if viWeaponQuality = WEAPON_QUALITY_LOW
       {
-         iBaseHit = iBaseHit + WEAPON_LOW_QUALITY_HITMOD;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_LOW_QUALITY_HITMOD;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_LOW_QUALITY_HITMOD*piHits*2)/piHits_Init);
+         }
       }
 
       if viWeaponQuality = WEAPON_QUALITY_HIGH
       {
-         iBaseHit = iBaseHit + WEAPON_HIGH_QUALITY_HITMOD;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_HIGH_QUALITY_HITMOD;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_HIGH_QUALITY_HITMOD*piHits*2)/piHits_Init);
+         }
       }
 
       if viWeaponQuality = WEAPON_NERUDITE
       {
-         iBaseHit = iBaseHit + WEAPON_NERUDITE_HITMOD;
+         if piHits >= (piHits_Init/2)
+         {
+            iBaseHit = iBaseHit + WEAPON_NERUDITE_HITMOD;
+         }
+         else
+         {
+            iBaseHit = iBaseHit + 
+                       ((WEAPON_NERUDITE_HITMOD*piHits*2)/piHits_Init);
+         }
       }
 
       for i in plItem_Attributes
@@ -305,45 +353,7 @@ messages:
 
    GetHitBonus()
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
-
-      iBaseHit = 0;
-
-      % Weapon type
-      if viWeaponType = WEAPON_TYPE_BLUDGEON
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_MID;
-      }
-
-      if viWeaponType = WEAPON_TYPE_THRUST
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_HIGH;
-      }
-
-      if viWeaponType = WEAPON_TYPE_SLASH
-      {
-         iBaseHit = iBaseHit + WEAPON_HITMOD_LOW;
-      }
-
-      % Weapon quality modifiers
-      if viWeaponQuality = WEAPON_QUALITY_LOW
-      {
-         iBaseHit = iBaseHit + WEAPON_LOW_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_QUALITY_HIGH
-      {
-         iBaseHit = iBaseHit + WEAPON_HIGH_QUALITY_HITMOD;
-      }
-
-      if viWeaponQuality = WEAPON_NERUDITE
-      {
-         iBaseHit = iBaseHit + WEAPON_NERUDITE_HITMOD;
-      }
-
-      iBaseHit = iBaseHit + piHitBonus;
-
-      return iBaseHit;
+      return Send(self,@ModifyHitRoll);
    }
 
    GetBaseDamage(who=$,target=$)
@@ -722,6 +732,12 @@ messages:
       if random(1,100) < WEAPON_TAKE_DAMAGE_PCT
       {
          piHits = piHits - 1;
+         if poOwner <> $
+            AND IsClass(poOwner,&User)
+            AND piHits < (piHits_Init/2)
+         {
+            Post(poOwner,@DrawOffense);
+         }
       }
 
       if piHits <= 0
