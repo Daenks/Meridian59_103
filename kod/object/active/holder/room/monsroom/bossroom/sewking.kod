@@ -83,13 +83,6 @@ resources:
       "You gasp for breath in the last half-inch of air left near the "
       "ceiling, taking as much water as air into your lungs."
 
-%   sewking_bones_name = "pile of bones"
-%   sewking_bones_icon = skelX.bgf
-%   sewking_bones_desc = \
-%      "These are the splintered, well-gnawed remains of some unlucky, "
-%      "and probably unwise, explorer.  You shudder to think of the fate "
-%      "that must have befallen this poor soul."
-
    SewerKingLair_waterfall_sound = wfall2.wav
 
 classvars:
@@ -193,26 +186,6 @@ messages:
       Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,
             #fine_row=48,#fine_col=00);
 
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=00,#fine_col=00);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=16,#fine_col=00);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=32,#fine_col=00);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=48,#fine_col=00);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=00,#fine_col=16);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=16,#fine_col=16);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=32,#fine_col=16);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=48,#fine_col=16);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=00,#fine_col=32);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=16,#fine_col=32);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=32,#fine_col=32);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=48,#fine_col=32);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=00,#fine_col=48);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=16,#fine_col=48);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=32,#fine_col=48);
-      %Send(self,@NewHold,#what=create(&Skull),#new_row=20,#new_col=36,#fine_row=48,#fine_col=48);
-      %Send(self,@NewHold,#what=create(&sign,#desc=sewking_bones_desc,
-      %      #name=sewking_bones_name,#icon=sewking_bones_icon),
-      %      #new_row=21,#new_col=26,#fine_row=32,#fine_col=55);
-
       Send(self,@NewHold,#what=create(&OrnamentalObject,#type=OO_BONES),
             #new_row=21,#new_col=26,#fine_row=32,#fine_col=55);
 
@@ -222,7 +195,7 @@ messages:
 %%%%%%%%%%%%%%%%%%%
 % Lever/Door Code %
 %%%%%%%%%%%%%%%%%%%
-%
+
 
    SomethingChanged(what=$)
    {
@@ -253,7 +226,7 @@ messages:
       propagate;
    }
 
-%
+
 %%%%%%%%%%%%%%%%%%%%%%%
 % end Lever/Door Code %
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -261,14 +234,10 @@ messages:
 %%%%%%%%%%%%%%%%%%%%%%
 % Monster death code %
 %%%%%%%%%%%%%%%%%%%%%%
-%
+
    BossKilledTrigger()
    {
       local i;
-
-      % These should be placed in Killed() of monster:
-      %        lupogg king death wail
-      %        cast earthquake
 
       % Raise the water, lower the waterfalls:
       Send(self,@SomethingWaveRoom,#wave_rsc=SewerKingLair_water_sound);
@@ -305,7 +274,7 @@ messages:
       propagate;
    }
 
-%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % end Monster death code%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -314,7 +283,7 @@ messages:
 %%%%%%%%%%%%%%%%%%%%%%%
 % Boss resetting code %
 %%%%%%%%%%%%%%%%%%%%%%%
-%
+
 
    ResetBoss()
    {
@@ -335,7 +304,7 @@ messages:
 
       propagate;
    }
-%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % end Boss resetting code %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -343,7 +312,7 @@ messages:
 %%%%%%%%%%%%%%%%%%
 % Blink handling %
 %%%%%%%%%%%%%%%%%%
-%
+
 
    FindRegion(who=$,testrow=$,testcol=$)
    "Call with either a user or a pair of coords to test which region "
@@ -433,7 +402,7 @@ messages:
       propagate;
    }
 
-%
+
 %%%%%%%%%%%%%%%%%%%%%%
 % end Blink handling %
 %%%%%%%%%%%%%%%%%%%%%%
@@ -441,7 +410,7 @@ messages:
 %%%%%%%%%%%%
 % Drowning %
 %%%%%%%%%%%%
-%
+
    IsInDrownArea(who=$)
    {
       local iRow,iCol;
@@ -473,9 +442,6 @@ messages:
          if IsClass(First(i),&User)
             AND Send(self,@IsInDrownArea,#who=First(i))
          {
-            % Do horrible nasty drowning stuff here.  (heh, heh, heh...)
-            % but for now, just a teleport.  :(
-            %Send(self,@Teleport,#what=First(i),#region=REGION_W);
 
             Send(self,@DrownIntervalTrigger);
 
@@ -499,8 +465,7 @@ messages:
          if IsClass(First(i),&User)
             AND Send(self,@IsInDrownArea,#who=First(i))
          {
-            % Do horrible nasty drowning stuff here.  (heh, heh, heh...)
-            % damage, etc.
+
             Send(self,@SomethingWaveRoom,#what=First(i),
                   #wave_rsc=SewerKingLair_drowning_sound);
             Send(First(i),@MsgSendUser,#message_rsc=SewerKingLair_drowning);
@@ -535,7 +500,7 @@ messages:
       return;
    }
 
-%
+
 %%%%%%%%%%%%%%%%
 % end Drowning %
 %%%%%%%%%%%%%%%%
