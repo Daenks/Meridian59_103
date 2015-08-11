@@ -176,7 +176,7 @@ resources:
       "pine tree, elm tree, spider tree, fey tree, bush (low res), shrub, "
       "raza shrub, vine tree, kichan tree, kriipa tree, oak tree, "
       "spine vine (Brax tree), necro vine, rock1, rock2, rock3, rock4, rock5, "
-      "rock 6, stalagmite1, stalagmite2, stool, barstool and table."
+      "rock 6, stalagmite1, stalagmite2, stool, barstool and table, dragons skull."
 
    dm_dontinterfere = "~B~gYou should not try to interfere with the game."
 
@@ -1042,6 +1042,11 @@ messages:
             oObject = Create(&OrnamentalObject,#type=OO_STALACTITE2);
             bItemFound = TRUE;
          }
+         if NOT bItemFound AND StringContain(string,"place dragons skull")
+         {
+            oObject = Create(&OrnamentalObject,#type=OO_DRAGSKUL);
+            bItemFound = TRUE;
+         }
          if oObject <> $
          {
             Send(poOwner,@NewHold,#what=oObject,#new_row=piRow,#new_col=piCol,
@@ -1049,6 +1054,7 @@ messages:
 
             return;
          }
+         
       }
 
       %

@@ -240,7 +240,7 @@ resources:
    oo_quiver_name = "quiver"
    oo_quiver_icon = quiver.bgf
    oo_quiver_desc = "Handmade by Hanla awaiting retrieval by a wealthy archer."
-  
+
    oo_rice_name = "bag of purple potatoes"
    oo_rice_icon = rice.bgf
    oo_rice_desc = "These sticky potatoes make for excellent pancakes in the morning."
@@ -249,11 +249,11 @@ resources:
    oo_barrel_icon = barrel.bgf
    oo_barrel_desc = "This is a barrel used to store fruity Kin pekonch, light enough "
       "to be enjoyed by anyone."
-   
+
    oo_barrel2_name = "storage barrel"
    oo_barrel2_icon = barrel2.bgf
    oo_barrel2_desc = "This is a barrel used to store Teot pekonch, comparable to a hefty merlot."
-   
+
    oo_bees_name = "beehive"
    oo_bees_icon = bees.bgf
    oo_bees_desc = "Wulfgang's bees are hard at work.  The small jungle bees produce honey at a "
@@ -267,17 +267,17 @@ resources:
    oo_bigurn_icon = bigurn.bgf
    oo_bigurn_desc = "It is unclear what this urn is meant to store, perhaps it is only there "
       "for decoration."
-   
+
    oo_block_name = "chopping block"
    oo_block_icon = block.bgf
    oo_block_desc = "Used to split wood and occasionally behead an animal.  The axe would "
       "be useless in a battle."
-   
+
    oo_bluejug_name = "decorative blue urn"
    oo_bluejug_icon = bluejug.bgf
    oo_bluejug_desc = "This ornate earthenware is empty right now. You can only wonder as "
       "to its true purpose."
-   
+
    oo_tallurn_name = "slag urn"
    oo_tallurn_icon = tallurn.bgf
    oo_tallurn_desc = "You decide it was a bad idea to look in here.  The brown urn is "
@@ -286,15 +286,15 @@ resources:
    oo_bucket_name = "well bucket"
    oo_bucket_icon = bucket.bgf
    oo_bucket_desc = "Used for hauling water up from the well."
-   
+
    oo_bunny_name = "dead rabbits"
    oo_bunny_icon = bunny.bgf
    oo_bunny_desc = "The haul from an early morning hunting trip."
-   
+
    oo_corn_name = "browncorn plant"
    oo_corn_icon = corn.bgf
    oo_corn_desc = "The browncorn cobs of this healthy stalk have been recently harvested."
-   
+
    oo_dress1b_name = "dress form"
    oo_dress1b_icon = dress1b.bgf
    oo_dress1b_desc = "Work in progress."
@@ -307,7 +307,7 @@ resources:
    oo_ironpot_icon = ironpot.bgf
    oo_ironpot_desc = "A small iron pot used for cooking broth and soups.  You smell the "
       "fishy aroma of a salty Mapkina stew."
-   
+
    oo_lantern_name = "iron lantern"
    oo_lantern_icon = lantern.bgf
    oo_lantern_desc = "The iron sides protect the candle flame within."
@@ -315,24 +315,24 @@ resources:
    oo_lettuce_name = "Marion cabbage"
    oo_lettuce_icon = lettuce.bgf
    oo_lettuce_desc = "A full head of Marion Cabbage grows here."
-  
+
    oo_mugs_name = "empty pekonch mugs"
    oo_mugs_icon = mugs.bgf
    oo_mugs_desc = "Waiting to be cleaned up."
-   
+
    oo_pigeon_name = "dead palm grouse"
    oo_pigeon_icon = pigeon.bgf
    oo_pigeon_desc = "Baked with browncorn, these birds will make an excellent evening meal."
-   
+
    oo_pitcher1_name = "pitcher of tea"
    oo_pitcher1_icon = pitcher1.bgf
    oo_pitcher1_desc = "Piping hot pitcher of herbal tea.  Its bitter taste must mean that "
       "it is only used for medicinal purposes."
-   
+
    oo_pitcher2_name = "pitcher of telo juice"
    oo_pitcher2_icon = pitcher2.bgf
    oo_pitcher2_desc = "Too sweet for the tastes of a mainlander like yourself."
-   
+
    oo_pitcher3_name = "pitcher of egg yolk"
    oo_pitcher3_icon = pitcher3.bgf
    oo_pitcher3_desc = "This pitcher is filled with viscous yolks of the palm grouse."
@@ -382,7 +382,11 @@ resources:
    oo_head2_name = "skull"
    oo_head2_icon = head.bgf
    oo_head2_desc = "A freakishly large skull sits atop a wooden post.  A warning, perhaps?"
-        
+
+   oo_dragskul_name = "dragons skull"
+   oo_dragskul_icon = dragskul.bgf
+   oo_dragskul_desc = "A skull of a once mighty dragon, one can only imagine what caused its death."
+
    oo_bones_name = "pile of bones"
    oo_bones_icon = bonepile.bgf
    oo_bones_desc = \
@@ -444,9 +448,11 @@ resources:
    oo_necgrave1_name = "grave"
    oo_necgrave1_icon = necgrav1.bgf
    oo_necgrave1_desc = "Somehow you doubt that whoever was buried here rests in peace."
+
    oo_necgrave2_name = "grave"
    oo_necgrave2_icon = necgrav2.bgf
    oo_necgrave2_desc = "Somehow you doubt that whoever was buried here rests in peace."
+
    oo_necgrave3_name = "grave"
    oo_necgrave3_icon = necgrav3.bgf
    oo_necgrave3_desc = "Somehow you doubt that whoever was buried here rests in peace."
@@ -462,11 +468,11 @@ resources:
    oo_skull8_name = "skull"
    oo_skull8_icon = skulbrok.bgf
    oo_skull8_desc = "The skull of something definitely inhuman."
-   
+
    oo_skull9_name = "skull"
    oo_skull9_icon = skultusk.bgf
    oo_skull9_desc = "The skull of something definitely inhuman."
-   
+
    oo_skull10_name = "horned skull"
    oo_skull10_icon = skulhorn.bgf
    oo_skull10_desc = "What this creature might have looked like while alive simply does not bear thinking on."
@@ -478,12 +484,15 @@ resources:
    oo_dung_name = "dung"
    oo_dung_icon = dung.bgf
    oo_dung_desc = "A fresh steaming pile of dung."
+
    oo_hay_name = "hay bundle"
    oo_hay_icon = hay.bgf
    oo_hay_desc = "A bundle of hay, picked some time ago.  It looks like something small has been nibbling on it."
+
    oo_rockB_name = "rock"
    oo_rockB_icon = rockB.bgf
    oo_rockB_desc = "A big rock."
+
    oo_rockC_name = "boulder"
    oo_rockC_icon = rockC.bgf
    oo_rockC_desc = "A chunk of Kardde limestone."
@@ -491,13 +500,16 @@ resources:
    oo_goathead_name = "goat head"
    oo_goathead_icon = goathead.bgf
    oo_goathead_desc = "This must be the grisly remains of some bizarre mystical ritual.  "
+
    oo_mortpest_name = "mortar and pestle"
    oo_mortpest_icon = mortpest.bgf
    oo_mortpest_desc = "A common tool used to prepare ingredients for cooking, or for other more mystical "
       "pursuits."
-   oo_necbottle_name = "bottle"
+
+      oo_necbottle_name = "bottle"
    oo_necbottle_icon = necbottl.bgf
    oo_necbottle_desc = "A bottle containing some strange fluid."
+
    oo_necvase_name = "vase"
    oo_necvase_icon = necvase.bgf
    oo_necvase_desc = "This vase is obviously of ancient design.  You can only vaguely guess at how old it must "
@@ -510,10 +522,12 @@ resources:
    oo_necvase3_icon = necvase3.bgf
    oo_necvase3_desc = "This vase is obviously of ancient design.  You can only vaguely guess at how old it must "
       "be."
+
    oo_sacrificialbowl_name = "sacrificial bowl"
    oo_sacrificialbowl_icon = sacrbowl.bgf
    oo_sacrificialbowl_desc = "A bowl filled with something unidentifiable.  The contents look organic, but are "
       "probably not of this world."
+
    oo_stonechair_name = "stone chair"
    oo_stonechair_icon = stochair.bgf
    oo_stonechair_desc = "A chair carved out of stone.  It doesn't look very comfortable."
@@ -522,6 +536,7 @@ resources:
    oo_necvine1_icon = necvine1.bgf
    oo_necvine1_desc = "Something about this vine looks otherworldly.  You half expect it to reach out and "
       "grab your ankle."
+
    oo_necslime_name = "slimy deposit"
    oo_necslime_icon = necslime.bgf
    oo_necslime_desc = "The origin of this deposit of slime is beyond your ken.  Sure is yucky, though."
@@ -529,6 +544,7 @@ resources:
    oo_razshrub_name = "shrub"
    oo_razshrub_icon = razshrub.bgf
    oo_razshrub_desc = "This is a woody plant with multiple permanent stems branching near the ground."
+
    oo_raztree1_name = "tree"
    oo_raztree1_icon = raztree1.bgf
    oo_raztree1_desc = "These trees offer cool shade and beautiful scenery."
@@ -548,7 +564,8 @@ resources:
       "These enormous, chitinous creatures seem to be everywhere, but particularly prefer "
       "to cling to high, mountainous areas.  Fledgling adventurers should run, should they see "
       "one of these."
-   oo_modavar_name = "miniature avar"
+
+      oo_modavar_name = "miniature avar"
    oo_modavar_icon = modavar.bgf
    oo_modavar_desc = "A plaque below the model reads:\n"
       "This is a replica of one of the race of bird-people who inhabit the recently rediscovered Lost Island "
@@ -558,31 +575,37 @@ resources:
       "with the humans on the island.  One should therefore exercise caution in any encounter with an avar, "
       "as they are truly fearsome opponents in combat.  Particularly dangerous are the rarely-seen avar "
       "shaman, whose third eye gives them strange mystical abilities."
-   oo_modlupog_name = "miniature lupogg"
+
+      oo_modlupog_name = "miniature lupogg"
    oo_modlupog_icon = modlupog.bgf
    oo_modlupog_desc = "A plaque below the model reads:\n"
       "A race of relatively peaceful amphibious creatures rumored to dwell in the sewers beneath the major cities."
-   oo_modorc_name = "miniature orc"
+
+      oo_modorc_name = "miniature orc"
    oo_modorc_icon = modorc.bgf
    oo_modorc_desc = "A plaque below the model reads:\n"
       "A race of evil, subhuman creatures.  They were thought to be all but exterminated in the Konima wars, "
       "but an ancient warren has recently been rediscovered, and found to be teeming with the crude vermin."
-   oo_modspider_name = "miniature baby spider"
+
+      oo_modspider_name = "miniature baby spider"
    oo_modspider_icon = modspdr.bgf
    oo_modspider_desc = "A plaque below the model reads:\n"
       "Common vermin that can be found wandering around Meridian, these "
       "are excellent opponents for fledgling adventurers to develop their "
       "fighting skills."
-   oo_modcentipede_name = "miniature giant centipede"
+
+      oo_modcentipede_name = "miniature giant centipede"
    oo_modcentipede_icon = modcen.bgf
    oo_modcentipede_desc = "A plaque below the model reads:\n"
       "These are relatively peaceful insects, but when provoked can be quite vicious."
-   oo_modfungusbeast_name = "miniature fungus beast"
+
+      oo_modfungusbeast_name = "miniature fungus beast"
    oo_modfungusbeast_icon = modfung.bgf
    oo_modfungusbeast_desc = "A plaque below the model reads:\n"
       "Often mistaken for a cluster of mushrooms, the fungus beast is a relatively "
       "peaceful creature, though if provoked it will certainly defend its territory."
-   oo_modfey_name = "miniature fey elhai"
+
+      oo_modfey_name = "miniature fey elhai"
    oo_modfey_icon = modfey.bgf
    oo_modfey_desc = "A plaque below the model reads:\n"
       "The good fairy folk of the Vale of Sorrow, the Fey Elhai are locked in a perpetual "
@@ -591,47 +614,58 @@ resources:
    oo_modscimitar_name = "model scimitar"
    oo_modscimitar_icon = scimitar.bgf
    oo_modscimitar_desc = "A plaque below the model reads:\nThe preferred weapon of the advanced warriors of the land."
+
    oo_modhammer_name = "model hammer"
    oo_modhammer_icon = hammer.bgf
    oo_modhammer_desc = "A plaque below the model reads:\nA sturdy weapon, oft found around the hills of Jasper."
+
    oo_modshortsword_name = "model short sword"
    oo_modshortsword_icon = shswd.bgf
    oo_modshortsword_desc = "A plaque below the model reads:\nA suitable weapon for a starting adventurer.  Cheap, crude, but suitable for smaller beasts."
+
    oo_modhelm_name = "model helm"
    oo_modhelm_icon = helm.bgf
    oo_modhelm_desc = "A plaque below the model reads:\nA wizard once said, \"I don't see why warriors feel the need "
       "to wear helms anyway.  It's not like they ever use what a helm protects.\""
-   
+
    oo_modplatearmor_name = "model plate armor"
    oo_modplatearmor_icon = plateamr.bgf
    oo_modplatearmor_desc = "A plaque below the model reads:\nThe solid and seamless construction of this "
       "armor makes it more than preferred against an enemy warrior.  However, "
       "sorcerers have found ways to turn the armor of their opponents to their advantage."
-   oo_modgauntlets_name = "model gauntlets"
+
+      oo_modgauntlets_name = "model gauntlets"
    oo_modgauntlets_icon = gauntlet.bgf
    oo_modgauntlets_desc = "A plaque below the model reads:\nRumor has it that these mystical gloves allow their wearer to strike with precision."
 
    oo_modpotion_name = "model potion"
    oo_modpotion_icon = potion01.bgf
    oo_modpotion_desc = "A plaque below the model reads:\nMystical elixers are common in Meridian."
+
    oo_modscroll_name = "model scroll"
    oo_modscroll_icon = scr01.bgf
    oo_modscroll_desc = "A plaque below the model reads:\nLetters, scrolls and recipes are often the objects of quests!"
+
    oo_modwand_name = "model wand"
    oo_modwand_icon = wand2.bgf
    oo_modwand_desc = "A plaque below the model reads:\nThis powerful artifact allows the bearer to strike his foe with fire!"
+
    oo_modtoken_name = "model token"
    oo_modtoken_icon = tcat.bgf
    oo_modtoken_desc = "A plaque below the model reads:\nA mystical item so coveted that the throne of Meridian rides upon it!"
+
    oo_modlute_name = "model lute"
    oo_modlute_icon = music.bgf
    oo_modlute_desc = "A plaque below the model reads:\nThe instrument of the common bard."
+
    oo_modprism_name = "model prism"
    oo_modprism_icon = prism3.bgf
    oo_modprism_desc = "A plaque below the model reads:\nA powerful device allowing multiple casters to combine their energies into more powerful spells."
+
    oo_modinkycap_name = "wax inkycap mushrooms"
    oo_modinkycap_icon = mushroom.bgf
    oo_modinkycap_desc = "A plaque below the model reads:\nRich and meaty in texture, inkycap mushrooms are considered ambrosia by the populace of Meridian, and their restorative properties are widely documented."
+
    oo_modsignetring_name = "model signet ring"
    oo_modsignetring_icon = signet.bgf
    oo_modsignetring_desc = "A plaque below the model reads:\nEveryone seems to have one of these rings.  And everyone seems to lose them, as well."
@@ -639,18 +673,23 @@ resources:
    oo_modnewsb_name = "miniature newsball"
    oo_modnewsb_icon = modnewsb.bgf
    oo_modnewsb_desc = "A plaque below the model reads:\nThe common means for a citizen to trade information with others."
+
    oo_modshrin_name = "miniature shrine"
    oo_modshrin_icon = modshrin.bgf
    oo_modshrin_desc = "A plaque below the model reads:\nThe shrines of Meridian undoubtedly have great mystical significance, but the scholars of the land have been unable to agree on what, precisely, that is."
+
    oo_modthron_name = "miniature throne"
    oo_modthron_icon = modthron.bgf
    oo_modthron_desc = "A plaque below the model reads:\nA model of the throne that the great King Far'Nohl once sat in, before his fall from grace."
+
    oo_modchalice_name = "model chalice of the rain"
    oo_modchalice_icon = chalice.bgf
    oo_modchalice_desc = "A plaque below the model reads:\nThis ancient holy grail has long been lost, bound to the darkness by the presence of evil."
+
    oo_modrelic_name = "model relic of Qor"
    oo_modrelic_icon = scepter.bgf
    oo_modrelic_desc = "A plaque below the model reads:\nThe purpose of this unholy artifact has been lost."
+
    oo_modmananode_name = "miniature mana node"
    oo_modmananode_icon = modnode.bgf
    oo_modmananode_desc = "A plaque below the model reads:\nA mage can acquire greater power by melding with this influx of mystical energy."
@@ -706,13 +745,13 @@ resources:
    oo_Qormas_snowman_icon = snowman.bgf
    oo_Qormas_snowman_desc = "This snowman seems innocent enough, but you can't "
       "overcome the feeling that there is something inherently evil about it."
-      
+
    oo_Qormas_tree_name = "qormas tree"
    oo_Qormas_tree_icon = qormastree.bgf
    oo_Qormas_tree_desc = "Each year millions of evil children race to see what "
       "weapon of death is elegantly wrapped and waiting for them under the "
       "qormas tree. "
-      
+
    oo_Qormas_tree_big_name = "qormas tree "
    oo_Qormas_tree_big_icon = qormastreebig.bgf
    oo_Qormas_tree_big_desc = "Each year millions of evil children race to see what "
@@ -722,8 +761,7 @@ resources:
    oo_Qormas_wreath_name = "qormas wreath"
    oo_Qormas_wreath_icon = wreath.bgf
    oo_Qormas_wreath_desc = "A Qormas Wreath"
-   
-   
+
 classvars:
 
 properties:
@@ -1159,6 +1197,8 @@ messages:
       {  vrName = oo_skull9_name;  vrIcon = oo_skull9_icon;  vrDesc = oo_skull9_desc;  }
       if type = OO_SKULL10
       {  vrName = oo_skull10_name;  vrIcon = oo_skull10_icon;  vrDesc = oo_skull10_desc;  }
+      if type = OO_DRAGSKUL
+      {  vrName = oo_dragskul_name;  vrIcon = oo_dragskul_icon;  vrDesc = oo_dragskul_desc;  }
 
       if type = OO_NECROCK
       {  vrName = oo_necrock_name;  vrIcon = oo_necrock_icon;  vrDesc = oo_necrock_desc;  }
