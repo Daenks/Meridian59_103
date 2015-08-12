@@ -96,7 +96,7 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 2, 17, RID_F3, 30, 23, ROTATE_NONE ],plExits);
+      plExits = Cons([ 60, 44, RID_SEWER_KING, 3, 47, ROTATE_NONE ],plExits);
       plExits = Cons([ 2, 18, RID_F3, 30, 23, ROTATE_NONE ],plExits);
 
       propagate;

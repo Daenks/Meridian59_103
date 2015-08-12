@@ -176,7 +176,7 @@ messages:
 
       plEdge_Exits = Cons([LEAVE_EAST, RID_BAR_SEWER3, 35, 1, ROTATE_NONE],plEdge_Exits);
       plEdge_Exits = Cons([LEAVE_SOUTH, RID_JAS_SEWER3, 2, 19, ROTATE_NONE],plEdge_Exits);
-      plExits = Cons([ 3, 47, RID_GUILDH16, 20, 47, ROTATE_NONE],plExits);
+      plExits = Cons([ 3, 47, RID_GUILDH16, 60, 44, ROTATE_NONE],plExits);
 
       propagate;
    }
