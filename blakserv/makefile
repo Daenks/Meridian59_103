@@ -12,7 +12,7 @@ BLAKSERVLINKFLAGS = /STACK:0x180000 /map /debug /SUBSYSTEM:WINDOWS",5.01"
 
 SOURCEDIR = .
 
-LIBS = gdi32.lib user32.lib wsock32.lib winmm.lib comctl32.lib libmysql.lib libcurl.lib
+LIBS = gdi32.lib user32.lib wsock32.lib winmm.lib comctl32.lib libmysql.lib libcurl.lib jansson.lib
 
 OBJS =  \
 	$(OUTDIR)\main.obj \
@@ -83,6 +83,7 @@ OBJS =  \
 	$(OUTDIR)\files.obj \
 	$(OUTDIR)\sprocket.obj \
 	$(OUTDIR)\database.obj \
+	$(OUTDIR)\httpauth.obj \
 
 
 all : makedirs $(OUTDIR)\blakserv.exe
@@ -100,7 +101,9 @@ $(OUTDIR)\blakserv.exe: $(OBJS) $(OUTDIR)\blakserv.res
 	$(CC) $(CFLAGS) -Fo$(OUTDIR)/ /FpCpch /Fd$(OUTDIR)\vc90.pdb -c $(SOURCEDIR)\version.c
 	$(LINK)	$** $(LIBS) -OUT:$@ $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
 	$(CP) $@ $(BLAKSERVRUNDIR)
-	$(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR) >nul
-	$(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR) >nul
+	$(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\libeay32.dll $(BLAKSERVRUNDIR)
+   $(CP) $(BLAKBINDIR)\ssleay32.dll $(BLAKSERVRUNDIR)
 
 !include $(TOPDIR)\rules.mak
