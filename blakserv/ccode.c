@@ -4957,6 +4957,8 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 			break;
 	}
 
+#endif
+
 	return NIL;
 }
 

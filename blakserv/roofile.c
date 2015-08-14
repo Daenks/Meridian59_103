@@ -67,7 +67,7 @@
 /*                                   These are not defined in header                                          */
 /**************************************************************************************************************/
 
-__inline float GetSectorHeightFloorWithDepth(Sector* Sector, V2* P)
+__inline float GetSectorHeightFloorWithDepth(SectorInfo* Sector, V2* P)
 {
    float height = SECTORHEIGHTFLOOR(Sector, P);
    unsigned int depthtype = Sector->Flags & SF_MASK_DEPTH;
@@ -766,7 +766,7 @@ void BSPChangeTexture(room_type* Room, unsigned int ServerID, unsigned short New
    {
       for (int i = 0; i < Room->SectorsCount; i++)
       {
-         Sector* sector = &Room->Sectors[i];
+         SectorInfo* sector = &Room->Sectors[i];
 
          // server ID does not match
          if (sector->ServerID != ServerID)
@@ -789,7 +789,7 @@ void BSPMoveSector(room_type* Room, unsigned int ServerID, bool Floor, float Hei
 {
    for (int i = 0; i < Room->SectorsCount; i++)
    {
-      Sector* sector = &Room->Sectors[i];
+      SectorInfo* sector = &Room->Sectors[i];
 
       // server ID does not match
       if (sector->ServerID != ServerID)
@@ -1584,12 +1584,12 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate sectors mem
-   room->Sectors = (Sector*)AllocateMemory(
-      MALLOC_ID_ROOM, room->SectorsCount * sizeof(Sector));
+   room->Sectors = (SectorInfo*)AllocateMemory(
+      MALLOC_ID_ROOM, room->SectorsCount * sizeof(SectorInfo));
 
    for (i = 0; i < room->SectorsCount; i++)
    {
-      Sector* sector = &room->Sectors[i];
+      SectorInfo* sector = &room->Sectors[i];
 	   
       // serverid
       if (fread(&sector->ServerID, 1, 2, infile) != 2)
@@ -1910,7 +1910,7 @@ void BSPFreeRoom(room_type *room)
    FreeMemory(MALLOC_ID_ROOM, room->TreeNodes, room->TreeNodesCount * sizeof(BspNode));
    FreeMemory(MALLOC_ID_ROOM, room->Walls, room->WallsCount * sizeof(Wall));
    FreeMemory(MALLOC_ID_ROOM, room->Sides, room->SidesCount * sizeof(Side));
-   FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(Sector));
+   FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(SectorInfo));
 
    room->TreeNodesCount = 0;
    room->WallsCount = 0;

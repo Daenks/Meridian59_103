@@ -17,15 +17,23 @@
 
 #include "blakserv.h"
 
+
+#ifdef BLAK_PLATFORM_WINDOWS
 HANDLE muxServer;
+#else
+CRITICAL_SECTION muxServer;
+#endif
 
 CRITICAL_SECTION csQuit;
 Bool quit;
 
 void InitInterfaceLocks()
 {
+#ifdef BLAK_PLATFORM_WINDOWS
    muxServer = CreateMutex(NULL,FALSE,NULL);
-
+#else
+   InitializeCriticalSection(&muxServer);
+#endif
    quit = False;
    InitializeCriticalSection(&csQuit);
    
@@ -33,17 +41,29 @@ void InitInterfaceLocks()
 
 void EnterServerLock()
 {
+#ifdef BLAK_PLATFORM_WINDOWS
    WaitForSingleObject(muxServer,INFINITE);
+#else
+   EnterCriticalSection(&muxServer);
+#endif
 }
 
 Bool TryEnterServerLock()
 {
+#ifdef BLAK_PLATFORM_WINDOWS
    return WaitForSingleObject(muxServer,50) == WAIT_OBJECT_0;
+#else
+   TryEnterCriticalSection(&muxServer);
+#endif
 }
 
 void LeaveServerLock()
 {
+#ifdef BLAK_PLATFORM_WINDOWS
    ReleaseMutex(muxServer);
+#else
+   LeaveCriticalSection(&muxServer);
+#endif
 }
 
 void SetQuit()

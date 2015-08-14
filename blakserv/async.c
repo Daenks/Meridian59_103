@@ -162,6 +162,7 @@ void AcceptSocketConnections(int socket_port,int connection_type)
 
 void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 {
+#ifdef BLAK_PLATFORM_WINDOWS
 	SOCKET new_sock;
 	SOCKADDR_IN6 acc_sin;    /* Accept socket address - internet style */
 	int acc_sin_len;        /* Accept socket address length */
@@ -170,6 +171,16 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 	struct in6_addr peer_addr;
 	connection_node conn;
 	session_node *s;
+#else
+    SOCKET new_sock;
+    SOCKADDR_IN acc_sin;    /* Accept socket address - internet style */
+    socklen_t acc_sin_len;        /* Accept socket address length */
+    SOCKADDR_IN peer_info;
+    socklen_t peer_len;
+    struct in_addr peer_addr;
+    connection_node conn;
+    session_node *s;
+#endif
 	
 	if (event != FD_ACCEPT)
 	{
@@ -269,6 +280,7 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 
 Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 {
+#ifdef BLAK_PLATFORM_WINDOWS
 	IN6_ADDR mask;
 	int i;
 	BOOL skip;
@@ -301,6 +313,50 @@ Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 		return True;
 	}
 	return False;
+#else
+    IN_ADDR mask;
+    int i;
+
+    unsigned char a1,a2,a3,a4,b1,b2,b3,b4;
+
+    for (i=0;i<num_maintenance_masks;i++)
+    {
+        mask.s_addr = inet_addr(maintenance_masks[i]);
+        if (mask.s_addr == INADDR_NONE)
+        {
+            eprintf("CheckMaintenanceMask has invalid configured mask %s\n",
+                      maintenance_masks[i]);
+            continue;
+        }
+
+        a1 = addr->sin_addr.s_addr & 0xFF;
+        a2 = (addr->sin_addr.s_addr & 0xFF00) >> 8;
+        a3 = (addr->sin_addr.s_addr & 0xFF0000) >> 16;
+        a4 = (addr->sin_addr.s_addr & 0xFF000000) >> 24;
+        b1 = mask.s_addr & 0xFF;
+        b2 = (mask.s_addr & 0xFF00) >> 8;
+        b3 = (mask.s_addr & 0xFF0000) >> 16;
+        b4 = (mask.s_addr & 0xFF000000) >> 24;
+
+        /* for each byte of the mask, if it's non-zero, the client must match it */
+
+        if ((b1 != 0) && (a1 != b1))
+            continue;
+
+        if ((b2 != 0) && (a2 != b2))
+            continue;
+
+        if ((b3 != 0) && (a3 != b3))
+            continue;
+
+        if ((b4 != 0) && (a4 != b4))
+            continue;
+
+        return True;
+    }
+    return False;
+
+#endif
 }
 
 static HANDLE name_lookup_handle;
@@ -405,13 +461,17 @@ void AsyncSocketWrite(SOCKET sock)
 	
 	if (s->hangup)
 		return;
-	
+
+#ifdef BLAK_PLATFORM_WINDOWS	
 	/* dprintf("got async write session %i\n",s->session_id); */
 	if (WaitForSingleObject(s->muxSend,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("AsyncSocketWrite couldn't get session %i muxSend\n",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 	
 	while (s->send_list != NULL)
 	{
@@ -422,9 +482,13 @@ void AsyncSocketWrite(SOCKET sock)
 		{
 			if (GetLastError() != WSAEWOULDBLOCK)
 			{
+#ifdef BLAK_PLATFORM_WINDOWS
 				/* eprintf("AsyncSocketWrite got send error %i\n",GetLastError()); */
 				if (!ReleaseMutex(s->muxSend))
 					eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+                LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 				HangupSession(s);
 				return;
 			}
@@ -443,8 +507,12 @@ void AsyncSocketWrite(SOCKET sock)
 			DeleteBuffer(bn);
 		}
 	}
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (!ReleaseMutex(s->muxSend))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 }
 
 void AsyncSocketRead(SOCKET sock)
@@ -460,11 +528,15 @@ void AsyncSocketRead(SOCKET sock)
 	if (s->hangup)
 		return;
 	
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("AsyncSocketRead couldn't get session %i muxReceive",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	
 	if (s->receive_list == NULL)
 	{
@@ -491,14 +563,22 @@ void AsyncSocketRead(SOCKET sock)
 	{
 		if (GetLastError() != WSAEWOULDBLOCK)
 		{
+#ifdef BLAK_PLATFORM_WINDOWS
 			/* eprintf("AsyncSocketRead got read error %i\n",GetLastError()); */
 			if (!ReleaseMutex(s->muxReceive))
 				eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+            LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 			HangupSession(s);
 			return;
 		}
+#ifdef BLAK_PLATFORM_WINDOWS
 		if (!ReleaseMutex(s->muxReceive))
 			eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+        LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	}
 	
 	if (bytes < 0 || bytes > bn->size_buf - bn->len_buf)
@@ -523,8 +603,12 @@ void AsyncSocketRead(SOCKET sock)
 		 dprintf("\n");
 		 }
 	*/ 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (!ReleaseMutex(s->muxReceive))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);  
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	
 	SignalSession(s->session_id);
 }

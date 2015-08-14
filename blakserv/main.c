@@ -68,11 +68,13 @@ void MainServer()
 	
 	OpenDefaultChannels();
 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (ConfigBool(MYSQL_ENABLED))
 	{
 		lprintf("Starting MySQL writer");
 		MySQLInit(ConfigStr(MYSQL_HOST), ConfigStr(MYSQL_USERNAME), ConfigStr(MYSQL_PASSWORD), ConfigStr(MYSQL_DB));
 	}
+#endif
 
 	lprintf("Starting %s\n",BlakServLongVersionString());
 	
@@ -165,8 +167,10 @@ void MainExitServer()
 	ResetMessage();
 	ResetClass();
 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (ConfigBool(MYSQL_ENABLED))
 		MySQLEnd();
+#endif
 	
 	ResetConfig();
 	

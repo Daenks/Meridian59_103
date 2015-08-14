@@ -209,16 +209,24 @@ void GameProcessSessionBuffer(session_node *s)
       /* give up receive mutex, so the interface/socket thread can
 	 read data for us, even if doing something long (GC/save/reload sys) */
       
+#ifdef BLAK_PLATFORM_WINDOWS
       if (!ReleaseMutex(s->muxReceive))
 	 eprintf("GPSB released mutex it didn't own in session %i\n",s->session_id);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	 
       GameProtocolParse(s,&msg);
       
+#ifdef BLAK_PLATFORM_WINDOWS
       if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
       {
 	 eprintf("GPSB bailed waiting for mutex on session %i\n",s->session_id);
 	 return;
       }
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
       
       /* if hung up, don't touch */
       if (s->hangup == True)
@@ -593,8 +601,10 @@ void GameStartUser(session_node *s,user_node *u)
    name_val.int_val = SendTopLevelBlakodMessage(s->game->object_id,USER_NAME_MSG,0,NULL);
    r = GetResourceByID(name_val.v.data);
 
+#ifdef BLAK_PLATFORM_WINDOWS
    if (r && r->resource_val[0])
      MySQLRecordPlayerLogin(s->account->name,r->resource_val[0],s->conn.name);
+#endif
 
    SetSessionTimer(s,ConfigInt(CREDIT_DRAIN_TIME));
 }

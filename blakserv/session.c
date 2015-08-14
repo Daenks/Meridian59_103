@@ -381,8 +381,15 @@ session_node * CreateSession(connection_node conn)
 	
 	if (conn.type == CONN_SOCKET)
 	{
+#ifdef BLAK_PLATFORM_WINDOWS
 		session->muxReceive = CreateMutex(NULL,FALSE,NULL);
 		session->muxSend = CreateMutex(NULL,FALSE,NULL);
+#else
+        session->muxReceive = malloc(sizeof(CRITICAL_SECTION));
+        InitializeCriticalSection((CRITICAL_SECTION*)session->muxReceive);
+        session->muxSend = malloc(sizeof(CRITICAL_SECTION));
+        InitializeCriticalSection((CRITICAL_SECTION*)session->muxSend);
+#endif
 	}
 	
 	session->connected = True;
@@ -398,7 +405,11 @@ session_node * CreateSession(connection_node conn)
 void CloseConnection(connection_node conn)
 {
 	if (conn.type == CONN_SOCKET)
+#ifdef BLAK_PLATFORM_WINDOWS
 		closesocket(conn.socket);
+#else
+        close(conn.socket);
+#endif
 }
 
 void CloseSession(int session_id)
@@ -442,6 +453,7 @@ void CloseSession(int session_id)
 	
 	if (s->conn.type == CONN_SOCKET)
 	{
+#ifdef BLAK_PLATFORM_WINDOWS
 		if (WaitForSingleObject(s->muxSend,10000) != WAIT_OBJECT_0)
 			eprintf("CloseSession couldn't get session %i muxSend\n",s->session_id);
 		else
@@ -456,7 +468,14 @@ void CloseSession(int session_id)
 			*/
 			
 		}
-		
+#else
+        EnterCriticalSection((CRITICAL_SECTION*)s->muxSend);
+        DeleteBufferList(s->send_list);
+        s->send_list = NULL;
+        LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
+
+#ifdef BLAK_PLATFORM_WINDOWS
 		if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
 			eprintf("CloseSession couldn't get session %i muxReceive\n",s->session_id);
 		else
@@ -471,7 +490,14 @@ void CloseSession(int session_id)
 			*/
 			
 		}
+#else
+        EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+        DeleteBufferList(s->receive_list);
+        s->receive_list = NULL;
+        LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 		
+#ifdef BLAK_PLATFORM_WINDOWS
 		if (!CloseHandle(s->muxSend))
 			eprintf("CloseSession error (%s) closing send mutex %i in session %i\n",
 			GetLastErrorStr(),s->muxSend,s->session_id);
@@ -479,6 +505,12 @@ void CloseSession(int session_id)
 		if (!CloseHandle(s->muxReceive))
 			eprintf("CloseSession error (%s) closing receive mutex %i in session %i\n",
 			GetLastErrorStr(),s->muxReceive,s->session_id);
+#else
+        DeleteCriticalSection((CRITICAL_SECTION*)s->muxSend);
+        free(s->muxSend);
+        DeleteCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+        free(s->muxReceive);
+#endif
 		
 		CloseConnection(s->conn);
 	}
@@ -567,12 +599,16 @@ void PollSession(int session_id)
 		return;
 	}
 	
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("PollSession bailed waiting for mutex on session %i\n",s->session_id);
 		HangupSession(s);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	
 	/*
 	if (s->num_receiving > 0)
@@ -587,13 +623,16 @@ void PollSession(int session_id)
 	
 	if (s->receive_list != NULL)
 		ProcessSessionBuffer(s);
-	
-	
-	if (!ReleaseMutex(s->muxReceive))
+
+#ifdef BLAK_PLATFORM_WINDOWS	
+    if (!ReleaseMutex(s->muxReceive))
 	{
 		eprintf("PollSession released mutex it didn't own in session %i\n",s->session_id);
 		HangupSession(s);
 	}
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 }
 
 void VerifiedLoginSession(int session_id)
@@ -862,11 +901,15 @@ void SendBytes(session_node *s,char *buf,int len_buf)
 	if (s->hangup)
 		return;   
 	
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (WaitForSingleObject(s->muxSend,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("SendBytes couldn't get session %i muxSend\n",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 	
 	if (s->send_list == NULL)
 	{
@@ -874,6 +917,7 @@ void SendBytes(session_node *s,char *buf,int len_buf)
 		
 		if (send(s->conn.socket,buf,len_buf,0) == SOCKET_ERROR)
 		{
+#ifdef BLAK_PLATFORM_WINDOWS
 			if (GetLastError() != WSAEWOULDBLOCK)
 			{
 				/* eprintf("SendBytes got send error %i\n",GetLastError()); */
@@ -882,6 +926,14 @@ void SendBytes(session_node *s,char *buf,int len_buf)
 				HangupSession(s);
 				return;
 			}
+#else
+         if (errno != EWOULDBLOCK)
+            {
+                LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+                HangupSession(s);
+                return;
+            }
+#endif
 			
 			s->send_list = AddToBufferList(s->send_list,buf,len_buf);
 		}
@@ -895,8 +947,12 @@ void SendBytes(session_node *s,char *buf,int len_buf)
 		s->send_list = AddToBufferList(s->send_list,buf,len_buf);
 	}
 	
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (!ReleaseMutex(s->muxSend))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 }
 
 /*------------ above here is junk-o byte buffer sending */
@@ -1004,12 +1060,15 @@ void SendBufferList(session_node *s,buffer_node *blist)
 		return;
 	}
 	
-	
+#ifdef BLAK_PLATFORM_WINDOWS	
 	if (WaitForSingleObject(s->muxSend,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("SendBufferList couldn't get session %i muxSend\n",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 	
 	if (s->send_list == NULL)
 	{
@@ -1019,6 +1078,7 @@ void SendBufferList(session_node *s,buffer_node *blist)
 		{
 			if (send(s->conn.socket,blist->buf,blist->len_buf,0) == SOCKET_ERROR)
 			{
+#ifdef BLAK_PLATFORM_WINDOWS
 				if (GetLastError() != WSAEWOULDBLOCK)
 				{
 					if (!ReleaseMutex(s->muxSend))
@@ -1028,6 +1088,15 @@ void SendBufferList(session_node *s,buffer_node *blist)
 					HangupSession(s);
 					return;
 				}
+#else
+                if(errno != EWOULDBLOCK)
+                {
+                    LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+                    DeleteBufferList(blist);
+                    HangupSession(s);
+                    return;
+                }
+#endif
 				/* dprintf("%i adding to buffer list\n",s->session_id); */
 				SessionAddBufferList(s,blist);
 				break;
@@ -1046,9 +1115,13 @@ void SendBufferList(session_node *s,buffer_node *blist)
 	{
 		SessionAddBufferList(s,blist);
 	}
-	
-	if (!ReleaseMutex(s->muxSend))
+
+#ifdef BLAK_PLATFORM_WINDOWS
+    if (!ReleaseMutex(s->muxSend))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 }
 
 void SessionAddBufferList(session_node *s,buffer_node *blist)

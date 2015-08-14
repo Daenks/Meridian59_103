@@ -9,19 +9,21 @@ CP = cp
 RM = rm
 MKDIR = mkdir
 RMDIR = rmdir
-CC     = gcc
+CC     = g++
+LINK   = g++
 OUTDIR=debug
 BLAKINCLUDEDIR = $(TOPDIR)/include
 
-CFLAGS = -I $(BLAKINCLUDEDIR) -x c++ -DBLAK_PLATFORM_LINUX
+# -Wno-write-strings: turns off deprecated warning for const char*
+#   strings passed as char* (Should be properly fixed)
+CFLAGS = -I $(BLAKINCLUDEDIR) -x c++ -DBLAK_PLATFORM_LINUX -Wno-write-strings
 
 
-
-BLAKSERVLINKFLAGS =
+BLAKSERVLINKFLAGS = -lpthread -lrt
 
 SOURCEDIR = .
 
-LIBS =
+LIBS = 
 
 OBJS =  \
 	$(OUTDIR)/main.obj \
@@ -35,7 +37,7 @@ OBJS =  \
 	$(OUTDIR)/ccode.obj \
 	$(OUTDIR)/channel.obj \
 	$(OUTDIR)/list.obj \
-	$(OUTDIR)/timer.obj \
+    $(OUTDIR)/timer.obj \
 	$(OUTDIR)/session.obj \
 	$(OUTDIR)/loadrsc.obj \
 	$(OUTDIR)/blakres.obj \
@@ -74,7 +76,6 @@ OBJS =  \
 	$(OUTDIR)/version.obj \
 	$(OUTDIR)/systimer.obj \
 	$(OUTDIR)/memory.obj \
-	$(OUTDIR)/interface.obj \
 	$(OUTDIR)/intrlock.obj \
 	$(OUTDIR)/chanbuf.obj \
 	$(OUTDIR)/debug.obj \
@@ -90,7 +91,11 @@ OBJS =  \
 	$(OUTDIR)/stringinthash.obj \
 	$(OUTDIR)/intstringhash.obj \
 	$(OUTDIR)/files.obj \
-	$(OUTDIR)/critical_section.obj \
+	$(OUTDIR)/sprocket.obj \
+	$(OUTDIR)/linux-critical_section.obj \
+	$(OUTDIR)/linux-threading.obj \
+	$(OUTDIR)/linux-interface.obj \
+	$(OUTDIR)/linux-msgqueue.obj \
 
 
 all : makedirs $(OUTDIR)/blakserv
@@ -105,9 +110,10 @@ $(OUTDIR)/md5.obj : $(TOPDIR)/util/md5.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OUTDIR)/blakserv: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
-	$(LINK)	$@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
-	$(CP) $@ $(BLAKSERVRUNDIR)
+#	$(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
+#	$(LINK)	$@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
+#	$(CP) $@ $(BLAKSERVRUNDIR)
+	$(LINK) -o $@ $(OBJS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
 
 
 #!include $(TOPDIR)/rules.mak

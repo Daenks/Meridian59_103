@@ -45,17 +45,25 @@ void MaintenanceProcessSessionBuffer(session_node *s)
       /* give up receive mutex, so the interface/socket thread can
 	 read data for us, even if doing something long (GC/save/reload sys) */
 
+#ifdef BLAK_PLATFORM_WINDOWS
       if (!ReleaseMutex(s->muxReceive))
 	 eprintf("APSBPollSession released mutex it didn't own in session %i\n",
 		 s->session_id);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
       
       MaintenanceInputChar(s,ch);
 
+#ifdef BLAK_PLATFORM_WINDOWS
       if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
       {
 	 eprintf("APSB bailed waiting for mutex on session %i\n",s->session_id);
 	 return;
       }
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 
       /* any character could change our state.  if so, leave */
       if (s->hangup == True || s->state != STATE_MAINTENANCE)
