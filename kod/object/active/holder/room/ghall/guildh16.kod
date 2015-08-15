@@ -15,9 +15,9 @@ constants:
    MAINDOOR  = 1
    MAINDOOR2 = 3
    SECRETDOOR = 2
-   
+
    DOOR_DELAY = 5000
-       
+
    include blakston.khd
 
 resources:
@@ -29,7 +29,7 @@ resources:
 
 classvars:
 
-   vrName = room_name_guildh11
+   vrName = room_name_guildh16
 
    viTeleport_row = 5
    viTeleport_col = 16
@@ -63,8 +63,6 @@ properties:
 
    piBaseLight = LIGHT_NICE
    piOutside_factor = OUTDOORS_5
-
-   pbSnowGroundTexture = TRUE
 
    ptSecret = $
    ptEntrance = $
