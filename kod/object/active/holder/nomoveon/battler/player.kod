@@ -5440,7 +5440,7 @@ messages:
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
             iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
-            bAttackerEmpowered, bShielded, oRod;
+            bAttackerEmpowered, bShielded, oRod, oAttackerWeapon;
 
       if NOT precision
       {
@@ -5620,6 +5620,21 @@ messages:
       if bAttackerEmpowered
       {
          damage = damage * 135 / 100;
+      }
+
+      % Increase final damage by Might if using a melee weapon
+      % Boost up to 35 percent (no overlap with Rod of Power)
+      if NOT bAttackerEmpowered
+         AND what <> $
+         AND IsClass(what,&Player)
+      {
+         oAttackerWeapon = Send(what,@GetWeapon);
+         if oAttackerWeapon <> $
+            AND NOT IsClass(oAttackerWeapon,&RangedWeapon)
+            AND NOT IsClass(oAttackerWeapon,&TouchAttackSpell)
+         {
+            damage = damage * (100 + (Send(what,@GetMight)/2)) / 100;
+         }
       }
 
       % Look for active shield rods in inventory, reduce final damage to 1 if any active
