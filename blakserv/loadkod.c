@@ -64,7 +64,7 @@ void LoadBof(void)
 	dprintf("LoadBof moved in %i of %i found new .bof files\n",files_loaded,files.size());
 	*/
 
-	//dprintf("starting to load bof files\n");
+	dprintf("starting to load bof files\n");
 	files_loaded = 0;
 	
 	sprintf(file_load_path,"%s%s",ConfigStr(PATH_MEMMAP),BOF_SPEC);
@@ -85,7 +85,7 @@ void LoadBof(void)
 	SetClassVariables();
 	SetMessagesPropagate();
 
-	//dprintf("LoadBof loaded %i of %i found .bof files\n",files_loaded,files.size());
+	dprintf("LoadBof loaded %i of %i found .bof files\n",files_loaded,files.size());
 }
 
 void ResetLoadBof(void)
@@ -107,6 +107,8 @@ void ResetLoadBof(void)
 
 Bool LoadBofName(char *fname)
 {
+    dprintf("attempting to load: %s\n", fname); // TODO: Delete Me
+
    FILE *f = fopen(fname, "rb");
 	if (f == NULL)
    {

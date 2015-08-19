@@ -286,6 +286,7 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
    case CONFIG_GROUP :
       break;
 
+#ifdef BLAK_PLATFORM_WINDOWS
    case CONFIG_PATH :
       len = strlen(s);
       
@@ -300,6 +301,22 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
       c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
       strcpy(c->config_str_value,s);
       break;
+#else
+    case CONFIG_PATH :
+        len = strlen(s);
+
+        if (s[len-1] == '/')
+            s[len-1] = 0;
+
+        if (stat(s,&file_stat) != 0 || !(file_stat.st_mode & S_IFDIR))
+            return "invalid path--not found";
+
+        if (s[len-1] != ':')
+            strcat(s,"/");
+            c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
+            strcpy(c->config_str_value,s);
+            break;
+#endif
 
    case CONFIG_INT :
       if (sscanf(s,"%i",&num) != 1)

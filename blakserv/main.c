@@ -77,7 +77,7 @@ void MainServer()
 #endif
 
 	lprintf("Starting %s\n",BlakServLongVersionString());
-	
+
 	InitClass();
 	InitMessage();
 	InitObject();
@@ -100,14 +100,11 @@ void MainServer()
 	InitBufferPool();
 	InitTables();
 	AddBuiltInDLlist();
-	
 	LoadMotd();
 	LoadBof();
 	LoadRsc();
 	LoadKodbase();
-	
 	LoadAdminConstants();
-	
 	PauseTimers();
 	
 	if (LoadAll() == True)
@@ -124,15 +121,15 @@ void MainServer()
 	InitParseClient(); 
 	InitProfiling();
 	InitAsyncConnections();
-	
 	UpdateSecurityRedbook();
-	
 	UnpauseTimers();
 
-	
+    FlushDefaultChannels(); // TODO: Delete Me
 
-	ServiceTimers();
-	/* returns if server termiated */
+	ServiceTimers(); /* returns if server termiated */
+
+    lprintf("Entering MainExitServer"); // TODO: Delete Me
+    FlushDefaultChannels(); // TODO: Delete Me
 	
 	MainExitServer();
 }
