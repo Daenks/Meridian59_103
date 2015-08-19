@@ -1,0 +1,189 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+IllusionaryTouch is TouchAttackSpell
+
+constants:
+   include blakston.khd
+
+resources:
+
+   IllusionaryTouch_name_rsc = "illusionary touch"
+   IllusionaryTouch_icon_rsc = iilltouch.bgf
+   IllusionaryTouch_desc_rsc = \
+      "Allow you to rip the very reality from your victim.  But remain "
+      "cautious.  One doesn't believe in Riija's tricks for long. "
+      "Requires firesand to cast."
+
+   IllusionaryTouch_already_enchanted_rsc = \
+      "Your hands are already confusing to the eye."
+   IllusionaryTouch_on_rsc = "Your hands will now fool your enemies."
+   IllusionaryTouch_off_rsc = "Your hands will no longer fool your enemies."
+   IllusionaryTouch_sound = riija.wav
+
+   IllusionaryTouch_player_was_hit = \
+   "You're fooled by %s%s's  attack."
+   IllusionaryTouch_player_hit_something = \
+   "You fool %s%s with your attack"
+
+classvars:
+
+   vrName = IllusionaryTouch_name_rsc
+   vrIcon = IllusionaryTouch_icon_rsc
+   vrDesc = IllusionaryTouch_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSpell_num = SID_ILLUSIONARY_TOUCH
+   viSchool = SS_RIIJA
+   viSpell_level = 2
+   viSpellExertion = 1
+   viMana = 8
+   viStroke = 0
+
+   viMin_Damage = 4
+   viMax_Damage = 10
+
+   viMaxProficiencyDamage = 2
+
+   vbAutomatic = FALSE
+
+   vrSucceed_wav = IllusionaryTouch_sound
+
+   vrAlreadyEnchanted = IllusionaryTouch_already_enchanted_rsc
+   vrEnchantment_On = IllusionaryTouch_On_rsc
+   vrEnchantment_Off = IllusionaryTouch_Off_rsc
+
+   vrPlayer_was_hit = IllusionaryTouch_player_was_hit
+   vrPlayer_hit_something = IllusionaryTouch_player_hit_something
+
+properties:
+
+   % This is NOT affected by resistances, even though it has a damage type.
+   pbAbsolute = TRUE
+
+   % This is the spell we are simulating.
+   viStroke = $
+
+   % This is the list of spells we can choose from.
+   plRandomStrokes = $
+
+messages:
+
+   Constructor()
+   {
+      plRandomStrokes = [ SID_TOUCH_OF_FLAME, SID_ZAP,
+                         SID_ICY_FINGERS, SID_ACID_TOUCH ];
+
+      propagate;
+   }
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&FireSand,1],plReagents);
+
+      return;
+   }
+
+   % This is for the attack message infrastructure.
+   GetAttackName()
+   {
+      if viStroke = $
+      {
+         return vrName;
+      }
+
+      return Send(Send(SYS,@FindSpellByNum,#num=viStroke),@GetAttackName);
+   }
+
+   % iFactor is the factor to divide damage by.
+   GetHPLoss(who=$,target=$,iSpellPower=0,iFactor=1)
+   {
+      local iBaseDamage, iHPLoss, iMaxHPs;
+
+      if IsClass(target,&Player)
+      {
+         iBaseDamage = 17 + (50 - Send(target,@GetIntellect))/10;
+         iMaxHPs = Send(target,@GetMaxHealth);
+      }
+      else
+      {
+         iBaseDamage = 30 - Bound(Send(target,@GetDifficulty)*2,1,20);
+         iMaxHPs = Send(target,@ReturnMaxHitPoints);
+      }
+
+      % Inflation by factor 100 for greater accuracy.
+      iBaseDamage = iBaseDamage * 100;
+
+      % Intellect boosts base damage
+      iBaseDamage = Send(self,@DamageFactors,#damage=iBaseDamage,#who=who,
+         #target=target);
+
+      iHPLoss = iBaseDamage * iSpellPower / SPELLPOWER_MAXIMUM;
+
+      % Always leaves 1 HP behind, no more than 1/3 damage.
+      iHPLoss = Bound(iHPLoss,0,(iMaxHps*33));
+      iHPLoss = Bound(iHPLoss,0,Send(target,@GetExactHealth)-1);
+
+      if iFactor > 1
+      {
+         iHPLoss = iHPLoss / iFactor;
+      }
+      
+      return iHPLoss;
+   }
+
+   DamageFactors(damage = 0, who = $)
+   {
+      local iDamage, iIntellect;
+
+      % Get int damage bonus.
+      iIntellect = Send(who,@GetIntellect);
+      iDamage = ((100+Bound(iIntellect-25,0,40))*damage)/100;
+
+      return iDamage;
+   }
+
+   GetDuration(iSpellPower = 0)
+   {
+      local iDuration;
+
+      iDuration = 20000 + (iSpellPower * 750); 
+      iDuration = Bound(iDuration,20000,80000);
+
+      return iDuration;
+   }
+
+   EndEnchantment(who = $, state=$, report = TRUE)
+   {
+      Post(self,@EndEnchantmentEffects,#who=who,#state=state,#report=report);
+
+      return;
+   }
+
+   EndEnchantmentEffects(who=$, state=$, report = TRUE)
+   {
+      if (Send(who,@GetExactHealth) > 0)
+      {
+         Send(who,@GainHealthNormal,#amount=state,#precision=TRUE);
+         if IsClass(who,&Player)
+            AND report
+         {
+            Send(who,@MsgSendUser,#message_rsc=IllusionaryTouch_Off_rsc);
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

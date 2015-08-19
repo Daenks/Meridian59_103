@@ -46,7 +46,7 @@ classvars:
    vrDesc = TouchAttackSpell_desc_rsc
 
    vrMiss_sound = $
-   
+
    vrMissed_message_attacker = $
    vrMissed_message_defender = $
 
@@ -78,7 +78,7 @@ classvars:
    %  and will then be increased by up to 40% depending on the caster's Mysticism.
    viMin_Damage = 4
    viMax_Damage = 8
-   
+
    % Max amount of damage that Punch or 2*Myst can add
    viMaxProficiencyDamage = 5
 
@@ -89,13 +89,13 @@ classvars:
    %  for default.
    viAttackType = ATCK_WEAP_UNARMED+ATCK_WEAP_PUNCH
    % Touch spells typically DO have a spell type.
-   viSpellType = 0          
+   viSpellType = 0
 
    viPostCast_time = 1
 
    % Cannot enchant others with touch attacks.
    vbCanCastOnOthers = FALSE
-   
+
    % The amount of light added to player's screen.
    viEnchantmentLight = 0
 
@@ -109,7 +109,7 @@ messages:
    ImproveStroke(who=$,target=$)
    {
       Send(self,@ImproveAbility,#who=who,#target=target);
-      
+
       return;
    }
 
@@ -121,7 +121,7 @@ messages:
    EndEnchantment(who = $, report = TRUE, state = 0)
    {
       Send(who,@LoseLight,#amount=viEnchantmentLight);
-      
+
       propagate;
    }
 
@@ -137,7 +137,7 @@ messages:
    "for different touch spells."
    {
       Send(who,@DoCast);
-      
+
       return TRUE;
    }
 
@@ -146,7 +146,7 @@ messages:
    "the stroke.  Example, if a player has renweed, that may boost his thrust "
    "Default, return the hitroll raw."
    {
-      return Raw_hitroll; 
+      return Raw_hitroll;
    }
 
    DamageFactors(damage = 0, who = $)
@@ -157,7 +157,7 @@ messages:
 
       % Proficiency damage adjusted to high precision
       iDamage = damage + (Send(self,@GetProf,#who=who)+1)*viMaxProficiencyDamage;
-      
+
       % Get myst damage bonus.
       iMysticism = Send(who,@GetMysticism);
       iDamage = ((100+bound(iMysticism-25,0,40))*iDamage)/100;
@@ -184,9 +184,9 @@ messages:
 
       iProf = Send(who,@GetSkillAbility,#skill_num=SKID_PUNCH);
       Send(who,@FlipSkillAtrophyFlag,#SKID=SKID_PUNCH);
-      
+
       iMysticism = (Send(who,@GetMysticism)*2);
-      
+
       if iProf < iMysticism
       {
          iProf = iMysticism;
@@ -267,10 +267,10 @@ messages:
       iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
       damage = (damage * (iAbility+1));
       damage = Send(self,@DamageFactors,#damage=damage,#who=who)/100;
-      
+
       return bound(damage,0,$);
    }
-   
+
    FindMaxDamage(who=$)
    {
       local damage, iAbility;
@@ -279,7 +279,7 @@ messages:
       iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
       damage = (damage * (iAbility+1));
       damage = Send(self,@DamageFactors,#damage=damage,#who=who)/100;
-      
+
       return bound(damage,0,$);
    }
 
@@ -295,7 +295,7 @@ messages:
       % ability in the spell. This makes touch spells function
       % more like a stroke, and gives them immunity to anti-magic effects.
       iAbility = Send(who,@GetSpellAbility,#spell_num=viSpell_num);
-      
+
       % Factor in the person's ability with the spell
       % It's alright if damage here is low.
       % Most players will get proficiency damage from punch or 2*Mysticism.
@@ -304,7 +304,7 @@ messages:
       % Myst boosts base damage
       damage = Send(self,@DamageFactors,#damage=damage,#who=who,
                     #victim=victim);
-      
+
       return bound(damage,0,$);
    }
 
@@ -320,7 +320,7 @@ messages:
 
       Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_hit,
            #parm1=Send(attacker,@GetCapDef),#parm2=Send(attacker,@GetName));
-           
+
       return TRUE;
    }
 
@@ -333,18 +333,18 @@ messages:
       {
          return FALSE;
       }
-       
+
       Send(who,@MsgSendUser,#message_rsc=vrPlayer_hit_something,
            #parm1=color_rsc,#parm2=Send(victim,@GetDef),
            #parm3=Send(victim,@GetName));
-          
+
       return TRUE;
    }
 
    SendMissMessageToAttacker(who=$,victim=$,color_rsc=$)
    {
       local iRandom, rSound;
-      
+
       % 'miss' sound
       if vrMiss_Sound = $
       {
@@ -370,7 +370,7 @@ messages:
       {
          rSound = vrMiss_Sound;
       }
-      
+
       Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=rSound);
       
       % Text messages
@@ -379,10 +379,10 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Attacker,
               #parm1=color_rsc,#parm2=vrName,#parm3=Send(victim,@GetDef),
               #parm4=Send(victim,@GetName));
-              
+
          return TRUE;
       }
-      
+
       return;
    }
 
@@ -393,7 +393,7 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
               #parm1=Send(attacker,@GetCapDef),#parm2=Send(attacker,@GetName),
               #parm3=vrName);
-              
+
          return TRUE;
       }
 
@@ -408,10 +408,10 @@ messages:
        {
          return FALSE ;
        }
-       
+
        Send(who,@MsgSendUser,#message_rsc=vrPlayer_killed_something,
             #parm1=Send(victim,@GetCapDef),#parm2=Send(victim,@GetName));
-                
+
        return TRUE;
    }
 
@@ -423,10 +423,10 @@ messages:
        {
          return FALSE ;
        }
-       
+
        Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
             #parm1=Send(attacker,@GetDef),#parm2=Send(attacker,@GetName));
-            
+
        return TRUE;
    }
 
