@@ -14200,6 +14200,16 @@ messages:
 
       return;
    }
+   
+   ClearAttackTimer()
+   {
+      if ptAttackTimer <> $
+      {
+         DeleteTimer(ptAttackTimer);
+         ptAttackTimer = $;
+      }
+      return;
+   }
 
    SendLightingInformation()
    {

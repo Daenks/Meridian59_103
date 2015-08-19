@@ -2091,6 +2091,10 @@
    SID_DEATH_RIFT = 185
    SID_PHASE = 186
    SID_MEDITATE = 187
+   SID_FLAME_DASH = 188
+   SID_LIGHTNING_STRIKE = 189
+   
+   SID_ICE_GUARD = 199
 
    % Depreciated spell IDs
    SID_LIGHTNING = 1                   % use SID_LIGHTNING_BOLT

@@ -1,0 +1,82 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FogIce is ActiveWallElement
+
+constants:
+
+   include blakston.khd
+
+   % What's the base duration for the hold effect?
+   BASE_HOLD_DURATION = 3
+
+resources:
+
+   FogIce_name_rsc = "frozen fog"
+   FogIce_icon_rsc = poisoncl.bgf
+   FogIce_desc_rsc = \
+      "This fog looks bitterly cold."
+
+   FogIce_dissipates = "The ice clouds drift away on the wind."
+   FogIce_unaffected = \
+      "Strangely, the freezing cloud does not affect you."
+
+classvars:
+
+   vrName = FogIce_name_rsc
+   vrIcon = FogIce_icon_rsc
+   vrDesc = FogIce_desc_rsc
+
+   viObject_flags = OF_NOEXAMINE
+
+   vrDissipateMessage = FogIce_dissipates
+   vrUnaffectedMessage = FogIce_unaffected
+
+   vbPeriodic = FALSE
+
+properties:
+
+   piDrawFx = DRAWFX_TRANSLUCENT_50
+
+   piRangeSquared = 1
+   piBonus = 1
+
+messages:
+
+   Constructor(caster=$,duration=$,range=$)
+   {
+      range = 1;
+
+      propagate;
+   }
+
+   DoEffect(what=$)
+   {
+      local oSpell;
+
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
+
+      Send(oSpell,@DoHold,#what=self,#otarget=what,
+            #iDurationSecs=BASE_HOLD_DURATION+piBonus);
+      Send(poOwner,@SomethingAttacked,#what=poCaster,#victim=what,
+            #use_weapon=self,#stroke_obj=self);
+
+      propagate;
+   }
+
+   SendAnimation()
+   {
+      AddPacket(1,ANIMATE_CYCLE, 4,random(240,280), 2,1, 2,5);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

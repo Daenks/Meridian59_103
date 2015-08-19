@@ -81,7 +81,7 @@ messages:
       iAngle = Send(who,@GetAngle);
       iMaxDamage = iSpellPower / 6;
       iMaxDamage = Bound(iMaxDamage,1,16);
-      iDuration = (iSpellPower * 2) + 30;
+      iDuration = (iSpellPower * 2) + 30 + Random(-20,20);
       iDuration = Bound(iDuration,30,180);
 
       % Facing East

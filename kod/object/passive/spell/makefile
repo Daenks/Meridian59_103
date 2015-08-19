@@ -58,6 +58,9 @@ BOFS = animate.bof \
        sweep.bof \
        teleportspell.bof \
        utility.bof \
-       walspell.bof
+       walspell.bof \
+       flamedash.bof \
+       lightningstrike.bof \
+       iceguard.bof
 
 !include $(KODDIR)\kod.mak

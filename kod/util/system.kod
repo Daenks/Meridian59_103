@@ -3436,6 +3436,9 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      Send(self,@CreateOneSpellIfNew,#num=SID_FLAME_DASH,#class=&FlameDash);
+      Send(self,@CreateOneSpellIfNew,#num=SID_LIGHTNING_STRIKE,#class=&LightningStrike);
+      Send(self,@CreateOneSpellIfNew,#num=SID_ICE_GUARD,#class=&IceGuard);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);

@@ -67,13 +67,19 @@ messages:
       propagate;
    }
 
-   GetDuration(duration = 0)
+   GetDuration(duration = 0,bMS=FALSE)
    {
       local iDuration;
 
-      iDuration = Random(duration-20,duration+20);
-      iDuration = iDuration * 1000;
-      iDuration = bound(iDuration,30000,200000);
+      
+      if bMS
+      {
+         iDuration = duration;
+      }
+      else
+      {
+         iDuration = duration * 1000;
+      }
 
       return iDuration;
    }
