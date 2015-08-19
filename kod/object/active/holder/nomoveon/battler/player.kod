@@ -1110,6 +1110,9 @@ properties:
    % Spectator mode?
    pbSpectatorMode = FALSE
 
+   % Rod cooldowns
+   plRodCooldowns = $
+
 messages:
 
    Constructor()
@@ -1211,6 +1214,16 @@ messages:
       Send(Send(SYS,@GetAssassinGame),@RemoveFromGame,#who=self);
       Send(Send(SYS,@GetLore),@PlayerSuicides,#who=self);
       plSchools = $;
+      
+      for i in plRodCooldowns
+      {
+         DeleteTimer(Nth(i,2));
+         SetNth(i,1,$);
+         SetNth(i,2,$);
+         plRodCooldowns = DelListElem(plRodCooldowns,i);
+      }
+      
+      plRodCooldowns = $;
 
       propagate;
    }
@@ -15013,6 +15026,56 @@ messages:
       }
 
       propagate;
+   }
+   
+   AddRodCooldown(what=$,time=1000)
+   {
+      if IsClass(what,&Rod)
+      {
+         plRodCooldowns = Cons([what,CreateTimer(self,@ClearRodCooldown,time)],
+                               plRodCooldowns);
+      }
+
+      return;
+   }
+   
+   ClearRodCooldown(timer=$)
+   {
+      local i;
+      
+      for i in plRodCooldowns
+      {
+         if Nth(i,2) = timer
+         {
+            SetNth(i,1,$);
+            SetNth(i,2,$);
+            
+            plRodCooldowns = DelListElem(plRodCooldowns,i);
+         }
+      }
+      
+      return;
+   }
+   
+   ReqRodCooldown(what=$)
+   {
+      local i;
+      
+      if what = $
+         OR NOT IsClass(what,&Rod)
+      {
+         return FALSE;
+      }
+      
+      for i in plRodCooldowns
+      {
+         if GetClass(Nth(i,1)) = GetClass(what)
+         {
+            return FALSE;
+         }
+      }
+      
+      return TRUE;
    }
 
 end

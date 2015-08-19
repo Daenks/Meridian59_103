@@ -46,6 +46,8 @@ classvars:
    use_success_wav = vampireRod_success_wav_rsc
    use_success_msg = vampireRod_success_rsc
 
+   viRodUseDelay = 50 % Milliseconds
+
 properties:
 
 messages:

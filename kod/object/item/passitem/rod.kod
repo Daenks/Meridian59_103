@@ -43,6 +43,8 @@ resources:
       "Your rod's secondary effect has expired."
 
    rod_cant_use_yet = "You cannot use that item yet."
+   rod_cooldown = \
+      "You've used a %s too recently!"
 
 classvars:
 
@@ -75,9 +77,11 @@ properties:
    vrDesc = Rod_desc_rsc
 
    % For rods with durations
+   piEffectDuration = 0
    ptActiveTimer = $
    pbActive = FALSE
 
+   piSecondaryEffectDuration = 0
    ptSecondaryActiveTimer = $
    pbSecondaryActive = FALSE
 
@@ -91,6 +95,8 @@ messages:
       Send(self,@SetMaxHits,#number=viStartMaxHits);
 
       piRodUseDelay = viRodUseDelay;
+      piEffectDuration = viEffectDuration + piRodUseDelay;
+      piSecondaryEffectDuration = viSecondaryEffectDuration + piRodUseDelay;
 
       propagate;
    }
@@ -148,6 +154,13 @@ messages:
          return FALSE;
       }
       
+      if NOT Send(what,@ReqRodCooldown,#what=self)
+      {
+         Send(what,@MsgSendUser,#message_rsc=rod_cooldown,
+                                #parm1=Send(self,@GetName));
+         return FALSE;
+      }
+      
       if NOT Send(what,@IsOkayAttackTime,#time=piRodUseDelay)
       {
          Send(what,@MsgSendUser,#message_rsc=rod_cant_use_yet);
@@ -184,7 +197,7 @@ messages:
          }
 
          pbActive = TRUE;
-         ptActiveTimer = CreateTimer(self,@DurationEffectExpire,viEffectDuration);
+         ptActiveTimer = CreateTimer(self,@DurationEffectExpire,piEffectDuration);
       }
 
       if vbSecondaryDurationEffect
@@ -197,7 +210,12 @@ messages:
 
          pbSecondaryActive = TRUE;
          ptSecondaryActiveTimer = CreateTimer(self,
-                @SecondaryDurationEffectExpire,viSecondaryEffectDuration);
+                @SecondaryDurationEffectExpire,piSecondaryEffectDuration);
+      }
+      
+      if vbDurationEffect
+      {
+         Send(poOwner,@AddRodCooldown,#what=self,#time=piEffectDuration);
       }
 
       Send(poOwner,@MsgSendUser,#message_rsc=use_success_msg);
@@ -270,6 +288,9 @@ messages:
       {
          piRodUseDelay = iTime;
       }
+
+      piEffectDuration = viEffectDuration + piRodUseDelay;
+      piSecondaryEffectDuration = viSecondaryEffectDuration + piRodUseDelay;
 
       return;
    }

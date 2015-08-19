@@ -40,10 +40,14 @@ classvars:
    vrGoodDesc = healWand_desc_rsc
    use_success_msg = healWand_success_rsc
 
+   viStartHits = 0
+   viStartMaxHits = 7
+   viConsumesHits = 7
+
 properties:
 
-   piHeal_min = 4
-   piHeal_max = 8
+   piHeal_min = 20
+   piHeal_max = 40
 
 messages:
 
