@@ -369,6 +369,17 @@ properties:
 
    poBrain = $
 
+   pbHasTargetLocation = False
+   piTargetLocationRow
+   piTargetLocationCol
+   piTargetLocationFineRow = 0
+   piTargetLocationFineCol = 0
+   piPatrolAttempts = 0
+   plPatrolPath = $
+   piPatrolNode = 0
+   % chance to move to next patrol node (1 to 10000)
+   piChanceToPatrol = 125
+
    %%% The Monster State Meta-Object
 
    % These should be modified only by the EnterStateX routines
@@ -546,6 +557,16 @@ messages:
       propagate;
    }
 
+   SetPatrolPath(lPath = $)
+   {
+      if(lPath <> $)
+      {
+         plPatrolPath = lPath;
+      }
+      
+      return;
+   }
+   
    GetKocName()
    {
       return vrKocName;
@@ -1264,7 +1285,58 @@ messages:
    {
       return poCustomer;
    }
+   
+   CanPatrol()
+   {
+      if (plPatrolPath <> $)
+      {
+         return True;
+      }
+      
+      return False;
+   }
 
+   GetChanceToPatrol()
+   {
+      return piChanceToPatrol;
+   }
+   
+   GetNextPatrolNode()
+   {
+      if (plPatrolPath = $)
+      {
+         return;
+      }
+   
+      piPatrolNode = piPatrolNode + 1;
+      
+      if (piPatrolNode > Length(plPatrolPath))
+      {
+         piPatrolNode = 1;
+      }
+   
+      return Nth(plPatrolPath, piPatrolNode);
+   }
+   
+   IncrementPatrolAttempts()
+   {
+      piPatrolAttempts = piPatrolAttempts + 1;
+      
+      return;
+   }
+   
+   GetPatrolAttempts()
+   {
+      return piPatrolAttempts;
+   }
+   
+   ClearPatrolAttempts()
+   {
+      piPatrolAttempts = 0;
+      
+      return;
+   }
+   
    %%%  Action Routines
 
    AttackTimer(timer = $)
@@ -1725,6 +1797,50 @@ messages:
       return;
    }
 
+   DoGoTowardsLocation()
+   {
+         piPatrolAttempts = piPatrolAttempts + 1;
+      
+         Send(self,@MoveTowardsCoords,
+            #iRow=piTargetLocationRow,
+            #iCol=piTargetLocationCol,
+            #iFineRow=piTargetLocationFineRow,
+            #iFineCol=piTargetLocationFineCol);
+            
+         % for now just reaching the row and col is good enough
+         % fineness is ignored
+         if ((piRow = piTargetLocationRow)
+            AND (piCol = piTargetLocationCol))
+         {
+            pbHasTargetLocation = False;
+            piPatrolAttempts = 0;
+         }
+         
+         % after a while just give up
+         if (piPatrolAttempts >= 500)
+         {
+            Debug("monster had too many attempts trying to reach a location, giving up.");
+            pbHasTargetLocation = False;
+            piPatrolAttempts = 0;
+         }
+   
+      return;
+   }
+   
+   StartNextPatrolLeg()
+   {
+      local lPatrolNode;
+   
+      lPatrolNode = Send(self,@GetNextPatrolNode);
+            
+      if (lPatrolNode <> $)
+      {
+         Send(self,@GotoCoords,#iRow=Nth(lPatrolNode,1),#iCol=Nth(lPatrolNode,2));
+      }
+   
+      return;
+   }
+   
    %%% Combat messages
 
    TryAttack(what=$,stroke_obj=$)
@@ -2734,7 +2850,72 @@ messages:
 
       return;
    }
-    
+
+   MoveTowardsCoords(iRow=$,iCol=$,iFineRow=0,iFineCol=0,
+      face_target=FALSE, face_away=FALSE, to_master=FALSE)
+   {
+      local drow, dcol;
+      
+      if (iRow = $ or iCol = $)
+      {
+         return;
+      }
+      
+      % calculate square delta in highres-grid
+      drow = ((iRow * FINENESS) + iFineRow) / 16;
+      dcol = ((iCol * FINENESS) + iFineCol) / 16;
+      drow = drow - (((piRow * FINENESS) + piFine_row) / 16);
+      dcol = dcol - (((piCol * FINENESS) + piFine_col) / 16);
+
+      return Send(self,@MoveInDirection,#row_diff=drow,#col_diff=dcol,
+                  #face_target=face_target,#face_away=face_away,
+                  #to_master=to_master);
+   }
+   
+   GotoCoords(iRow=$,iCol=$,iFineRow=0,iFineCol=0)
+   "Move to a specific row and column. warning! fineness really"
+   "isn't accurate as the monster will stop when it reaches the destination"
+   "row and column"
+   {
+      if (iRow = $ OR iCol = $)
+      {
+         return;
+      }
+   
+      piTargetLocationRow = iRow;
+      piTargetLocationCol = iCol;
+      piTargetLocationFineRow = iFineRow;
+      piTargetLocationFineCol = iFineCol;
+      pbHasTargetLocation = True;
+   
+      return;
+   }
+   
+   HasTargetLocation()
+   {
+      return pbHasTargetLocation;
+   }
+   
+   GetTargetLocationRow()
+   {
+      return piTargetLocationRow;
+   }
+   
+   GetTargetLocationCol()
+   {
+      return piTargetLocationCol;
+   }
+   
+   GetTargetLocationFineRow()
+   {
+      return piTargetLocationFineRow;
+   }
+   
+   GetTargetLocationFineCol()
+   {
+      return piTargetLocationFineCol;
+   }
+   
    %%% Spasming messages
 
    SpasmMonsterTimer()

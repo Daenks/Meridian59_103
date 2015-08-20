@@ -546,6 +546,21 @@ messages:
          % Monster is immobile.
          return;
       }
+      
+      if (Send(mob,@HasTargetLocation))
+      {
+         Send(mob,@DoGoTowardsLocation);
+            
+         return;
+      }
+      
+      if (Send(mob,@CanPatrol))
+      {
+         if (Random(1,10000) < Send(mob,@GetChanceToPatrol))
+         {
+            Send(mob,@StartNextPatrolLeg);
+         }
+      }
 
       % Example, monster is blind. Forced randomness has precedence
       % over everything else.
@@ -602,7 +617,7 @@ messages:
 
       % If in doubt, wander aimlessly.
       % skip 9/10 of the possible steps
-      if Random(1,100) < 10
+      if (Random(1,100) < 10 AND NOT Send(mob,@CanPatrol))
 	  {
          Send(mob,@DoRandomWalk);
       }
