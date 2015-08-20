@@ -107,8 +107,6 @@ void ResetLoadBof(void)
 
 Bool LoadBofName(char *fname)
 {
-    dprintf("attempting to load: %s\n", fname); // TODO: Delete Me
-
    FILE *f = fopen(fname, "rb");
 	if (f == NULL)
    {

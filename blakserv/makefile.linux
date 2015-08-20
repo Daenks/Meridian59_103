@@ -13,6 +13,7 @@ CC     = g++
 LINK   = g++
 OUTDIR=debug
 BLAKINCLUDEDIR = $(TOPDIR)/include
+BLAKSERVRUNDIR = $(TOPDIR)/run/server
 
 # -Wno-write-strings: turns off deprecated warning for const char*
 #   strings passed as char* (Should be properly fixed)
@@ -23,7 +24,7 @@ BLAKSERVLINKFLAGS = -lpthread -lrt
 
 SOURCEDIR = .
 
-LIBS = 
+LIBS =
 
 OBJS =  \
 	$(OUTDIR)/main.obj \
@@ -37,7 +38,7 @@ OBJS =  \
 	$(OUTDIR)/ccode.obj \
 	$(OUTDIR)/channel.obj \
 	$(OUTDIR)/list.obj \
-    $(OUTDIR)/timer.obj \
+	$(OUTDIR)/timer.obj \
 	$(OUTDIR)/session.obj \
 	$(OUTDIR)/loadrsc.obj \
 	$(OUTDIR)/blakres.obj \
@@ -110,18 +111,17 @@ $(OUTDIR)/md5.obj : $(TOPDIR)/util/md5.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OUTDIR)/blakserv: $(OBJS)
-#	$(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
-#	$(LINK)	$@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
-#	$(CP) $@ $(BLAKSERVRUNDIR)
+#   $(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
+#   $(LINK) $@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
 	$(LINK) -o $@ $(OBJS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
-
+	$(CP) $@ $(BLAKSERVRUNDIR)
 
 #!include $(TOPDIR)/rules.mak
 makedirs:
 	-$(MKDIR) $(OUTDIR)
 
 $(OUTDIR)/%.obj : %.c
-	$(CC) $(CFLAGS) -o $@ -c $< 
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:
 	-$(RM) $(OUTDIR)/*
