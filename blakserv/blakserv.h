@@ -34,6 +34,8 @@
 
 #define MAX_DEPTH 2000
 
+#define BOF_VERSION 6
+
 enum
 {
    USER_CLASS = 1,
@@ -123,6 +125,7 @@ enum
 #define NOMINMAX
 #include <windows.h>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include "resource.h"
 #include <crtdbg.h>
 #include <io.h>
