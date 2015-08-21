@@ -7,28 +7,34 @@
 #
 
 TOPDIR=..
-#!include $(TOPDIR)/common.mak
+include $(TOPDIR)/common.mak.linux
 
 BOFS = util.bof object.bof
 
 .SUFFIXES : .kod
 
-BCFLAGS = -d -I $(KODINCLUDEDIR) -K $(KODDIR)\kodbase.txt
+BCFLAGS = -d -I $(KODINCLUDEDIR) -K $(KODDIR)/kodbase.txt
 
-.kod.bof::
-	@echo Building $<
-	$(BC) $(BCFLAGS) $<
-	@for i in ($<) do @$(KODDIR)/bin/instbofrsc $(TOPDIR) $(BLAKSERVRUNDIR) $$i
+%.bof: %.kod
+	@echo Building $< 
+	$(BC) $(BCFLAGS) $< 
 
 all : $(BOFS) $(BOFS2) $(BOFS3) $(BOFS4) $(BOFS5) $(BOFS6) $(BOFS7) $(BOFS8)
 	@for i in $(BOFS:.bof=) $(BOFS2:.bof=) $(BOFS3:.bof=.) $(BOFS4:.bof=.) $(BOFS5:.bof=.) $(BOFS6:.bof=.) $(BOFS7:.bof=.) $(BOFS8:.bof=.); do \
 		echo Building $$i ; \
 		cd $$i;\
-		$(MAKE) /$(MAKEFLAGS) TOPDIR=..\$(TOPDIR); \
+		sed -e "s/\!include/include/" \
+            -e "s/common.mak/common.mak.linux/" \
+            -e "s/\\\\kod.mak/\/kod.mak.linux/" \
+            -e "/include/ s:\\\\:\/:" \
+			-e "/TOPDIR/ s:\\\\:\/:" \
+			-e "/kod.mak/ s:\\\\:\/:" \
+			-e "/DEPEND/ s:\\\\:\/:" \
+				makefile >makefile.linux; \
+		$(MAKE) $(MAKEFLAGS) -f makefile.linux TOPDIR=../$(TOPDIR); \
 		cd ..; \
 	done
-	echo Copying kodbase.txt and kod include files
-	echo KODBASE: $(KODDIR)/kodbase.txt
+	@echo Copying kodbase.txt and kod include files
 	-$(CP) $(KODDIR)/kodbase.txt $(BLAKSERVRUNDIR) 2>&1
 	-@$(CP) $(KODDIR)/include/*.khd $(BLAKSERVRUNDIR) 2>&1
 	@echo Copying .rsc and creating client .rsb file
@@ -40,7 +46,11 @@ $(BOFS) $(BOFS2) $(BOFS3) $(BOFS4) $(BOFS5) $(BOFS6) $(BOFS7) $(BOFS8): $(DEPEND
 
 clean :
 	@-$(RM) *.bof *.rsc kodbase.txt >nul 2>&1
-	@-for %i in ($(BOFS:.bof=.)) do @if EXIST %i (cd %i & $(MAKE) /$(MAKEFLAGS) TOPDIR=../$(TOPDIR) clean & cd .. )
+	@-for i in $(BOFS:.bof=.); do \
+		cd %i; \
+		$(MAKE) $(MAKEFLAGS) TOPDIR=../$(TOPDIR) clean; \
+		cd ..; \
+	done
 	@-$(RM) $(BLAKSERVRUNDIR)/rsc/*.rsc >nul 2>&1
 	@-$(RM) $(BLAKSERVRUNDIR)/loadkod/*.bof >nul 2>&1
 	@-$(RM) $(BLAKSERVRUNDIR)/memmap/*.bof >nul 2>&1

@@ -1,22 +1,14 @@
 # Makefile for Blakod compiler
 
 TOPDIR=..
-#!include $(TOPDIR)\common.mak
+include $(TOPDIR)/common.mak.linux
 
-CP = cp
-RM = rm
 MKDIR = mkdir
-RMDIR = rmdir
-CC     = g++
-LINK   = g++
+
 OUTDIR=debug
 
-LEX = /usr/bin/flex -B -i
-YACC = /usr/bin/bison -d -t
-
-BLAKINCLUDEDIR = $(TOPDIR)/include
-BLAKBINDIR = $(TOPDIR)/bin
 SOURCEDIR = .
+
 CFLAGS = -m32 -I $(BLAKINCLUDEDIR) -DBLAK_PLATFORM_LINUX  -Wno-write-strings
 LINKFLAGS = -m32
 LIBS =
