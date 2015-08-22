@@ -171,13 +171,13 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 	struct in6_addr peer_addr;
 	connection_node conn;
 	session_node *s;
-#else
+#else // TODO: These appear to be identical (windows and linux)
     SOCKET new_sock;
-    SOCKADDR_IN acc_sin;    /* Accept socket address - internet style */
+    SOCKADDR_IN6 acc_sin;    /* Accept socket address - internet style */
     socklen_t acc_sin_len;        /* Accept socket address length */
-    SOCKADDR_IN peer_info;
+    SOCKADDR_IN6 peer_info;
     socklen_t peer_len;
-    struct in_addr peer_addr;
+    struct in6_addr peer_addr;
     connection_node conn;
     session_node *s;
 #endif
@@ -195,7 +195,7 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 	}
 	
 	acc_sin_len = sizeof acc_sin; 
-	
+
 	new_sock = accept(sock,(struct sockaddr *) &acc_sin,&acc_sin_len);
 	if (new_sock == SOCKET_ERROR) 
 	{
@@ -280,7 +280,6 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 
 Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 {
-#ifdef BLAK_PLATFORM_WINDOWS
 	IN6_ADDR mask;
 	int i;
 	BOOL skip;
@@ -297,10 +296,17 @@ Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 		/* for each byte of the mask, if it's non-zero, the client must match it */
 	
 		skip = 0;
+#ifdef BLAK_PLATFORM_WINDOWS
 		for (int k = 0; k < sizeof(mask.u.Byte); k++)
 		{
 			if (mask.u.Byte[k] != 0 && mask.u.Byte[k] != addr->sin6_addr.u.Byte[k])
 			{
+#else
+                for (int k = 0; k < sizeof(mask.s6_addr); k++)
+                {
+                        if (mask.s6_addr[k] != 0 && mask.s6_addr[k] != addr->sin6_addr.s6_addr[k])
+                        {
+#endif
 				// mismatch
 				skip = 1;
 				break;
@@ -313,50 +319,6 @@ Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 		return True;
 	}
 	return False;
-#else
-    IN_ADDR mask;
-    int i;
-
-    unsigned char a1,a2,a3,a4,b1,b2,b3,b4;
-
-    for (i=0;i<num_maintenance_masks;i++)
-    {
-        mask.s_addr = inet_addr(maintenance_masks[i]);
-        if (mask.s_addr == INADDR_NONE)
-        {
-            eprintf("CheckMaintenanceMask has invalid configured mask %s\n",
-                      maintenance_masks[i]);
-            continue;
-        }
-
-        a1 = addr->sin_addr.s_addr & 0xFF;
-        a2 = (addr->sin_addr.s_addr & 0xFF00) >> 8;
-        a3 = (addr->sin_addr.s_addr & 0xFF0000) >> 16;
-        a4 = (addr->sin_addr.s_addr & 0xFF000000) >> 24;
-        b1 = mask.s_addr & 0xFF;
-        b2 = (mask.s_addr & 0xFF00) >> 8;
-        b3 = (mask.s_addr & 0xFF0000) >> 16;
-        b4 = (mask.s_addr & 0xFF000000) >> 24;
-
-        /* for each byte of the mask, if it's non-zero, the client must match it */
-
-        if ((b1 != 0) && (a1 != b1))
-            continue;
-
-        if ((b2 != 0) && (a2 != b2))
-            continue;
-
-        if ((b3 != 0) && (a3 != b3))
-            continue;
-
-        if ((b4 != 0) && (a4 != b4))
-            continue;
-
-        return True;
-    }
-    return False;
-
-#endif
 }
 
 static HANDLE name_lookup_handle;

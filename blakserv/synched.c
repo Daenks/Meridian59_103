@@ -306,10 +306,17 @@ struct in6_addr check_addr;
 void CheckIPAddress(session_node *s)
 {
 	BOOL equal = 1;
+#ifdef BLAK_PLATFORM_WINDOWS
 	for (int i = 0; i < sizeof(check_addr.u.Byte); i++)
 	{
 		if (s->conn.addr.u.Byte[i] != check_addr.u.Byte[i])
 		{
+#else
+        for (int i = 0; i < sizeof(check_addr.s6_addr); i++)
+        {
+                if (s->conn.addr.s6_addr[i] != check_addr.s6_addr[i])
+                {
+#endif
 			equal = 0;
 			break;
 		}
