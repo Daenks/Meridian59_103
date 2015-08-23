@@ -1626,36 +1626,36 @@ messages:
          }
       }
 
-	  % moved down at least a full row 
-	  if iNew_finerow >= FINENESS
-	  {
-		iNew_row = piRow + (iNew_finerow / FINENESS);
-		iNew_finerow = iNew_finerow MOD FINENESS;
-	  }
-	  
-	  % moved up at least a full row
-	  if iNew_finerow < 0
-	  {
-	    iNew_row = piRow - bound((-iNew_finerow / FINENESS), 1, 100);
-		iNew_finerow = FINENESS - (-iNew_finerow MOD FINENESS);
-	  }
-	  
-	  % moved right at least a full col 
-	  if iNew_finecol >= FINENESS
-	  {
-		iNew_col = piCol + (iNew_finecol / FINENESS);
-		iNew_finecol = iNew_finecol MOD FINENESS;
-	  }
-	  
-	  % moved left at least a full row
-	  if iNew_finecol < 0
-	  {
-	    iNew_col = piCol - bound((-iNew_finecol / FINENESS), 1, 100);
-		iNew_finecol = FINENESS - (-iNew_finecol MOD FINENESS);
-	  }
-	  
+     % moved down at least a full row 
+     if iNew_finerow >= FINENESS
+     {
+      iNew_row = piRow + (iNew_finerow / FINENESS);
+      iNew_finerow = iNew_finerow MOD FINENESS;
+     }
+     
+     % moved up at least a full row
+     if iNew_finerow < 0
+     {
+       iNew_row = piRow - bound((-iNew_finerow / FINENESS), 1, 100);
+      iNew_finerow = FINENESS - (-iNew_finerow MOD FINENESS);
+     }
+     
+     % moved right at least a full col 
+     if iNew_finecol >= FINENESS
+     {
+      iNew_col = piCol + (iNew_finecol / FINENESS);
+      iNew_finecol = iNew_finecol MOD FINENESS;
+     }
+     
+     % moved left at least a full row
+     if iNew_finecol < 0
+     {
+       iNew_col = piCol - bound((-iNew_finecol / FINENESS), 1, 100);
+      iNew_finecol = FINENESS - (-iNew_finecol MOD FINENESS);
+     }
+     
       if Send(self,@ReqMonsterMove,#new_row=iNew_row,#new_col=iNew_col,
-	          #new_finerow=iNew_finerow,#new_finecol=iNew_finecol)
+             #new_finerow=iNew_finerow,#new_finecol=iNew_finecol)
       {
          Send(self,@MonsterOrient,#new_row=iNew_row,#new_col=iNew_col,
               #new_finerow=iNew_finerow,#new_finecol=iNew_finecol);
@@ -2305,14 +2305,14 @@ messages:
    "e=0, ne=1, n=2, nw=3, w=4, sw=5, s=6, se=7"
    {
       local iNew_row, iNew_col, iNew_finerow, iNew_finecol, iLong_step;
-	  iNew_row = piRow;
-	  iNew_col = piCol;
-	  
+     iNew_row = piRow;
+     iNew_col = piCol;
+     
       if dir = 0  
       {
          iNew_finerow = piFine_row + 16;
-		 iNew_finecol = piFine_col;
-		 iLong_step = FALSE;
+       iNew_finecol = piFine_col;
+       iLong_step = FALSE;
       }
 
       if dir = 1
@@ -2364,34 +2364,34 @@ messages:
          iLong_step = TRUE;
       }
 
-	  % moved down at least a full row 
-	  if iNew_finerow >= FINENESS
-	  {
-		iNew_row = piRow + (iNew_finerow / FINENESS);
-		iNew_finerow = iNew_finerow MOD FINENESS;
-	  }
-	  
-	  % moved up at least a full row
-	  if iNew_finerow < 0
-	  {
-	    iNew_row = piRow - bound((-iNew_finerow / FINENESS), 1, 100);
-		iNew_finerow = FINENESS - (-iNew_finerow MOD FINENESS);
-	  }
-	  
-	  % moved right at least a full col 
-	  if iNew_finecol >= FINENESS
-	  {
-		iNew_col = piCol + (iNew_finecol / FINENESS);
-		iNew_finecol = iNew_finecol MOD FINENESS;
-	  }
-	  
-	  % moved left at least a full row
-	  if iNew_finecol < 0
-	  {
-	    iNew_col = piCol - bound((-iNew_finecol / FINENESS), 1, 100);
-		iNew_finecol = FINENESS - (-iNew_finecol MOD FINENESS);
-	  }
-	
+     % moved down at least a full row 
+     if iNew_finerow >= FINENESS
+     {
+      iNew_row = piRow + (iNew_finerow / FINENESS);
+      iNew_finerow = iNew_finerow MOD FINENESS;
+     }
+     
+     % moved up at least a full row
+     if iNew_finerow < 0
+     {
+       iNew_row = piRow - bound((-iNew_finerow / FINENESS), 1, 100);
+      iNew_finerow = FINENESS - (-iNew_finerow MOD FINENESS);
+     }
+     
+     % moved right at least a full col 
+     if iNew_finecol >= FINENESS
+     {
+      iNew_col = piCol + (iNew_finecol / FINENESS);
+      iNew_finecol = iNew_finecol MOD FINENESS;
+     }
+     
+     % moved left at least a full row
+     if iNew_finecol < 0
+     {
+       iNew_col = piCol - bound((-iNew_finecol / FINENESS), 1, 100);
+      iNew_finecol = FINENESS - (-iNew_finecol MOD FINENESS);
+     }
+   
       if iLong_step
       {
          piState = piState | ESTATE_LONG_STEP;
@@ -2411,8 +2411,8 @@ messages:
          if Send(poOwner,@ReqSomethingMoved,#what=self,
                  #new_row=iNew_row,#new_col=iNew_col,
                  #server_validate=(NOT(piBehavior&AI_MOVE_WALKTHROUGH_WALLS)),
-				 #new_finerow=iNew_finerow,#new_finecol=iNew_finecol)
-         {		
+             #new_finerow=iNew_finerow,#new_finecol=iNew_finecol)
+         {      
             Send(poOwner,@SomethingMoved,#what=self,#speed=viSpeed,
                  #new_row=iNew_row,#new_col=iNew_col,
                  #fine_row=iNew_finerow,
@@ -2473,12 +2473,12 @@ messages:
             return FALSE;
       }
 
-	  % calculate square delta in highres-grid
+     % calculate square delta in highres-grid
       drow = ((Send(oTarget,@GetRow) * FINENESS) + Send(oTarget,@GetFineRow)) / 16;
       dcol = ((Send(oTarget,@GetCol) * FINENESS) + Send(oTarget,@GetFineCol)) / 16;
       drow = drow - (((piRow * FINENESS) + piFine_row) / 16);
       dcol = dcol - (((piCol * FINENESS) + piFine_col) / 16);
-	  
+     
       return Send(self,@MoveInDirection,#row_diff=-drow,#col_diff=-dcol,
                   #face_target=face_target,#face_away=face_away);
    }
@@ -5172,7 +5172,7 @@ messages:
       % 1024 super-fine squares = 1 square
       % 256 super-fine squares = 1 highres square = 16 finesquare = stepwidth
       % -------------------------------------------------------
-      % 4 * 1024 	= 4096 super-fine squares per 10000 ms
+      % 4 * 1024    = 4096 super-fine squares per 10000 ms
       % 4096 / 256  = 16 (Monster has to make 16 steps per 10000ms)
       % 10000 / 16  = 625 (steps must be made in 625ms intervals)
       % T = 10000 / ((viSpeed * 1024) / 256)  
@@ -5184,8 +5184,8 @@ messages:
       {
          % see formula above  
          iTime = 10000 / (viSpeed * 4);
-		 
-		 % diagonal move: scale-up the time according to the increased distance
+       
+       % diagonal move: scale-up the time according to the increased distance
          if piState & ESTATE_LONG_STEP
          {
             % sqrt(2) = 1.41421356  
@@ -5198,8 +5198,8 @@ messages:
          % bit late in transmission. the client has a dynamic playout which 
          % will compensate this.
          iTime = iTime - 5;
-		 
-		 % make sure timer interval does not get negative
+       
+       % make sure timer interval does not get negative
          % and also not like "run all the time"
          iTime = bound(iTime, 10, 10000);
       }

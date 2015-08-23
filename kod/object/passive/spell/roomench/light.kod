@@ -79,8 +79,8 @@ messages:
       % check if room already has light
       if Send(oRoom,@IsEnchanted,#what=self)
       {
-	 Send(who,@MsgSendUser,#message_rsc=light_unnecessary);
-	 return False;
+    Send(who,@MsgSendUser,#message_rsc=light_unnecessary);
+    return False;
       }
 
       propagate;
@@ -102,7 +102,7 @@ messages:
       % global effects of the enchantment
       Send(oRoom,@SomeoneSaid,#type=SAY_MESSAGE,#string=light_on,#what=self);
       Send(oRoom,@RoomStartEnchantment,#what=self,#state=(iSpellPower+25),
-	        #time=send(self,@GetDuration,#iSpellPower = iSpellPower));
+           #time=send(self,@GetDuration,#iSpellPower = iSpellPower));
       Send(oRoom,@AddBaseLight,#amount=(25+iSpellpower));
            
       

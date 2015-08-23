@@ -32,8 +32,8 @@ messages:
    {
      % We only want the GuildCreator to post to this book.
      if IsClass(what,&GuildCreator)
-     {	 
-  	   return NEWS_PERMISSION_READ_WRITE;
+     {    
+        return NEWS_PERMISSION_READ_WRITE;
      }
    
      return NEWS_PERMISSION_READ;

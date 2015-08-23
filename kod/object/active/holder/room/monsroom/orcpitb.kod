@@ -76,7 +76,7 @@ messages:
    {
       plMonsters = [ [&CaveOrc, 70], [&GroundwormQueen, 30] ];
       %plGenerators = [[50,43], [36,31], [28,39], [15,35], [21,19], [15,12], [39,17], [44,29],
-      %		     [44,34], [27,8],   [36,28], [48,22], [47,23], [45,31], [24,33], [20,39]];
+      %           [44,34], [27,8],   [36,28], [48,22], [47,23], [45,31], [24,33], [20,39]];
     
       propagate;
    }
@@ -291,7 +291,7 @@ messages:
          iRow = send(each_obj,@getrow);
          iCol = send(each_obj,@getcol);
          if iRow > 43 and iCol > 24 and iRow < 53 and iCol < 34 and isclass(each_obj,&user)
-            { count = count + 1; }	 
+            { count = count + 1; }    
       }
       return count;
    }
@@ -307,9 +307,9 @@ messages:
          iRow = send(each_obj,@getrow);
          iCol = send(each_obj,@getcol);
          if iRow = 45 and iCol = 29 and isclass(each_obj,&user)
-            { bAOne = TRUE; }	 
+            { bAOne = TRUE; }    
          if iRow = 51 and iCol = 29 and isclass(each_obj,&user)
-            { bATwo = TRUE; }	 
+            { bATwo = TRUE; }    
       }
       return (bAOne and bATwo);
    }

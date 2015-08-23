@@ -68,7 +68,7 @@ messages:
       {
          Send(who, @MsgSendUser, #message_rsc=skill_bad_target, 
            #parm1=vrName,#parm2=Send(otarget,@GetCapDef),#parm3=Send(otarget,@GetName));
-	 return False;
+    return False;
       }
 
       propagate;   % Check other things higher up
@@ -82,16 +82,16 @@ messages:
 
       if isclass(oTarget,&user)
       {
-	 dodge=send(otarget,@getskillability,#skill_num=SKID_DODGE);
-	 health=send(otarget,@getmaxhealth);
-	 slash=send(otarget,@getskillability,#skill_num=SKID_SLASH);
-	 strength=send(otarget,@getmight);
-	 agility=(send(oTarget,@getagility));
-	 totalpower=(dodge+health+slash+strength+agility)/4;
+    dodge=send(otarget,@getskillability,#skill_num=SKID_DODGE);
+    health=send(otarget,@getmaxhealth);
+    slash=send(otarget,@getskillability,#skill_num=SKID_SLASH);
+    strength=send(otarget,@getmight);
+    agility=(send(oTarget,@getagility));
+    totalpower=(dodge+health+slash+strength+agility)/4;
       }
       else
       {
-	 totalpower=send(oTarget,@getlevel);
+    totalpower=send(oTarget,@getlevel);
       }
       message = $;
 

@@ -68,7 +68,7 @@ messages:
    {
       return 0;
    }
-	 
+    
    CastSpell(who = $,iSpellPower=0)
    {
       local oMonster,iMonsterFaction,iModifier,iBaseChance;
@@ -105,9 +105,9 @@ messages:
             
             if random(1,100) < (iBaseChance + (iSpellPower/iModifier))
             {
-	            %% don't allow in happyland, unless the monster has no master.
-	            if send(SYS,@IsPKAllowed) or send(first(oMonster),@GetMaster) = $
-	            {
+               %% don't allow in happyland, unless the monster has no master.
+               if send(SYS,@IsPKAllowed) or send(first(oMonster),@GetMaster) = $
+               {
                     if Send(who,@SquaredDistanceTo,#what=First(oMonster)) < (piBaitRange * piBaitRange)
                     {
                        send(first(oMonster), @TargetSwitch, #what=who, #iHatred=100);

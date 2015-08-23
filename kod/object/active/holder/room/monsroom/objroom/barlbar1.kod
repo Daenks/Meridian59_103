@@ -73,16 +73,16 @@ messages:
       local irandnum;
       if (dir = LEAVE_WEST)
       {
-	 if (IsClass(what,&Player))
+    if (IsClass(what,&Player))
          {
-	    irandnum = random(0,2);
-	    if irandnum = 0            
-	       {send(what,@MsgSendUser,#message_rsc = bar_leave_w2);}
-	    if irandnum = 1  
-	       {send(what,@MsgSendUser,#message_rsc = bar_leave_w3);}
-	    if irandnum = 2            
-	       {send(what,@MsgSendUser,#message_rsc = bar_leave_w1);}
-	 }
+       irandnum = random(0,2);
+       if irandnum = 0            
+          {send(what,@MsgSendUser,#message_rsc = bar_leave_w2);}
+       if irandnum = 1  
+          {send(what,@MsgSendUser,#message_rsc = bar_leave_w3);}
+       if irandnum = 2            
+          {send(what,@MsgSendUser,#message_rsc = bar_leave_w1);}
+    }
       }
       return;
    }

@@ -61,7 +61,7 @@ messages:
    {
       plMonsters = [ [&CaveOrc, 60], [&OrcWizard,40] ];
 %      plGenerators = [[50,43], [36,31], [28,39], [15,35], [21,19], [15,12], [39,17], [44,29],
-%		     [44,34], [27,8],   [36,28], [48,22], [47,23], [45,31], [24,33], [20,39]];
+%           [44,34], [27,8],   [36,28], [48,22], [47,23], [45,31], [24,33], [20,39]];
     
       propagate;
    }
@@ -77,12 +77,12 @@ messages:
    SomethingTryGo(What=$,Row=$,Col=$)
    {
       if (Row = 93 and (Col = 24 or Col = 25 or Col = 26)) or
-	 (Row = 91 and (Col = 24 or Col = 25 or Col = 26))
+    (Row = 91 and (Col = 24 or Col = 25 or Col = 26))
       {
-	 send(self,@setsector,#sector=DOORSECTOR,#animation=ANIMATE_CEILING_LIFT,
-	    #height = 600,#speed=50);
-	 ptDoor = createtimer(self,@CloseDoor,60000);
-	 return TRUE;
+    send(self,@setsector,#sector=DOORSECTOR,#animation=ANIMATE_CEILING_LIFT,
+       #height = 600,#speed=50);
+    ptDoor = createtimer(self,@CloseDoor,60000);
+    return TRUE;
       }
       propagate;
    }
@@ -91,8 +91,8 @@ messages:
    {
       if (ptDoor <> $)
       {
-	 DeleteTimer(ptDoor);
-	 ptDoor = $;
+    DeleteTimer(ptDoor);
+    ptDoor = $;
       }
       propagate;
    }
@@ -102,7 +102,7 @@ messages:
       ptDoor = $;
 
       send(self,@setsector,#sector=DOORSECTOR,#animation=ANIMATE_CEILING_LIFT,
-	 #height = 500,#speed=0);
+    #height = 500,#speed=0);
       return;
    }
 
@@ -129,10 +129,10 @@ messages:
       foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
-	 iRow = send(each_obj,@getrow);
-	 iCol = send(each_obj,@getcol);
-	 if iRow > 81 and iCol > 20 and iRow < 91 and iCol < 30 and isclass(each_obj,&user)
-	    { count = count + 1; }	 
+    iRow = send(each_obj,@getrow);
+    iCol = send(each_obj,@getcol);
+    if iRow > 81 and iCol > 20 and iRow < 91 and iCol < 30 and isclass(each_obj,&user)
+       { count = count + 1; }    
       }
       return count;
    }
@@ -144,10 +144,10 @@ messages:
       foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
-	 iRow = send(each_obj,@getrow);
-	 iCol = send(each_obj,@getcol);
-	 if iRow = 83 and iCol = 25 and isclass(each_obj,&user)
-	    { bAOne = TRUE; }	 
+    iRow = send(each_obj,@getrow);
+    iCol = send(each_obj,@getcol);
+    if iRow = 83 and iCol = 25 and isclass(each_obj,&user)
+       { bAOne = TRUE; }    
       }
       return bAOne;
    }
@@ -160,12 +160,12 @@ messages:
       foreach i in plActive
       {
          each_obj = send(self,@HolderExtractObject,#data=i);
-	 iRow = send(each_obj,@getrow);
-	 iCol = send(each_obj,@getcol);
-	 if (iRow = 86 and iCol = 22) and isclass(each_obj,&user)
-	    {bBOne = TRUE; } 
-	 if (iRow = 86 and iCol = 28) and isclass(each_obj,&user)
-	    {bBTwo = TRUE; }
+    iRow = send(each_obj,@getrow);
+    iCol = send(each_obj,@getcol);
+    if (iRow = 86 and iCol = 22) and isclass(each_obj,&user)
+       {bBOne = TRUE; } 
+    if (iRow = 86 and iCol = 28) and isclass(each_obj,&user)
+       {bBTwo = TRUE; }
    
       }
       return (bBOne and bBTwo);

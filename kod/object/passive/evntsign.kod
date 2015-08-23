@@ -59,10 +59,10 @@ messages:
    
       if piDay = $ OR piHour = $
       {
-   	   AddPacket(4,EventSign_no_info);
+         AddPacket(4,EventSign_no_info);
 
-   	   return;
-	   }
+         return;
+      }
 
       if (piHour / 12) > 0
       {
@@ -125,9 +125,9 @@ messages:
          }
       }
 
- 	   AddPacket(4,EventSign_info,4,rDay,4,iHour,4,rAMPM);
+       AddPacket(4,EventSign_info,4,rDay,4,iHour,4,rAMPM);
 
- 	   return;
+       return;
    }
 
 

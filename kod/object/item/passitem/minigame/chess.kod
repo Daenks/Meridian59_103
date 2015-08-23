@@ -49,28 +49,28 @@ messages:
    SetAppearance()
    {
         local icon;
-		
+      
         if chess_table_rsc = vrIcon
-		{
-			return;
-		}
+      {
+         return;
+      }
 
-		icon = vrIcon;
-		if 0 = piNumPlayers
-		{
-			icon = chess_closed_rsc;
-		}
-		else
-		{
-			icon = chess_open_rsc;
-		}
+      icon = vrIcon;
+      if 0 = piNumPlayers
+      {
+         icon = chess_closed_rsc;
+      }
+      else
+      {
+         icon = chess_open_rsc;
+      }
 
-		if icon <> vrIcon
-		{
-		    vrIcon = icon;
-			send(poOwner, @somethingchanged, #what=self);
-		}
-		return;
+      if icon <> vrIcon
+      {
+          vrIcon = icon;
+         send(poOwner, @somethingchanged, #what=self);
+      }
+      return;
    }
 
 end

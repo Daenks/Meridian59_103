@@ -100,7 +100,7 @@ messages:
          if not bItemCast
          {
             Send(who, @MsgSendUser, #message_rsc=spell_no_self_target,
-	           #parm1=vrName);
+              #parm1=vrName);
          }
          return FALSE;
       }
@@ -126,11 +126,11 @@ messages:
       %% if target has no wielded weapon, the spell is wasted.
       if oWeapon = $
       { 
-	      Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
-	      Send(who,@MsgSendUser,#message_rsc=brittle_no_weapon,
+         Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
+         Send(who,@MsgSendUser,#message_rsc=brittle_no_weapon,
             #parm1=Send(oTarget,@GetCapDef),
-	         #parm2=Send(oTarget,@GetName));
-	      propagate; 
+            #parm2=Send(oTarget,@GetName));
+         propagate; 
       }
 
       if isClass(oWeapon,&HunterSword) 
@@ -138,7 +138,7 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=brittle_hunter_sword,
             #parm1=Send(oTarget,@GetCapDef),
             #parm2=Send(oTarget,@GetName));
-	      propagate;
+         propagate;
       }
 
       iHits   = Send(oWeapon,@GetHits);
@@ -149,14 +149,14 @@ messages:
       if iHits < 1   {  iHits = 1 ;  }
       Send(oWeapon,@SetHits,#number=iHits);
       Send(oTarget, @MsgSendUser, #message_rsc=brittle_cast_rsc,
-	   #parm1=Send(who,@GetCapDef),
-	   #parm2=Send(who,@GetName),
-	   #parm3=Send(oWeapon,@GetName));
+      #parm1=Send(who,@GetCapDef),
+      #parm2=Send(who,@GetName),
+      #parm3=Send(oWeapon,@GetName));
 
       Send(who,@MsgSendUser,#message_rsc=brittle_succeed,
-	   #parm1=Send(oTarget,@GetDef),
-	   #parm2=Send(oTarget,@GetName),
-	   #parm3=Send(oWeapon,@GetName));
+      #parm1=Send(oTarget,@GetDef),
+      #parm2=Send(oTarget,@GetName),
+      #parm3=Send(oWeapon,@GetName));
       propagate;
    }
 

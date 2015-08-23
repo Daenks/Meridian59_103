@@ -57,33 +57,33 @@ messages:
 
       if poOffer_who <> $
       {
-	 Send(who,@MsgSendUser,#message_rsc=oblak_busy);
-	 Send(self,@Reject,#what=what,#who=who);
-	 return;
+    Send(who,@MsgSendUser,#message_rsc=oblak_busy);
+    Send(self,@Reject,#what=what,#who=who);
+    return;
       }
 
       if not IsClass(what,&Item) or not Send(what,@ReqRepair)
       {
-	 Send(who,@MsgSendUser,#message_rsc=oblak_cant_fix,#parm1=Send(what,@GetName));
-	 Send(self,@Reject,#what=what,#who=who);
-	 return;
+    Send(who,@MsgSendUser,#message_rsc=oblak_cant_fix,#parm1=Send(what,@GetName));
+    Send(self,@Reject,#what=what,#who=who);
+    return;
       }
 
       iMax = Send(what,@GetMaxHits);
       iCurrent = Send(what,@GetHits);
       if iCurrent >= ((4*iMax)/9)
       {
-	 Send(who,@MsgSendUser,#message_rsc=oblak_too_good,#parm1=Send(what,@GetName));
-	 Send(self,@Reject,#what=what,#who=who);
-	 return;
+    Send(who,@MsgSendUser,#message_rsc=oblak_too_good,#parm1=Send(what,@GetName));
+    Send(self,@Reject,#what=what,#who=who);
+    return;
       }
 
       % should really send fixed item here...
 
       if not Send(who,@ReqOffer,#what=self,#item_list=plOffer_items)
       {
-	 Send(self,@CleanupCancelOffer);
-	 return;
+    Send(self,@CleanupCancelOffer);
+    return;
       }
 
       % fix item 
@@ -92,7 +92,7 @@ messages:
       Send(what,@SetHits,#number=(4*iMax)/9);
 
       Send(who,@MsgSendUser,#message_rsc=oblak_cost,#parm1=Send(what,@GetName), 
-	   #parm2=Send(what,@GetInitValue)/2);
+      #parm2=Send(what,@GetInitValue)/2);
 
       poOffer_who = who;
       plOffer_items = [what];
@@ -110,8 +110,8 @@ messages:
       local oRoom;
       if Send(what,@ReqNewOwner,#what=who) and Send(who,@ReqNewHold,#what=what)
       {
-	 Send(who,@NewHold,#what=what);
-	 return;
+    Send(who,@NewHold,#what=what);
+    return;
       }
       % user can't take it back, put on ground
       oRoom = Send(who,@GetOwner);
@@ -145,7 +145,7 @@ messages:
 
       if poOffer_who = $
       {
-	 return False	 ;
+    return False    ;
       }
 
       oRepaired = First(plOffer_items);
@@ -153,61 +153,61 @@ messages:
       iValue_offered = 0;
       foreach i in item_list
       {
-	 if not IsClass(i,&Money)
-	 {
-	    Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_only_money);
-	    Send(self,@OfferCanceled);
-	    return False;
-	 }
-	 iValue_offered = iValue_offered + Send(i,@GetValue);
+    if not IsClass(i,&Money)
+    {
+       Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_only_money);
+       Send(self,@OfferCanceled);
+       return False;
+    }
+    iValue_offered = iValue_offered + Send(i,@GetValue);
       }
 
       iDiff = iValue_offered - Send(oRepaired,@GetInitValue)/2;
 
       if iDiff < 0
       {
-	 Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_more_money, 
-	      #parm1=Send(oRepaired,@GetInitValue)/2,#parm2=Send(oRepaired,@GetName));
-	 Send(self,@OfferCanceled);
-	 return False;
+    Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_more_money, 
+         #parm1=Send(oRepaired,@GetInitValue)/2,#parm2=Send(oRepaired,@GetName));
+    Send(self,@OfferCanceled);
+    return False;
       }
 
       if iDiff > 0
       {
-	 Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_change);
-	 plOffer_items = Cons(Create(&Money,#number=iDiff),plOffer_items);
+    Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_change);
+    plOffer_items = Cons(Create(&Money,#number=iDiff),plOffer_items);
       }
 
       oHolder = Send(SYS,@GetSystemHolder1);
       foreach i in plOffer_items
       {
-	 Send(oHolder,@NewHold,#what=i);
+    Send(oHolder,@NewHold,#what=i);
       }
       
       Send(poOffer_who,@AcceptOffer);
 
       Send(poOffer_who,@MsgSendUser,#message_rsc=oblak_success,
-	   #parm1=Send(oRepaired,@GetName));
+      #parm1=Send(oRepaired,@GetName));
       % take his stuff
      
       oHolder = Send(SYS,@GetSystemHolder2);
       iLists = 1;
       while iLists <= 2 
       {
-	 if iLists = 1
-	 {
-	    lTake_items = Send(oHolder,@GetHolderActive);
-	 }
-	 if iLists = 2
-	 {
-	    lTake_items = Send(oHolder,@GetHolderPassive);
-	 }
+    if iLists = 1
+    {
+       lTake_items = Send(oHolder,@GetHolderActive);
+    }
+    if iLists = 2
+    {
+       lTake_items = Send(oHolder,@GetHolderPassive);
+    }
 
-	 foreach i in lTake_items
-	 {
-	    Send(i,@Delete);
-	 }
-	 iLists = iLists + 1;
+    foreach i in lTake_items
+    {
+       Send(i,@Delete);
+    }
+    iLists = iLists + 1;
       }
       
       poOffer_who = $;

@@ -259,7 +259,7 @@ messages:
          prMusic = rMusic;
          foreach i in plActive
          {
-   	      each_obj = First(i);
+            each_obj = First(i);
             if IsClass(each_obj,&User)
             {
                Send(each_obj,@SendRoomMusic,#music_rsc=prMusic);
@@ -320,7 +320,7 @@ messages:
          Send(what,@SendRoomMusic,#music_rsc=prMusic);
 
          if send(send(SYS,@FindRoomByNum,#num=RID_DUKE4),@IsLocked)
-	         AND NOT IsClass(what,&DM)
+            AND NOT IsClass(what,&DM)
          {
             Post(self,@HustleUsersOutOfRoom,#new_rid=RID_DUKE2,#new_row=9,#new_col=15);
          }

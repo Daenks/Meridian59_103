@@ -124,22 +124,22 @@ messages:
       {
       if piNumber = 1
          {
- 	 return Yrxlsap_vial_name;
+     return Yrxlsap_vial_name;
          }
       else
          {
-   	 return Yrxlsap_vial_name_plural;
+       return Yrxlsap_vial_name_plural;
          }
       }
    else
       {
       if piNumber = 1
          {
-	 return vrName;
+    return vrName;
          }
       else
          {
-	 return vrName_plural;
+    return vrName_plural;
          }
       }
       propagate;

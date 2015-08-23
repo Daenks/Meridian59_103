@@ -118,7 +118,7 @@ messages:
              AND send(target,@IsEnchanted,#byClass=&MarkOfDishonor))
       {
          Send(who,@MsgSendUser,#message_rsc=breathoflife_unnecessary_rsc,
-	           #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
+              #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
 
          return FALSE;
       }
@@ -151,7 +151,7 @@ messages:
       Send(who,@LoseHealth,#amount=iHpAmount,#precision=TRUE);
 
       Send(oTarget,@MsgSendUser,#message_rsc=breathoflife_cast_rsc,
-      	   #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),#parm3=iTransfer/100);
+            #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),#parm3=iTransfer/100);
       Send(oTarget,@GainHealth,#amount=iTransfer,#precision=TRUE);
 
       propagate;

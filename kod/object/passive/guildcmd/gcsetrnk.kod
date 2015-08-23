@@ -69,7 +69,7 @@ messages:
         {
           send(who,@msgsenduser,#message_rsc=setrank_not_member,
               #parm1=send(oTarget,@getdef),
-			  #parm2=send(oTarget,@getname),#parm3=send(oGuild,@getdef),
+           #parm2=send(oTarget,@getname),#parm3=send(oGuild,@getdef),
               #parm4=send(oGuild,@getname));
           return FALSE;
         }

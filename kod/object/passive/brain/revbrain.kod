@@ -38,7 +38,7 @@ messages:
       local oTarget;
       if what = $
       { debug("Unreachable. Null new owner.");
-	Send(mob,@EnterStateLimbo); 
+   Send(mob,@EnterStateLimbo); 
         return; }
       oTarget = Send(mob,@GetHauntee);
       Send(mob,@EnterStateChase,#target=oTarget,#actnow=True);

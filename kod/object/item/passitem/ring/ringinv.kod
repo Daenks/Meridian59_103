@@ -58,8 +58,8 @@ messages:
    {
       if Send(what,@CheckPlayerFlag,#flag=PFLAG_INVISIBLE)
       {
-	      Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_already_invisible_rsc);
-	      return False;
+         Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_already_invisible_rsc);
+         return False;
       }
 
       propagate;
@@ -71,8 +71,8 @@ messages:
 
       if ptCharge <> $
       {
-	      debug("Ring of invisibility",self,"got used when already has timer");
-	      DeleteTimer(ptCharge);
+         debug("Ring of invisibility",self,"got used when already has timer");
+         DeleteTimer(ptCharge);
       }
       ptCharge = CreateTimer(self,@ChargeTimer,RINGINVISIBILITY_CHARGE_RATE);
 
@@ -92,12 +92,12 @@ messages:
    {
       if ptCharge = $
       {
-	 %debug("Ringinvisibility",self,"got unused when has no timer");
+    %debug("Ringinvisibility",self,"got unused when has no timer");
       }
       else
       {
-	 DeleteTimer(ptCharge);
-	 ptCharge = $;
+    DeleteTimer(ptCharge);
+    ptCharge = $;
       }
 
       pbIn_use = False;
@@ -109,7 +109,7 @@ messages:
       {
          Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_dead_rsc);
          Send(self,@Delete);
-	 return;
+    return;
       }
 
       propagate;

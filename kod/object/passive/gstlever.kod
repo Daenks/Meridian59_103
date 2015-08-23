@@ -54,18 +54,18 @@ messages:
       if abs(send(who,@getrow)-send(self,@getrow)) > GUESTLEVER_RANGE or
          abs(send(who,@getcol)-send(self,@getcol)) > GUESTLEVER_RANGE
       {
-	 Send(who,@MsgSendUser,#message_rsc=guestlever_not_in_range);          
-	 return True;
+    Send(who,@MsgSendUser,#message_rsc=guestlever_not_in_range);          
+    return True;
       }
 
       if piState = GUESTLEVER_UP
       {
-	 piState = GUESTLEVER_DOWN;
+    piState = GUESTLEVER_DOWN;
       }
       else
       {
-	 Send(who,@MsgSendUser,#message_rsc=guestlever_stuck);
-	 return True;
+    Send(who,@MsgSendUser,#message_rsc=guestlever_stuck);
+    return True;
       }
       
       Send(who,@MsgSendUser,#message_rsc=guestlever_changed);          
@@ -92,8 +92,8 @@ messages:
 
       if iNew_state <> piState
       {
-	 piState = iNew_state;
-	 Send(poOwner,@SomethingChanged,#what=self);
+    piState = iNew_state;
+    Send(poOwner,@SomethingChanged,#what=self);
       }
 
 

@@ -76,29 +76,29 @@ messages:
    {
       if (new_row = 7) and (new_col = 58)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST4),
               #new_row=47,#new_col = 4,#fine_row = 0,#fine_col = 0,
-	      #new_angle=Send(what,@GetAngle));
-	 return;
+         #new_angle=Send(what,@GetAngle));
+    return;
       }
 
       if (new_row = 36)and ((new_col = 5) or (new_col = 6))
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_MARION),
               #new_row=30,#new_col = 65 , #fine_row = 0,
-	      #new_angle=Send(what,@GetAngle));
-	 return;
+         #new_angle=Send(what,@GetAngle));
+    return;
       }
 
       if ((new_row = 17)or(new_row = 18)) and (new_col = 12)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_TEMPLE),
               #new_row=9,#new_col = 31,
-	      #new_angle=Send(what,@GetAngle));
-	 return;
+         #new_angle=Send(what,@GetAngle));
+    return;
       }
 
    propagate;

@@ -35,7 +35,7 @@ messages:
 
       if what=oCaramo
          OR IsClass(what,&DM)
-      {	 
+      {    
          return NEWS_PERMISSION_READ_WRITE;
       }
       

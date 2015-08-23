@@ -714,7 +714,7 @@ messages:
          
          if poOwner <> $
          {
-		    Send(poOwner,@SomethingDidAction,#what=self,#action=action);
+          Send(poOwner,@SomethingDidAction,#what=self,#action=action);
          }
       }
 
@@ -2134,7 +2134,7 @@ messages:
          
          return;
       }
-	  
+     
       if iClient_cmd = UC_DEPOSIT
       {
          if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
@@ -4309,8 +4309,8 @@ messages:
          Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
               
          return 0;
-      }	  
-	  
+      }     
+     
       lItem_pos = Send(what,@GetPos);
       if lItem_pos = $
       {
@@ -4421,13 +4421,13 @@ messages:
             
             return 4;                      
          }        
-      }	  
-	  		 
-	  % shrunken head picked up
-	  if isClass(what, &ShrunkenHead)
-	  {
-		 Send(what,@PickedUp,#by=self);
-	  }
+      }     
+            
+     % shrunken head picked up
+     if isClass(what, &ShrunkenHead)
+     {
+       Send(what,@PickedUp,#by=self);
+     }
 
       Send(self,@NewHold,#what=what,#bFromReagentBag=bFromReagentBag);
       
@@ -4690,8 +4690,8 @@ messages:
               
          return;
       }
-	  
-	  % Make sure object is in the same room as player
+     
+     % Make sure object is in the same room as player
       if NOT Send(self, @IsInSameRoom, #what = what)
       {
          Debug("User ", self, vrName, "tried to look at object in another room");
@@ -5635,7 +5635,7 @@ messages:
       }
       else
       {
-	% don't enable mailing lists yet
+   % don't enable mailing lists yet
          if FALSE AND StringEqual(string,user_guildofficer_rsc)
             AND poGuild <> $
          {
@@ -8275,7 +8275,7 @@ messages:
       {
          iMaxCapacity_send = Send(self,@GetWeightMax);
       }
-	  
+     
       AddPacket(1,9, 4,user_stat_capacity, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iCapacity_send, 4,0, 4,iMaxCapacity_send, 4,iCapacity_send);
 

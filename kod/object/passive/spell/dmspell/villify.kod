@@ -106,7 +106,7 @@ messages:
          }
 
          % from lawful to outlaw
-         Send(who,@MsgSendUser,#message_rsc=villify_msg_DM,#parm1=Send(i,@GetTrueName));		
+         Send(who,@MsgSendUser,#message_rsc=villify_msg_DM,#parm1=Send(i,@GetTrueName));      
          Send(i,@MsgSendUser,#message_rsc=villify_msg_target,#parm1=Send(who,@GetTrueName));
          Send(i,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=True);
          Send(i,@SetPlayerFlag,#flag=PFLAG_MURDERER,#value=False);

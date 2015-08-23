@@ -65,8 +65,8 @@ messages:
 
    Constructed()
    {
-	% chris--for CanMonsterMoveInRoom testing
-	%local i,j;
+   % chris--for CanMonsterMoveInRoom testing
+   %local i,j;
       plMonsters = [ [&NarthylWorm, 60], [&TuskedSkeleton, 40] ];
       plGenerators = [ [9,15], [14,24], [22,20], [17,15], [8,19], [14,30], [15,28] ];
 
@@ -74,15 +74,15 @@ messages:
 
 %      i=0;
 %      while i < 50
-%	{
+%   {
 %      if (CanMonsterMoveInRoom(prmRoom, i, i, i+2, i+1))
 %{
-%	debug("yes");
+%   debug("yes");
 %}
 %else
-%	{
-%	debug("no");
-%	}    
+%   {
+%   debug("no");
+%   }    
 %i = i+1;
 %}
       propagate;
@@ -165,7 +165,7 @@ messages:
    {
       if IsClass(oSpell,&DeathsDoor)
       {
-	      Send(who,@MsgSendUser,#message_rsc=Necropolis3_no_rift);            
+         Send(who,@MsgSendUser,#message_rsc=Necropolis3_no_rift);            
 
          return FALSE;
       }

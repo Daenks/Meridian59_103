@@ -59,26 +59,26 @@ messages:
    {
       if (new_row = 8) and ((new_col = 46) or (new_col = 47))
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST2),
               #new_row=54,#new_col = 46, #new_angle=ANGLE_EAST);
-	 return;
+    return;
       }
 
       if (new_row = 57) and (new_col = 49)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST3),
               #new_row=40,#new_col = 21, #new_angle=ANGLE_EAST);
-	 return;
+    return;
       }
 
       if (new_row = 48) and ((new_col = 3)or(new_col = 4) or (new_col = 5))
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST5),
               #new_row=7,#new_col = 56, #new_angle=ANGLE_WEST);
-	 return;
+    return;
       }
 
    propagate;

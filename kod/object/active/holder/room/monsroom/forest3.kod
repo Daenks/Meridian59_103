@@ -99,10 +99,10 @@ messages:
    {
       if ((new_row = 39)or(new_row = 40)) and (new_col = 19)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
-	      #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST4),
-	      #new_row=54,#new_col = 49, #new_angle=ANGLE_NORTH);
-	 return;
+    Send(SYS,@UtilGoNearSquare,#what=what,
+         #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST4),
+         #new_row=54,#new_col = 49, #new_angle=ANGLE_NORTH);
+    return;
       }
       propagate;
    }

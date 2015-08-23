@@ -80,9 +80,9 @@ messages:
       % check for enchantment already applied
       if Send(oRoom,@IsEnchanted,#what=self)
       {
-	      Send(who,@MsgSendUser,#message_rsc=forcesoflight_already_enchanted);
-	      
-	      return FALSE;
+         Send(who,@MsgSendUser,#message_rsc=forcesoflight_already_enchanted);
+         
+         return FALSE;
       }
 
       propagate;

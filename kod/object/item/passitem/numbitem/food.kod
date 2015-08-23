@@ -50,14 +50,14 @@ messages:
    {
       if not IsClass(apply_on,&User)
       {
-	 Send(what,@MsgSendUser,#message_rsc=food_cant_use_on, 
-	      #parm1=Send(apply_on,@GetIndef),
-		  #parm2=Send(apply_on,@GetName));
-	 return False;
+    Send(what,@MsgSendUser,#message_rsc=food_cant_use_on, 
+         #parm1=Send(apply_on,@GetIndef),
+        #parm2=Send(apply_on,@GetName));
+    return False;
       }
       if not Send(apply_on,@ReqEatSomething,#filling=viFilling,#what=self)
       {
-	 return False;
+    return False;
       }
       return True;
    }
@@ -65,7 +65,7 @@ messages:
    SendTaste(what = $,apply_on = $)
    {
       Send(apply_on,@MsgSendUser,#message_rsc=food_use);
-	  return;
+     return;
    }
 
    NewApplied(what = $,apply_on = $)
@@ -78,7 +78,7 @@ messages:
    }
 
    IsAlcohol()
-   {	 
+   {    
       return FALSE;
    }
 

@@ -24,12 +24,12 @@ resources:
 
 classvars:
 
-	vrName = room_name_OutdoorsB2
+   vrName = room_name_OutdoorsB2
 
-	viEquilibrium = 60              %%% This is where this section of the faerie forest
-					%%% will 'aim' for on the karmic scale.
-	viTeleport_row = 38
-	viTeleport_col = 51
+   viEquilibrium = 60              %%% This is where this section of the faerie forest
+               %%% will 'aim' for on the karmic scale.
+   viTeleport_row = 38
+   viTeleport_col = 51
 
 properties:
 
@@ -43,7 +43,7 @@ messages:
    
    Constructed()
    {
-	   plGenerators = [ [5, 10], [5, 16], [25, 24], [12, 27], [14, 40],
+      plGenerators = [ [5, 10], [5, 16], [25, 24], [12, 27], [14, 40],
                       [14, 13], [25, 9], [38, 19], [40, 26], [38, 33],
                       [24, 48], [31, 40], [38, 50], [47, 28] ];
       propagate;

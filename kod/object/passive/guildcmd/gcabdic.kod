@@ -97,7 +97,7 @@ messages:
       {
           Send(who,@MsgSendUser,#message_rsc=abdicate_not_member,
               #parm1=Send(oTarget,@GetDef),#type1=STRING_RESOURCE,
-			     #parm2=Send(oTarget,@GetName),#parm3=Send(myGuild,@GetDef),
+              #parm2=Send(oTarget,@GetName),#parm3=Send(myGuild,@GetDef),
               #parm4=Send(myGuild,@GetName));
 
           return FALSE;

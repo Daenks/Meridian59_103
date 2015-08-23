@@ -61,7 +61,7 @@ messages:
       plMonsters = [ [&FungusBeast, 70], [&Ant, 30] ];
 
       plGenerators = [ [4, 72], [15, 42], [14, 72], [19, 67], [17, 53], 
-		      [19, 35], [30, 48], [31, 33], [15, 3], [30, 71] ];
+            [19, 35], [30, 48], [31, 33], [15, 3], [30, 71] ];
       propagate;
    }
    
@@ -81,31 +81,31 @@ messages:
    CreateStandardObjects()
    {
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=15,#new_col=37);
+     #new_row=15,#new_col=37);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=21,#new_col=52);
+     #new_row=21,#new_col=52);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=19,#new_col=70);
+     #new_row=19,#new_col=70);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=30,#new_col=35);
+     #new_row=30,#new_col=35);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=29,#new_col=42);
+     #new_row=29,#new_col=42);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=32,#new_col=45);
+     #new_row=32,#new_col=45);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=30,#new_col=51);
+     #new_row=30,#new_col=51);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=25,#new_col=61);
+     #new_row=25,#new_col=61);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=31,#new_col=70);
+     #new_row=31,#new_col=70);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=24,#new_col=3);
+     #new_row=24,#new_col=3);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=14,#new_col=4);
+     #new_row=14,#new_col=4);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=3,#new_col=65);
+     #new_row=3,#new_col=65);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=7,#new_col=27);
+     #new_row=7,#new_col=27);
 
       propagate;
    }

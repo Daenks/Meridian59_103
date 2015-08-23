@@ -88,8 +88,8 @@ messages:
       }
       
       Send(what,@MsgSendUser,#message_rsc=forgetpotion_cant_use_on, 
-	        #parm1=Send(apply_on,@GetIndef),#parm2=Send(apply_on,@GetName));
-	        
+           #parm1=Send(apply_on,@GetIndef),#parm2=Send(apply_on,@GetName));
+           
       return FALSE;
    }
 

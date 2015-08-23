@@ -93,11 +93,11 @@ messages:
 %   local oPortal;
 %      if not (send(self,@CountHoldingHowMany,#class=&portal) > 0)
 %      {
-%	 oPortal = Create(&Portal,#dest_room_num=RID_G9,#dest_col=56, #dest_row=19);
-%	 Send(self,@NewHold,#what=oPortal,#new_row=39, #new_col=39,#new_angle=ANGLE_SOUTH_EAST);
+%    oPortal = Create(&Portal,#dest_room_num=RID_G9,#dest_col=56, #dest_row=19);
+%    Send(self,@NewHold,#what=oPortal,#new_row=39, #new_col=39,#new_angle=ANGLE_SOUTH_EAST);
 %      }
 %      send(self,@setsector,#sector=1,#animation=ANIMATE_FLOOR_LIFT,
-%	 #height = 1608,#speed=0);
+%    #height = 1608,#speed=0);
 %      return;
 %
 %   }
@@ -121,7 +121,7 @@ messages:
 %   if not (send(SYS,@AreRoomIllusionsEnabled))
 %   {
 %   send(self,@setsector,#sector=1,#animation=ANIMATE_FLOOR_LIFT,
-%	#height = 1608,#speed=0);
+%   #height = 1608,#speed=0);
 %   }
 %   propagate;
 %   

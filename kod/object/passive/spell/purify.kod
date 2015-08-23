@@ -140,7 +140,7 @@ messages:
       {
          Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
          Send(who,@MsgSendUser,#message_rsc=purify_spell_self_cast_rsc,#parm1=vrName);
-      	return FALSE;
+         return FALSE;
       }
 
       propagate;   

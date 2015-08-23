@@ -147,7 +147,7 @@ messages:
 
       if what=3
       {
-         piAttack_type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_SLASH;	  
+         piAttack_type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_SLASH;     
       }
 
       if what=4

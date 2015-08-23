@@ -69,8 +69,8 @@ messages:
       {
          Send(First(lTargets),@EffectSendUser,#what=self,#effect=EFFECT_INVERT);
          Send(First(lTargets),@MsgSendUser,#message_rsc=Evaluated_Evaluate_msg,
-		    #parm1=Send(who,@getcapindef),
-			#parm2=Send(who,@getname));
+          #parm1=Send(who,@getcapindef),
+         #parm2=Send(who,@getname));
       }
       Send(self,@ComputeEvaluateInfo,#who=First(lTargets),#dmis=who);
 
@@ -133,8 +133,8 @@ messages:
                   monsterA=temp;
                } else {
                   if monsterB=$
-   	            {
-	                  monsterB=temp;
+                  {
+                     monsterB=temp;
                   } else {
                      if send(monsterA,@GetLevel) > send(temp,@GetLevel)
                      {
@@ -146,7 +146,7 @@ messages:
                         }
                      }
                   }
-               }   	    
+               }          
             }
          }
          send(dmis,@msgsenduser,#message_rsc=evaluate_monster,#parm1=send(who,@getname),#parm2=send(who,@gethisher),

@@ -47,20 +47,20 @@ messages:
 
       if poOffer_who <> $
       {
-	 Send(what,@MsgSendUser,#message_rsc=pawnman_offer_busy,#parm1=vrName);
-	 return False	 ;
+    Send(what,@MsgSendUser,#message_rsc=pawnman_offer_busy,#parm1=vrName);
+    return False    ;
       }
 
       iValue_offered = 0;
       foreach i in item_list
       {
-	 iValue_offered = iValue_offered + Send(i,@GetValue);
+    iValue_offered = iValue_offered + Send(i,@GetValue);
       }
 
       if iValue_offered = 0
       {
-	 Send(what,@MsgSendUser,#message_rsc=pawnman_no_value);
-	 return False;
+    Send(what,@MsgSendUser,#message_rsc=pawnman_no_value);
+    return False;
       }
       return True;
    }
@@ -71,22 +71,22 @@ messages:
 
       if poOffer_who <> $
       {
-	 Send(what,@MsgSendUser,#message_rsc=pawnman_offer_busy,#parm1=vrName);
-	 Send(what,@OfferCanceled);
-	 return;
+    Send(what,@MsgSendUser,#message_rsc=pawnman_offer_busy,#parm1=vrName);
+    Send(what,@OfferCanceled);
+    return;
       }
 
       iValue_offered = 0;
       foreach i in item_list
       {
-	 iValue_offered = iValue_offered + Send(i,@GetValue);
+    iValue_offered = iValue_offered + Send(i,@GetValue);
       }
 
       if iValue_offered = 0
       {
-	 Send(what,@MsgSendUser,#message_rsc=pawnman_no_value);
-	 Send(what,@OfferCanceled);
-	 return;
+    Send(what,@MsgSendUser,#message_rsc=pawnman_no_value);
+    Send(what,@OfferCanceled);
+    return;
       }
 
       poOffer_who = what;
@@ -114,7 +114,7 @@ messages:
       oHolder = Send(SYS,@GetSystemHolder2);
       foreach i in plOffer_items
       {
-	 Send(oHolder,@NewHold,#what=i);
+    Send(oHolder,@NewHold,#what=i);
       }
 
       % take his stuff
@@ -123,31 +123,31 @@ messages:
       iLists = 1;
       while iLists <= 2 
       {
-	 if iLists = 1
-	 {
-	    lTake_items = Send(oHolder,@GetHolderActive);
-	 }
-	 if iLists = 2
-	 {
-	    lTake_items = Send(oHolder,@GetHolderPassive);
-	 }
+    if iLists = 1
+    {
+       lTake_items = Send(oHolder,@GetHolderActive);
+    }
+    if iLists = 2
+    {
+       lTake_items = Send(oHolder,@GetHolderPassive);
+    }
 
-	 foreach i in lTake_items
-	 {
-	    if Send(self,@ReqNewHold,#what=i)
-	    {
-	       Send(self,@NewHold,#what=i);
-	    }
-	    else
-	    {
-	       if Send(poOwner,@ReqNewHold,#what=i,#new_row=piRow,#new_col=piCol)
-	       {
-		  % send self warning
-		  Send(poOwner,@NewHold,#what=i,#new_row=piRow,#new_col=piCol);
-	       }
-	    }
-	 }
-	 iLists = iLists + 1;
+    foreach i in lTake_items
+    {
+       if Send(self,@ReqNewHold,#what=i)
+       {
+          Send(self,@NewHold,#what=i);
+       }
+       else
+       {
+          if Send(poOwner,@ReqNewHold,#what=i,#new_row=piRow,#new_col=piCol)
+          {
+        % send self warning
+        Send(poOwner,@NewHold,#what=i,#new_row=piRow,#new_col=piCol);
+          }
+       }
+    }
+    iLists = iLists + 1;
       }
 
       poOffer_who = $;

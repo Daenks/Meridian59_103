@@ -22,8 +22,8 @@ resources:
    fortunecookie_icon_rsc = ftncooky.bgf
    fortunecookie_desc_rsc = \
      "The desire for a sweet future balances with the desire for a sweet cookie. "
-	 "Until you actually break the cookie and read your message, "
-	 "you will fulfill neither."
+    "Until you actually break the cookie and read your message, "
+    "you will fulfill neither."
 
    fortunecookie_name_plural_rsc = "fortune cookies"
 
@@ -31,9 +31,9 @@ resources:
    fortunecookie_disp_icon = ftnbaskt.bgf
    fortunecookie_disp_desc = \
      "The mystics believe that choosing your destiny among the paths of "
-	 "your friends is the greatest way to ensure that it shall come true. "
-	 "Every cookie may hold the secret to success, but it will be your hand "
-	 "which selects your fortune."
+    "your friends is the greatest way to ensure that it shall come true. "
+    "Every cookie may hold the secret to success, but it will be your hand "
+    "which selects your fortune."
    fortunecookie_got_one = "You select a fortune cookie at random."
 
    fortunecookie_format = "You read your fortune: \"~k%s~n\""
@@ -67,7 +67,7 @@ messages:
    {
       Send(apply_on,@MsgSendUser,#message_rsc=fortunecookie_format,
            #parm1=Send(Send(SYS,@GetLibrary),@PickFortune));
-	  propagate;  %% also do Yum-Yum!
+     propagate;  %% also do Yum-Yum!
    }
 
    NewHoldMessage(who=$,disp=$)

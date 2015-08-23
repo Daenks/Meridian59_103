@@ -60,14 +60,14 @@ messages:
       local oNews;
 
       Send(self,@NewHold,#what=Create(&Table),
-	   #new_row=3,#new_col=5,#new_angle=ANGLE_SOUTH);
+      #new_row=3,#new_col=5,#new_angle=ANGLE_SOUTH);
       Send(self,@NewHold,#what=Create(&Table),
-	   #new_row=8,#new_col=2,#new_angle=ANGLE_SOUTH);
+      #new_row=8,#new_col=2,#new_angle=ANGLE_SOUTH);
 
       Send(self,@NewHold,#what=Create(&brazier),
-	   #new_row=7,#new_col=2,#fine_row=0,#fine_col=0);
+      #new_row=7,#new_col=2,#fine_row=0,#fine_col=0);
       Send(self,@NewHold,#what=Create(&brazier),
-	   #new_row=10,#new_col=2,#fine_col=0);
+      #new_row=10,#new_col=2,#fine_col=0);
 
       oNews = Send(SYS,@FindNewsByNum,#num=NID_EVENT_SCHEDULE);
       if oNews = $
@@ -75,7 +75,7 @@ messages:
          oNews = Create(&News,#nid=NID_EVENT_SCHEDULE);
       }
       Send(self,@NewHold,#what=oNews,
-	   #new_row=7,#new_col=5,#fine_row=0,#fine_col=0);
+      #new_row=7,#new_col=5,#fine_row=0,#fine_col=0);
 
       propagate;
    }

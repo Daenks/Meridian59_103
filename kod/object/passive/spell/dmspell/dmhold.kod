@@ -123,7 +123,7 @@ messages:
 
          if IsClass(oTarget,&Player)
          {
-            Send(oTarget,@MsgSendUser,#message_rsc=DMHold_on);	 
+            Send(oTarget,@MsgSendUser,#message_rsc=DMHold_on);    
             Send(oTarget,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
          }
          else  

@@ -237,7 +237,7 @@ messages:
 
       if number < 0
       {
-	      return;
+         return;
       }
       
       iOld_weight = Send(self,@GetWeight);
@@ -267,8 +267,8 @@ messages:
 
       if (piNumber - number) <= 0
       {
-	      Send(self,@Delete);
-	      return;
+         Send(self,@Delete);
+         return;
       }
 
       iOld_weight = Send(self,@GetWeight);

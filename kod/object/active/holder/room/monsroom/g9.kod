@@ -98,7 +98,7 @@ resources:
       "be directed in just the right way to trigger the summoning of an undead horde "
       "for the Queen's sacrificial ceremonies, as well as raising the central stands to "
       "a safe height above the ensuing mayhem.\n"
-	   "¶"
+      "¶"
       "Note that under normal circumstances, raising and activating all the pillars "
       "is as simple as pulling all nine control levers (although it should be noted "
       "that activation levers will only activate that pillar if it is already raised).  "
@@ -172,7 +172,7 @@ messages:
    Constructor()
    {
       plNec_Area = [RID_G8, RID_G9, RID_LICH_MAZE, RID_NECROAREA3a, RID_NECROAREA3b, RID_NECROAREA1, RID_NECROAREA2, RID_NECROAREA3, RID_NECROAREA4, RID_NECROAREA5, RID_guildh15];
-	  
+     
       propagate;
    }
    
@@ -181,16 +181,16 @@ messages:
       local oMovingSpire;
       plMonsters = [ [&Orc, 80], [&DeathSpider, 20] ];
       plGenerators = [ [10, 44], [25, 47], [29, 58], [22, 63], [14, 68],
-		                 [19,  6], [25, 11], [35, 12], [35, 23], [18, 20],
-		                 [ 9, 18], [13, 24], [ 8, 31], [24, 28], [14, 38],
-		                 [30, 35], [44, 39], [44, 49], [44, 61]
-		               ];
+                       [19,  6], [25, 11], [35, 12], [35, 23], [18, 20],
+                       [ 9, 18], [13, 24], [ 8, 31], [24, 28], [14, 38],
+                       [30, 35], [44, 39], [44, 49], [44, 61]
+                     ];
 
-		plSkellyGenPoints = [ [ 5, 48], [ 6, 48], [ 7, 48],
-		                      [13, 72], [13, 73], [13, 74],
-		                      [33, 65], [34, 65], [35, 65],
-		                      [32, 47], [33, 47], [33, 47]
-	                       ];
+      plSkellyGenPoints = [ [ 5, 48], [ 6, 48], [ 7, 48],
+                            [13, 72], [13, 73], [13, 74],
+                            [33, 65], [34, 65], [35, 65],
+                            [32, 47], [33, 47], [33, 47]
+                          ];
 
       poPlatform = Create(&MovingSector,#sectorroom=self,#sectorID=SECTOR_PLATFORM,
                           #upH=SECTOR_PLATFORM_UP,#downH=SECTOR_PLATFORM_DN,
@@ -555,8 +555,8 @@ messages:
       Send(poPlatform,@MoveDown);
       Send(poLedgeN,@MoveUp);
       
-	  % South ledge no longer moves, as levers activated here - players need time to jump
-	  
+     % South ledge no longer moves, as levers activated here - players need time to jump
+     
       if ptReactivateLevers <> $
       {
          DeleteTimer(ptReactivateLevers);
@@ -572,7 +572,7 @@ messages:
    LightningPuzzleSolved()
    {
       local i, oRoom;
-	  
+     
       if ptResetLightningPuzzle <> $
       {
          DeleteTimer(ptResetLightningPuzzle);
@@ -616,9 +616,9 @@ messages:
 
       Send(poPlatform,@MoveUp);
       Send(poLedgeN,@MoveDown);
-	  % South ledge no longer moves, as levers activated here - players need time to jump
-	  
-	  foreach i in plNec_Area
+     % South ledge no longer moves, as levers activated here - players need time to jump
+     
+     foreach i in plNec_Area
       {
          oRoom = Send(SYS,@FindRoomByNum,#num=i);
 
@@ -631,9 +631,9 @@ messages:
          
       }
       
-	  
-	  
-	  
+     
+     
+     
       
       Send(self,@GenerateSkellies);
 

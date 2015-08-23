@@ -26,21 +26,21 @@ resources:
    sandstorm_icon_rsc = isandsto.bgf
    sandstorm_desc_rsc = \
       "All the dust in the room is swept up into a swirling storm, "
-	   "making it harder and more strenuous to move and fight.  "
-	   "Also has a small chance to knock arrows out of the air.  "
+      "making it harder and more strenuous to move and fight.  "
+      "Also has a small chance to knock arrows out of the air.  "
       "Requires orc teeth to cast."
    
    sandstorm_already_enchanted = "A sandstorm already rages here."
 
    sandstorm_on = \
       "From out of nowhere, swirling dust begins to needle into your skin, "
-	   "making it very difficult to breathe.  "
-	   "You feel yourself tiring."
+      "making it very difficult to breathe.  "
+      "You feel yourself tiring."
 
    sandstorm_off = "The air clears."
    sandstorm_new_entrant = \
       "The air is full of dust, making it very difficult to breathe. "
-	   "You feel yourself tiring."
+      "You feel yourself tiring."
 
    sandstorm_hurts_you = "You are becoming exhausted from the buffeting winds of sand."
    sandstorm_miss_rsc = "The powerful sandstorm snatches your shot away."

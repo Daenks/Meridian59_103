@@ -106,7 +106,7 @@ messages:
       else
       {
          % Make player corpses hang around longer.
-         ptDelete = CreateTimer(self,@DeleteTimerMessage,600000);	    
+         ptDelete = CreateTimer(self,@DeleteTimerMessage,600000);       
          Send(Send(SYS,@Findroombynum,#num=RID_UNDERWORLD),@Newdeath,#what=self,#inKocatan=inKocatan);
       }
 
@@ -199,7 +199,7 @@ messages:
       
       if pbAssassinated
       {
-	      AddPacket(4,vrAssassinated_desc, STRING_RESOURCE,prPlayer_name);
+         AddPacket(4,vrAssassinated_desc, STRING_RESOURCE,prPlayer_name);
       }
       
       AddPacket(4,vrPlayer_desc, STRING_RESOURCE,prPlayer_name);
