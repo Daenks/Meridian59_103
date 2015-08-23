@@ -98,7 +98,7 @@ messages:
          {
              post(first(i),@msgsenduser,#message_rsc=renounce_ties_others,
                 #parm1=send(who,@getdef),
-				#parm2=send(who,@getname),#parm3=send(oguild,@getdef),
+            #parm2=send(who,@getname),#parm3=send(oguild,@getdef),
                 #parm4=send(oguild,@getname));
          }
       propagate;

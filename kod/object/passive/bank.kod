@@ -19,7 +19,7 @@ classvars:
 
 properties:
 
-   piBank			% bank ID (BID)
+   piBank         % bank ID (BID)
 
    % each element of this list is a list, containing
    % user object id, amount.
@@ -177,16 +177,16 @@ messages:
    GetPlayerMoneyTotal()
    {
       local i,l2,PlayerMoneyTotal;
-	  
-	  PlayerMoneyTotal = 0;
-	  
+     
+     PlayerMoneyTotal = 0;
+     
       foreach i in plAccounts
-	  {
-		 l2 = Nth(i,2);
-	     PlayerMoneyTotal = PlayerMoneyTotal + l2;
-	  }
-	  
-	  return PlayerMoneyTotal;
+     {
+       l2 = Nth(i,2);
+        PlayerMoneyTotal = PlayerMoneyTotal + l2;
+     }
+     
+     return PlayerMoneyTotal;
    }
 
 end

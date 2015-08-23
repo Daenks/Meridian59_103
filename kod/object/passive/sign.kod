@@ -40,11 +40,11 @@ messages:
       if name <> $
       {  vrName = name; }
 
-	  if icon <> $
+     if icon <> $
       {  vrIcon = icon; }
 
       if newbie = TRUE
-	  {  vrIcon = sign_icon_newbie_rsc; }
+     {  vrIcon = sign_icon_newbie_rsc; }
 
       if desc <> $
       {  vrDesc = desc; }
@@ -58,7 +58,7 @@ messages:
    HasInscription()
    {
       if vrInsc <> sign_insc_rsc { return TRUE; }
-	  return FALSE;
+     return FALSE;
    }
 
    GetInscription()

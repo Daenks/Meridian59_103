@@ -1358,7 +1358,7 @@ messages:
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
             iNumNeeded, oUserObject, oRoom;
       
-      oRoom = Send(who,@GetOwner);	  
+      oRoom = Send(who,@GetOwner);     
       if NOT IsClass(who,&Player)
       {
          return TRUE;

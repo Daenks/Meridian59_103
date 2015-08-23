@@ -45,7 +45,7 @@ messages:
    ShowDesc()
    {
       AddPacket(4, ballot_desc_rsc);
-	  return;
+     return;
    }
    
    CanSwap()

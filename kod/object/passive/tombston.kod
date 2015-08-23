@@ -64,9 +64,9 @@ messages:
    {
       if prPlayer_name <> $
       {
-	 AddPacket(4,tombstone_desc_player,STRING_RESOURCE,prPlayer_name,
-		   4,piBirth_year,4,piDeath_year);
-	 return;
+    AddPacket(4,tombstone_desc_player,STRING_RESOURCE,prPlayer_name,
+         4,piBirth_year,4,piDeath_year);
+    return;
       }
 
       propagate;
@@ -85,7 +85,7 @@ messages:
    {
       if isclass(what,&TosGraveyard)
       {
-	 Send(what,@AvailableTombstone,#what=self);
+    Send(what,@AvailableTombstone,#what=self);
       }
       propagate;
    }

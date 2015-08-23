@@ -75,7 +75,7 @@ classvars:
 
 properties:
    
-   pbIn_use = FALSE	
+   pbIn_use = FALSE   
 
 messages:
 
@@ -182,7 +182,7 @@ messages:
    {
       send(poOwner,@MsgSendUser,#message_rsc = shadowAmulet_try_unuse_rsc);
       if Send(poOwner,@AssessDamage,#what=self,#damage=Random(viDamage_min, viDamage_max),
-	           #report=FALSE) = $
+              #report=FALSE) = $
       {
          % we killed someone off... heh heh heh
          Send(Send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);

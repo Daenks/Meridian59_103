@@ -75,7 +75,7 @@ messages:
       plMonsters = [ [&FungusBeast, 50], [&Slime, 50] ];
 
       plGenerators = [ [5, 6], [19, 7], [15, 27], [20, 31], [6, 37],
-		       [12, 46], [11, 68], [10, 81], [6, 91], [19, 89] ];
+             [12, 46], [11, 68], [10, 81], [6, 91], [19, 89] ];
       plLooping_sounds = [[ waterfall_soundF2, 1, 101 ],[ ocean_soundF2, 1, 59, 200, 100 ]];
 
       propagate;
@@ -84,7 +84,7 @@ messages:
    CreatePeriodicSounds()
    {
       plPeriodic_sounds = [ wavecrash1_soundF2, wavecrash2_soundF2, wavecrash3_soundF2,\
-			    wavecrash4_soundF2, seagull_soundF2, seagull_soundF2 ];
+             wavecrash4_soundF2, seagull_soundF2, seagull_soundF2 ];
       pbPeriodic_sound_random_location = True;
 
       propagate;
@@ -125,33 +125,33 @@ messages:
    CreateStandardObjects()
    {
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=21,#new_col=6);
+     #new_row=21,#new_col=6);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=17,#new_col=10);
+     #new_row=17,#new_col=10);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=19,#new_col=14);
+     #new_row=19,#new_col=14);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=17,#new_col=28);
+     #new_row=17,#new_col=28);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=21,#new_col=33);
+     #new_row=21,#new_col=33);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=21,#new_col=36);
+     #new_row=21,#new_col=36);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=18,#new_col=47);
+     #new_row=18,#new_col=47);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=22,#new_col=55);
+     #new_row=22,#new_col=55);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=16,#new_col=57);
+     #new_row=16,#new_col=57);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=21,#new_col=62);
+     #new_row=21,#new_col=62);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=20,#new_col=72);
+     #new_row=20,#new_col=72);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=19,#new_col=87);
+     #new_row=19,#new_col=87);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=18,#new_col=92);
+     #new_row=18,#new_col=92);
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_PINE,#bottom=TREE_PINE),
-	  #new_row=22,#new_col=93);
+     #new_row=22,#new_col=93);
 
       propagate;
    }

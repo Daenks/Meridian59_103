@@ -933,7 +933,7 @@ messages:
    SetMaxHits(number = $)
    {
       % This cannot be modified externally.
-      return;	
+      return;   
    }
 
    SetHits(number = $)

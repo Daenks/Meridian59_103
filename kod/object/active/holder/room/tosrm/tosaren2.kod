@@ -53,7 +53,7 @@ messages:
    "Teleports object to coordinates specified in constants."
    {
        send(SYS,@UtilGoNearSquare,#what=what,
-	  #where=self,#new_row=TO_ROW,#new_col=TO_COL);
+     #where=self,#new_row=TO_ROW,#new_col=TO_COL);
        return;
    }
 
@@ -93,17 +93,17 @@ messages:
 
 
    propagate;
-	}
+   }
 
   CreateStandardObjects()
   {
-	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_ONE_ON_ONE),
+    Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_ONE_ON_ONE),
             #new_row=25,#new_col=33,#fine_row=24,#fine_col=16);
-	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_LAST_MAN_STANDING),
+    Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_LAST_MAN_STANDING),
             #new_row=26,#new_col=33,#fine_row=8,#fine_col=16);
-	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_GUILD_VS_GUILD),
+    Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_GUILD_VS_GUILD),
             #new_row=27,#new_col=33,#fine_row=40,#fine_col=16);
-	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_LAST_GUILD_STANDING),
+    Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_LAST_GUILD_STANDING),
             #new_row=26,#new_col=33,#fine_row=56,#fine_col=16);
    propagate;
   }

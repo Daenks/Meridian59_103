@@ -58,8 +58,8 @@ messages:
       plMonsters = [ [&DeathSpider, 40], [&Troll, 60] ];
 
       plGenerators = [ [4, 14], [16, 13], [18, 8], [27, 14], [34, 6],
-		      [26, 23], [37, 17], [22, 38], [14, 31], [11, 46], 
-		      [29, 42], [27, 37], [37, 39], [32, 33], [42, 27],
+            [26, 23], [37, 17], [22, 38], [14, 31], [11, 46], 
+            [29, 42], [27, 37], [37, 39], [32, 33], [42, 27],
                       [46, 18], [44, 47], [27, 24], [12, 18], [21, 18]];
       propagate;
    }
@@ -75,7 +75,7 @@ messages:
       plEdge_Exits = Cons([LEAVE_NORTH, RID_G6, 128, 71, ROTATE_NONE], plEdge_exits);
    
       plEdge_Exits = Cons([LEAVE_SOUTH, RID_G9, 2, 18, ROTATE_NONE,COL_IS_LESS_THAN,20], plEdge_exits);
-      plEdge_Exits = Cons([LEAVE_SOUTH, RID_G9, 2, 61, ROTATE_NONE,COL_IS_GREATER_THAN,19], plEdge_exits);      	 
+      plEdge_Exits = Cons([LEAVE_SOUTH, RID_G9, 2, 61, ROTATE_NONE,COL_IS_GREATER_THAN,19], plEdge_exits);          
 
       plEdge_Exits = Cons([LEAVE_EAST, RID_NECROAREA1, 7, 2, ROTATE_NONE], plEdge_exits);
 

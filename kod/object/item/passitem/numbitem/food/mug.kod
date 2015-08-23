@@ -29,7 +29,7 @@ resources:
    mug_disp_icon = pitcher.bgf
    mug_disp_desc = \
      "A heavy brass pitcher, filled to the rim with dark, delicious stout.  "
-	 "It needs to be poured slowly to preserve the perfect foamy head."
+    "It needs to be poured slowly to preserve the perfect foamy head."
    mug_got_one = "You slowly pour your mug full of frothy stout from the pitcher."
 
    mug_eat_wav = drink.wav
@@ -65,7 +65,7 @@ messages:
       Send(apply_on,@MsgSendUser,#message_rsc=mug_use);
       Send(apply_on,@EffectSendUserDuration,#effect=EFFECT_BLUR,#duration=5500);
 
-	  return;
+     return;
    }
 
    NewHoldMessage(who=$,disp=$)
@@ -76,7 +76,7 @@ messages:
    }
 
    IsAlcohol()
-   {	 
+   {    
       return TRUE;
    }
 

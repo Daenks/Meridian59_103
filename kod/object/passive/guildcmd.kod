@@ -78,7 +78,7 @@ messages:
       %%if necro and viNecro_enabled = FALSE
       %%{                         %% player shouldn't have command
       %%    send(who,@removeguildcommand,#command_num=viGuildCommand_num);
-      %%	  return;
+      %%     return;
       %%}
 
       if rank < viRank_needed
@@ -138,8 +138,8 @@ messages:
       oOwner = Send(who, @GetOwner);
       foreach i in lTargets
       {
-	 if oOwner <> Send(i, @GetOwner)
-	 {
+    if oOwner <> Send(i, @GetOwner)
+    {
             Send(who, @MsgSendUser,#message_rsc=guildcommand_out_of_range, 
                  #parm1=Send(i,@GetCapDef),#parm2=Send(i,@GetName),#type2=STRING_RESOURCE);
             return FALSE;

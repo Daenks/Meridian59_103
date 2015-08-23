@@ -63,7 +63,7 @@ messages:
       Send(apply_on,@MsgSendUser,#message_rsc=kocatanmug_use);
       Send(apply_on,@EffectSendUserDuration,#effect=EFFECT_BLUR,#duration=5000);
 
-	  return;
+     return;
    }
 
    NewHoldMessage(who=$,disp=$)
@@ -81,7 +81,7 @@ messages:
 
 
    IsAlcohol()
-   {	 
+   {    
       return TRUE;
    }
 end

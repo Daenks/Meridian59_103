@@ -57,11 +57,11 @@ messages:
    {
       local i;
       foreach i in send(apply_on,@GetEnchantmentList) {
-	     if Send(Nth(i,2),@IsPersonalEnchantment) {
+        if Send(Nth(i,2),@IsPersonalEnchantment) {
             Send(apply_on,@MsgSendUser,#message_rsc=PurifyPotion_worked);
             Send(apply_on,@RemoveAllPersonalEnchantments);
             break;
-	     }
+        }
       }
       
       return;

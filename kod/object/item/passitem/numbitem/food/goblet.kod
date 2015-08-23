@@ -28,7 +28,7 @@ resources:
    goblet_disp_icon = pitcher.bgf
    goblet_disp_desc = \
      "A heavy metal pitcher, filled to the rim with fresh ale from the Duke's cellars, "
-	 "and served at room temperature for maximum potency."
+    "and served at room temperature for maximum potency."
    goblet_got_one = "You fill your goblet with frothy ale from the pitcher."
 
    goblet_eat_wav = drink.wav
@@ -71,7 +71,7 @@ messages:
       Send(apply_on,@MsgSendUser,#message_rsc=goblet_use);
       Send(apply_on,@EffectSendUserDuration,#effect=EFFECT_BLUR,#duration=4000);
 
-	  return;
+     return;
    }
 
    NewHoldMessage(who=$,disp=$)
@@ -83,7 +83,7 @@ messages:
 
 
    IsAlcohol()
-   {	 
+   {    
       return TRUE;
    }
 end

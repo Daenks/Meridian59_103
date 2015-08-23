@@ -109,12 +109,12 @@ messages:
            return FALSE;
         }
       send(who,@msgsenduser,#message_rsc=guildinvitation_to_inductor,
-	   #parm1=send(otarget,@getdef),
-	   #parm2=send(otarget,@getname), #type2=STRING_RESOURCE,
-	   #parm3=send(newguild,@getdef),#parm4=send(newguild,@getname));
+      #parm1=send(otarget,@getdef),
+      #parm2=send(otarget,@getname), #type2=STRING_RESOURCE,
+      #parm3=send(newguild,@getdef),#parm4=send(newguild,@getname));
       send(oTarget,@msgsenduser,#message_rsc=guildinvitation_to_inductee,
          #parm1=send(who,@getcapindef),#parm2=send(who,@getname), 
-		 #parm3=send(newguild,@getdef),#parm4=send(newguild,@getname));
+       #parm3=send(newguild,@getdef),#parm4=send(newguild,@getname));
 
     %% put invitation object in inductees inventory
 

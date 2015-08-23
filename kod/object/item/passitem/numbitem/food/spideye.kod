@@ -65,7 +65,7 @@ messages:
    SendTaste(what = $,apply_on = $)
    {
       Send(apply_on,@MsgSendUser,#message_rsc=spideye_use);
-	  return;
+     return;
    }
 
 end

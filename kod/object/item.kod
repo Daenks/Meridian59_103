@@ -1916,10 +1916,10 @@ messages:
       if Send(oItemAtt,@HasTimer,#lData=lData)
       {
             if Nth(lData,2) <> $
-      	    {
-	             DeleteTimer(Nth(lData,2));
-		     SetNth(lData,2,$);
-	    }
+             {
+                DeleteTimer(Nth(lData,2));
+           SetNth(lData,2,$);
+       }
       }
       % now free the nodes
       plItem_Attributes = DelListElem(plItem_Attributes,lData);

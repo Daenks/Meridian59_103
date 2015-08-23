@@ -67,7 +67,7 @@ messages:
    {
       if Send(poOwner,@IsArena)
          AND NOT Send(poOwner,@InPlay,#what=self,#bNonPlayerOkay=TRUE)
-      {	 
+      {    
          Post(self,@Delete);
       }
 

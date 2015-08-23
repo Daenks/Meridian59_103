@@ -89,8 +89,8 @@ messages:
    {
       if (dir = LEAVE_NORTH) and (IsClass(what,&Player))
       {
-	 send(what,@MsgSendUser,#message_rsc = outdoorsi3_msg1);
-	 return;
+    send(what,@MsgSendUser,#message_rsc = outdoorsi3_msg1);
+    return;
       }              
       propagate;
    }

@@ -73,7 +73,7 @@ messages:
    {
       if (piColor_Translation <> 0)
       {
-	      AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
       }
 
       AddPacket(1,ANIMATE_CYCLE,4,piMove_anim_speed);
@@ -86,7 +86,7 @@ messages:
    {
       if (piColor_Translation <> 0)
       {
-	      AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
       }
 
       AddPacket(1,ANIMATE_CYCLE);
@@ -100,7 +100,7 @@ messages:
    {
       if (piColor_Translation <> 0)
       {
-	      AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
+         AddPacket(1,ANIMATE_TRANSLATION,1,piColor_Translation);
       }
 
       if piAnimation = ANIM_ATTACK

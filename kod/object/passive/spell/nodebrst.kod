@@ -86,9 +86,9 @@ messages:
       % Check for availability of mana node links.
       if Send(who,@GetNodeList) = 0
       {
-	      Send(who,@MsgSendUser,#message_rsc=Nodeburst_fail);
+         Send(who,@MsgSendUser,#message_rsc=Nodeburst_fail);
 
-	      return FALSE;
+         return FALSE;
       }
 
       foreach oCaster in plRecentCasters
@@ -124,7 +124,7 @@ messages:
       %  mana (currently max is 250).
       iNewMana = Bound(iGain,(iOrigMana-iNewMana),(MAX_MANA_ALLOWED-iNewMana));
 
-      Send(who,@GainMana,#amount=iNewMana);	              
+      Send(who,@GainMana,#amount=iNewMana);                 
       Send(who,@GainHealth,#amount=iGain/2);
 
       Send(self,@NewCaster,#who=who);

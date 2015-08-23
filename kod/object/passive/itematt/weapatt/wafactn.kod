@@ -131,7 +131,7 @@ messages:
             iFact = Send(who,@GetFaction);
          }
 
-         if iFact = FACTION_NEUTRAL	
+         if iFact = FACTION_NEUTRAL   
          {
             % Choose a random faction, because either the weapatt 
             %  failed the random check, or the player isn't allied with either.

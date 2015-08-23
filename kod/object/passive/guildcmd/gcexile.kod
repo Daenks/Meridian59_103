@@ -78,8 +78,8 @@ messages:
         {
           send(who,@msgsenduser,#message_rsc=exile_not_member,
               #parm1=send(oTarget,@getdef),
-			  #parm2=send(oTarget,@getname),
-			  #parm3=send(myGuild,@getdef),
+           #parm2=send(oTarget,@getname),
+           #parm3=send(myGuild,@getdef),
               #parm4=send(myGuild,@getname));
           return FALSE;
         }
@@ -113,7 +113,7 @@ messages:
 
       send(oTarget,@msgsenduser,#message_rsc=exile_to_exiled,
          #parm1=send(who,@gettruename),
-		 #parm2=send(myguild,@getdef),
+       #parm2=send(myguild,@getdef),
          #parm3=send(myguild,@gettruename));
 
       foreach i in send(myGuild,@getmemberlist)

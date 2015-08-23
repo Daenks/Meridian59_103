@@ -50,10 +50,10 @@ messages:
    {
       if IsClass(apply_on,&User)
       {
-	 return True;
+    return True;
       }
       Send(what,@MsgSendUser,#message_rsc=illusionaryformpotion_cant_use_on, 
-	   #parm1=Send(apply_on,@GetIndef),#parm2=Send(apply_on,@GetName));
+      #parm1=Send(apply_on,@GetIndef),#parm2=Send(apply_on,@GetName));
       return False;
    }
 
@@ -71,9 +71,9 @@ messages:
       }
       if Send(apply_on,@IsEnchanted,#what=oSpell)
       {
-	 Send(apply_on,@MsgSendUser,#message_rsc=illusionaryformpotion_already_enchanted);
-	 Send(self,@Delete);
-	 return;
+    Send(apply_on,@MsgSendUser,#message_rsc=illusionaryformpotion_already_enchanted);
+    Send(self,@Delete);
+    return;
       }
 
 

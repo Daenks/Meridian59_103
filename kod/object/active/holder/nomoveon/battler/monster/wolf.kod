@@ -105,8 +105,8 @@ messages:
    {
       if piAnimation = ANIM_ATTACK
       {
-	 AddPacket(1,ANIMATE_ONCE,4,28,2,13,2,18,2,1);
-	 return;
+    AddPacket(1,ANIMATE_ONCE,4,28,2,13,2,18,2,1);
+    return;
       }
 
       % if no body animation

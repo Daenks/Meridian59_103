@@ -22,8 +22,8 @@ resources:
    moon_name_rsc = "moon"
    moon_desc_rsc = \
       "The moon looms in the sky, a majestic sphere of grey rock. "
-	  "Some fables say that the moon was once a lot larger, but they're "
-	  "probably just as true as the fables of frogmen and blue dragons."
+     "Some fables say that the moon was once a lot larger, but they're "
+     "probably just as true as the fables of frogmen and blue dragons."
 
 classvars:
 
@@ -55,16 +55,16 @@ messages:
       piAngle = ((iHour+5) mod 24)*130 + 200*(iDay mod 20);
       if iHour > 12
       {
-	 iHour = iHour - 24;
+    iHour = iHour - 24;
       }
       piHeight = 400 - Abs(300-iDay) - 6*(iHour - 1)*(iHour - 1);
       if piHeight < -200
       {
-	 piHeight = -200;
+    piHeight = -200;
       }
       foreach i in Send(SYS,@GetUsersLoggedOn)
       {
-	 Send(i,@ToCliChangeBackgroundOverlay,#what=self);
+    Send(i,@ToCliChangeBackgroundOverlay,#what=self);
       }
 
       return;

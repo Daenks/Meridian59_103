@@ -31,7 +31,7 @@ properties:
    vrName = news_name_rsc
    vrDesc = news_desc_rsc
 
-   piNews			% newsgroup id (nid) 
+   piNews         % newsgroup id (nid) 
 
    plMessages = $               % don't change structure of this without
                                 % changing user.kod!!!
@@ -108,7 +108,7 @@ messages:
 
    GetNewsPermission(what = $)
    {
-      return NEWS_PERMISSION_READ_WRITE;			% read-write by everybody
+      return NEWS_PERMISSION_READ_WRITE;         % read-write by everybody
    }
 
    PostNews(what = $,title = $,body = $)

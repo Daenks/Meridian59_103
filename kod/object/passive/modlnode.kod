@@ -54,18 +54,18 @@ messages:
    {
       if piState = NODE_NORMAL
       {
-	 AddPacket(1,ANIMATE_CYCLE,4,150,2,1,2,5);
-	 return;
+    AddPacket(1,ANIMATE_CYCLE,4,150,2,1,2,5);
+    return;
       }
       if piState = NODE_CURSED
       {
-	 AddPacket(1,ANIMATE_CYCLE,4,250,2,6,2,7);
-	 return;
+    AddPacket(1,ANIMATE_CYCLE,4,250,2,6,2,7);
+    return;
       }
       if piState = NODE_DEAD
       {
-	 AddPacket(1,ANIMATE_NONE,2,8);
-	 return;
+    AddPacket(1,ANIMATE_NONE,2,8);
+    return;
       }
       
       debug("Mana node",self,"has invalid state",piState);

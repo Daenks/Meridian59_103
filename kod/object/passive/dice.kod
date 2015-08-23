@@ -64,10 +64,10 @@ messages:
       if not vbPair
       {
          vrName = die_name;
-	 vrDesc = die_desc;
-	 vrIcon = die_icon;
+    vrDesc = die_desc;
+    vrIcon = die_icon;
       }
-	
+   
       propagate;
    }
 
@@ -75,18 +75,18 @@ messages:
    "Return False only if you want user.kod to send its own error message to user."
    {
       if poOwner = $
-	  { DEBUG("TryActivate called with nil owner!"); return TRUE; }
+     { DEBUG("TryActivate called with nil owner!"); return TRUE; }
 
       if ptRoll <> $  { return TRUE; }
 
       if isClass(who,&User) and poOwner = send(who,@getowner)
       {
-	 if abs(send(who,@getrow)-send(self,@getrow)) < dice_RANGE
-	    and abs(send(who,@getcol)-send(self,@getcol)) < dice_RANGE
-	 {
-	    send(self,@Roll,#who=who);
-	 }
-	 else
+    if abs(send(who,@getrow)-send(self,@getrow)) < dice_RANGE
+       and abs(send(who,@getcol)-send(self,@getcol)) < dice_RANGE
+    {
+       send(self,@Roll,#who=who);
+    }
+    else
          {
             send(who,@msgsenduser,#message_rsc=dice_not_in_range);          
          }
@@ -125,15 +125,15 @@ messages:
       if not vbPair
       {
       send(self,@RoomMessage,#range=6,#message_rsc=dieroll_rsc,
-	 #parm1=send(who,@getcapdef),#parm2=send(who,@getname),
-	 #parm3=send(self,@Getdef),#parm4=send(self,@getName),#parm5=rDie1);
+    #parm1=send(who,@getcapdef),#parm2=send(who,@getname),
+    #parm3=send(self,@Getdef),#parm4=send(self,@getName),#parm5=rDie1);
       }
 
       if vbPair
       {
       send(self,@RoomMessage,#range=6,#message_rsc=diceroll_rsc,
-	 #parm1=send(who,@getcapdef),#parm2=send(who,@getname),
-	 #parm3=send(self,@Getdef),#parm4=send(self,@getName),#parm5=rDie1,#parm6=rDie2);
+    #parm1=send(who,@getcapdef),#parm2=send(who,@getname),
+    #parm3=send(self,@Getdef),#parm4=send(self,@getName),#parm5=rDie1,#parm6=rDie2);
       }
       Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=dice_wav);
       ptRoll = CreateTimer(self,@RollTimer,ROLL_DELAY);
@@ -152,41 +152,41 @@ messages:
       oSource = self;
       oRoom = poOwner;
       if oRoom = $
-      {	 return FALSE;  }
+      {    return FALSE;  }
       if oRoom = $ or not isClass(oRoom, &Room)
       {  return FALSE;  }
 
       foreach i in send(oRoom,@GetHolderActive)
       {
-	 if not isClass(first(i),&Player)
-	 {
-	    continue;
-	 }
+    if not isClass(first(i),&Player)
+    {
+       continue;
+    }
 
-	 if range <> $
-	 {
-	    if send(first(i),@SquaredDistanceTo,#what=oSource) >= range_squared
-	    {  continue;  }
-	 }
+    if range <> $
+    {
+       if send(first(i),@SquaredDistanceTo,#what=oSource) >= range_squared
+       {  continue;  }
+    }
 
-	 if first(i) = except
-	 {
-	    if except_rsc = $
-	    {
-	       continue;
-	    }
+    if first(i) = except
+    {
+       if except_rsc = $
+       {
+          continue;
+       }
 
-	    % message comes from except_rsc, with parm1 missing.
-	    send(first(i),@MsgSendUser,#message_rsc=except_rsc,
-	       #parm1=parm2,#parm2=parm3,#parm3=parm4,#parm4=parm5,
-	       #parm5=parm6,#parm6=parm7,#parm7=parm8);
-	 }
-	 else
-	 {
-	    send(first(i),@MsgSendUser,#message_rsc=message_rsc,
-	       #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
-	       #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
-	 }
+       % message comes from except_rsc, with parm1 missing.
+       send(first(i),@MsgSendUser,#message_rsc=except_rsc,
+          #parm1=parm2,#parm2=parm3,#parm3=parm4,#parm4=parm5,
+          #parm5=parm6,#parm6=parm7,#parm7=parm8);
+    }
+    else
+    {
+       send(first(i),@MsgSendUser,#message_rsc=message_rsc,
+          #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
+          #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
+    }
       }
       return;
    }
@@ -200,8 +200,8 @@ messages:
    {
       if ptRoll <> $
       {
-	 deletetimer(ptRoll);
-	 ptRoll = $;
+    deletetimer(ptRoll);
+    ptRoll = $;
       }
       propagate;
    }

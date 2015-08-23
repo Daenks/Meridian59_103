@@ -55,7 +55,7 @@ messages:
    Constructor()
    {
       plSchools = [SS_SHALILLE, SS_FAREN, SS_RIIJA, SS_KRAANAN, SS_QOR, SS_JALA,
-	 SKS_FENCING ];
+    SKS_FENCING ];
       propagate;
    }
    GetNumSpellTargets()
@@ -85,8 +85,8 @@ messages:
          {
          Send(First(lTargets),@EffectSendUser,#what=self,#effect=EFFECT_INVERT);
          Send(First(lTargets),@MsgSendUser,#message_rsc=scryd_scry_msg,
-		    #parm1=Send(who,@getindef),
-			#parm2=Send(who,@getname));
+          #parm1=Send(who,@getindef),
+         #parm2=Send(who,@getname));
          Send(self,@ComputeScryInfo,#who=First(lTargets),#dmis=who);
          }
 
@@ -100,7 +100,7 @@ messages:
                {
                send(each_obj,@MsgSendUser,#message_rsc=allinroom_scry_msg1,
                  #parm1=Send(who,@getindef),
-				 #parm2=Send(who,@getname),
+             #parm2=Send(who,@getname),
                  #parm3=Send(First(lTargets),@getdef),
                  #parm4=Send(First(lTargets),@getname));
                }
@@ -108,7 +108,7 @@ messages:
                {
                send(each_obj,@MsgSendUser,#message_rsc=allinroom_scry_msg2,
                 #parm1=Send(who,@getindef),
-				#parm2=Send(who,@getname),
+            #parm2=Send(who,@getname),
                 #parm3=Send(First(lTargets),@getdef),
                 #parm4=Send(First(lTargets),@getname));
                }
@@ -132,8 +132,8 @@ messages:
       local i;
 
       foreach i in plSchools
-      {	 
-	 send(self,@ReportMastery,#dmis=dmis,#who=who,#school=i);
+      {    
+    send(self,@ReportMastery,#dmis=dmis,#who=who,#school=i);
      }
       return;
    }
@@ -194,7 +194,7 @@ messages:
       foreach i in send(who,@GetSkillList)
       {
          num = send(who,@DecodeSkillNum,#compound=i);
-         obj = send(sys,@FindSkillByNum,#num=num);	 
+         obj = send(sys,@FindSkillByNum,#num=num);    
          if send(obj,@GetSchool) = school
          {
             if send(obj,@GetLevel) > high_level

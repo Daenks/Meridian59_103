@@ -91,10 +91,10 @@ messages:
                 #height = 284, #speed = 8);
       foreach i in plYell_zone
       {
-	 if i = RID_TEMPLE_QOR
-	 {
-	    plYell_Zone=dellistelem(plYell_zone,i);
-	 }
+    if i = RID_TEMPLE_QOR
+    {
+       plYell_Zone=dellistelem(plYell_zone,i);
+    }
       }
 
       return;
@@ -104,9 +104,9 @@ messages:
    {
       if new_row=38 and new_col= 26
       {
-	 send(send(SYS,@findroombynum,#num=RID_TEMPLE_QOR),@TempleEntrance,
-	    #who=what);
-	 return;
+    send(send(SYS,@findroombynum,#num=RID_TEMPLE_QOR),@TempleEntrance,
+       #who=what);
+    return;
       }
       propagate;
    }

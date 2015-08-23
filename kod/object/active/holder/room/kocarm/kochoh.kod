@@ -240,7 +240,7 @@ messages:
 
       % Delete statues, clear out "best" lists in lore, then recreate statues.
       foreach i in plStatues
-      {	 
+      {    
          Send(i, @Delete);
       }
       plStatues = $;

@@ -75,7 +75,7 @@ messages:
         {
           send(who,@msgsenduser,#message_rsc=endalliance_not_member,
               #parm1=send(oTarget,@getdef),
-			  #parm2=send(oTarget,@getname));
+           #parm2=send(oTarget,@getname));
           return FALSE;
         }
 

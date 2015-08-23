@@ -77,7 +77,7 @@ messages:
    {
       psState = CreateString();
       SetString(psState, minigame_default_state);
-	  Send(self, @SetAppearance);
+     Send(self, @SetAppearance);
       propagate;
    }
 
@@ -90,7 +90,7 @@ messages:
 
       foreach i in plPlayers
       {
-	 Send(i, @UserUnloadModule, #module = vrModule);
+    Send(i, @UserUnloadModule, #module = vrModule);
       }
       propagate;
    }
@@ -104,10 +104,10 @@ messages:
       
       foreach i in plPlayers
       {
-	 if Send(SYS, @UtilGetRoom, #what = i) = room
-	 {
-	    return;
-	 }
+    if Send(SYS, @UtilGetRoom, #what = i) = room
+    {
+       return;
+    }
       }
       propagate;
    }
@@ -128,46 +128,46 @@ messages:
       found = False;
       foreach i in plPlayers
       {
-	 if i = who
-	 {
-	    found = True;
-	    break;
-	 }
-	 player_num = player_num - 1;
+    if i = who
+    {
+       found = True;
+       break;
+    }
+    player_num = player_num - 1;
       }
 
       if NOT found
       {
-	 if piNumPlayers >= viMaxPlayers
-	 {
-	    % Game is full--become an observer
-	    found = False;
-	    foreach i in plObservers
-	    {
-	       if i = who
-	       {
-		  found = True;
-		  break;
-	       }
-	    }
-	    if NOT found
-	    {
-	       plObservers = Cons(who, plObservers);
-	    }
-	    Send(who, @MsgSendUser, #message_rsc = minigame_game_full);
-	    player_num = piNumPlayers + 1;    % An observer
-	 } 
-	 else
-	 {
-	    piNumPlayers = piNumPlayers + 1;
+    if piNumPlayers >= viMaxPlayers
+    {
+       % Game is full--become an observer
+       found = False;
+       foreach i in plObservers
+       {
+          if i = who
+          {
+        found = True;
+        break;
+          }
+       }
+       if NOT found
+       {
+          plObservers = Cons(who, plObservers);
+       }
+       Send(who, @MsgSendUser, #message_rsc = minigame_game_full);
+       player_num = piNumPlayers + 1;    % An observer
+    } 
+    else
+    {
+       piNumPlayers = piNumPlayers + 1;
 
-	    % Tell current players & observers about new player
-	    Send(self, @SendNewPlayer, #who = who, #player_num = piNumPlayers);
+       % Tell current players & observers about new player
+       Send(self, @SendNewPlayer, #who = who, #player_num = piNumPlayers);
 
-	    % Add a new player
-	    plPlayers = Cons(who, plPlayers);
-	    player_num = piNumPlayers;
-	 }
+       % Add a new player
+       plPlayers = Cons(who, plPlayers);
+       player_num = piNumPlayers;
+    }
       }
 
       Send(self, @SetAppearance);
@@ -203,16 +203,16 @@ messages:
 
       foreach i in plPlayers
       {
-	 if i = who
-	 {
-	    found = True;
-	    break;
-	 }
+    if i = who
+    {
+       found = True;
+       break;
+    }
       }
       if NOT found
       {
-	 Send(who, @MsgSendUser, #message_rsc = minigame_not_playing);
-	 return;
+    Send(who, @MsgSendUser, #message_rsc = minigame_not_playing);
+    return;
       }
 
       SetString(psState, state);
@@ -221,24 +221,24 @@ messages:
       % Send new state to players
       foreach i in plPlayers
       {
-	 if (i <> who)
-	 {
-	    Send(i, @GameStateSendUser, #game = self, #state = state);
-	 }
+    if (i <> who)
+    {
+       Send(i, @GameStateSendUser, #game = self, #state = state);
+    }
       }
 
       % Send new state to observers--remove from list if not in same room as game
       foreach i in plObservers
       {
-	 if Send(SYS, @UtilGetRoom, #what = i) = Send(SYS, @UtilGetRoom, #what = self)
-	 {
-	    Send(i, @GameStateSendUser, #game = self, #state = state);
-	 }
-	 else
-	 {
-	    plObservers = DelListElem(plObservers, i);
-	    Send(i, @UserUnloadModule, #module = vrModule);
-	 }
+    if Send(SYS, @UtilGetRoom, #what = i) = Send(SYS, @UtilGetRoom, #what = self)
+    {
+       Send(i, @GameStateSendUser, #game = self, #state = state);
+    }
+    else
+    {
+       plObservers = DelListElem(plObservers, i);
+       Send(i, @UserUnloadModule, #module = vrModule);
+    }
       }
 
       return;
@@ -254,16 +254,16 @@ messages:
 
       foreach i in plPlayers
       {
-	 if i = who
-	 {
-	    found = True;
-	    break;
-	 }
+    if i = who
+    {
+       found = True;
+       break;
+    }
       }
       if not found
       {
-	 Send(who, @MsgSendUser, #message_rsc = minigame_not_playing);
-	 return;
+    Send(who, @MsgSendUser, #message_rsc = minigame_not_playing);
+    return;
       }
 
       Send(self, @ResetGame);
@@ -283,15 +283,15 @@ messages:
       % Only a player can pick up a game in progress
       if NOT IsClass(what, &User) OR plPlayers = $
       {
-	 propagate;
+    propagate;
       }
 
       foreach i in plPlayers
       {
-	 if (i = what)
-	 {
-	    propagate;
-	 }
+    if (i = what)
+    {
+       propagate;
+    }
       }
 
       Send(what, @MsgSendUser, #message_rsc = minigame_cant_pickup);
@@ -305,13 +305,13 @@ messages:
       if (poOwner = $)
       {
          send(self,@ResetGame);
-	 return;
+    return;
       }
 
       if not isClass(poOwner,&Room) and not isClass(poOwner,&User)
       {
          send(self,@ResetGame);
-	 return;
+    return;
       }
 
       return;
@@ -325,31 +325,31 @@ messages:
       if not isClass(what,&Room) and not isClass(what,&User)
       {
          send(self,@ResetGame);
-	 propagate;
+    propagate;
       }
 
       % if not being picked up by a user, then leave game in progress
       if not IsClass(what, &User)
       {
-	 propagate;
+    propagate;
       }
 
       % being picked up by a user; keep game going but kick off any users watching
 
       foreach i in plObservers
       {
-	 Send(i, @UserUnloadModule, #module = vrModule);
-	 % XXX Send message here
+    Send(i, @UserUnloadModule, #module = vrModule);
+    % XXX Send message here
       }
       plObservers = $;
 
       foreach i in plPlayers
       {
-	 if (i <> what)
-	 {
-	    Send(i, @UserUnloadModule, #module = vrModule);
-	    % XXX Send message here
-	 }
+    if (i <> what)
+    {
+       Send(i, @UserUnloadModule, #module = vrModule);
+       % XXX Send message here
+    }
       }
       
       propagate;
@@ -363,8 +363,8 @@ messages:
       player_num = piNumPlayers;   % Count down, since added to list in reverse order
       foreach i in plPlayers
       {
-	 Send(who, @GamePlayerSendUser, #who = i, #num = player_num);
-	 player_num = player_num - 1;
+    Send(who, @GamePlayerSendUser, #who = i, #num = player_num);
+    player_num = player_num - 1;
       }
       return;
    }
@@ -376,7 +376,7 @@ messages:
 
       foreach i in plPlayers
       {
-	 Send(i, @GamePlayerSendUser, #who = who, #num = player_num);
+    Send(i, @GamePlayerSendUser, #who = who, #num = player_num);
       }
       return;
    }
@@ -389,13 +389,13 @@ messages:
       % Remove players and observers
       foreach i in plObservers
       {
-	 Send(i, @UserUnloadModule, #module = vrModule);
+    Send(i, @UserUnloadModule, #module = vrModule);
       }
       plObservers = $;
 
       foreach i in plPlayers
       {
-	 Send(i, @UserUnloadModule, #module = vrModule);
+    Send(i, @UserUnloadModule, #module = vrModule);
       }
       plPlayers = $;
       piNumPlayers = 0;

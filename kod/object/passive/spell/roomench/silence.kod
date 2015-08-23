@@ -84,9 +84,9 @@ messages:
 
       if Send(oRoom,@IsEnchanted,#what=self)
       {
-   	   Send(who,@MsgSendUser,#message_rsc=Silence_unnecessary);
-   	   
-	      return FALSE;
+         Send(who,@MsgSendUser,#message_rsc=Silence_unnecessary);
+         
+         return FALSE;
       }
 
       propagate;

@@ -88,7 +88,7 @@ messages:
           #parm1=send(poInductee,@getname));
       send(poInductee,@msgsenduser,#message_rsc=invitation_vanishes,
           #parm1=send(poInductor,@getcapdef),
-		  #parm2=send(poInductor,@getname));
+        #parm2=send(poInductor,@getname));
       send(self,@delete);
       return;
    }
@@ -200,8 +200,8 @@ messages:
         }
       if ptJoin <> $
       {
-	 deletetimer(ptJoin);
-	 ptJoin = $;
+    deletetimer(ptJoin);
+    ptJoin = $;
       }
       propagate;
    }

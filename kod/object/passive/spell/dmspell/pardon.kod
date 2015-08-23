@@ -48,9 +48,9 @@ messages:
    {
       if not IsClass(First(lTargets),&User)
       {
-	 send(who,@MsgSendUser,#message_rsc=pardon_failed,
-	      #parm1=Send(First(lTargets),@GetDef),#parm2=Send(First(lTargets),@getname));
-	 return False;
+    send(who,@MsgSendUser,#message_rsc=pardon_failed,
+         #parm1=Send(First(lTargets),@GetDef),#parm2=Send(First(lTargets),@getname));
+    return False;
       }
       propagate;
    }
@@ -61,22 +61,22 @@ messages:
       
       foreach i in lTargets
       {
-	 if send(i,@checkplayerflag,#flag=PFLAG_MURDERER)
+    if send(i,@checkplayerflag,#flag=PFLAG_MURDERER)
          or send(i,@checkplayerflag,#flag=PFLAG_OUTLAW)
-	 {
-	    send(who,@MsgSendUser,#message_rsc=pardon_msg_DM,
-		#parm1=Send(i,@getdef),#parm2=Send(i,@getname));
-	    send(i,@MsgSendUser,#message_rsc=pardon_msg_target,
-		#parm1=Send(who,@getindef),#parm2=Send(who,@getname));      
-	    
-	    Send(i,@setplayerflag,#flag=PFLAG_MURDERER,#value=false); 
+    {
+       send(who,@MsgSendUser,#message_rsc=pardon_msg_DM,
+      #parm1=Send(i,@getdef),#parm2=Send(i,@getname));
+       send(i,@MsgSendUser,#message_rsc=pardon_msg_target,
+      #parm1=Send(who,@getindef),#parm2=Send(who,@getname));      
+       
+       Send(i,@setplayerflag,#flag=PFLAG_MURDERER,#value=false); 
             Send(i,@setplayerflag,#flag=PFLAG_OUTLAW,#value=false); 
             post(i,@evaluatePKstatus);
-	 }
-	 else
-	 {
-	    send(who,@MsgSendUser,#message_rsc=pardon_failed,
-		 #parm1=Send(i,@GetDef),#parm2=Send(i,@getname));
+    }
+    else
+    {
+       send(who,@MsgSendUser,#message_rsc=pardon_failed,
+       #parm1=Send(i,@GetDef),#parm2=Send(i,@getname));
             return;
          }
       }

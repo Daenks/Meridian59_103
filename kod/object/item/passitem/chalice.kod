@@ -102,15 +102,15 @@ messages:
       propagate;
    }
 
-	DestroyDisposable()
-	{
-		if poOwner = send(SYS,@FindRoomByNum,#num=RID_CAVE2)
-		{
-			return FALSE;
-		}
-		
-		propagate;
-	}
+   DestroyDisposable()
+   {
+      if poOwner = send(SYS,@FindRoomByNum,#num=RID_CAVE2)
+      {
+         return FALSE;
+      }
+      
+      propagate;
+   }
 
    ReqNewApply(what = $, apply_on = $)
    {
@@ -119,7 +119,7 @@ messages:
          % Prevent use if you're red.  This is because player killers
          % were using this to escape too easily after kills.
          if Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
-		     OR Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+           OR Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
          {
             Send(what, @MsgSendUser, #message_rsc = chalice_cant_use_pkill);
             return FALSE;

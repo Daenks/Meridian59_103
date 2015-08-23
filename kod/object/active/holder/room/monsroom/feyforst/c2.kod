@@ -90,7 +90,7 @@ messages:
 
          return;
       }
-	
+   
       karma = Send(self,@GetKarma);
       foreach i in plFey_Forest
       {
@@ -112,7 +112,7 @@ messages:
       % All rooms have the same karma, which is either 1 or 5.  Node appears.
       Send(self,@AppearNode);
 
-      return;						
+      return;                  
    }
 
    FeyNodeTimer()
@@ -170,7 +170,7 @@ messages:
       {
          return;
       }          
-				          
+                      
       foreach i in plPassive
       {
          if IsClass(First(i),&ManaNode)
@@ -311,7 +311,7 @@ messages:
       {
          DeleteTimer(ptFeyNode);
          ptFeyNode = $;
-      }      		             
+      }                         
 
       propagate;
    }

@@ -553,7 +553,7 @@ messages:
       {
          % skip 9/10 of the possible steps
          if Random(1,100) < 10
-         {		 
+         {       
            Send(mob,@DoRandomWalk);
          }
 
@@ -603,7 +603,7 @@ messages:
       % If in doubt, wander aimlessly.
       % skip 9/10 of the possible steps
       if Random(1,100) < 10
-	  {
+     {
          Send(mob,@DoRandomWalk);
       }
 

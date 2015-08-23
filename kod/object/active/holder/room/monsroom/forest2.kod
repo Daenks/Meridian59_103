@@ -68,7 +68,7 @@ messages:
                        [20, 32], [28, 51], [26, 56], [43, 19] ];
 
       ptNoise = CreateTimer(self,@NoiseTimer,
-			    NOISE_DELAY + Random(-NOISE_VARIATION,NOISE_VARIATION));
+             NOISE_DELAY + Random(-NOISE_VARIATION,NOISE_VARIATION));
 
       propagate;
    }
@@ -77,7 +77,7 @@ messages:
    {
       if ptNoise <> $
       {
-	 DeleteTimer(ptNoise);
+    DeleteTimer(ptNoise);
          ptNoise = $;
       }
       propagate;
@@ -88,11 +88,11 @@ messages:
       local i;
 
       ptNoise = CreateTimer(self,@NoiseTimer,
-			    NOISE_DELAY + Random(-NOISE_VARIATION,NOISE_VARIATION));
+             NOISE_DELAY + Random(-NOISE_VARIATION,NOISE_VARIATION));
       
       foreach i in plActive
       {
-	 Send(First(i),@WaveSendUser,#wave_rsc=forest2_noise);
+    Send(First(i),@WaveSendUser,#wave_rsc=forest2_noise);
       }
 
       return;
@@ -103,34 +103,34 @@ messages:
    {
       if (new_row < 19) and (new_col < 7)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
-	      #where=Send(SYS,@FindRoomByNum,#num=RID_CAVE2),
+    Send(SYS,@UtilGoNearSquare,#what=what,
+         #where=Send(SYS,@FindRoomByNum,#num=RID_CAVE2),
               #new_row=55,#new_col = 35, #new_angle=ANGLE_NORTH);
-	 return;
+    return;
       }
       
       if (new_row < 16) and (new_col > 40)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
-	      #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST1),
-	      #new_row=25,#new_col = 2, #new_angle=ANGLE_EAST);
-	 return;
+    Send(SYS,@UtilGoNearSquare,#what=what,
+         #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST1),
+         #new_row=25,#new_col = 2, #new_angle=ANGLE_EAST);
+    return;
       }
       
       if (new_row > 33) and (new_col > 57)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_FOREST3),
               #new_row=1,#new_col = 7, #new_angle=ANGLE_SOUTH);
-	 return;
+    return;
       }
 
       if (new_row = 47) and (new_col = 14)
       {
-	 Send(SYS,@UtilGoNearSquare,#what=what,
+    Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_NEST1),
               #new_row=4,#new_col = 17, #new_angle=ANGLE_SOUTH);
-	 return;
+    return;
       }
 
       if (new_row = 55) and ((new_col = 46) or (new_col = 47))
@@ -215,16 +215,16 @@ messages:
       % some mushrooms
 
       Send(self,@NewHold,#what=Create(&Mushroom),
-	   #new_row=23,#new_col=22);
+      #new_row=23,#new_col=22);
 
       Send(self,@NewHold,#what=Create(&Mushroom),
-	   #new_row=37,#new_col=15);
+      #new_row=37,#new_col=15);
 
       Send(self,@NewHold,#what=Create(&Mushroom),
-	   #new_row=54,#new_col=7);
+      #new_row=54,#new_col=7);
 
       Send(self,@NewHold,#what=Create(&Mushroom),
-	   #new_row=51,#new_col=27);
+      #new_row=51,#new_col=27);
 
 
       propagate;

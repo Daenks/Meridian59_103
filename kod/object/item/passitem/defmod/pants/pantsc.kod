@@ -40,19 +40,19 @@ messages:
    {      
       if translation <> $
       {
-	      Send(self,@SetPaletteTranslation,#translation=translation);	 
-	      propagate;
+         Send(self,@SetPaletteTranslation,#translation=translation);    
+         propagate;
       }
 
       if model <> $
       {
-	      Send(self,@SetPaletteTranslation,#translation=Send(model,@GetPaletteTranslation));
-	      
-	      propagate;
+         Send(self,@SetPaletteTranslation,#translation=Send(model,@GetPaletteTranslation));
+         
+         propagate;
       }     
 
       Send(self,@SetPaletteTranslation,#translation=PT_GRAY_TO_RED);
-	   
+      
       propagate;
    }
 

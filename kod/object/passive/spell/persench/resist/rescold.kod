@@ -75,9 +75,9 @@ messages:
 
    GetDuration(iSpellPower = 0)
    {
-      local iDuration;	   %%% 5 to 15 minutes
+      local iDuration;      %%% 5 to 15 minutes
       iDuration = 300 + iSpellPower * 6;
-      iDuration = iDuration * 1000;	  %% translate to milliseconds
+      iDuration = iDuration * 1000;     %% translate to milliseconds
       return iDuration;
    }
 

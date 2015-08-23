@@ -75,9 +75,9 @@ messages:
          if piInit_count_max < length(plGenerators)
          {
             piInit_count_min = piInit_count_min + 1;
-            piInit_count_max = piInit_count_max + 1;	
+            piInit_count_max = piInit_count_max + 1;   
          }
-      }		
+      }      
 
       ptFaerie = CreateTimer(self,@FaerieTimer,piGen_time/2);
 
@@ -113,7 +113,7 @@ messages:
    LastUserLeft()
    {
       piInit_count_min = piMonster_count - 2;
-      piInit_count_max = piMonster_count + 2;	
+      piInit_count_max = piMonster_count + 2;   
       
       propagate;
    }
@@ -215,7 +215,7 @@ messages:
       % enough have died for a change in the forest.
       if send(self,@GetKarma) <> oldKarma
          OR bForceChange
-      {		              
+      {                    
          send(self,@SetRoomKarma,#karma=send(self,@GetKarma));
       }
 
