@@ -25,8 +25,6 @@ resources:
    room_name_guildh16 = "The Smuggler's Head Quarters"
    room_guildh16 = guildh16.roo
 
-   guildh11_forest_sound = ambcntry.wav
-
 classvars:
 
    vrName = room_name_guildh16
@@ -53,7 +51,7 @@ classvars:
    viInner_teleport_col = 5
 
    viQuality = 5
-   viTerrain_type = TERRAIN_FOREST | TERRAIN_GUILDHALL | TERRAIN_RESIDENCE
+   viTerrain_type = TERRAIN_GUILDHALL | TERRAIN_RESIDENCE
    viSeconds_til_close = 8
 
 properties:
@@ -82,11 +80,6 @@ messages:
 
    Constructed()
    {
-      % Each sound is [wave_file, row, col, cutoff radius, maximum volume]
-      % We have a special looping sound here because we don't want the forest
-      %  sound to play in the foyer.
-      plLooping_sounds = [ [ guildh11_forest_sound, 25, 16, 20, 100 ] ];
-
       propagate;
    }
 
@@ -186,20 +179,6 @@ messages:
             #fine_col=32,#fine_row=16,#new_angle=ANGLE_NORTH);
       Send(self,@NewHold,#what=Create(&WoodenBox),#new_row=29,#new_col=30,
             #fine_col=0,#fine_row=0,#new_angle=ANGLE_SOUTH_WEST);
-
-      Send(self,@NewHold,#what=Create(&Table),#new_row=25,#new_col=8,
-            #fine_col=16,#fine_row=0);
-      Send(self,@NewHold,#what=Create(&Table),#new_row=23,#new_col=10,
-            #fine_col=0,#fine_row=48);
-      Send(self,@NewHold,#what=Create(&Table),#new_row=23,#new_col=6,
-            #fine_col=32,#fine_row=48);
-      Send(self,@NewHold,#what=Create(&Table),#new_row=4,#new_col=19,
-            #fine_col=40,#fine_row=16);
-
-      Send(self,@NewHold,#what=Create(&Firepit),#new_row=11,#new_col=7,
-            #fine_col=16,#fine_row=48);
-      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=8),
-            #new_row=7,#new_col=19,#fine_col=56,#fine_row=24);
 
       propagate;
    }
