@@ -67,15 +67,15 @@ classvars:
    vrSound_death = mimic_sound_death
    viDead_drawfx = DRAWFX_TRANSLUCENT_75
 
-   pbFirstStage = FALSE
-   pbSecondStage = FALSE
-   pbThirdStage = FALSE
-   pbFourthStage = FALSE
-
 properties:
 
    piAnimation = ANIM_NONE
    piDrawfx = DRAWFX_TRANSLUCENT_75
+
+   pbFirstStage = FALSE
+   pbSecondStage = FALSE
+   pbThirdStage = FALSE
+   pbFourthStage = FALSE
 
 messages:
 
@@ -133,33 +133,28 @@ messages:
       propagate;
    }
 
-   ShapeShiftStage(lTargets=$,oSpell=&IllusionaryForm)
+   ShapeShiftStage(lTargets = $,oSpell = &IllusionaryForm)
    {
-      local i, viSpell, oTarget;
+      local oSpell;
 
-      for i in lTargets
-      {
-         oTarget = i;
-
-         oSpell = Send(SYS,@FindSpellByNum,#num=SID_ILLUSIONARY_FORM);
-         if oSpell = $
-         {  DEBUG(self,"CAN'T FIND SID_ILLUSIONARY_FORM"); 
-
-            return;
-         }
-
-            Send(oSpell,@PerformIllusionaryForm,#caster=self,#victim=self,#iSpellPower=random(1,99));
-            Send(self,@Delete);
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_ILLUSIONARY_FORM);
+      if oSpell = $
+      {  DEBUG(self,"CAN'T FIND SID_ILLUSIONARY_FORM"); 
 
          return;
       }
+
+         Send(oSpell,@PerformIllusionaryForm,#caster=self,#victim=self,#iSpellPower=random(1,99));
+
+      return;
+   }
 
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0)
    "This is called when something causes damage to us"
    {
       local oSpell, i, iHPLevel;
 
-      iHPLevel = piHit_points*5 / piMax_hit_points;
+      iHPLevel = piHit_points*5 / (piMax_hit_points * 100);
 
       if iHPLevel >= 4
       {
@@ -172,7 +167,7 @@ messages:
          {
             pbFirstStage = TRUE;
             Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_first_stage,#type=SAY_MESSAGE);
-            Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+            Send(self,@ShapeShiftStage);
          }
          else
          {
@@ -181,7 +176,7 @@ messages:
             {
                pbSecondStage = TRUE;
                Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_second_stage,#type=SAY_MESSAGE);
-               Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+               Send(self,@ShapeShiftStage);
             }
             else
             {
@@ -190,7 +185,7 @@ messages:
                {
                   pbThirdStage = TRUE;
                   Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_third_stage,#type=SAY_MESSAGE);
-                  Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+                  Send(self,@ShapeShiftStage);
                }
                else
                {
@@ -199,7 +194,7 @@ messages:
                   {
                      pbFourthStage = TRUE;
                      Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_fourth_stage,#type=SAY_MESSAGE);
-                     Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+                     Send(self,@ShapeShiftStage);
                   }
                }
             }
