@@ -5216,6 +5216,7 @@ messages:
       plMonsterTemplates = cons(create(&Wolf),plMonsterTemplates);
       plMonsterTemplates = cons(create(&Chupacabra),plMonsterTemplates);
       plMonsterTemplates = cons(create(&Minotaur),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&Mimic),plMonsterTemplates);
 
       plMonsterTemplates = cons(create(&Lich,#template=TRUE),plMonsterTemplates);
       plMonsterTemplates = cons(create(&BatteredSkeleton),plMonsterTemplates);
