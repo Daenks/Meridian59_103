@@ -15,7 +15,7 @@ constants:
    include blakston.khd
 
    % multiplied by the ability of the spellcaster
-   ILLUSIONARYFORM_TIME = 1500  
+   ILLUSIONARYFORM_TIME = 1500
 
 resources:
 
@@ -111,11 +111,11 @@ messages:
       Send(victim,@StartEnchantment,#what=self,#time=iTime,
             #state=iIllusion_type,#iSpellPower=iSpellPower);
       Send(victim,@SetPlayerIllusion,#what=self);
-      
+
       return;
    }
 
-   
+
    SetSpellPlayerFlag(who=$)
    {
       local iIllusion_type,oIllusion,iFX;
@@ -125,7 +125,7 @@ messages:
       {
          return;
       }
-         
+
       oIllusion = Nth(Send(SYS,@GetMonsterTemplates),iIllusion_type);
       iFX = Send(oIllusion,@GetDrawingEffects);
 
@@ -136,7 +136,7 @@ messages:
 
       return;
    }
-   
+
    TranceBlocksSay()
    {
       return TRUE;
@@ -145,7 +145,7 @@ messages:
    SomethingSaidDuringTrance(who=$,string=$)
    {
       local iForm, iCount, i, iSpellPower, bDM;
-            
+
       iSpellPower = Send(self,@GetSpellPower,#who=who);
       iForm = -1;
       iCount = 1;
@@ -164,14 +164,14 @@ messages:
             {
                return;
             }
-            
+
             % Be sure the player CAN morph to it.  No frogmen,
             %  ice creatures, or yetis (size).
             if not Send(i,@CanMorphTo)
             {
                return;
             }
-            
+
             iForm = iCount;
 
             break;
@@ -197,14 +197,14 @@ messages:
    "better chance of being a cooler monster."
    {
       local i, iLevel, iMax, iIndex, iCount, iAmount;
-            
-      iMax = 0;      
+
+      iMax = 0;
       iSpellPower = (iSpellpower * 130)/100;
       foreach i in Send(SYS,@GetMonsterTemplates)
       {
          iLevel = Send(i,@getLevel);
          if Send(i,@CanMorphTo)
-         {                        
+         {
             iAmount = (iSpellPower - iLevel);
             if iAmount < 0
             {
@@ -222,16 +222,16 @@ messages:
                iAmount = bound(iAmount,1,100);
             }
 
-            iMax = iMax + iAmount;           
+            iMax = iMax + iAmount;
          }
       }
 
-      iIndex = random(0,iMax); iCount = 1;      
+      iIndex = random(0,iMax); iCount = 1;
       foreach i in Send(SYS,@GetMonsterTemplates)
       {
          iLevel = Send(i,@getLevel);
          if Send(i,@CanMorphTo)
-         {          
+         {
             iAmount = (iSpellPower - iLevel);
             if iAmount < 0
             {
@@ -261,7 +261,7 @@ messages:
 
       debug("Shouldn't get here!");
       return $;
-   }      
+   }
 
    EndEnchantment(who = $, report = TRUE)
    {
@@ -388,7 +388,7 @@ messages:
          return $;
       }
 
-      return Nth(Send(SYS,@GetMonsterTemplates),iIllusion);      
+      return Nth(Send(SYS,@GetMonsterTemplates),iIllusion);
    }
 
    IllusionGetCapDef(who = $)

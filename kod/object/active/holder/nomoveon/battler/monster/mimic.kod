@@ -1,0 +1,213 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mimic is Monster
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   mimic_koc_name_rsc = "kinachot"
+   mimic_name_rsc = "mimic"
+   mimic_icon_rsc = amoeba.bgf
+   mimic_desc_rsc = \
+   "A mass of quivering goo, the mimic inches forward "
+   "leaving a sickly trail behind.  The remains of its last "
+   "victim are visible within its transparent innards."
+
+   mimic_dead_icon_rsc = amoebaX.bgf
+   mimic_dead_name_rsc = "dead mimic"
+
+   mimic_sound_hit = slm_atkh.wav
+   mimic_sound_miss = slm_atkm.wav
+   mimic_sound_death = slm_dth.wav
+   mimic_sound_aware = slm_awr.wav
+
+   mimic_first_stage = \
+      "The mimic shrugs as it takes another form."
+   mimic_second_stage = \
+      "The mimic growls as it takes another form."
+   mimic_third_stage = \
+      "The mimic stumbles as it takes another form."
+   mimic_fourth_stage = \
+      "the mimic staggers as it takes its final form."
+
+classvars:
+
+   vrKocName = mimic_koc_name_rsc
+   vrName = mimic_name_rsc
+   vrIcon = mimic_icon_rsc
+   vrDesc = mimic_desc_rsc
+   vrDead_icon = mimic_dead_icon_rsc
+   vrDead_name = mimic_dead_name_rsc
+
+   viTreasure_type = TID_WIMPY_MEDIUM
+   viSpeed = SPEED_FAST
+   viAttack_spell = ATCK_SPELL_ACID
+   viAttributes = 0
+   viLevel = 200
+   viDifficulty = 8
+   viVisionDistance = 30
+   viKarma = 0
+   viDefault_behavior = AI_FIGHT_AGGRESSIVE
+   viCashmin = 500
+   viCashmax = 2000
+   vrSound_hit = mimic_sound_hit
+   vrSound_miss = mimic_sound_miss
+   vrSound_aware = mimic_sound_aware
+   vrSound_death = mimic_sound_death
+   viDead_drawfx = DRAWFX_TRANSLUCENT_75
+
+   pbFirstStage = FALSE
+   pbSecondStage = FALSE
+   pbThirdStage = FALSE
+   pbFourthStage = FALSE
+
+properties:
+
+   piAnimation = ANIM_NONE
+   piDrawfx = DRAWFX_TRANSLUCENT_75
+
+messages:
+
+   Constructed()
+   {
+
+      pimax_Hit_Points = pimax_hit_Points * 2;
+      piHit_Points = pimax_hit_points*100;
+
+      plResistances = [ [-ATCK_SPELL_SHOCK, 45 ],
+                        [-ATCK_SPELL_UNHOLY, 45 ],
+                        [-ATCK_SPELL_HOLY, 45 ],
+                        [-ATCK_SPELL_ACID, 45 ],
+                        [ATCK_WEAP_ALL, 45 ],
+                        [ATCK_WEAP_BLUDGEON, 10 ],
+                        [-ATCK_SPELL_COLD, -25 ] ];
+
+      propagate;
+   }
+
+   MonsterAttack(what = $)
+   {
+      piAnimation = ANIM_ATTACK;
+      Send(poOwner,@SomethingChanged,#what=self);
+      piAnimation = ANIM_NONE;
+
+      return;
+   }
+
+   SendLookAnimation()
+   {
+      AddPacket(1,ANIMATE_CYCLE);
+      AddPacket(4,400,2,2,2,5);
+
+      return;
+   }
+
+   SendMoveAnimation()
+   {
+      AddPacket(1,ANIMATE_CYCLE,4,180,2,4,2,5);
+
+      return;
+   }
+
+   SendAnimation()
+   {
+      if piAnimation = ANIM_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE,4,200,2,2,2,4,2,1);
+
+         return;
+      }
+
+      % if no body animation
+      propagate;
+   }
+
+   ShapeShiftStage(lTargets=$,oSpell=&IllusionaryForm)
+   {
+      local i, viSpell, oTarget;
+
+      for i in lTargets
+      {
+         oTarget = i;
+
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_ILLUSIONARY_FORM);
+         if oSpell = $
+         {  DEBUG(self,"CAN'T FIND SID_ILLUSIONARY_FORM"); 
+
+            return;
+         }
+
+            Send(oSpell,@PerformIllusionaryForm,#caster=self,#victim=self,#iSpellPower=random(1,99));
+            Send(self,@Delete);
+
+         return;
+      }
+
+   AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0)
+   "This is called when something causes damage to us"
+   {
+      local oSpell, i, iHPLevel;
+
+      iHPLevel = piHit_points*5 / piMax_hit_points;
+
+      if iHPLevel >= 4
+      {
+         % Do nothing
+      }
+      else
+      {
+         if iHPLevel = 3
+            AND NOT pbFirstStage
+         {
+            pbFirstStage = TRUE;
+            Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_first_stage,#type=SAY_MESSAGE);
+            Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+         }
+         else
+         {
+            if iHPLevel = 2
+               AND NOT pbSecondStage
+            {
+               pbSecondStage = TRUE;
+               Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_second_stage,#type=SAY_MESSAGE);
+               Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+            }
+            else
+            {
+               if iHPLevel = 1
+                  AND NOT pbThirdStage
+               {
+                  pbThirdStage = TRUE;
+                  Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_third_stage,#type=SAY_MESSAGE);
+                  Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+               }
+               else
+               {
+                  if iHPLevel = 0
+                     AND NOT pbFourthStage
+                  {
+                     pbFourthStage = TRUE;
+                     Send(poOwner,@SomeoneSaid,#what=self,#string=mimic_fourth_stage,#type=SAY_MESSAGE);
+                     Send(self,@ShapeShiftStage,#lTargets=self,#oSpell=oSpell);
+                  }
+               }
+            }
+         }
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
