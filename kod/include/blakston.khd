@@ -790,6 +790,7 @@
    RID_GUEST_BAR = 1007
    RID_GUEST8 = 1008
    RID_GUEST_MUSEUM = 1008
+   RID_GUEST9 = 1009
 
    % Newbie rooms must be sequential from RID_NEWB_BASE
    RID_NEWB_BASE        = 1010
@@ -806,8 +807,9 @@
    RID_RAZA_BAR         = 1017
    RID_NEWB8            = 1018
    RID_RAZA_MUSEUM      = 1018
+   RID_NEWB9            = 1019
 
-   RID_NEWB_MAX = 1018
+   RID_NEWB_MAX = 1019
 
    % Desert rooms, start at 1500.
    % RID_DESERT is the constant used by GetRegion.
