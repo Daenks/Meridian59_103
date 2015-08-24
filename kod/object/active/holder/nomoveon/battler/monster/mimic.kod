@@ -61,11 +61,11 @@ classvars:
    viDefault_behavior = AI_FIGHT_AGGRESSIVE
    viCashmin = 500
    viCashmax = 2000
+
    vrSound_hit = mimic_sound_hit
    vrSound_miss = mimic_sound_miss
    vrSound_aware = mimic_sound_aware
    vrSound_death = mimic_sound_death
-   viDead_drawfx = DRAWFX_TRANSLUCENT_75
 
 properties:
 
@@ -98,7 +98,7 @@ messages:
       propagate;
    }
 
-   SetMimicIllusion(what = $)
+   SetPlayerIllusion(what = $)
    {
       poIllusion_set = what;
 

@@ -380,9 +380,9 @@ messages:
    }
 
    IllusionGetTemplate(who=$)
-   {      
+   {
       local iIllusion;
-      iIllusion = Send(who,@GetEnchantedState,#what=self); 
+      iIllusion = Send(who,@GetEnchantedState,#what=self);
       if iIllusion = $
       {
          return $;
@@ -522,7 +522,7 @@ messages:
          % If no illusion, then Send no lighting information.
          return FALSE;
       }
-      
+
       oIllusion = Nth(Send(SYS,@GetMonsterTemplates),iIllusion_type);
       if oIllusion = $
       {
