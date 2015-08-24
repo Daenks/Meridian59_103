@@ -1,0 +1,43 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MimicTreasure is TreasureType
+
+constants:
+
+   include blakston.khd
+
+classvars:
+
+
+properties:
+
+   piTreasure_num = TID_MIMIC
+   piItem_att_chance = 7
+   piDiff_seed = 9
+
+messages:
+
+   constructed()
+   {
+      plTreasure = [ [ &ShamanBlood, 10 ],
+                     [ &Yrxlsap, 2 ],
+                     [ &WebMoss, 20 ],
+                     [ &RainbowFern, 9 ],
+                     [ &PolishedSeraphym, 22 ],
+                     [ &InkyCap , 9 ],
+                     [ &IllusionaryFormPotion, 10 ]
+                   ];
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -16,13 +16,12 @@ constants:
 
 resources:
 
-   mimic_koc_name_rsc = "kinachot"
+   mimic_koc_name_rsc = "mimnoc"
    mimic_name_rsc = "mimic"
    mimic_icon_rsc = amoeba.bgf
    mimic_desc_rsc = \
-   "A mass of quivering goo, the mimic inches forward "
-   "leaving a sickly trail behind.  The remains of its last "
-   "victim are visible within its transparent innards."
+   "This monster appears to be a normal slime, but things "
+   "aren't always what they seem to be."
 
    mimic_dead_icon_rsc = amoebaX.bgf
    mimic_dead_name_rsc = "dead mimic"
@@ -50,7 +49,7 @@ classvars:
    vrDead_icon = mimic_dead_icon_rsc
    vrDead_name = mimic_dead_name_rsc
 
-   viTreasure_type = TID_WIMPY_MEDIUM
+   viTreasure_type = TID_MIMIC
    viSpeed = SPEED_FAST
    viAttack_spell = ATCK_SPELL_ACID
    viAttributes = 0
@@ -142,14 +141,6 @@ messages:
    SendLookAnimation()
    {
 
-      if poIllusion_set <> $
-      {
-         Send(poIllusion_set,@IllusionSendLookAnimation,#who=self,
-               #animation=piAnimation);
-
-         return;
-      }
-
       AddPacket(1,ANIMATE_CYCLE);
       AddPacket(4,400,2,2,2,5);
 
@@ -205,7 +196,7 @@ messages:
          return;
       }
 
-         Send(oSpell,@PerformIllusionaryForm,#caster=self,#victim=self,#iSpellPower=random(1,99));
+         Send(oSpell,@PerformIllusionaryForm,#caster=self,#victim=self,#iSpellPower=random(50,99));
 
       return;
    }
@@ -263,6 +254,16 @@ messages:
       }
 
       propagate;
+   }
+
+   CanMorphTo()
+   {
+      return FALSE;
+   }
+
+   CanEvilTwin()
+   {
+      return FALSE;
    }
 
 end
