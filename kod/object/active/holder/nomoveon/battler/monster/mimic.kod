@@ -133,7 +133,7 @@ messages:
       propagate;
    }
 
-   ShapeShiftStage(lTargets = $,oSpell = &IllusionaryForm)
+   ShapeShiftStage()
    {
       local oSpell;
 
