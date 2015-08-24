@@ -1,0 +1,212 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FactionTroop is Human
+
+constants:
+
+   include blakston.khd
+
+   HUMAN_TRANSLATION_Skin_MASK = 0xff0000
+   HUMAN_TRANSLATION_Skin_MUL = 0x10000
+
+resources:
+
+include troop.lkod
+
+   FactionTroop_name_rsc = "faction troop"
+
+   FactionTroop_desc_rsc = \
+   "This is a member of the local militia."
+
+   FactionTroop_dead_name_rsc = "dead faction troop"
+
+classvars:
+
+   vrName = FactionTroop_name_rsc
+   vrDesc = FactionTroop_desc_rsc
+   vrDead_name = FactionTroop_dead_name_rsc
+
+   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
+
+properties:
+
+   piBaseLevel = 80
+   piBaseDifficulty = 6
+
+   viLevel = 80         % piBaseLevel
+   viDifficulty = 4     % piBaseDifficulty
+
+messages:
+
+   Constructor()
+   {
+      Send(self,@SetHumanShirt,#translation=viColorTranslate1);
+      Send(self,@SetHumanLegs,#translation=viColorTranslate2);
+      Send(self,@SetShield);
+      Send(self,@SetEquipment);
+      
+      propagate;
+   }
+
+   SetSkinColor()
+   % Sets skin to one of the four skin colors.
+   {
+      local skin_color;
+      skin_color = random(PT_BLUE_TO_SKIN1,PT_BLUE_TO_SKIN4);
+
+      piBody_translations = piBody_translations & ~Human_TRANSLATION_SKIN_MASK;
+      piBody_translations = piBody_translations | (skin_color * Human_TRANSLATION_SKIN_MUL);
+
+      return;
+   }
+
+   SetEquipment()
+   {
+      local oEquipmentItem, iRandomNumber, iBonusModifier;
+
+      iRandomNumber = random(1,100);
+      if iRandomNumber <= 35
+      {
+         oEquipmentItem = create(&Longsword);
+         iBonusModifier = 3;
+      }
+      else
+      {
+         if iRandomNumber <= 55
+         {
+            oEquipmentItem = create(&Axe);
+            iBonusModifier = 2;
+         }
+         else
+         {
+            if iRandomNumber <= 65
+            {
+               oEquipmentItem = create(&Hammer);
+               iBonusModifier = 2;
+            }
+            else
+            {
+               if iRandomNumber <= 75
+               {
+                  oEquipmentItem = create(&Mace);
+                  iBonusModifier = 1;
+               }
+               else
+               {
+                  if iRandomNumber <= 80
+                  {
+                     oEquipmentItem = create(&ShortSword);
+                     iBonusModifier = 1;
+                  }
+                  else
+                  {   
+                     if iRandomNumber <= 85
+                     {
+                        oEquipmentItem = create(&Scimitar);
+                        iBonusModifier = 4;
+                     }
+                     else
+                     {
+                        if iRandomNumber <= 90
+                        {
+                          oEquipmentItem = create(&BattleBow);
+                          poArrow = create(&NeruditeArrow);
+                          iBonusModifier = 5;
+                        }
+                        else
+                        {
+                           oEquipmentItem = create(&LongBow);
+                           poArrow = create(&NeruditeArrow);
+                           iBonusModifier = 4;
+                        }
+                     }   
+                  }  
+               }
+            }
+         }
+      }
+                  
+      viDifficulty = piBaseDifficulty + iBonusModifier;
+      Send(self,@AddEquipmentObject,#what=oEquipmentItem);
+
+      iRandomNumber = random(1,100);
+
+      if iRandomNumber <= 35
+      {
+         oEquipmentItem = create(&LeatherArmor);
+         iBonusModifier = 20;
+      }
+      else
+      {
+         if iRandomNumber <= 70
+         {
+            oEquipmentItem = create(&ChainArmor);
+            iBonusModifier = 50;
+         }
+         else
+         {
+           if iRandomNumber <= 85
+           {
+              oEquipmentItem = create(&ScaleArmor);
+              iBonusModifier = 75;
+           }
+           else
+           {
+             oEquipmentItem = create(&PlateArmor);
+             iBonusModifier = 100;
+           }
+        }
+     }
+
+      viLevel = piBaseLevel + iBonusModifier;
+      Send(self,@SetHumanArmor,#NewArmor=oEquipmentItem);
+
+      % Gauntlets?
+      iRandomNumber = random(1,100);
+      if iRandomNumber < 20
+      {
+         oEquipmentItem = create(&Gauntlet);
+         plUsing = Cons(oEquipmentItem,plUsing);
+         viDifficulty = viDifficulty +1;
+         viLevel = viLevel + 20;
+         if viGender = GENDER_MALE
+         {
+            prRight_arm = Human_rightarm_gauntlet_male;
+            prLeft_arm = Human_leftarm_gauntlet_male;
+         }
+         else
+         {
+            prRight_arm = Human_rightarm_gauntlet_female;
+            prLeft_arm = Human_leftarm_gauntlet_female;
+         }
+      }
+
+      return;
+   }
+
+   SetShield()
+   {
+      local oEquipmentItem;
+
+      oEquipmentItem = create(vcShieldClass,#color1=viShieldColor1,#color2=viShieldColor2,
+                              #shape=viShieldShape);
+      if viInsignia <> $
+      {
+         Send(oEquipmentItem,@ChangeGuildInsignia,#insignia=viInsignia);
+      }
+
+      Send(self,@AddEquipmentObject,#what=oEquipmentItem);
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

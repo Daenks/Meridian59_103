@@ -1,0 +1,102 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Rogue is Human
+
+constants:
+
+include blakston.khd
+
+resources:
+
+   Rogue_name_rsc = "rogue"
+
+   Rogue_desc_rsc = \
+   "This rogue is deadlier than a snake, and sneakier"
+   "then most house mice."
+
+   Rogue_dead_name_rsc = "dead rogue"
+
+classvars:
+
+   vrName = Rogue_name_rsc
+   vrDesc = Rogue_desc_rsc
+   vrDead_name = Rogue_dead_name_rsc
+
+   viSpeed = SPEED_VERY_FAST
+   viAttack_type = ATCK_WEAP_THRUST
+   viAttributes = 0
+   viVisionDistance = 25
+   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_FIGHT_HYPERAGGRESSIVE
+   viChanceFemale = 50  % percentage chance to be female
+   
+   viCashmin = 10000
+   viCashmax = 20000
+
+   viColorTranslate1 = PT_REDTODKBLACK1   % Shirt
+   viColorTranslate2 = PT_REDTODKBLACK1   % Pants
+
+properties:
+
+   piBaseLevel = 50
+   piBaseDifficulty = 2
+
+   %Here so they can be set
+   viLevel = 200         % piBaseLevel
+   viDifficulty = 10     % piBaseDifficulty
+
+messages:
+
+   Constructed()
+   {
+      plResistances = [ [ATCK_WEAP_PIERCE, 40 ],
+                        [ATCK_WEAP_SLASH, 40 ] ];
+
+      plSpellBook = [ [SID_HOLD,5,40], [SID_KILLING_FIELDS,8,50],
+                      [SID_PURGE,4,85], [SID_SPORE_BURST,6,90],
+                      [SID_EVIL_TWIN,4,100] ];
+
+      propagate;
+   }
+
+   SetEquipment()
+   {
+      local oEquipmentItem, iRandomNumber, iBonusModifier;
+
+      iRandomNumber = random(1,100);
+
+            if iRandomNumber <= 1100
+      {
+         oEquipmentItem = create(&BlackDagger);
+         iBonusModifier = 20;
+      }
+      
+      viDifficulty = piBaseDifficulty + iBonusModifier;
+      Send(self,@AddEquipmentObject,#what=oEquipmentItem);
+
+      iRandomNumber = random(1,100);
+
+            if iRandomNumber <= 1100
+      {
+         oEquipmentItem = create(&ChainArmor);
+         iBonusModifier = 20;
+      }
+      
+      viLevel = piBaseLevel + iBonusModifier;
+      Send(self,@SetHumanArmor,#NewArmor=oEquipmentItem);
+
+      % Gauntlets?
+      iRandomNumber = random(1,100);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
