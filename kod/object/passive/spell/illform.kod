@@ -183,7 +183,7 @@ messages:
       if iForm <> -1
       {
          % don't print fizzle message.
-         Send(who,@BreakTrance,#event=EVENT_STEER);  
+         Send(who,@BreakTrance,#event=EVENT_STEER);
          Send(self,@PerformIllusionaryForm,#caster=who,#victim=who,
               #iIllusion_type=iForm,#iSpellpower=iSpellpower);
       }
