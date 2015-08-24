@@ -2508,6 +2508,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST6,#class=&Guest6);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST7,#class=&Guest7);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST8,#class=&Guest8);
+      Send(self,@CreateOneRoomIfNew,#num=RID_GUEST9,#class=&Guest9);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB1,#class=&Newb1);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB2,#class=&Newb2);
@@ -2517,6 +2518,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB6,#class=&Newb6);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB7,#class=&Newb7);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB8,#class=&Newb8);
+      Send(self,@CreateOneRoomIfNew,#num=RID_NEWB9,#class=&Newb9);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_GUILDH1,#class=&GuildHall1);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUILDH2,#class=&GuildHall2);
