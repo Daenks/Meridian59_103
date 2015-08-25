@@ -116,6 +116,14 @@ messages:
       return Send(poIllusion_set,@IllusionGetTemplate,#who=self);
    }
 
+   EndEnchantment(who = $, report = TRUE)
+   {
+
+      Send(who,@ResetPlayerIllusion);
+
+      return;
+   }
+
    GetIcon(trueicon=FALSE)
    {
       % trueicon is set to true anytime you want to know what
