@@ -438,7 +438,7 @@ messages:
             }
          }
       }
-       
+
       piBody_translations2 = piBody_translations2 & ~HUMAN_TRANSLATION2_HAIR_MASK;
       piBody_translations2 = piBody_translations2 | (Translation * HUMAN_TRANSLATION2_HAIR_MUL);
 
@@ -1100,6 +1100,25 @@ messages:
       {
          Send(poOwner,@SomethingChanged,#what=self);
       }
+
+      return;
+   }
+
+   AddOverlayObject(what = $)
+   "Adds <what> to plOverlays, so we can keep track of whom to "
+   "call about overlays"
+   {
+      local i;
+
+      foreach i in plOverlays
+      {
+         if i = what
+         {
+            return;
+         }
+      }
+
+      plOverlays = Cons(what,plOverlays);
 
       return;
    }
