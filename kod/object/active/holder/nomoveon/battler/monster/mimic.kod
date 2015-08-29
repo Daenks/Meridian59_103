@@ -31,6 +31,8 @@ resources:
    mimic_sound_death = slm_dth.wav
    mimic_sound_aware = slm_awr.wav
 
+   mimic_head = skelhed2.bgf
+
    mimic_first_stage = \
       "The mimic shrugs as it takes another form."
    mimic_second_stage = \
@@ -65,6 +67,8 @@ classvars:
    vrSound_miss = mimic_sound_miss
    vrSound_aware = mimic_sound_aware
    vrSound_death = mimic_sound_death
+
+   vrHeadIcon = mimic_head
 
 properties:
 
@@ -146,6 +150,22 @@ messages:
       return;
    }
 
+   IllusionSendMoveOverlays(who = $)
+   {
+      local iIllusion_type,oIllusion;
+
+      iIllusion_type = Send(who,@GetEnchantedState,#what=self);
+      if iIllusion_type = $
+      {
+         AddPacket(1,0);
+      }
+
+      oIllusion = Nth(Send(SYS,@GetMonsterTemplates),iIllusion_type);
+      Send(oIllusion,@SendMoveOverlays);
+
+      return;
+   }
+
    SendLookAnimation()
    {
 
@@ -155,18 +175,11 @@ messages:
       return;
    }
 
-   SendMoveAnimation()
+   SendMoveOverlays()
    {
-
-      if poIllusion_set <> $
-      {
-         Send(poIllusion_set,@IllusionSendMoveAnimation,#who=self,
-               #animation=piAnimation);
-
-         return;
-      }
-
-      AddPacket(1,ANIMATE_CYCLE,4,180,2,4,2,5);
+      % 1 overlay: the head.
+      AddPacket(1,1);
+      AddPacket(4,vrHeadIcon, 1,HS_HEAD, 1,ANIMATE_CYCLE, 4,100, 2,2, 2,7);
 
       return;
    }
@@ -214,7 +227,7 @@ messages:
    {
       local oSpell, i, iHPLevel;
 
-      iHPLevel = piHit_points*5 / (piMax_hit_points * 100);
+      iHPLevel = piHit_points*4 / (piMax_hit_points * 100);
 
       if iHPLevel >= 4
       {
