@@ -43,6 +43,7 @@ properties:
 
    viLevel = 80         % piBaseLevel
    viDifficulty = 4     % piBaseDifficulty
+   poHair_Remove = $
 
 messages:
 
@@ -52,9 +53,26 @@ messages:
       Send(self,@SetHumanLegs,#translation=viColorTranslate2);
       Send(self,@SetShield);
       Send(self,@SetEquipment);
-      
+      Send(self,@SetHair);
+
       propagate;
    }
+
+   SetHair()
+   {
+      local HelmetHair;
+
+      % Chance to have Helmet
+      if random(1,100) < 30
+      {
+         HelmetHair = create(&SimpleHelm);
+         Send(self,@AddEquipmentObject,#what=HelmetHair);
+         return;
+      }
+
+      propagate;
+   }
+
 
    SetSkinColor()
    % Sets skin to one of the four skin colors.

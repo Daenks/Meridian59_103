@@ -1,0 +1,116 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FactionMage is Human
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+   viSpeed = SPEED_FASTER
+   viAttack_type = ATCK_WEAP_SLASH
+   viAttributes = 0
+   viDefault_behavior = AI_FIGHT_NEWBIESAFE | AI_MOVE_REGROUP
+
+   viVisionDistance = 12
+
+   viCashMin = 200
+   viCashMax = 600
+
+properties:
+
+   piBaseLevel = 80
+   piBaseDifficulty = 6
+
+   %Here so they can be set
+   viLevel = 80         % piBaseLevel
+   viDifficulty = 4     % piBaseDifficulty
+   viGender = GENDER_MALE
+   viKarma = 0
+
+   vrSound_hit = FactionTroop_sound_hit_monster_flesh2
+   vrSound_miss = FactionTroop_sound_swish3
+   vrSound_aware = FactionTroop_sound_aware
+   vrSound_death = FactionTroop_male_sound_death
+
+   piMana = 100
+   piMax_Mana = 100
+
+messages:
+
+   Constructor()
+   {
+      Send(self,@SetEquipment);
+
+      propagate;
+   }
+
+   SetEquipment()
+   {
+      local oEquipmentItem, iRandomNumber, iBonusModifier;
+
+      iRandomNumber = random(1,1);
+      if iRandomNumber = 1
+      {
+         oEquipmentItem = create(&Mace);
+         iBonusModifier = 3;
+      }
+
+      viDifficulty = piBaseDifficulty + iBonusModifier;
+      Send(self,@AddEquipmentObject,#what=oEquipmentItem);
+
+      iRandomNumber = random(1,10);
+
+      if iRandomNumber <= 1
+      {
+         oEquipmentItem = create(&LeatherArmor);
+         iBonusModifier = 20;
+      }
+
+      return;
+   }
+
+   SetHair()
+   {
+      local CircletHair;
+
+      % Chance to have circlet is half the chance of a soldier having a helm
+      if random(1,100) < 15
+      {
+         CircletHair = create(&Circlet);
+         Send(self,@AddEquipmentObject,#what=CircletHair);
+         return;
+      }
+
+      propagate;
+   }
+
+   ManaTimer()
+   {
+      ptMana = $;
+
+      if piMana < piMax_mana
+      {
+         Send(self,@GainMana,#amount=3);
+      }
+      else
+      {
+         Send(self,@LoseMana,#amount=1);
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

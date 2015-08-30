@@ -4,8 +4,8 @@
 
 !include $(TOPDIR)\common.mak
 
-DEPEND = ..\human.bof
-BOFS  = troop.bof rogue.bof mage.bof
+DEPEND = ..\mage.bof
+BOFS  = dukemg.bof prinmg.bof
 
 
 
