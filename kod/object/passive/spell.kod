@@ -71,9 +71,8 @@ resources:
       "Shal'ille frowns upon your assitance to unlawful citizens."
 
    spell_failed_by_chance = "You were unsuccessful in casting %s."
-   spell_spellbane_stopped = \
-      "The notes of %s's song tangle with the words of your spell, unraveling "
-      "it faster than your tongue can weave it."
+   spell_spellbane_modified = \
+      "The notes of %s's song tangle with the words of your spell!"
 
    spell_advanced = "You advanced in %s!  Your ability is now at %s."
    spell_guardian = \
@@ -553,7 +552,7 @@ messages:
    CanCastHere(who=$,where=$,lTargets=$,iSpellPower=0,bItemCast=FALSE,
                report=TRUE)
    {
-      local oSpell, lState, lRadiusState, oTarget;
+      local oSpell, lState, oTarget;
 
       if IsClass(who,&DM)
       {
@@ -568,20 +567,6 @@ messages:
 
       if NOT bItemCast
       {
-         if IsClass(who,&Player)
-            AND Send(who,@IsAffectedByRadiusEnchantment,#byClass=&Spellbane)
-         {
-            lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
-                                 #byClass=&Spellbane);
-            if report
-            {
-               Send(who,@MsgSendUser,#message_rsc=spell_spellbane_stopped,
-                     #parm1=Send(Nth(lRadiusState,3),@GetName));
-            }
-
-            return FALSE;
-         }
-
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_SILENCE);
          if Send(where,@IsEnchanted,#what=oSpell)
          {
@@ -2253,7 +2238,7 @@ messages:
    {
       local iSpellPower, i, iTerrain, oRoom, oModifierSpell, iAbilityLoss,
             iAbilityGain, iItemModifier, iBase, iPrimaryBonus, iSecondaryBonus,
-            iPowerBonus, iShrines, lRadiusState;
+            iPowerBonus, iShrines, lRadiusState, lSpellbaneState;
 
       oRoom = Send(who,@GetOwner);
 
@@ -2432,6 +2417,22 @@ messages:
          
       % Bound the result.
       iSpellPower = bound(iSpellPower,SPELLPOWER_MINIMUM,SPELLPOWER_MAXIMUM);
+
+      if Send(who,@IsAffectedByRadiusEnchantment,#byClass=&Spellbane)
+      {
+         lSpellbaneState = Send(who,@GetLeastPowerfulRadiusEnchantmentState,
+                              #byClass=&Spellbane);
+
+         if Nth(lSpellbaneState,2) < iSpellPower
+         {
+            if IsClass(who,&Player)
+            {
+               Send(who,@MsgSendUser,#message_rsc=spell_spellbane_modified,
+                     #parm1=Send(Nth(lSpellbaneState,3),@GetName));
+            }
+            return bound(Nth(lSpellbaneState,2),SPELLPOWER_MINIMUM,SPELLPOWER_MAXIMUM);
+         }
+      }
       
       return iSpellPower;
    }

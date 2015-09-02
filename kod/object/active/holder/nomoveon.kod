@@ -321,6 +321,32 @@ messages:
       }
       return oHighest;
    }
+   
+   GetLeastPowerfulRadiusEnchantmentState(byClass=&RadiusEnchantment)
+   {
+      local i, oLowest;
+   
+      oLowest = $;
+   
+      for i in plRadiusEnchantments
+      {
+         if IsClass(Nth(i,1), byClass)
+         {
+            if oLowest = $
+            {
+               oLowest = i;
+            }
+            else
+            {
+               if Nth(i,2) < Nth(oLowest,2)
+               {
+                  oLowest = i;
+               }
+            }
+         }
+      }
+      return oLowest;
+   }
 
    GetRadiusEnchantments()
    {

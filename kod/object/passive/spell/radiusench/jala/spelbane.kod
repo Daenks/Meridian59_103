@@ -21,8 +21,8 @@ resources:
    Spellbane_name_rsc = "spellbane"
    Spellbane_icon_rsc = ispebane.bgf
    Spellbane_desc_rsc = \
-      "The words of this song form an enchantment which disallows the casting "
-      "of any spells weaker than the song.  "
+      "The machinations of this melody form an enchantment which replaces the power "
+      "of any stronger spells with the song's own weaker power.  "
       "Requires one perfect polished seraphym."
 
    Spellbane_no_towns = "You are prevented from singing this song currently."
@@ -56,8 +56,8 @@ classvars:
    viSpell_level = 3
    viBaseRange = 2
 
-   viMana = 12          % Mana is amount used upon inititiation
-   viManaDrain = 8      % Drain is amount used every viDrainTime milliseconds
+   viMana = 6          % Mana is amount used upon inititiation
+   viManaDrain = 5      % Drain is amount used every viDrainTime milliseconds
    viDrainTime = 5000   % Drain some mana every viDrainTime milliseconds
 
    viSpell_Exertion = 6
@@ -78,6 +78,26 @@ messages:
       plReagents = Cons([&PolishedSeraphym,1],plReagents);
 
       return;
+   }
+
+   CalculateRange(who=$, iSpellPower=25)
+   {
+      local iRange;
+
+      if NOT IsClass(who,&Player)
+      {
+         return viBaseRange*2;
+      }
+      
+      % Spellbane radius increases with better %s in the spell, NOT spellpower!
+      iRange = viBaseRange + (viBaseRange/2)*(Send(who,@GetSpellAbility,#spell_num=SID_SPELLBANE)/99);
+      
+      return iRange;
+   }
+
+   SuccessChance(who=$,iSpellpower=0,lTargets=$)
+   {
+      return TRUE;
    }
 
 end
