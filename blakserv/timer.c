@@ -334,7 +334,7 @@ void ServiceTimers(void)
    in_main_loop = True;
    SetWindowText(hwndMain, ConfigStr(CONSOLE_CAPTION));
 
-	AsyncSocketStart();
+   AsyncSocketStart();
 
    for(;;)
    {
@@ -374,6 +374,7 @@ void ServiceTimers(void)
 	       /* new soonest timer, so we should recalculate our time left... 
 		  so we just need to restart the loop! */
 	       break;
+
 	    case WM_BLAK_MAIN_DELETE_ACCOUNT :
 	       EnterServerLock();
 	       DeleteAccountAndAssociatedUsersByID(msg.lParam);
@@ -385,7 +386,8 @@ void ServiceTimers(void)
 	       VerifiedLoginSession(msg.lParam);
 	       LeaveServerLock();
 	       break;
-       case WM_BLAK_MAIN_LOAD_GAME :
+
+        case WM_BLAK_MAIN_LOAD_GAME :
           EnterServerLock();
           LoadFromKod(msg.lParam);
           LeaveServerLock();
@@ -470,6 +472,12 @@ void ServiceTimers(void)
                 case WM_BLAK_MAIN_VERIFIED_LOGIN :
                     EnterServerLock();
                     VerifiedLoginSession(msg.lParam);
+                    LeaveServerLock();
+                    break;
+
+                case WM_BLAK_MAIN_LOAD_GAME :
+                    EnterServerLock();
+                    LoadFromKod(msg.lParam);
                     LeaveServerLock();
                     break;
 

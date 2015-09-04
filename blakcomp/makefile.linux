@@ -9,6 +9,8 @@ OUTDIR=debug
 
 SOURCEDIR = .
 
+BLAKINCLUDEDIR += -I .
+
 CFLAGS = -m32 -I $(BLAKINCLUDEDIR) -DBLAK_PLATFORM_LINUX  -Wno-write-strings
 LINKFLAGS = -m32
 LIBS =
@@ -33,22 +35,20 @@ $(OUTDIR)/bc: $(OBJS)
 	$(LINK) $(OBJS) $(LIBS) -o $@ $(LINKFLAGS)
 	$(CP) $@ $(BLAKBINDIR)
 
-# hack to make it work for now
+$(OUTDIR)/%.obj : %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 $(OUTDIR)/lexyy.obj: $(OUTDIR)/lexyy.c $(OUTDIR)/blakcomp.tab.h
-	$(CC) $(CFLAGS) -I ./ -c -DBLAK_PLATFORM_LINUX debug/lexyy.c -o debug/lexyy.obj
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OUTDIR)/blakcomp.tab.obj: $(OUTDIR)/blakcomp.tab.c
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OUTDIR)/lexyy.c: $(SOURCEDIR)/blakcomp.l $(SOURCEDIR)/blakcomp.h
 	$(LEX) -o $(OUTDIR)/lexyy.c $(SOURCEDIR)/blakcomp.l
 
 $(OUTDIR)/blakcomp.tab.c $(OUTDIR)/blakcomp.tab.h: $(SOURCEDIR)/blakcomp.y $(SOURCEDIR)/blakcomp.h
 	$(YACC) $(SOURCEDIR)/blakcomp.y -o $(OUTDIR)/blakcomp.tab.c
-
-# hack to make it work for now
-$(OUTDIR)/blakcomp.tab.obj:
-	$(CC) $(CFLAGS) -I ./ -c -DBLAK_PLATFORM_LINUX debug/blakcomp.tab.c -o debug/blakcomp.tab.obj
-
-$(OUTDIR)/%.obj : %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
 
 makedirs:
 	-$(MKDIR) $(OUTDIR)

@@ -3,8 +3,8 @@
 # to be included at the end of each makefile
 
 makedirs:
-		-@mkdir $(OUTDIR) >nul 2>&1
+		-@mkdir $(OUTDIR) 2>&1
 
 clean :
-		@$(RM) $(OUTDIR)/* >nul 2>&1
-		@$(RMDIR) $(OUTDIR) > nul 2>&1
+		@$(RM) $(OUTDIR)/* 2>&1
+		@$(RMDIR) $(OUTDIR) 2>&1

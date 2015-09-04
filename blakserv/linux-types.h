@@ -51,20 +51,6 @@ typedef unsigned int WPARAM;
 typedef const char* LPCSTR;
 typedef LPCSTR LPCTSTR;
 
-typedef struct tagPOINT {
-  long x;
-  long y;
-} POINT, *PPOINT;
-
-typedef struct tagMSG {
-  HWND   hwnd;
-  UINT   message;
-  WPARAM wParam;
-  LPARAM lParam;
-  DWORD  time;
-  POINT  pt;
-} MSG, *PMSG, *LPMSG;
-
 // inet
 #define WSADESCRIPTION_LEN      256
 #define WSASYS_STATUS_LEN       128

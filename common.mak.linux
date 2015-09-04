@@ -142,7 +142,7 @@ LATEX = latex
 MAKENSIS = 
 
 BC = $(BLAKBINDIR)/bc
-MAKEBGF = $(BLAKBINDIR)\makebgf
+MAKEBGF = $(BLAKBINDIR)/makebgf
 
 # environment variables for compiler
 

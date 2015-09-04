@@ -24,6 +24,33 @@ typedef struct _SECURITY_ATTRIBUTES {
   BOOL   bInheritHandle;
 } SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
 
+typedef struct tagPOINT {
+  long x;
+  long y;
+} POINT, *PPOINT;
+
+typedef struct tagMSG {
+  HWND   hwnd;
+  UINT   message;
+  WPARAM wParam;
+  LPARAM lParam;
+  DWORD  time;
+  POINT  pt;
+} MSG, *PMSG, *LPMSG;
+
+#define MSGBUFSIZE 256
+
+// simulate windows message queues
+ typedef struct tagMSGQUEUE {
+   int head;
+   int tail;
+   int count;
+   MSG MsgBuf[MSGBUFSIZE];
+   pthread_mutex_t mux;
+   pthread_cond_t signal;
+} MSGQUEUE;
+
+BOOL InitMsgQueue();
 BOOL PostThreadMessage(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam);
 BOOL PeekMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg);
 DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);

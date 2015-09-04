@@ -16,17 +16,74 @@
 pthread_mutex_t** mutexes;
 int num_mutexes = 0;
 
+MSGQUEUE main_thread_msgs;
+
+BOOL InitMsgQueue()
+{
+    main_thread_msgs.head = -1;
+    main_thread_msgs.tail = -1;
+    main_thread_count = 0;
+    pthread_mutex_init(&main_thread_msgs.mux, NULL);
+    pthread_cond_init(&main_thread_msgs.signal, NULL);
+}
+
 BOOL PostThreadMessage(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
     // TODO: stub
+    if (idThread != main_thread_id)
+    {
+        eprintf("PostThreadMessage: only main thread messages currently supported on Linux!");
+        return FALSE;
+    }
+
+    // lock mutex
+    // if zero messages
+    //   copy message into queue
+    //   set head to 0 set tail to 0
+    // else (already messages)
+    //   check if ring buffer is full
+    //   if count >= MAX_MESSAGES
+    //     error! message overflow!!!
+    //   else (we have more room)
+    //     if (tail < (MAX_MESSAGES - 1))
+    //       if (head < tail)
+    //       else (head > tail)
+    //     else if (tail == (MAX_MESSAGES - 1))
+    //       flip tail around to the beginning of the buffer
+    //       tail = 0; 
+    // unlock mutex
+
     return FALSE;
 }
 
 BOOL PeekMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
-    // TODO: stub
+    // lock mutex
+    // if (count > 0)
+    //  copy head into lpMsg
+    //  decrement count
+    //  if count > 0
+    //   set head to head +1
+    //   if head > (MAX_MESSAGES - 1)
+    //    set head to
+    //   unlock mutex
+    //   return true
+    //  else
+    //   set head to -1
+    //   set tail to -1
+    //   unlock mutex
+    //   return true
+    // else
+    //  unlock mutex
+    //  return false (no messages)
+    
+    // TODO: Implement
+
     return FALSE;
+
 }
+
+
 
 // WARNING:  A very poor assumption is made here that the "object" type is a mutex.
 // At this point in time that appears to be exactly how this function is being
@@ -39,8 +96,8 @@ DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
     struct timespec ts;
 
     clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += (dwMilliseconds * 1000) / 1000;
-    ts.tv_nsec += ( dwMilliseconds - ((( dwMilliseconds * 1000 ) / 1000 ) * 1000 )) * 1000000;
+    ts.tv_sec += (dwMilliseconds  / 1000);
+    ts.tv_nsec += ( dwMilliseconds - (( dwMilliseconds  / 1000 ) * 1000 )) * 1000000;
 
     return pthread_mutex_timedlock( (pthread_mutex_t*) hHandle, &ts);
 

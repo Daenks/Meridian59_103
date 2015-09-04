@@ -16,8 +16,7 @@ BOFS = util.bof object.bof
 BCFLAGS = -d -I $(KODINCLUDEDIR) -K $(KODDIR)/kodbase.txt
 
 %.bof: %.kod
-	@echo Building $< 
-	$(BC) $(BCFLAGS) $< 
+	@$(BC) $(BCFLAGS) $< 
 
 all : $(BOFS) $(BOFS2) $(BOFS3) $(BOFS4) $(BOFS5) $(BOFS6) $(BOFS7) $(BOFS8)
 	@for i in $(BOFS:.bof=) $(BOFS2:.bof=) $(BOFS3:.bof=.) $(BOFS4:.bof=.) $(BOFS5:.bof=.) $(BOFS6:.bof=.) $(BOFS7:.bof=.) $(BOFS8:.bof=.); do \
@@ -31,27 +30,37 @@ all : $(BOFS) $(BOFS2) $(BOFS3) $(BOFS4) $(BOFS5) $(BOFS6) $(BOFS7) $(BOFS8)
 			-e "/kod.mak/ s:\\\\:\/:" \
 			-e "/DEPEND/ s:\\\\:\/:" \
 				makefile >makefile.linux; \
-		$(MAKE) $(MAKEFLAGS) -f makefile.linux TOPDIR=../$(TOPDIR); \
+		$(MAKE) -sf makefile.linux TOPDIR=../$(TOPDIR); \
+		$(RM) makefile.linux; \
 		cd ..; \
 	done
 	@echo Copying kodbase.txt and kod include files
 	-$(CP) $(KODDIR)/kodbase.txt $(BLAKSERVRUNDIR) 2>&1
 	-@$(CP) $(KODDIR)/include/*.khd $(BLAKSERVRUNDIR) 2>&1
 	@echo Copying .rsc and creating client .rsb file
-	@-$(RM) $(CLIENTRUNDIR)/resource/*.rsc >nul 2>&1
-	@-$(RM) $(CLIENTRUNDIR)/resource/*.rsb >nul 2>&1
+	@-$(RM) $(CLIENTRUNDIR)/resource/*.rsc 2>&1
+	@-$(RM) $(CLIENTRUNDIR)/resource/*.rsb 2>&1
 	-@$(RSCMERGE) $(CLIENTRUNDIR)/resource/rsc0000.rsb $(BLAKSERVRUNDIR)/rsc/*.rsc
 
 $(BOFS) $(BOFS2) $(BOFS3) $(BOFS4) $(BOFS5) $(BOFS6) $(BOFS7) $(BOFS8): $(DEPEND)
 
 clean :
-	@-$(RM) *.bof *.rsc kodbase.txt >nul 2>&1
-	@-for i in $(BOFS:.bof=.); do \
-		cd %i; \
-		$(MAKE) $(MAKEFLAGS) TOPDIR=../$(TOPDIR) clean; \
+	@-$(RM) *.bof *.rsc kodbase.txt 2>&1
+	@-for i in $(BOFS:.bof=); do \
+		cd $$i; \
+        sed -e "s/\!include/include/" \
+            -e "s/common.mak/common.mak.linux/" \
+            -e "s/\\\\kod.mak/\/kod.mak.linux/" \
+            -e "/include/ s:\\\\:\/:" \
+            -e "/TOPDIR/ s:\\\\:\/:" \
+            -e "/kod.mak/ s:\\\\:\/:" \
+            -e "/DEPEND/ s:\\\\:\/:" \
+                makefile >makefile.linux; \
+		$(MAKE) -sf makefile.linux TOPDIR=../$(TOPDIR) clean; \
+		$(RM) makefile.linux; \
 		cd ..; \
 	done
-	@-$(RM) $(BLAKSERVRUNDIR)/rsc/*.rsc >nul 2>&1
-	@-$(RM) $(BLAKSERVRUNDIR)/loadkod/*.bof >nul 2>&1
-	@-$(RM) $(BLAKSERVRUNDIR)/memmap/*.bof >nul 2>&1
+	$(RM) $(BLAKSERVRUNDIR)/rsc/*.rsc 2>&1
+	$(RM) $(BLAKSERVRUNDIR)/loadkod/*.bof 2>&1
+	$(RM) $(BLAKSERVRUNDIR)/memmap/*.bof 2>&1
 
