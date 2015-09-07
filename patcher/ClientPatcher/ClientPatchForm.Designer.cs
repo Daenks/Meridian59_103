@@ -90,7 +90,8 @@
             this.label1.Text = "Server Selection";
             // 
             // ddlServer
-            // 
+            //
+            this.ddlServer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddlServer.FormattingEnabled = true;
             this.ddlServer.Location = new System.Drawing.Point(15, 57);
             this.ddlServer.Name = "ddlServer";
