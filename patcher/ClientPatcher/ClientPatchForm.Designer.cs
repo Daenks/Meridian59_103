@@ -353,7 +353,7 @@
             this.Controls.Add(this.btnPlay);
             this.Controls.Add(this.pbProgress);
             this.Controls.Add(this.txtLog);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ClientPatchForm";
             this.Text = "OpenMeridian Client Patcher";
