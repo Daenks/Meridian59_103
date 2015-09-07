@@ -136,9 +136,9 @@
             this.gbOptions.Controls.Add(this.btnStartModify);
             this.gbOptions.Controls.Add(this.btnRemove);
             this.gbOptions.Controls.Add(this.btnAdd);
-            this.gbOptions.Location = new System.Drawing.Point(300, 12);
+            this.gbOptions.Location = new System.Drawing.Point(300, 14);
             this.gbOptions.Name = "gbOptions";
-            this.gbOptions.Size = new System.Drawing.Size(522, 321);
+            this.gbOptions.Size = new System.Drawing.Size(520, 318);
             this.gbOptions.TabIndex = 10;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
