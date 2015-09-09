@@ -68,7 +68,7 @@ config_table_type config_table[] =
 { SOCKET_GROUP,           F, "[Socket]",      CONFIG_GROUP, "" },
 { SOCKET_PORT,            F, "Port",          CONFIG_INT,   "5959" },
 { SOCKET_MAINTENANCE_PORT,F, "MaintenancePort",CONFIG_INT,  "9998" },
-{ SOCKET_MAINTENANCE_MASK,F, "MaintenanceMask",CONFIG_STR,  "208.192.72.0" },
+{ SOCKET_MAINTENANCE_MASK,F, "MaintenanceMask",CONFIG_STR,  "::ffff:127.0.0.1" },
 { SOCKET_DNS_LOOKUP,      T, "DNSLookup",     CONFIG_BOOL,  "No" },
 { SOCKET_NAGLE,           F, "Nagle",         CONFIG_BOOL,  "Yes" },
 { SOCKET_BLOCK_TIME,      T, "BlockTime",     CONFIG_INT,   "300" }, /* seconds */
@@ -79,6 +79,7 @@ config_table_type config_table[] =
 { CHANNEL_LOG_DISK,       F, "LogDisk",       CONFIG_BOOL,  "No" },
 { CHANNEL_FLUSH,          T, "Flush",         CONFIG_BOOL,  "No" },
 { CHANNEL_GOD_DISK,       T, "GodDisk",       CONFIG_BOOL,  "Yes" },
+{ CHANNEL_ADMIN_DISK,     T, "AdminDisk",     CONFIG_BOOL,  "Yes" },
 
 { GUEST_GROUP,            F, "[Guest]",       CONFIG_GROUP, "" },
 { GUEST_ACCOUNT,          F, "Account",       CONFIG_STR,   "GUEST" },

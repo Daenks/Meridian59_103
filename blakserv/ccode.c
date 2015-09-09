@@ -53,6 +53,100 @@ int C_Invalid(int object_id,local_var_type *local_vars,
 	return NIL;
 }
 
+/*
+ * C_SaveGame: Performs a system save, but without garbage collection. We
+ *    can't garbage collect when the game is saved from blakod as object,
+ *    list, timer and string references (in local vars) may be incorrect when
+ *    control passes back to the calling message. Returns a blakod string
+ *    containing the time of the saved game if successful.
+ */
+int C_SaveGame(int object_id,local_var_type *local_vars,
+               int num_normal_parms,parm_node normal_parm_array[],
+               int num_name_parms,parm_node name_parm_array[])
+{
+   val_type ret_val;
+   int save_time = 0;
+   string_node *snod;
+   char timeStr[15];
+
+   PauseTimers();
+   lprintf("C_SaveGame saving game\n");
+   save_time = SaveAll();
+   UnpauseTimers();
+
+   // Check for a sane time value.
+   if (save_time < 0 || save_time > INT_MAX)
+   {
+      bprintf("C_SaveGame got invalid save game time!");
+      return NIL;
+   }
+
+   ret_val.v.tag = TAG_STRING;
+   ret_val.v.data = CreateString("");
+
+   snod = GetStringByID(ret_val.v.data);
+   if (snod == NULL)
+   {
+      bprintf("C_SaveGame can't set invalid string %i,%i\n",
+         ret_val.v.tag, ret_val.v.data);
+      return NIL;
+   }
+
+   // Make a string with the save game time.
+   sprintf(timeStr, "%d", save_time);
+
+   // Make a blakod string using the string value of the save game time.
+   SetString(snod, timeStr, 10);
+
+   return ret_val.int_val;
+}
+
+/*
+ * C_LoadGame: Takes a blakod string as a parameter, which contains a save
+ *    game time.  Posts a message to the blakserv main thread which triggers
+ *    a load game, using the save game time value sent in the message. All
+ *    users are disconnected when the game reload triggers.
+ */
+int C_LoadGame(int object_id, local_var_type *local_vars,
+               int num_normal_parms, parm_node normal_parm_array[],
+               int num_name_parms, parm_node name_parm_array[])
+{
+   val_type game_val;
+   string_node *snod;
+   int save_time = 0;
+
+   game_val = RetrieveValue(object_id, local_vars, normal_parm_array[0].type,
+      normal_parm_array[0].value);
+
+   if (game_val.v.tag != TAG_STRING)
+   {
+      bprintf("C_LoadGame can't process invalid string %i,%i\n",
+         game_val.v.tag, game_val.v.data);
+      return NIL;
+   }
+
+   snod = GetStringByID(game_val.v.data);
+   if (snod == NULL)
+   {
+      bprintf("C_LoadGame can't get invalid string %i,%i\n",
+         game_val.v.tag, game_val.v.data);
+      return NIL;
+   }
+
+   // Convert string time to integer.
+   save_time = atoi(snod->data);
+
+   // Check for a sane time value.
+   if (save_time < 0 || save_time > INT_MAX)
+   {
+      bprintf("C_LoadGame got invalid save game time!");
+      return NIL;
+   }
+
+   PostThreadMessage(main_thread_id, WM_BLAK_MAIN_LOAD_GAME, 0, save_time);
+
+   return NIL;
+}
 
 int C_AddPacket(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
@@ -476,7 +570,7 @@ int C_SendMessage(int object_id,local_var_type *local_vars,
 {
    val_type object_val,message_val;
 
-   /* Get the object (or class or int 0) to which we are sending the message */
+   /* Get the object (or class or int) to which we are sending the message */
    /* Not to be confused with object_id, which is the 'self' object sending the message */
    object_val = RetrieveValue(object_id, local_vars, normal_parm_array[0].type,
       normal_parm_array[0].value);
@@ -505,31 +599,28 @@ int C_SendMessage(int object_id,local_var_type *local_vars,
       }
    }
 
-   /* Special:  sending to int 0 goes to system */
-   if (object_val.v.tag == TAG_INT && object_val.v.data == 0)
+   if (object_val.v.tag == TAG_OBJECT)
+      return SendBlakodMessage(object_val.v.data, message_val.v.data, num_name_parms, name_parm_array);
+
+   if (object_val.v.tag == TAG_INT)
    {
-      /* Allowed to send to INT 0 rather than OBJECT 0 (obsolete but backwards compatible) */
-      object_val.v.data = GetSystemObjectID();
-   }
-   else if (object_val.v.tag == TAG_CLASS)
-   {
-      /* allowed to send to TAG_CLASS (below) */
-   }
-   else if (object_val.v.tag != TAG_OBJECT)
-   {
-      /* Assumes object_id (the current 'self') is a valid object */
-      bprintf("C_SendMessage OBJECT %i CLASS %s can't send MESSAGE %s (%i) to non-object %i,%i\n",
-         object_id,
-         GetClassByID(GetObjectByID(object_id)->class_id)->class_name,
-         GetNameByID(message_val.v.data), message_val.v.data,
-         object_val.v.tag,object_val.v.data);
-         return NIL;
+      /* Can send to built-in objects using constants. */
+      object_val.v.data = GetBuiltInObjectID(object_val.v.data);
+      if (object_val.v.data > INVALID_OBJECT)
+         return SendBlakodMessage(object_val.v.data, message_val.v.data,
+                     num_name_parms, name_parm_array);
    }
 
    if (object_val.v.tag == TAG_CLASS)
-      return SendBlakodClassMessage(object_val.v.data,message_val.v.data,num_name_parms,name_parm_array);
-   else
-      return SendBlakodMessage(object_val.v.data,message_val.v.data,num_name_parms,name_parm_array);
+      return SendBlakodClassMessage(object_val.v.data, message_val.v.data, num_name_parms, name_parm_array);
+
+   /* Assumes object_id (the current 'self') is a valid object */
+   bprintf("C_SendMessage OBJECT %i CLASS %s can't send MESSAGE %s (%i) to non-object %i,%i\n",
+      object_id,
+      GetClassByID(GetObjectByID(object_id)->class_id)->class_name,
+      GetNameByID(message_val.v.data), message_val.v.data,
+      object_val.v.tag,object_val.v.data);
+   return NIL;
 }
 
 int C_PostMessage(int object_id,local_var_type *local_vars,
@@ -1849,7 +1940,7 @@ int C_IsTimer(int object_id,local_var_type *local_vars,
 		return ret_val.int_val;
 	}
 	
-	if (var_check.v.tag == TAG_TIMER || var_check.v.tag == TAG_NIL)
+	if (var_check.v.tag == TAG_TIMER)
 		ret_val.v.data = True;
 	else
 		ret_val.v.data = False;
@@ -2862,6 +2953,44 @@ int C_Nth(int object_id,local_var_type *local_vars,
 	return Nth(n_val.v.data,list_val.v.data);
 }
 
+/*
+ * C_IsListMatch:  takes two lists, checks the values of each element
+ *    in the lists and returns TRUE if the elements are identical, FALSE
+ *    otherwise. Elements are identical if they have the same int_val
+ *    (tag AND data type) except in the case of TAG_LIST, in which case
+ *    the list contents must be identical but the list node number does not
+ *    need to be.
+ */
+int C_IsListMatch(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[])
+{
+   val_type ret_val, list_one, list_two;
+   ret_val.v.tag = TAG_INT;
+   ret_val.v.data = False;
+
+   list_one = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+      normal_parm_array[0].value);
+   if (list_one.v.tag != TAG_LIST)
+   {
+      bprintf("C_IsListMatch object %i can't check non-list one %i,%i\n",
+         object_id, list_one.v.tag, list_one.v.data);
+      return ret_val.int_val;
+   }
+
+   list_two = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
+      normal_parm_array[1].value);
+   if (list_two.v.tag != TAG_LIST)
+   {
+      bprintf("C_IsListMatch object %i can't check non-list two %i,%i\n",
+         object_id, list_two.v.tag, list_two.v.data);
+      return ret_val.int_val;
+   }
+
+   ret_val.v.data = IsListMatch(list_one.v.data, list_two.v.data);
+   return ret_val.int_val;
+}
+
 int C_List(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
 		   int num_name_parms,parm_node name_parm_array[])
@@ -3104,6 +3233,23 @@ int C_FindListElem(int object_id,local_var_type *local_vars,
 	return ret_val.int_val;
 }
 
+/*
+ * C_GetTimeZoneOffset: returns the amount of seconds that must be added
+ *                      to local time to equal UTC. Conversely, subtracting
+ *                      this number from UTC (GetTime()) equals local time.
+ */
+int C_GetTimeZoneOffset(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[])
+{
+   val_type ret_val;
+
+   ret_val.v.tag = TAG_INT;
+   ret_val.v.data = GetTimeZoneOffset();
+
+   return ret_val.int_val;
+}
+
 int C_GetTime(int object_id,local_var_type *local_vars,
 			  int num_normal_parms,parm_node normal_parm_array[],
 			  int num_name_parms,parm_node name_parm_array[])
@@ -3291,40 +3437,64 @@ int C_Bound(int object_id,local_var_type *local_vars,
 }
 
 int C_CreateTable(int object_id,local_var_type *local_vars,
-				  int num_normal_parms,parm_node normal_parm_array[],
-				  int num_name_parms,parm_node name_parm_array[])
+                  int num_normal_parms,parm_node normal_parm_array[],
+                  int num_name_parms,parm_node name_parm_array[])
 {
-	val_type ret_val;
-	
-	ret_val.v.tag = TAG_INT;
-	ret_val.v.data = CreateTable(2999);
-	
-	return ret_val.int_val;
-	
+   val_type ret_val, size_val;
+
+   if (num_normal_parms == 0)
+      size_val.v.data = 73;
+   else
+   {
+      size_val = RetrieveValue(object_id, local_vars, normal_parm_array[0].type,
+         normal_parm_array[0].value);
+      if (size_val.v.tag != TAG_INT)
+      {
+         bprintf("C_CreateTable can't use non-int %i,%i for size\n",
+            size_val.v.tag, size_val.v.data);
+         size_val.v.data = 73;
+      }
+   }
+
+   ret_val.v.tag = TAG_TABLE;
+   ret_val.v.data = CreateTable(size_val.v.data);
+
+   return ret_val.int_val;
 }
 
 int C_AddTableEntry(int object_id,local_var_type *local_vars,
 					int num_normal_parms,parm_node normal_parm_array[],
 					int num_name_parms,parm_node name_parm_array[])
 {
-	val_type int_val,key_val,data_val;
+	val_type table_val,key_val,data_val;
 	
 	
-	int_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+	table_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
 		normal_parm_array[0].value);
-	if (int_val.v.tag != TAG_INT)
+	if (table_val.v.tag != TAG_TABLE)
 	{
-		bprintf("C_AddTableEntry can't use table id %i,%i\n",int_val.v.tag,int_val.v.data);
+		bprintf("C_AddTableEntry can't use table id %i,%i\n",table_val.v.tag,table_val.v.data);
 		return NIL;
 	}
 	
 	key_val = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
 		normal_parm_array[1].value);
 	
+   // Can't use key value that might change. Strings are okay,
+   // because the string itself is hashed.
+   if (key_val.v.tag == TAG_OBJECT || key_val.v.tag == TAG_LIST
+      || key_val.v.tag == TAG_TIMER || key_val.v.tag == TAG_TABLE
+      || key_val.v.tag == TAG_CLASS)
+   {
+      bprintf("C_AddTableEntry can't use key id %i,%i\n",
+         key_val.v.tag, key_val.v.data);
+      return NIL;
+   }
+
 	data_val = RetrieveValue(object_id,local_vars,normal_parm_array[2].type,
 		normal_parm_array[2].value);
 	
-	InsertTable(int_val.v.data,key_val,data_val);
+	InsertTable(table_val.v.data,key_val,data_val);
 	return NIL;
 }
 
@@ -3332,21 +3502,21 @@ int C_GetTableEntry(int object_id,local_var_type *local_vars,
 					int num_normal_parms,parm_node normal_parm_array[],
 					int num_name_parms,parm_node name_parm_array[])
 {
-	val_type int_val,key_val,ret_val;
+	val_type table_val,key_val,ret_val;
 	
 	
-	int_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+	table_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
 		normal_parm_array[0].value);
-	if (int_val.v.tag != TAG_INT)
+	if (table_val.v.tag != TAG_TABLE)
 	{
-		bprintf("C_GetTableEntry can't use table id %i,%i\n",int_val.v.tag,int_val.v.data);
+		bprintf("C_GetTableEntry can't use table id %i,%i\n",table_val.v.tag,table_val.v.data);
 		return NIL;
 	}
 	
 	key_val = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
 		normal_parm_array[1].value);
 	
-	ret_val.int_val = GetTableEntry(int_val.v.data,key_val);
+	ret_val.int_val = GetTableEntry(table_val.v.data,key_val);
 	return ret_val.int_val;
 }
 
@@ -3354,21 +3524,21 @@ int C_DeleteTableEntry(int object_id,local_var_type *local_vars,
 					   int num_normal_parms,parm_node normal_parm_array[],
 					   int num_name_parms,parm_node name_parm_array[])
 {
-	val_type int_val,key_val;
+	val_type table_val,key_val;
 	
 	
-	int_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+	table_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
 		normal_parm_array[0].value);
-	if (int_val.v.tag != TAG_INT)
+	if (table_val.v.tag != TAG_TABLE)
 	{
-		bprintf("C_DeleteTableEntry can't use table id %i,%i\n",int_val.v.tag,int_val.v.data);
+		bprintf("C_DeleteTableEntry can't use table id %i,%i\n",table_val.v.tag,table_val.v.data);
 		return NIL;
 	}
 	
 	key_val = RetrieveValue(object_id,local_vars,normal_parm_array[1].type,
 		normal_parm_array[1].value);
 	
-	DeleteTableEntry(int_val.v.data,key_val);
+	DeleteTableEntry(table_val.v.data,key_val);
 	return NIL;
 }
 
@@ -3376,21 +3546,38 @@ int C_DeleteTable(int object_id,local_var_type *local_vars,
 				  int num_normal_parms,parm_node normal_parm_array[],
 				  int num_name_parms,parm_node name_parm_array[])
 {
-	val_type int_val;
+	val_type table_val;
 	
-	
-	int_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+	table_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
 		normal_parm_array[0].value);
-	if (int_val.v.tag != TAG_INT)
+	if (table_val.v.tag != TAG_TABLE)
 	{
-		bprintf("C_DeleteTable can't use table id %i,%i\n",int_val.v.tag,int_val.v.data);
+		bprintf("C_DeleteTable can't use table id %i,%i\n",table_val.v.tag,table_val.v.data);
 		return NIL;
 	}
-	
-	DeleteTable(int_val.v.data);
+	bprintf("C_DeleteTable is deprecated, tables are deleted at GC.\n");
+	//DeleteTable(table_val.v.data);
 	return NIL;
 }
 
+int C_IsTable(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[])
+{
+   val_type check_val, ret_val;
+
+   ret_val.v.tag = TAG_INT;
+
+   check_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+      normal_parm_array[0].value);
+
+   if (check_val.v.tag == TAG_TABLE && GetTableByID(check_val.v.data))
+      ret_val.v.data = True;
+   else
+      ret_val.v.data = False;
+
+   return ret_val.int_val;
+}
 
 int C_RecycleUser(int object_id,local_var_type *local_vars,
 				  int num_normal_parms,parm_node normal_parm_array[],
@@ -3687,41 +3874,38 @@ int C_GetSessionIP(int object_id,local_var_type *local_vars,
             int num_name_parms,parm_node name_parm_array[])
 {
    val_type session_id, temp, ret_val;
-   int ip;
+   session_node* session = NULL;
    
    session_id = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
       normal_parm_array[0].value);
       
    
-	if (session_id.v.tag != TAG_SESSION)
+   if (session_id.v.tag != TAG_SESSION)
    {
       bprintf("C_GetSessionIP can't use non session %i,%i\n",session_id.v.tag,session_id.v.data);
       return NIL;
    }
 
-   ip = GetIPBySessionId(session_id.v.data);
+   session = GetSessionByID(session_id.v.data);
+   
+   if (!session)
+   {
+      bprintf("C_GetSessionIP can't find session for %i,%i\n", session_id.v.tag, session_id.v.data);
+      return NIL;
+   }
    
    ret_val.int_val = NIL;
-   
    temp.v.tag = TAG_INT;
    
-   temp.v.data = (ip >> 24) & 0xFF;
-   ret_val.v.data = Cons(temp,ret_val);
-   ret_val.v.tag = TAG_LIST;
-   
-   temp.v.data = (ip >> 16) & 0xFF;
-   ret_val.v.data = Cons(temp,ret_val);
-   ret_val.v.tag = TAG_LIST;
-   
-   temp.v.data = (ip >> 8) & 0xFF;
-   ret_val.v.data = Cons(temp,ret_val);
-   ret_val.v.tag = TAG_LIST;
-   
-   temp.v.data = ip & 0xFF;
-   ret_val.v.data = Cons(temp,ret_val);
-   ret_val.v.tag = TAG_LIST;
-   	
-	return ret_val.int_val;  
+   // reverse the order, because the address is stored in network order in in6_addr
+   for (int i = sizeof(struct in6_addr) - 1; i >= 0; i--)
+   {
+      temp.v.data = session->conn.addr.u.Byte[i];
+      ret_val.v.data = Cons(temp, ret_val);
+      ret_val.v.tag = TAG_LIST;
+   }
+
+   return ret_val.int_val;
 }
 
 int C_SetClassVar(int object_id,local_var_type *local_vars,

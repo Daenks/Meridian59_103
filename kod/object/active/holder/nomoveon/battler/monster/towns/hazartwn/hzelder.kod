@@ -102,7 +102,7 @@ messages:
       {
          if Send(what,@FindHolding,#class=&StatsResetToken) <> $
             OR (Send(what,@GetBaseMaxHealth)
-               <= Send(Send(SYS,@GetSettings),@GetFreeStatsResetCap))
+               <= Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
          {
             Send(what,@SendStatChange);
          }
@@ -175,7 +175,8 @@ messages:
             SID_HOLY_SYMBOL,
             SID_MINOR_HEAL,
             SID_DETECT_EVIL,
-            SID_BREATH_OF_LIFE
+            SID_BREATH_OF_LIFE,
+            SID_UNHOLY_TOUCH
          ],
       $];
 

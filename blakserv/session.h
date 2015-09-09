@@ -55,7 +55,7 @@ typedef struct
    
    char name[100];
 
-   struct in_addr addr;
+   struct in6_addr addr;
 } connection_node;
 
 typedef struct
@@ -173,7 +173,6 @@ void ForEachSession(void (*callback_func)(session_node *s));
 int GetUsedSessions(void);
 const char * GetStateName(session_node *s);
 session_node *GetSessionByID(int session_id);
-int GetIPBySessionId(int session_id);
 void SetSessionState(session_node *s,int state);
 void SetSessionTimer(session_node *s,int seconds);
 void ClearSessionTimer(session_node *s);
@@ -183,6 +182,7 @@ Bool PeekSessionBytes(session_node *s,int num_bytes,void *buf);
 void SendClientStr(int session_id,char *str);
 void SendClient(int session_id,char *data,unsigned short len_data);
 void SendClientBufferList(int session_id,buffer_node *blist);
+void HangupSessionNow(session_node *s);
 void HangupSession(session_node *s);
 void CloseAllSessions(void);
 void PollSessions(void);
