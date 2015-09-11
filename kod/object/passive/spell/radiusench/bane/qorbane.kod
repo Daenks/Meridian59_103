@@ -1,0 +1,81 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+QorBane is BaneEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   QorBane_name_rsc = "Qorbane"
+   QorBane_icon_rsc = iqorbane.bgf
+   QorBane_desc_rsc = \
+      "Permeates an area with the holy essence of Shal'ille, harming any who "
+      "attempt to call on the evil energy of Qor. "
+      "Requires yrxl sap and fairy wings to cast."
+
+   QorBane_HurtCaster = "As you utter the final syllables of your spell, a "
+                        "wash of holy power passes through your body, "
+                        "scalding you with purity."
+   QorBane_kills_you = "As you utter the final syllables of your spell, a "
+                       "wash of holy power passes through your body. The "
+                       "wave of purity is too much for you to stand, "
+                       "and you expire."
+
+   QorBane_sound = sqrbane.wav
+
+   QorBane_cast = "A magical force enters the area, filling the air with a "
+                  "sweet odor. Everything around you seems to glow almost "
+                  "imperceptibly, radiating holy energy."
+   QorBane_starts = "%s summons a holy swell of energy!"
+   QorBane_ends = "The holy field of energy dissipates."
+   QorBane_caster_ends = "The holy energy leaves the area around you."
+   QorBane_caster_enter = "The holy energy surrounds you, protecting you "
+                          "from evil magics."
+   QorBane_enter = "A holy energy surrounds you."
+   QorBane_leave = "The holy energy around you dissipates."
+
+classvars:
+
+   radius_ench_cast = QorBane_cast
+   radius_ench_starts = QorBane_starts
+   radius_ench_ends = QorBane_ends
+   radius_ench_caster_ends = QorBane_caster_ends
+   radius_ench_caster_enter = QorBane_caster_enter
+   radius_ench_enter = QorBane_enter
+   radius_ench_leave = QorBane_leave
+   
+   vrBaneHurt = QorBane_HurtCaster
+   vrBaneKills = QorBane_kills_you
+
+   vrIcon = QorBane_icon_rsc
+   vrDesc = QorBane_desc_rsc
+   vrName = QorBane_name_rsc   
+
+   viSpell_num = SID_QORBANE
+   viSchool = SS_SHALILLE
+
+   vrSucceed_wav = QorBane_sound
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
+   
+   viBanedSchool = SS_QOR
+   viRetaliationDamageType = ATCK_SPELL_HOLY
+
+properties:
+
+messages:
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

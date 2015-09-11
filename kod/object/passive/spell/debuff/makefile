@@ -12,6 +12,7 @@ BOFS = blind.bof \
        forget.bof \
        hold.bof \
        seduce.bof \
-       vertigo.bof
+       vertigo.bof \
+       hex.bof
 
 !include $(KODDIR)\kod.mak

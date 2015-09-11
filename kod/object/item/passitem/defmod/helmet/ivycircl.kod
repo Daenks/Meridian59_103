@@ -63,12 +63,30 @@ messages:
       % Uses different file for the overlay.
       return IvyCirclet_overlay_rsc;
    }
-   
+
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,-10],
-               [-ATCK_SPELL_UNHOLY,-20]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [-ATCK_SPELL_FIRE,-10],
+                  [-ATCK_SPELL_UNHOLY,-20]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [-ATCK_SPELL_FIRE,-10],
+                  [-ATCK_SPELL_UNHOLY,-20]
+                ];
+      }
+      
+      return [];
    }
 
    ReqUse()

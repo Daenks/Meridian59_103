@@ -70,6 +70,8 @@ properties:
 
    % Duration of the red pain effect after spell wears off.
    piPainDuration = 8000 % Recommended value 1000
+   
+   piUseHexBehavior = TRUE
 
 messages:
 

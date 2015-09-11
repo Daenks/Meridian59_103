@@ -1,0 +1,97 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FocusedMind is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   FocusedMind_name_rsc = "focused mind"
+   FocusedMind_icon_rsc = irestor.bgf
+   FocusedMind_desc_rsc = \
+      "A master stance that aids regeneration of health at the cost of "
+      "spiritual rejuvenation."
+   
+   FocusedMind_begin = \
+      "The world sharpens and comes into focus as you let mana flow through "
+      "you."
+   FocusedMind_end = "You relax your thoughts."
+
+classvars:
+
+   vrName = FocusedMind_name_rsc
+   vrIcon = FocusedMind_icon_rsc
+   vrDesc = FocusedMind_desc_rsc
+   
+   stance_begin_msg = FocusedMind_begin
+   stance_end_msg = FocusedMind_end   
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_FOCUSED_MIND
+   viSchool = SKS_FENCING
+   viSkill_Level = 6
+   viChance_to_Increase = 15
+   viMeditate_ratio = 500
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+
+   ModifyRegenerationTime(who=$,iTime=60000)
+   {
+      local iFocusedMindAbility, iStat, iTimeReduction;
+
+      iFocusedMindAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      % 3% base, up to 33% from skill and 14% from stat, total 50%
+      iTimeReduction = 3 + (iFocusedMindAbility / 3) + (iStat / 5);
+      iTimeReduction = bound(iTimeReduction,3,50);
+
+      Send(self,@ImproveAbility,#who=who);
+      
+      return iTime * (100-iTimeReduction) / 100;
+   }
+
+   ModifyRejuvenationTime(who=$,iTime=60000)
+   {
+      local iFocusedMindAbility, iStat, iTimeIncrease;
+
+      iFocusedMindAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      % Up to twice as slow mana time
+      iTimeIncrease = ((iFocusedMindAbility+1)*2);
+      iTimeIncrease = bound(iTimeIncrease,100,200);
+
+      Send(self,@ImproveAbility,#who=who);
+      
+      return iTime * iTimeIncrease / 100;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

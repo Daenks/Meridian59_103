@@ -71,8 +71,26 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_ALL,15]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,5],
+                  [-ATCK_SPELL_ALL,-5]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [-ATCK_SPELL_ALL,15]
+                ];
+      }
+      
+      return [];
    }
 
    CanShatter()

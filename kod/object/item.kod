@@ -109,6 +109,8 @@ classvars:
 
    % How much this item will help or hinder spell usage.
    viSpell_modifier = 0
+   % Used instead of viSpell_modifier if penalty percentage system is in use
+   viSpell_penalty_percentage = 0
 
    vrIcon_male       = $
    vrIcon_female     = $
@@ -2041,9 +2043,23 @@ messages:
 
    GetBaseSpellModifier(oSpell=$)
    {
-      % Doing it this way, we can have different items give different bonuses
-      %  in different situations, while still giving itematt bonuses.
-      return viSpell_modifier;
+      local iSpellpowerPenaltySystem;
+
+      iSpellpowerPenaltySystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetSpellpowerPenaltySystem);
+
+      if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_PERCENTAGE
+      {
+         return viSpell_penalty_percentage;
+      }
+
+      if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_CLASSIC
+      {
+         return viSpell_modifier;
+      }
+
+      return 0;
    }
 
    GetSpellModifier(oSpell=$)

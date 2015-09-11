@@ -1,0 +1,272 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Throw is Stroke
+
+constants:
+
+   include blakston.khd
+
+resources:
+   throw_name_rsc = "throw"
+   throw_icon_rsc = slashico.bgf
+   throw_desc_rsc = "Allows a trained warrior to throw daggers."
+
+   throw_skill_intro = "Banditry Lv. 3: Basic skill at throwing small blades."
+   
+   dagger_new_ammo = "You reach for your %s and fling one forward."
+   dagger_no_ammo = "You have no throwing daggers ready!"
+   
+   dagger_ammo_name = "throwing dagger"
+
+classvars:
+
+   vrName = throw_name_rsc
+   vrIcon = throw_icon_rsc
+   vrDesc = throw_desc_rsc
+
+   vrSkill_intro = throw_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_BANDITRY
+   viSkill_Num = SKID_THROW
+   viSkill_level = 4
+   viChance_to_increase = 50
+   viMeditate_ratio = 30
+
+   viskillExertion = 2
+   vbCheck_exertion = FALSE
+
+   viDamage_factor = 100
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+
+messages:
+
+   TryThrow(who=$,what=$,use_weapon=$)
+   {
+      Send(who,@TryAttack,#what=what,#use_weapon=use_weapon,#stroke_obj=self);
+   
+      return;
+   }
+   
+   GetAttackName()
+   {
+      return dagger_ammo_name;
+   }
+   
+   GetDamageType(who=$)
+   {
+      local daggers, i;
+
+      daggers = $;
+      foreach i in Send(who,@GetPlayerUsing)
+      {
+         if Send(i,@GetItemUseType) = ITEM_USE_THROWING_DAGGERS
+         {
+            daggers = i;
+         }
+      }
+      
+      return Send(daggers,@GetDamageType);
+   }
+   
+   GetSpellType(who=$)
+   {
+      local daggers, i;
+
+      daggers = $;
+      foreach i in Send(who,@GetPlayerUsing)
+      {
+         if Send(i,@GetItemUseType) = ITEM_USE_THROWING_DAGGERS
+         {
+            daggers = i;
+         }
+      }
+      
+      return Send(daggers,@GetSpellType);
+   }
+
+   CheckWeaponAndDoAnimation(who=$,weapon_used=$,victim=$)
+   "Can throw with or without a weapon equipped."
+   {
+      if weapon_used = $
+         OR IsClass(weapon_used,&TouchAttackSpell)
+      {
+         return TRUE;
+      }
+
+      return send(weapon_used,@ReqWeaponAttack,#what=victim);
+   }
+   
+   GetRange(weapon_used=$)
+   {
+      if weapon_used = $
+         OR IsClass(weapon_used,&Dagger)
+      {
+         return 8*64;
+      }
+      return 5*64;
+   }
+
+   FindLikelyAmmo(who=$,report=FALSE)
+   {
+      local oWeapon, oLikelyAmmo, oAmmo, cAmmoType, iAmmoValue, i;
+      
+      cAmmoType = AMMO_DAGGER;
+
+      oLikelyAmmo = $;
+
+      foreach i in Send(who,@GetPlayerUsing)
+      {
+         if Send(i,@GetItemUseType) = ITEM_USE_THROWING_DAGGERS
+         {
+            oLikelyAmmo = i;
+         }
+      }
+
+      if oLikelyAmmo = $
+      {
+         iAmmoValue = 1000000; % higher than any ammo value
+
+         %% if the player doesn't have any arrows available and equipped,
+         %% auto-equip the cheapest ones.
+
+         foreach i in Send(who,@GetHolderPassive)
+         {
+            if Send(i,@GetItemUseType) = ITEM_USE_THROWING_DAGGERS
+               AND Send(i,@GetAmmoType) = cAmmoType
+               AND (Send(i,@GetValue)/Send(i,@GetNumber)) < iAmmoValue
+            {
+               oLikelyAmmo = i;
+               iAmmoValue = Send(i,@GetValue)/Send(i,@GetNumber);
+            }
+         }
+         % Use the ammo!
+         if oLikelyAmmo <> $
+         {
+            Send(who,@TryUseItem,#what=oLikelyAmmo);
+         }
+      }
+
+      if report AND (oLikelyAmmo = $)
+      {
+         Send(who,@MsgSendUser,#message_rsc=dagger_no_ammo);
+      }
+
+      return oLikelyAmmo;
+   }
+
+   CanPayCosts(who=$,oTarget=$)
+   {
+      local oAmmo;
+
+      oAmmo = Send(self,@FindLikelyAmmo,#who=who,#report=TRUE);
+      if oAmmo <> $
+      {
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAim);
+   }
+
+   PayCosts(who=$)
+   {
+      local oAmmo, oRoom;
+
+      oRoom = Send(who,@GetOwner);
+      oAmmo = Send(self,@FindLikelyAmmo,#who=who);
+      if oAmmo = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=dagger_no_ammo);
+         return;
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=dagger_new_ammo,
+        #parm1=Send(oAmmo,@GetName));
+
+      Send(Send(who,@GetOwner),@SomethingShot,#who=who,
+        #target=Send(who,@GetKillTarget), #projectile=oAmmo);
+
+      if Send(oRoom,@NoReagents)=FALSE
+      {
+         Send(oAmmo,@SubtractNumber,#number=1);
+      }
+
+      propagate;
+   }
+
+   FindDamage(weapon_used=$, who=$, victim=$)
+   {
+      local i, daggers, skill_ability, damage;
+
+      daggers = $;
+      foreach i in Send(who,@GetPlayerUsing)
+      {
+         if Send(i,@GetItemUseType) = ITEM_USE_THROWING_DAGGERS
+         {
+            daggers = i;
+         }
+      }
+      
+      if daggers = $
+      {
+         return 1;
+      }
+      
+      % base weapon damage
+      damage = Random(Send(daggers,@GetMinDamage,#who=who,#target=victim),
+         Send(daggers,@GetMaxDamage,#who=who,#target=victim));
+      
+      % put in the individual skills factor
+      damage = (damage*viDamage_factor)/100;
+      
+      damage = send(self,@DamageFactors,#damage=damage,#who=who,
+         #weapon_used=daggers);
+
+      damage = damage * 100;
+
+      return bound(damage,1,$);
+   }
+
+   DamageFactors(damage=0,who=$,weapon_used=$)
+   "Different skills/strokes are affected by strength differently."
+   {
+      local iDamage, stat;
+
+      iDamage = damage;
+      iDamage = iDamage + (Send(weapon_used,@GetProf,#who=who)+1)*
+         viMaxProficiencyDamage/100;
+
+      % Get Aim damage bonus.
+      stat = Send(self,@GetRequisiteStat,#who=who);
+      iDamage = ((100+bound(stat-25,0,40))*iDamage)/100;
+
+      return iDamage;
+   }
+
+   IsRangedAttack()
+   {
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

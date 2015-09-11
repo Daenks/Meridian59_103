@@ -1,0 +1,177 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Backstab is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Backstab_name_rsc = "backstab"
+   Backstab_icon_rsc = bkswd.bgf
+   Backstab_desc_rsc = \
+      "With the proper skill and timing, an attack on an unsuspecting target "
+      "can be made devastating. "
+      "Daggers are the most powerful tools for precision strikes, although "
+      "other weapons will still be somewhat effective. "
+      "To attempt a backstab, attack an unsuspecting target while sneaking "
+      "and hiding."
+
+   Backstab_success = \
+      "Finding a weak point on your unexpecting target, you strike "
+      "%s a critical blow!"
+   Backstab_struck = \
+      "%s strikes you unexpectedly, dealing you a critical blow!"
+   
+   fail_to_hit = \
+      "Your target notices you at the last moment and evades "
+      "your backstab attempt!"
+
+classvars:
+
+   vrName = Backstab_name_rsc
+   vrIcon = Backstab_icon_rsc
+   vrDesc = Backstab_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_BACKSTAB
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 5
+   viChance_to_Increase = 10
+   viMeditate_ratio = 400
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAim);
+   }
+   
+   TryAutomaticHit(who=$,what=$)
+   {
+      local chance, iAgility, iAbility, iTargetHealth, 
+         iTargetMaxHealth, iDamageBonus;
+
+      % This skill can be used by both players and monsters.
+      iAgility = Send(who,@GetAgility);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=SKID_BACKSTAB);
+      
+      iTargetHealth = Send(what,@GetHealth);
+      if IsClass(what,&Player)
+      {
+         iTargetMaxHealth = Send(what,@GetMaxHealth);
+      }
+      if IsClass(what,&Monster)
+      {
+         iTargetMaxHealth = Send(what,@GetMaxHitPoints);
+      }
+      
+      if iTargetHealth >= iTargetMaxHealth * 95 / 100
+      {
+         if Send(who,@LookUpPlayerWeapon) = $
+            OR IsClass(Send(who,@LookUpPlayerWeapon),&Bow)
+         {
+            return FALSE;
+         }
+
+         if IsClass(Send(who,@LookUpPlayerWeapon),&Dagger)
+         {
+            chance = (iAbility+1) + (iAgility / 5);
+         }
+         else
+         {
+            chance = ((iAbility+1) + (iAgility / 5)) / 2;
+         }
+         
+         if chance > Random(0,100)
+         {
+            return TRUE;
+         }
+         Send(who,@MsgSendUser,#message_rsc=fail_to_hit);
+      }
+      
+      return FALSE;
+   }
+   
+   LastPriorityModifyDamage(who=$,what=$,damage=$)
+   {
+      local iAgility, iAbility, iTargetHealth, iTargetMaxHealth, iDamageBonus;
+      
+      Post(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@StopHiding,#who=who);
+      Post(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@StopSneaking,#who=who);
+
+      % This skill can be used by both players and monsters.
+      iAgility = Send(who,@GetAgility);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=SKID_BACKSTAB);
+      
+      iTargetHealth = Send(what,@GetHealth);
+      if IsClass(what,&Player)
+      {
+         iTargetMaxHealth = Send(what,@GetMaxHealth);
+      }
+      if IsClass(what,&Monster)
+      {
+         iTargetMaxHealth = Send(what,@GetMaxHitPoints);
+      }
+      
+      % Daggers up to 100% more damage from skill, and up to 70% more 
+      %    damage from stat
+      % Other melee weapons do half that
+      % No bonus for ranged
+      if iTargetHealth >= iTargetMaxHealth * 95 / 100
+      {
+         if Send(who,@LookUpPlayerWeapon) = $
+            OR IsClass(Send(who,@LookUpPlayerWeapon),&Bow)
+         {
+            return damage;
+         }
+
+         if IsClass(Send(who,@LookUpPlayerWeapon),&Dagger)
+         {
+            iDamageBonus = 100 + iAbility + 1 + iAgility;
+         }
+         else
+         {
+            iDamageBonus = 100 + (((iAbility+1) + iAgility) / 2);
+         }
+         
+         iDamageBonus = Bound(iDamageBonus,100,270);
+
+         Send(who,@MsgSendUser,#message_rsc=Backstab_success,
+            #parm1=Send(what,@GetName));
+         
+         If IsClass(what,&Player)
+         {
+            Send(what,@MsgSendUser,#message_rsc=Backstab_struck,
+               #parm1=Send(who,@GetName));
+         }
+
+         Send(self,@ImproveAbility,#who=who,#target=what);  
+         
+         return damage * iDamageBonus / 100;
+      }
+      
+      return damage;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

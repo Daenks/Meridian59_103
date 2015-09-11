@@ -1,0 +1,172 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Awareness is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Awareness_name_rsc = "awareness"
+   Awareness_icon_rsc = iblink.bgf
+   Awareness_desc_rsc = \
+      "Information is the key to battle. A good warrior, whether fighter "
+      "or mage, must train to remain aware of the movements of enemies. "
+      "Honing one's senses will allow a combatant to detect others entering "
+      " and leaving the area."
+
+   Awareness_skill_intro = \
+      "Banditry Lv. 1: The ability to sense when others enter "
+      "and leave the area."
+
+   Awareness_success_enter = "You sense %s entering the area."
+   Awareness_success_leave = "You sense %s leaving for %s."
+   Awareness_success_enter_alert = "~BYou sense %s entering the area!"
+   Awareness_success_leave_alert = "~BYou sense %s leaving for %s."
+   Awareness_sound = wscndwnd.wav
+   
+   Awareness_unknown_name = "someone"
+
+classvars:
+
+   vrName = Awareness_name_rsc
+   vrIcon = Awareness_icon_rsc
+   vrDesc = Awareness_desc_rsc
+
+   vrSkill_intro = Awareness_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_AWARENESS
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 1
+   viChance_to_Increase = 10
+   viMeditate_ratio = 10
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+   vbUtilitySkill = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+
+   DoSkill(who=$, oTarget=$)
+   {
+      local oSneak, iAdversarySneakiness, iAdversaryAgility, iAwareness,
+         iIntellect, chance, sAdversaryName;
+
+      if oTarget = $
+         OR NOT IsClass(oTarget,&Player)
+         OR Send(oTarget,@PlayerIsImmortal)
+         OR who = oTarget
+      {
+         return FALSE;
+      }
+
+      if NOT Send(who,@AllowPlayerAttack,#victim=oTarget,
+                        #report=FALSE,#actual=FALSE)
+      {
+         return FALSE;
+      }
+      
+      oSneak = Send(SYS,@FindSkillByNum,#num=SKID_SNEAK);
+      if Send(oSneak,@IsSneaking,#who=oTarget)
+      {
+         iAdversarySneakiness = Send(oTarget,@GetSkillAbility,
+            #skill_num=SKID_SNEAK);
+         iAdversaryAgility = Send(oSneak,@GetRequisiteStat,#who=who);
+      }
+      else
+      {
+         iAdversarySneakiness = 0;
+         iAdversaryAgility = 0;
+      }
+      
+      iAwareness = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iIntellect = Send(self,@GetRequisiteStat,#who=who);
+      
+      chance = (iAwareness + (iIntellect/2)) - (iAdversarySneakiness + 
+         (iAdversaryAgility/2));
+      
+      if chance > Random(0,100)
+      {
+         if (Send(oTarget,@IsInvisible)
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG2_DETECT_INVIS,
+               #flagset=2))
+            OR Send(oTarget,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
+            OR Send(oTarget,@IsMorphed)
+         {
+            sAdversaryName = Awareness_unknown_name;
+         }
+         else
+         {
+            sAdversaryName = Send(oTarget,@GetName);
+         }
+
+         if Send(oTarget,@GetOwner) <> $
+            AND Send(who,@GetOwner) <> $
+         {
+            if Send(oTarget,@GetOwner) = Send(who,@GetOwner)
+            {
+               if Send(who,@AllowPlayerAttack,#victim=oTarget,#report=FALSE,
+                  #actual=FALSE)
+               {
+                  Send(who,@MsgSendUser,
+                     #message_rsc=Awareness_success_enter_alert,
+                     #parm1=sAdversaryName);
+               }
+               else
+               {
+                  Send(who,@MsgSendUser,#message_rsc=Awareness_success_enter,
+                     #parm1=sAdversaryName);
+               }
+            }
+            else
+            {
+               if Send(who,@AllowPlayerAttack,#victim=oTarget,#report=FALSE,
+                  #actual=FALSE)
+               {
+                  Send(who,@MsgSendUser,
+                     #message_rsc=Awareness_success_leave_alert,
+                     #parm1=sAdversaryName,#parm2=Send(Send(oTarget,@GetOwner),
+                        @GetName));
+               }
+               else
+               {
+                  Send(who,@MsgSendUser,#message_rsc=Awareness_success_leave,
+                     #parm1=sAdversaryName,#parm2=Send(Send(oTarget,@GetOwner),
+                        @GetName));
+               }
+            }
+         }
+      }
+      else
+      {
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1490,36 +1490,6 @@ messages:
 
    SpellCast(who = $,oSpell = $,lItems = $,bItemCast = FALSE)
    {
-      local state, school, roomench;
-
-      % Skip these if the spell is cast by an item.
-      if bItemCast
-      {
-         propagate;
-      }
-
-      school = Send(oSpell,@GetSchool);
-
-      if school = SS_SHALILLE
-      {
-         roomench = Send(SYS,@FindSpellByNum,#num=SID_SHALILLEBANE);
-         state = Send(self,@GetEnchantmentState,#what=roomench);
-         if state <> $
-         {
-            Post(roomench,@HurtCaster,#shalCaster=who,#iSpellPower=state,
-                 #shalSpellLevel=Send(oSpell,@GetLevel));
-         }
-      }
-      else if school = SS_QOR
-      {
-         roomench = Send(SYS,@FindSpellByNum,#num=SID_QORBANE);
-         state = Send(self,@GetEnchantmentState,#what=roomench);
-         if state <> $
-         {
-            Post(roomench,@HurtCaster,#qorCaster=who,#iSpellPower=state,
-                 #qorSpellLevel=Send(oSpell,@GetLevel));
-         }
-      }
 
       propagate;
    }

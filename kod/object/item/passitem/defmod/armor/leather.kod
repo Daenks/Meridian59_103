@@ -43,7 +43,8 @@ classvars:
    viBulk = 150
 
    viSpell_modifier = 0
-
+   % Used instead of viSpell_modifier if penalty percentage system is in use
+   viSpell_penalty_percentage = 0
 
    vrIcon_male = Leatherarmor_male_icon_rsc
    vrIcon_female = Leatherarmor_female_icon_rsc
@@ -62,8 +63,26 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_ALL,5]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,10],
+                  [-ATCK_SPELL_ALL,30]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [ATCK_WEAP_ALL,5]
+                ];
+      }
+      
+      return [];
    }
 
    GetHeatDamage()

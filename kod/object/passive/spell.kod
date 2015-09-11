@@ -90,6 +90,11 @@ resources:
 
    spell_fail_wav = spelfail.wav
    spell_desc_rsc = "SCHOOL : %s         LEVEL : %i \n\n%s%s%s%r%r%r"
+   spell_school_witchery = "Witchery"
+   spell_school_witchery_xaerdun = "Witchery, through Xaerdun"
+   spell_school_witchery_nequzon = "Witchery, through Nequzon"
+   spell_school_witchery_iwodach = "Witchery, through Iwodach"
+   spell_school_witchery_raumlar = "Witchery, through Raumlar"
    spell_school_riija = "Riija"
    spell_school_shalille = "Shal'ille"
    spell_school_qor = "Qor"
@@ -161,6 +166,7 @@ classvars:
 
    viSpell_Num = $
    viSchool = $
+   viSubSchool = $
    viSpell_level = 1
 
    viMana = 1
@@ -238,6 +244,8 @@ properties:
    % to nerf spells that are being abused by under 30 HP mules.
    piMinHitPoints = 0
    piMeditate_ratio = 100
+   
+   piUseHexBehavior = FALSE
 
 messages:      
 
@@ -282,8 +290,27 @@ messages:
       {
          iSchool = viSchool;
       }
-
-      if iSchool = SS_RIIJA
+      
+      if iSchool = SS_WITCHERY
+      {
+         if viSubSchool = SSS_WITCHERY_XAERDUN
+         {
+            rSchool = spell_school_witchery_xaerdun;
+         }
+         if viSubSchool = SSS_WITCHERY_NEQUZON
+         {
+            rSchool = spell_school_witchery_nequzon;
+         }
+         if viSubSchool = SSS_WITCHERY_IWODACH
+         {
+            rSchool = spell_school_witchery_iwodach;
+         }
+         if viSubSchool = SSS_WITCHERY_RAUMLAR
+         {
+            rSchool = spell_school_witchery_raumlar;
+         }
+      }
+      else if iSchool = SS_RIIJA
       {
          rSchool = spell_school_riija;
       }
@@ -334,6 +361,7 @@ messages:
          Send(self,@SendTimeDesc,#who=who);
 
          if piMeditate_ratio = 0
+            OR Send(who,@GetSpellAbility,#spell_num=viSpell_num) = 99
          {
             AddPacket(4,spell_nothing);
          }
@@ -442,6 +470,7 @@ messages:
       if viSchool = SS_QOR
          OR viSchool = SS_SHALILLE
          OR viSchool = SS_FAREN
+         OR viSchool = SS_WITCHERY
       {
          return Send(who,@GetMysticism);
       }
@@ -677,6 +706,19 @@ messages:
             }
          }
 
+         % We've failed. Try will surge.
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_WILL_SURGE) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_WILL_SURGE),
+                            @AttemptVigorSacrifice,
+                            #who=who,
+                            #oSpell=self,
+                            #iSpellPower=iSpellPower)
+            {
+               return TRUE;
+            }
+         }
+
          Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
          Send(who,@MsgSendUser,#message_rsc=spell_insufficient_magic,
                #parm1=vrName);
@@ -757,6 +799,21 @@ messages:
                AND Send(oRing,@UseCharges,#iCharges=Send(self,@GetRingCharges))
             {
                return TRUE;
+            }
+
+            % We've failed. Let's try blood magic.
+            if NOT IsClass(self,&MultiCastSpell)
+               AND NOT IsClass(self,&TeleportationSpell)
+               AND Send(who,@GetSkillAbility,#Skill_num=SKID_BLOOD_MAGIC) > 0
+            {
+               if Send(Send(SYS,@FindSkillByNum,#num=SKID_BLOOD_MAGIC),
+                               @AttemptBloodSacrifice,
+                               #who=who,
+                               #oSpell=self,
+                               #iSpellPower=iSpellPower)
+               {
+                  return TRUE;
+               }
             }
 
             Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
@@ -1113,7 +1170,7 @@ messages:
             if lFinalTargets = $
                OR length(lFinalTargets) = 0
             {
-               if Send(self,@GetNumSpellTargets) <> 1
+               if Send(self,@GetNumSpellTargets,#who=who) <> 1
                {
                   Send(who,@MsgSendUser,#message_rsc=spell_no_targets,
                        #parm1=Send(self,@GetName));
@@ -1211,7 +1268,7 @@ messages:
          % - Target not in same room
          % - Target is in an Arena and not a valid target
          % - The attacker can't attack the target
-         if (i = who AND Send(self,@GetNumSpellTargets) <> 1)
+         if (i = who AND Send(self,@GetNumSpellTargets,#who=who) <> 1)
             OR NOT IsClass(i,&Battler)
             OR (IsClass(i,&Monster)
                 AND NOT Send(i,@CanMonsterFight,#who=who,#oStroke=self))
@@ -1308,7 +1365,7 @@ messages:
       num = bound(num,5,99);
 
       if lTargets <> $
-         AND Send(self,@GetNumSpellTargets) = 1
+         AND Send(self,@GetNumSpellTargets,#who=who) = 1
          AND IsClass(first(lTargets),&Battler)
          AND NOT Send(Send(who,@GetOwner),@LineOfSight,#obj1=who,
                       #obj2=first(lTargets))
@@ -1344,6 +1401,19 @@ messages:
                return TRUE;
             }
          }
+
+         % We've failed. Let's try force spike.
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_FORCE_SPIKE) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_FORCE_SPIKE),
+                            @AttemptManaSacrifice,
+                            #who=who,
+                            #oSpell=self,
+                            #iSpellPower=iSpellPower)
+            {
+               return TRUE;
+            }
+         }
          
          return FALSE;
       }
@@ -1356,7 +1426,8 @@ messages:
    "half the exertion, and no reagents."
    {
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
-            iNumNeeded, oUserObject, oRoom;
+            iNumNeeded, oUserObject, oRoom, iExertion, iManaCost, 
+            iVigorReduction;
       
       oRoom = Send(who,@GetOwner);	  
       if NOT IsClass(who,&Player)
@@ -1374,12 +1445,51 @@ messages:
 
       if NOT Send(who,@PlayerIsImmortal)
       {
+         iManaCost = Send(self,@GetManaCost,#who=who,#iSpellPower=iSpellpower);
+
+         % Hexes can be cast for less mana via skill
+         if piUseHexBehavior
+            AND Send(who,@GetSkillAbility,#Skill_num=SKID_ROTE_MEMORIZATION) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_ROTE_MEMORIZATION),
+                  @DoSkill,#who=who)
+         {
+            iManaCost = (iManaCost * (100-Send(Send(SYS,@FindSkillByNum,
+                                         #num=SKID_ROTE_MEMORIZATION),
+                                          @GetCostReduction,#who=who))) / 100;
+            iManaCost = bound(iManaCost,0,$);
+         }
+         
          % Reduce magic points of caster
-         Send(who,@LoseMana,#amount=Send(self,@GetManaCost,#who=who,
-              #iSpellPower=iSpellpower));
+         Send(who,@LoseMana,#amount=iManaCost);
 
          % Spell casting requires exertion (which is in 10^-4 units)
-         Send(who,@AddExertion,#amount=10000*viSpellExertion);
+         iExertion = viSpellExertion;
+
+         iVigorReduction = 0;
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_EFFICIENCY) > 0
+         {
+            iVigorReduction =
+                Send(Send(SYS,@FindSkillByNum,#num=SKID_EFFICIENCY),
+                              @GetVigorReduction,
+                              #who=who,
+                              #oSpell=self);
+         }
+
+         iExertion = Bound(iExertion-iVigorReduction,0,$);
+
+         % Hexes can be cast efficiently via skill
+         if piUseHexBehavior
+            AND Send(who,@GetSkillAbility,#Skill_num=SKID_EFFICIENT_CASTING) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_EFFICIENT_CASTING),
+                  @DoSkill,#who=who)
+         {
+            iExertion = (iExertion * (100-Send(Send(SYS,@FindSkillByNum,
+                                         #num=SKID_EFFICIENT_CASTING),
+                                          @GetCostReduction,#who=who))) / 100;
+            iExertion = bound(iExertion,0,$);
+         }
+         
+         Send(who,@AddExertion,#amount=10000*iExertion);
 
          % Use up reagents, provided reagent use is turned on
          if NOT Send(oRoom, @NoReagents)
@@ -1447,7 +1557,23 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0, bItemCast=FALSE)
    {
-      local oTarget, oRoom;
+      local oTarget, oRoom, lRadiusState;
+
+      if piUseHexBehavior
+      {
+         foreach oTarget in lTargets
+         {
+            if Send(oTarget,@GetNumHexes) >Send(Send(SYS,@GetExpansionSettings,
+                             #find_class=&WitcherySettings),
+                             @GetHexesMax)
+            {
+               if Send(oTarget,@GetNumHexes) > Send(who,@GetCasterMaxHexes)
+               {
+                  Post(oTarget,@RemoveRandomHex,#exempt=self);
+               }
+            }
+         }
+      }
 
       if IsClass(who,&DM)
       {
@@ -1634,6 +1760,22 @@ messages:
 
       % Count that this spell was cast successfully
       Send(Send(SYS,@GetStatistics),@SpellCast,#oSpell=self,#who=who);
+
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&QorBane);
+      if lRadiusState <> $
+      {
+         Post(Nth(lRadiusState,1),@SuccessfulCastTrigger,#who=who,#oSpell=self,
+                                 #state=lRadiusState,#iSpellPower=iSpellPower);
+      }
+
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+                              #byClass=&ShalilleBane);
+      if lRadiusState <> $
+      {
+         Post(Nth(lRadiusState,1),@SuccessfulCastTrigger,#who=who,#oSpell=self,
+                                 #state=lRadiusState,#iSpellPower=iSpellPower);
+      }
 
       return;
    }
@@ -2095,7 +2237,7 @@ messages:
          return;
       }
         
-      if Send(self,@GetNumSpellTargets) <> 1
+      if Send(self,@GetNumSpellTargets,#who=caster) <> 1
       {
          Send(hearer,@MsgSendUser,#message_rsc=spell_gesture_third,
               #parm1=Send(caster,@GetCapDef),
@@ -2249,7 +2391,7 @@ messages:
    {
       local iSpellPower, i, iTerrain, oRoom, oModifierSpell, iAbilityLoss,
             iAbilityGain, iItemModifier, iBase, iPrimaryBonus, iSecondaryBonus,
-            iPowerBonus, iShrines, lRadiusState;
+            iPowerBonus, iShrines, lRadiusState, iSpellpowerPenaltySystem;
 
       oRoom = Send(who,@GetOwner);
 
@@ -2275,6 +2417,10 @@ messages:
 
       % Spell power starts out as half the player's spell ability.
       iBase = Send(who,@GetSpellAbility,#spell_num=viSpell_num)/2;      
+
+      iSpellpowerPenaltySystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetSpellpowerPenaltySystem);
 
       % Check the player's in use items to see if they affect anything.
       % Note that this also checks itematts.
@@ -2407,8 +2553,18 @@ messages:
       % This number is based on the number of shrines this god controls.
       iShrines = Send(SYS,@GetShrineBonus,#school=viSchool);
 
-      % These bonuses (shrine, items) can boost spell power after all other modifiers.
-      iSpellPower = iSpellPower + iShrines + iItemModifier;
+      % Shrines can boost spell power after all other modifiers.
+      iSpellPower = iSpellPower + iShrines;
+      
+      if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_PERCENTAGE
+      {
+         iSpellPower = (iSpellPower * (100+iItemModifier))/100;
+      }
+      
+      if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_CLASSIC
+      {
+         iSpellPower = iSpellPower + iItemModifier;
+      }
 
       % Then, add bonus from the system object, set by admins
       iSpellPower = iSpellPower + Send(SYS,@GetBonusSpellpower,#school=viSchool);
@@ -2594,6 +2750,11 @@ messages:
    {
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
+   }
+   
+   UseHexBehavior()
+   {
+      return piUseHexBehavior;
    }
 
 end

@@ -425,6 +425,9 @@ properties:
    piAgility = 25
    piAim = 25
 
+   % Emulates tumbling skill, 0 is no evasion, 100 is total evasion
+   piTumbling = 0
+
    piEnch_flags = 0
 
    piDrawfx = 0
@@ -2008,7 +2011,7 @@ messages:
    GetOffense(what = $, stroke_obj=$)
    "This returns the battler's ability to-hit.  Ranges from 1 to 2000."
    {
-      local iAttack;
+      local iAttack, i;
 
       if piOffense = $
       {
@@ -2024,6 +2027,13 @@ messages:
          iAttack = iAttack * 3 / 4;
       }
 
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iAttack = Send(Nth(i,2),@ModifyHitRoll,
+                                  #who=self,#what=what,#hit_roll=iAttack,
+                                  #state=Nth(i,3));
+      }
+
       return Bound(iAttack,1,2000);
    }
 
@@ -2031,7 +2041,7 @@ messages:
    "This returns the battler's ability to avoid being hit.  Ranges from "
    "1 to 2000."
    {
-      local iDefense;
+      local iDefense, i, iShocked;
 
       if piDefense = $
       {
@@ -2040,6 +2050,25 @@ messages:
       else
       {
          iDefense = piDefense;
+      }
+      
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDefense = Send(Nth(i,2),@ModifyDefensePower,
+                                 #who=self,#what=what,#defense_power=iDefense,
+                                 #state=Nth(i,3));
+      }
+
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         % Check for Shocked status effect, which lowers defense.
+         iShocked = Send(self,@GetStatusEffect,#type=STATUS_SHOCKED);
+         iDefense = iDefense - (iShocked * Send(Send(SYS,@GetExpansionSettings,
+                                        #find_class=&ElementalEffectsSettings),
+                                                         @GetElementalMultiple,
+                                                        #type=STATUS_SHOCKED));
       }
 
       return Bound(iDefense,1,2000);
@@ -2062,7 +2091,7 @@ messages:
    % This returns the damage done to target "what"
    GetDamage(what = $, stroke_obj=$)
    {
-      local iDamage;
+      local iDamage, i;
 
       if piMinDamage = $ and piMaxDamage = $
       {
@@ -2084,6 +2113,13 @@ messages:
       if piEnch_flags & ENCH_PALSY
       {
          iDamage = iDamage * 3 / 4 ;
+      }
+      
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDamage = Send(Nth(i,2),@ModifyDamage,
+                                 #who=self,#what=what,#damage=iDamage,
+                                 #state=Nth(i,3));
       }
       
       return Bound(iDamage,0,$);
@@ -2119,7 +2155,15 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered;
+      local iDamage, iResist, iPercentClass, i, each_obj,
+            bAttackerEmpowered, iCorrodeReduction, iCorrode,
+            iCorrodeMultiple;
+
+      % Check for stat steals
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&DrainHex)
+      {
+         Send(Nth(i,2),@StealStat,#who=what,#what=self,#state=Nth(i,3));
+      }
 
       if NOT precision
       {
@@ -2172,6 +2216,43 @@ messages:
          iDamage = damage;
       }
 
+      if Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalEffectsActive)
+      {
+         iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+         if iCorrode > 0
+         {
+            iCorrodeMultiple = Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalMultiple,
+               #type = STATUS_CORRODE);
+        
+            iCorrodeReduction = (iCorrode/iCorrodeMultiple);
+               
+            if aspell = 0
+            {
+               iDamage = bound(iDamage + iCorrodeReduction*100,1,$);
+            }
+            else
+            {
+               if atype <> 0
+               {
+                  iDamage = bound(iDamage + iCorrodeReduction/2*100,1,$);
+               }
+            }
+         }
+      }
+
+      if IsClass(what,&Player)
+         AND Send(what,@GetStance) <> $
+      {
+         iDamage = Send(Send(what,@GetStance),@LastPriorityModifyDamage,
+                                              #who=what,
+                                              #what=self,
+                                              #damage=iDamage);
+      }
+
       % Set a predamage mark... we'll compare to it to see if threshold crossed.
       iPercentClass = piHit_points/(piMax_hit_points*20);
 
@@ -2222,6 +2303,30 @@ messages:
       {
          Post(what,@MsgPlayerHitResisted,#what=what,#resistance=iResist,
               #target=self,#color_rsc=monster_color_blue_rsc);
+      }
+
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         % Apply possible elemental status effects
+         if atype = 0
+         {
+            if aspell <> 0
+            {
+               Send(self,@ApplyElementalStatusEffects,#damage=iDamage/100,
+                         #aspell=aspell);
+            }
+         }
+         else
+         {
+            % Apply only half the effects from partially magical attacks
+            if aspell <> 0
+            {
+               Send(self,@ApplyElementalStatusEffects,#damage=(iDamage/100/2),
+                         #aspell=aspell);
+            }
+         }
       }
 
       return iDamage;
@@ -4932,6 +5037,8 @@ messages:
    GainHealthNormal(amount = $, precision = FALSE)
    "for when holy touch is cast on a good monster"
    {
+      local iMantled, iMantledDivisor;
+
       if amount = $
       {
          return;
@@ -4940,6 +5047,21 @@ messages:
       if NOT precision
       {
          amount = amount * 100;
+      }
+
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         iMantled = Send(self,@GetStatusEffect,#type=STATUS_MANTLED);
+         if iMantled > 0
+         {
+            iMantledDivisor = Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalMultiple,
+                  #type = STATUS_MANTLED);
+            amount = amount - (iMantled/iMantledDivisor)*100;
+         }
       }
 
       piHit_points = Bound(piHit_points+amount,1,piMax_hit_points*100);
@@ -5135,17 +5257,31 @@ messages:
 
    HealHitPoint()
    {
-      local iPercentClass, i, each_obj;
+      local iPercentClass,i,each_obj, iGain;
 
       if piHit_points >= piMax_Hit_points * 100
       {
          return;
       }
+      
+      iGain = 100;
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iGain = Send(Nth(i,2),@ModifyRegenAmount,
+                                 #state=Nth(i,3),#regen=iGain);
+      }
+      
+      if iGain < 0
+         AND piHit_points <= 100
+      {
+         iGain = 0;
+      }
 
       % We set a mark to see if the healing changes our threshold
-      iPercentClass = piHit_points / (piMax_Hit_points * 20);
-      piHit_points = piHit_points + 100;
-      if iPercentClass <> (piHit_points / (piMax_Hit_points * 20))
+      iPercentClass = piHit_points/(piMax_Hit_points*20);
+      piHit_points = piHit_points+iGain;
+      if iPercentClass <> (piHit_points/(piMax_Hit_points*20))
       {
          Send(self,@HitPointThresholdHeal);
 
@@ -5531,6 +5667,27 @@ messages:
 
    GetAttackTime()
    {
+      local iChilled, iChilledMultiple, iChilledTotal;
+
+      if Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalEffectsActive)
+      {
+         iChilled = Send(self,@GetStatusEffect,#type=STATUS_CHILLED);
+         if iChilled > 0
+         {
+            iChilledMultiple = Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalMultiple,
+               #type = STATUS_CHILLED);
+ 
+            iChilledTotal = iChilled * iChilledMultiple;
+
+            return Send(self,@Fuzzy,#num=MOB_ATTACK_TIMER_WAIT)
+                + 3500-70*(3*viDifficulty+viSpeed)+iChilledTotal;
+         }
+      }
+
       return Send(self,@Fuzzy,#num=MOB_ATTACK_TIMER_WAIT)
              + 3500-70*(3*viDifficulty+viSpeed);
    }
@@ -7411,6 +7568,11 @@ messages:
    LoseLight()
    {
       return 0;
+   }
+
+   GetTumbling()
+   {
+      return piTumbling;
    }
 
 end

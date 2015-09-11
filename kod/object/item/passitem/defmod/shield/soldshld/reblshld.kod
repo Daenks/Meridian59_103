@@ -161,6 +161,24 @@ messages:
       propagate;
    }
 
+   GetResistanceModifiers()
+   {
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         % Up to 5 percent weapon resistance at max rank.
+         return [ [ATCK_WEAP_ALL, bound(piFactionRank/2,0,5)]
+                ];
+      }
+      
+      propagate;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

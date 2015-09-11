@@ -1,0 +1,202 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Spy is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Spy_name_rsc = "spy"
+   Spy_icon_rsc = iinvisib.bgf
+   Spy_desc_rsc = \
+      "Allows someone who is moving stealthily to peer into the next room "
+      "before they enter. To attempt to spy "
+      "into a new area, enter while sneaking and hiding."
+   
+   Spy_success = "You carefully creep into the next area, momentarily unseen."
+   spy_stop = "You fully enter the area."
+
+classvars:
+
+   vrName = Spy_name_rsc
+   vrIcon = Spy_icon_rsc
+   vrDesc = Spy_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_SPY
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 6
+   viChance_to_Increase = 20
+   viMeditate_ratio = 90
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+   % [player, timer]
+   plSpying = $
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+
+   DoSkill(who=$)
+   {
+      local chance, iAgility, iAbility;
+      
+      iAgility = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      
+      chance = (iAgility/2) + iAbility;
+      chance = bound(chance,5,95);
+      
+      if chance > Random(0,100)
+      {
+         Send(self,@BeginSpying,#who=who);
+      }
+
+      propagate;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x02;
+   }
+   
+   BeginSpying(who=$)
+   {
+      local lObjects, i, oObject, ptSpyTimer, piSpyTime;
+      
+      foreach i in plSpying
+      {
+         if Nth(i,1) = who
+         {
+            return;
+         }
+      }
+
+      if who <> $
+         AND IsClass(who,&Player)
+      {
+         piSpyTime = 2000 + ((Send(who,@GetSkillAbility,
+            #skill_num=viSkill_num)+1) * 20);
+         ptSpyTimer = CreateTimer(self,@SpyTimer,piSpyTime);
+         plSpying = Cons([who,ptSpyTimer],plSpying);
+
+         Send(who,@MsgSendUser,#message_rsc=Spy_success);
+
+         If Send(who,@GetOwner) <> $
+         {
+            lObjects = Send(Send(who,@GetOwner),@GetHolderActive);
+            foreach i in lObjects
+            {
+               oObject = Send(Send(who,@GetOwner),@HolderExtractObject,
+                  #data=i);
+               if IsClass(oObject,&User)
+                  AND oObject <> who
+               {
+                  Send(oObject,@SomethingLeft,#what=self);
+               }
+            }
+
+  %          Post(who,@SomethingEntered,#what=who);
+            Send(who,@ShowAddEnchantment,#what=self,#type=ENCHANTMENT_PLAYER);
+         }
+      }
+
+      return;
+   }
+   
+   StopSpying(who=$)
+   {
+      local lObjects, i, oObject;
+
+      foreach i in plSpying
+      {
+         if Nth(i,1) = who
+         {
+            if Nth(i,2) <> $
+            {
+               DeleteTimer(Nth(i,2));
+               SetNth(i,2,$);
+            }
+
+            plSpying = DelListElem(plSpying,i);
+
+            Send(who,@MsgSendUser,#message_rsc=spy_stop);
+
+            if Send(who,@GetOwner) <> $
+            {
+               lObjects = Send(Send(who,@GetOwner),@GetHolderActive);
+               foreach i in lObjects
+               {
+                  oObject = Send(Send(who,@GetOwner),@HolderExtractObject,
+                     #data=i);
+                  if IsClass(oObject,&User)
+                     AND oObject <> who
+                  {
+                     Send(oObject,@SomethingEntered,#what=who);
+                  }
+               }
+               Send(who,@ShowRemoveEnchantment,#what=self,
+                  #type=ENCHANTMENT_PLAYER);
+            }
+         }
+      }
+
+      return;
+   }
+   
+   IsSpying(who=$)
+   {
+      local i;
+      
+      foreach i in plSpying
+      {
+         if Nth(i,1) = who
+         {
+            return 1;
+         }
+      }
+      
+      return 0;
+   }
+
+   SpyTimer(timer=$)
+   {
+      local i;
+      
+      foreach i in plSpying
+      {
+         if Nth(i,2) = timer
+         {
+            SetNth(i,2,$);
+            Send(self,@StopSpying,#who=Nth(i,1));
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

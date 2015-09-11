@@ -66,8 +66,25 @@ messages:
 
    GetResistanceStrength(iSpellpower = 0)
    {
-      %% strength varies from 5 to 25
-      return (iSpellPower+1)/5 + 5;
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         %% strength varies from 5 to 25
+         return (iSpellPower+1)/5 + 5;
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         %% strength varies from 2 to 10
+         return bound((iSpellPower+1)/10,2,10);
+      }
+
+      return 0;
    }
 
    GetDuration(iSpellPower = 0)

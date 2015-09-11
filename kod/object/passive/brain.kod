@@ -983,6 +983,11 @@ messages:
          }
       }
 
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=what)
+         {
+            iHatred = iHatred - 50;
+         }
+
       %% If they aren't in the same room, don't switch to them.
       if Send(mob,@GetOwner) <> Send(what,@GetOwner)
       {

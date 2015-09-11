@@ -1,0 +1,81 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Algidity is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   algidity_cast_rsc = \
+      "%s%s becomes surrounded by drifting ice zephyrs."
+   algidity_already_enchanted = \
+      "That poor soul is already afflicted by algidity."
+   algidity_start = "Drifting ice zephyrs surround you."
+   algidity_stop  = "The drifting ice zephyrs depart."
+   has_been_hexed_algidity = \
+      "%s%s becomes surrounded by drifting ice zephyrs!"
+
+   algidity_name_rsc = "algidity"
+   algidity_icon_rsc = ienfeebl.bgf
+   algidity_desc_rsc = \
+      "Summons minor ice zephyrs to empower cold attacks against your victim."
+      " This hex requires two orc teeth to cast."
+
+   algidity_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = algidity_name_rsc
+   vrIcon = algidity_icon_rsc
+   vrDesc = algidity_desc_rsc
+
+   vrAlreadyEnchanted = algidity_already_enchanted
+   vrEnchantment_On = algidity_start
+   vrEnchantment_Off = algidity_stop
+   vrSuccess = algidity_cast_rsc
+   vrInformRoom = has_been_hexed_algidity
+
+   viSpell_num = SID_HEX_ALGIDITY
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_NEQUZON
+   viSpell_level = 3
+   viMana = 30
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = algidity_sound
+   viChance_To_Increase = 18
+   viMeditate_ratio = 40
+
+   viResistanceType = -ATCK_SPELL_COLD
+
+properties:
+
+   % Effectively reduces cold resistance by this percent base
+   piBaseEffect = 40
+
+   piFlatDuration = 18000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

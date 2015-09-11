@@ -1,0 +1,84 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Corruption is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   corruption_cast_rsc = \
+      "%s%s's limbs begin crawling with corrupted energies."
+   corruption_already_enchanted = \
+      "That poor soul is already afflicted by corruption."
+   corruption_start = \
+      "Your limbs begin crawling with corrupted energies."
+   corruption_stop  = \
+      "The corrupted energies vanish from your limbs."
+   has_been_hexed_corruption = \
+      "%s%s's limbs begin crawling with corrupted energies!."
+
+   corruption_name_rsc = "corruption"
+   corruption_icon_rsc = ienfeebl.bgf
+   corruption_desc_rsc = \
+      "Sickens your victim with corrupted energies, making them more "
+      "vulnerable to unholy assaults. "
+      "This hex requires two orc teeth to cast."
+
+   corruption_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = corruption_name_rsc
+   vrIcon = corruption_icon_rsc
+   vrDesc = corruption_desc_rsc
+
+   vrAlreadyEnchanted = corruption_already_enchanted
+   vrEnchantment_On = corruption_start
+   vrEnchantment_Off = corruption_stop
+   vrSuccess = corruption_cast_rsc
+   vrInformRoom = has_been_hexed_corruption
+
+   viSpell_num = SID_HEX_CORRUPTION
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_IWODACH
+   viSpell_level = 3
+   viMana = 7
+   viSpell_Exertion = 30
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = corruption_sound
+   viChance_To_Increase = 10
+   viMeditate_ratio = 100
+
+   viResistanceType = -ATCK_SPELL_UNHOLY
+
+properties:
+
+   % Effectively reduces unholy resistance by this percent base
+   piBaseEffect = 40
+
+   piFlatDuration = 18000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

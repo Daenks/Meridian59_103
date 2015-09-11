@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%S%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Deflect is PersonalEnchantment
+Deflect is RadiusEnchantment
 
 constants:
 
@@ -16,23 +16,14 @@ constants:
 
 resources:
 
-   include deflect.lkod
-
    Deflect_name_rsc = "deflect"
    Deflect_icon_rsc = imirror.bgf
    Deflect_desc_rsc = \
       "Calls upon Kraanan's will to form a protective barrier around the "
-      "target which protects them from direct damaging attack magics, but "
+      "caster which protects their allies from direct damaging attack magics "
+      "- but "
       "not from other magics, such as enchantments.  "
       "Requires a vial of solagh and one kriipa claw to cast."
-
-   Deflect_already_enchanted_rsc = "You are already enchanted by deflect."
-   deflect_enchantment_rsc = \
-      "\n\nYour current %s enchantment will reflect enemy splash and bolt "
-      "spells %i%% of the time."
-   Deflect_on_rsc = "A magical barrier surrounds you."
-   Deflect_success_rsc = "You sense a magical barrier surround %s%s."
-   Deflect_off_rsc = "The magical barrier protecting you seems to be waning."
 
    Deflect_spell_intro = \
       "Kraanan Level 4: Forms a magical barrier around the target, protecting"
@@ -41,34 +32,49 @@ resources:
    Deflect_sound = kdeflect.wav
 
    Deflect_success_to_victim = \
-      "Your deflect enchantment bounces %s's spell back onto its caster!"
+      "The deflection bubble surrounding you bounces %s's spell back onto "
+      "its caster!"
    Deflect_success_to_caster = \
       "A barrier of mystical energy coalesces in front of %s, bouncing "
       "your spell back at you!"
    Deflect_failure_to_victim = \
-      "Your deflect enchantment attempts to bounce %s's spell back, "
+      "The deflection bubble surrounding you attempts to bounce %s's spell "
+      "back, "
       "but is not strong enough."
+
+   Deflect_cast = \
+      "You extend a silvery dome of light out from your fingertips."
+   Deflect_starts = "A silvery dome of light emerges from %s's fingertips."
+   Deflect_ends = "The dome of silvery energy maintained by %s dissipates."
+   Deflect_caster_ends = "Your dome of silvery energy dissipates."
+   Deflect_caster_enter = "You feel magical deflection energies surround you."
+   Deflect_enter = \
+      "You are encompassed by a dome of silvery energy emanating from %s."
+   Deflect_leave = \
+      "You have passed outside the dome of silvery energy emanating from %s."
 
 classvars:
 
-   viPersonal_ench = True
+   radius_ench_cast = Deflect_cast
+   radius_ench_starts = Deflect_starts
+   radius_ench_ends = Deflect_ends
+   radius_ench_caster_ends = Deflect_caster_ends
+   radius_ench_caster_enter = Deflect_caster_enter
+   radius_ench_enter = Deflect_enter
+   radius_ench_leave = Deflect_leave
 
-   viSpellExertion = 4
+   viSpellExertion = 10
    vrName = Deflect_name_rsc
    vrIcon = Deflect_icon_rsc
    vrDesc = Deflect_desc_rsc
-
-   vrAlreadyEnchanted = Deflect_already_enchanted_rsc
-   vrEnchantment_On = Deflect_On_rsc
-   vrEnchantment_Off = Deflect_Off_rsc
-   vrSuccess = Deflect_Success_rsc
 
    viSpell_num = SID_DEFLECT
 
    vrSpell_intro = Deflect_spell_intro
 
    viMana = 20
-   viCast_time = 3000
+   viManaDrain = 5
+   viDrainTime = 5000
    viSpell_level = 4
    viSchool = SS_KRAANAN
 
@@ -78,6 +84,14 @@ classvars:
    viFlash = FLASH_GOOD_SELF
 
    vrSucceed_wav = Deflect_sound
+
+   viIndefinite = ARTICLE_AN
+   viChance_To_Increase = 35
+   viMeditate_ratio = 30
+   viBaseRange = 6
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
 
 properties:
 
@@ -92,6 +106,11 @@ messages:
       return;
    }
 
+   CalculateRange(who=$, iSpellPower=25)
+   {
+      return viBaseRange;
+   }
+
    GetStateValue(who=$,iSpellPower=0,Target=$)
    {
       local iReflectOdds;
@@ -100,39 +119,34 @@ messages:
 
       return Bound(iReflectOdds,10,75);
    }
-
-   GetDuration(iSpellPower=0)
-   {
-      local iDuration;
-
-      % 21-119 seconds
-      iDuration = (20 + iSpellPower) * 1000;
-
-      return iDuration;
-   }
-
-   TryDeflect(caster=$,victim=$,oSpell=$)
+   
+   TryDeflect(caster=$,victim=$,oSpell=$,power=0,source=$)
    "Returns TRUE if the spell is deflected."
    {
-      local i, chance;
+      local i, iReflectOdds;
 
-      if Send(oSpell,@IsHarmful)
-         AND Send(oSpell,@GetNumSpellTargets) = 1
-         AND IsClass(oSpell,&AttackSpell)
+      if oSpell = $
+         OR NOT Send(oSpell,@IsHarmful)
+         OR NOT Send(oSpell,@GetNumSpellTargets) = 1
+         OR NOT IsClass(oSpell,&AttackSpell)
+         OR source = $
       {
-         % Give players a decent chance to improve the spell!
-         foreach i in Send(victim,@GetPassiveImprovementList)
-         {
-            if First(i) = self AND Random(1,3) = 3
-            {
-               Post(First(i),@ImproveAbility,#who=victim);
-            }
-         }
+         return FALSE;
+      }
 
-         chance = Send(victim,@GetEnchantedState,#what=self);
-         if Random(0,100) < chance
+      % Deflect can only protect from outside the radius
+      if Send(caster,@IsAffectedByRadiusEnchantment,#what=self,#caster=source)
+      {
+         return FALSE;
+      }
+      
+      if Send(victim,@IsAffectedByRadiusEnchantment,#what=self,#caster=source)
+      {
+         iReflectOdds = 25 + (power+1) / 4;
+         if iReflectOdds > Random(0,100)
          {
-            Send(self,@SendMessageTryDeflectSuccess,#victim=victim,#caster=caster);
+            Send(self,@SendMessageTryDeflectSuccess,
+               #victim=victim,#caster=caster);
             return TRUE;
          }
 
@@ -163,14 +177,6 @@ messages:
    GetPotionClass()
    {
       return &DeflectPotion;
-   }
-
-   EffectDesc(who=$)
-   {
-      AddPacket(4,deflect_enchantment_rsc, 4,Send(self,@GetName),
-                4,Send(who,@GetEnchantedState,#what=self));
-      
-      return;
    }
 
 end

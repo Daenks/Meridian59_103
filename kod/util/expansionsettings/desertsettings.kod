@@ -1,0 +1,79 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertSettings is ExpansionSettings
+
+% This class keeps settings for the desert continent, Biskalane.
+
+% Some of these can be affected by players.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Biskalane begins inaccessible. Players cannot go there until
+   %    the Exploration quest is completed by the server.
+   pbBiskalaneActive = FALSE
+   
+   % Biskalane's final palace begins inaccessible. Players cannot go there
+   %    until certain quests are completed.
+   pbBiskalanePalaceActive = FALSE
+
+   % Biskalane's danger fluctuates based on player actions.
+   ppBiskalaneHostility = 100
+   
+   % If TRUE, players will only run into each other one on one
+   %    in the random desert areas. Groups will be split up as they transition
+   %    between zones, and no screen will have more than 2 randomly assigned
+   %    players. This makes combat 'fair', but building together difficult.
+   pbEnforceOneVsOne = TRUE
+   
+   % If TRUE, all players in the random desert areas will be anonymized.
+   %    This will prevent players from knowing who they are running across.
+   %    Guild and ally dots will still be active, so the 
+   %    effect will be to obscure your knowledge of your enemy's
+   %    build, skills, and tactics.
+   pbEnforceAnonymity = FALSE
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetBiskalaneActive()
+   {
+      return bound(pbBiskalaneActive,0,1);
+   }
+
+   GetBiskalanePalaceActive()
+   {
+      return bound(pbBiskalanePalaceActive,0,1);
+   }
+
+   GetEnforceOneVsOne()
+   {
+      return bound(pbEnforceOneVsOne,0,1);
+   }
+   
+   GetEnforceAnonymity()
+   {
+      return bound(pbEnforceAnonymity,0,1);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

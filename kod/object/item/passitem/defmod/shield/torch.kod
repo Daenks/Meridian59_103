@@ -296,6 +296,23 @@ messages:
       return FALSE;
    }
 
+   GetResistanceModifiers()
+   {
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [-ATCK_SPELL_COLD,25]
+                ];
+      }
+
+      return [];
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

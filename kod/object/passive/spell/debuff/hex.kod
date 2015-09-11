@@ -1,0 +1,260 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Hex is Debuff
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   hex_replacing_msg = \
+      "Your %s hex replaces a %s curse already affecting your target."
+   hex_cannot_replace = \
+      "Your target is already affected by the maximum number of hexes!"
+   hex_on_default = \
+      "You feel hexy."
+   hex_off_default = \
+      "You feel less hexy."
+
+   target_is_hex_immune_msg = \
+      "Your paltry hex has no effect!"
+      
+   hex_success_caster_default = \
+      "%s%s is now hexed!"
+   already_hexed = "%s%s is already cursed by that hex!"
+
+   has_been_hexed_default = "%s%s has been hexed!"
+
+classvars:
+
+   vrAlreadyEnchanted = already_hexed
+   vrEnchantment_On = hex_on_default
+   vrEnchantment_Off = hex_off_default
+   vrSuccess = hex_success_caster_default
+   vrInformRoom = has_been_hexed_default
+
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   
+   viResistanceType = 0
+
+properties:
+
+   piFlatDuration = 10000
+   piBaseEffect = 0
+   
+   piUseHexBehavior = TRUE
+
+messages:
+
+   CanPayCosts(who=$,lTargets=$,iSpellPower=0,bItemCast=FALSE)
+   {
+      local oWitcherySettings;
+
+      if Length(lTargets) <> 1
+      {
+         return FALSE;
+      }
+      
+      oWitcherySettings = Send(SYS,@GetExpansionSettings,
+                                    #find_class=&WitcherySettings);
+      
+      if (Send(First(lTargets),@GetNumHexes) >= 
+            Send(oWitcherySettings,@GetHexesMax))
+         AND NOT Send(oWitcherySettings,@GetHexesReplace)
+      {
+         Send(who,@MsgSendUser,#message_rsc=hex_cannot_replace);
+         return FALSE;
+      }
+      
+      propagate;
+   }
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
+   {
+      local oTarget, oPlayer, oRoom, each_obj;
+
+      oTarget = First(lTargets);
+
+      oRoom = Send(oTarget,@GetOwner);
+      if oRoom <> $
+         AND IsClass(oRoom,&Room)
+      {
+         foreach each_obj in Send(oRoom,@GetHolderActive)
+         {
+            oPlayer = Send(oRoom,@HolderExtractObject,#data=each_obj);
+            if IsClass(oPlayer,&Player)
+            {
+               if oPlayer <> oTarget
+                  AND oPlayer <> who
+               {
+                  Send(oPlayer,@MsgSendUser,#message_rsc=vrInformRoom,
+                               #parm1=Send(oTarget,@GetCapDef),
+                                #parm2=Send(oTarget,@GetName));
+               }
+            }
+         }
+      }
+
+      % Spell effects
+      Send(self,@DoSpell,#what=who,#oTarget=oTarget,
+            #iDuration=Send(self,@GetDuration,#iSpellPower=iSpellPower),
+            #iSpellPower=iSpellPower);
+      
+      propagate;
+   }
+
+   DoSpell(what=$,oTarget=$,iDuration=0,iSpellPower=0)
+   {
+      local iCasterIncHexEffect, iTargetHexResistance, iHexEffect;
+
+      iCasterIncHexEffect = Send(what,@GetHexIncEffect,
+                                      #iSpellPower=iSpellPower,#what=self);
+      iTargetHexResistance = Send(oTarget,@GetHexResistance);
+      
+      iHexEffect = iCasterIncHexEffect - iTargetHexResistance;
+      
+      if iHexEffect = 0
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=target_is_hex_immune_msg);
+         }
+         return;
+      }
+
+      if IsClass(oTarget,&Player)
+      {
+         if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
+         {
+            Send(oTarget,@MsgSendUser,#message_rsc=vrEnchantment_On);
+         }
+      }
+
+      % Iwodach level 4, increase hex duration
+      if Send(what,@GetSkillAbility,#Skill_num=SKID_ANCIENT_PACT) > 0
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_ANCIENT_PACT),
+               @DoSkill,#who=what)
+      {
+         iDuration = iDuration + Send(Send(SYS,@FindSkillByNum,
+                                      #num=SKID_ANCIENT_PACT),
+                                      @GetDurationIncrease,#who=what);
+      }
+
+      % Nequzon level 6, hexes don't expire
+      if Send(what,@GetSkillAbility,#Skill_num=SKID_OSTRACIZATION) > 0
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_OSTRACIZATION),
+               @DoSkill,#who=what)
+      {
+         iDuration = $;
+      }
+
+      Send(what,@MsgSendUser,#message_rsc=vrSuccess,
+            #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
+      Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,
+                   #state=iHexEffect);
+
+      propagate;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      return piFlatDuration;
+   }
+
+   EndEnchantment(who=$,report=TRUE)
+   {
+      if IsClass(who,&Player)
+      {
+         if report
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrEnchantment_Off);
+         }
+      }
+      
+      if viResistanceType <> 0
+      {
+         Post(who,@DrawResistances);
+      }
+
+      return;
+   }
+
+   RestartEnchantmentEffect(who=$,state=$)
+   {
+      Send(who,@MsgSendUser,#message_rsc=vrEnchantment_On);
+
+      return;
+   }
+
+   ModifyHitRoll(who=$,what=$,hit_roll=$)
+   {
+      return hit_roll;
+   }
+   
+   ModifyDamage(who=$,what=$,damage=$)
+   {
+      return damage;
+   }
+
+   ModifyDefensePower(who=$,what=$,defense_power=0)
+   {
+      return defense_power;
+   }
+
+   ModifyDefenseDamage(who=$,what=$,damage=$,atype=0,aspell=0)
+   {
+      return damage;
+   }
+   
+   ModifyPostcastDelay(who=$,what=$,iDelay=$,atype=0,aspell=0,iHexEffect=0)
+   {
+      return iDelay;
+   }
+
+   ModifyResistance(resistance_list=$,iState=0)
+   {
+      local iChange;
+      
+      if viResistanceType <> 0
+      {
+         iChange = piBaseEffect * iState / 100;
+      
+         resistance_list = Send(SYS,@AddResistance,#what=viResistanceType,
+                             #value=-iChange,#resistance_list=resistance_list);
+      }
+
+      return resistance_list;
+   }
+   
+   ModifyRegenAmount(regen=0)
+   {
+      return regen;
+   }
+   
+   ModifyHeal(amount=0)
+   {
+      return amount;
+   }
+   
+   ModifyExertion(amount=0,state=0)
+   {
+      return amount;
+   }
+   
+   ModifyDelay(iDelay=$,state=0)
+   {
+      return iDelay;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

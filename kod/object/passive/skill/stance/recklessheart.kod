@@ -1,0 +1,103 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RecklessHeart is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   RecklessHeart_name_rsc = "reckless heart"
+   RecklessHeart_icon_rsc = ikillfel.bgf
+   RecklessHeart_desc_rsc = \
+      "A master stance that employs reckless energy to increase damage to "
+      "both the warrior and his enemies."
+
+   RecklessHeart_skill_intro = \
+      "Banditry Lv. 5: A stance that increases final damage dealt "
+      "to both the warrior and his enemies."
+   
+   RecklessHeart_begin = "Your heart pounds as you prepare for violence."
+   RecklessHeart_end = "Your heartrate slows."
+   
+   reckless_attack_rsc = "You put all your might into your swing!"
+
+classvars:
+
+   vrName = RecklessHeart_name_rsc
+   vrIcon = RecklessHeart_icon_rsc
+   vrDesc = RecklessHeart_desc_rsc
+   
+   stance_begin_msg = RecklessHeart_begin
+   stance_end_msg = RecklessHeart_end   
+
+   vrSkill_intro = RecklessHeart_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_RECKLESS_HEART
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 6
+   viChance_to_Increase = 10
+   viMeditate_ratio = 500
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMight);
+   }
+
+   LastPriorityModifyDamage(who=$,what=$,damage=$)
+   {
+      local iRecklessHeartAbility, iStat, iDamageBonus;
+
+      iRecklessHeartAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      % Up to 20% final damage increase from skill, and up to 5% from stat.
+      iDamageBonus = 100 + ((iRecklessHeartAbility+1) / 5) + 
+         (Bound(iStat-20,0,50) / 10);
+      iDamageBonus = Bound(iDamageBonus,100,205);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);
+      
+      return damage * iDamageBonus / 100;
+   }
+
+   LastPriorityModifyDefenseDamage(who=$,what=$,damage=$)
+   {
+      local iRecklessHeartAbility, iDamageBonus;
+
+      iRecklessHeartAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+
+      % Up to 20% final damage increase
+      iDamageBonus = 100 + ((iRecklessHeartAbility+1) / 5);
+      iDamageBonus = Bound(iDamageBonus,100,120);
+
+      Send(self,@ImproveAbility,#who=who,#target=what);
+
+      return damage * iDamageBonus / 100;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -39,6 +39,8 @@ classvars:
    viUse_type = ITEM_USE_HEAD
    viUse_amount = 1
    viSpell_modifier = -5
+   % Used instead of viSpell_modifier if penalty percentage system is in use
+   viSpell_penalty_percentage = -5
 
    viGround_group = 3
    viInventory_group = 2
@@ -68,10 +70,26 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_BLUDGEON,-10]
-             ];
-   }
+      local iArmorSystem;
 
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,5]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [ATCK_WEAP_BLUDGEON,-10]
+                ];
+      }
+      
+      return [];
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

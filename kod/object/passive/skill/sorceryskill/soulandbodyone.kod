@@ -1,0 +1,95 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SoulAndBodyOne is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   soul_and_body_one_name_rsc = "soul and body one"
+   soul_and_body_one_icon_rsc = lightnin.bgf
+   soul_and_body_one_desc_rsc = \
+      "Through integration of one's body and soul, a master sorcerer can "
+      "maintain a grip "
+      "on enchantments that might otherwise be stripped away by purging "
+      "magics. Retaining reserved enchantments may damage an obstinate "
+      "sorcerer."
+
+   soul_and_body_one_activated = \
+      "You retain your %s enchantment at the cost of ~B~r%i~n health!"
+   soul_and_body_one_not_enough_health = \
+      "You don't have enough health to retain your enchantments!"
+
+classvars:
+
+   vrName = soul_and_body_one_name_rsc
+   vrIcon = soul_and_body_one_icon_rsc
+   vrDesc = soul_and_body_one_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_SOUL_AND_BODY_ONE
+   viSchool = SKS_SORCERY
+   viSkill_Level = 6
+   viChance_to_Increase = 30
+   viMeditate_ratio = 250
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetStamina);
+   }
+   
+   AttemptToRetain(who=$,oEnchantment=$,iChance=0)
+   {
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      if Random(1,100) >  iAbility + iStat/10
+      {
+         return FALSE;
+      }
+
+      iSacrifice = Send(oEnchantment,@GetLevel) * 100 * iChance / 100;
+      iSacrifice = (iSacrifice * 2) - (iSacrifice*(iAbility+1+iStat/2))/100;
+      iSacrifice = Bound(iSacrifice,100,$);
+
+      if Send(who,@GetExactHealth) < iSacrifice
+      {
+         Send(who,@MsgSendUser,#message_rsc=soul_and_body_one_not_enough_health);
+         return FALSE;
+      }
+      
+      Send(who,@LoseHealth,#amount=iSacrifice,#precision=TRUE);
+
+      Send(who,@MsgSendUser,#message_rsc=soul_and_body_one_activated,
+                            #parm1=Send(oEnchantment,@GetName),
+                            #parm2=iSacrifice/100);
+
+      Send(self,@DoSkill,#who=who);
+      
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

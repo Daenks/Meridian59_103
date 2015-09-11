@@ -1,0 +1,100 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Barbs is DrainHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   barbs_cast_rsc = \
+      "%s%s becomes the focal point of a thousand ethereal barbs."
+   barbs_already_enchanted = \
+      "That poor soul is already afflicted by barbs."
+   barbs_start = "Ethereal barbs jab into your spirit!"
+   barbs_stop  = "The phantom barbs jabbing your spirit disappear."
+   has_been_hexed_barbs = \
+      "%s%s becomes the focal point of a thousand ethereal barbs!"
+
+   barbs_name_rsc = "barbs"
+   barbs_icon_rsc = ienfeebl.bgf
+   barbs_desc_rsc = \
+      "Afflicts your victim's spirit with ethereal barbs that grant all "
+      "who strike them a bit of sapped mana."
+      "This hex requires two orc teeth to cast."
+
+   barbs_sound = qenfeebl.wav
+
+   barbed_msg = "Your attack steals %i mana!"
+
+classvars:
+
+   vrName = barbs_name_rsc
+   vrIcon = barbs_icon_rsc
+   vrDesc = barbs_desc_rsc
+
+   vrAlreadyEnchanted = barbs_already_enchanted
+   vrEnchantment_On = barbs_start
+   vrEnchantment_Off = barbs_stop
+   vrSuccess = barbs_cast_rsc
+   vrInformRoom = has_been_hexed_barbs
+
+   viSpell_num = SID_HEX_BARBS
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_NEQUZON
+   viSpell_level = 1
+   viMana = 30
+   viSpell_Exertion = 5
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = barbs_sound
+   viChance_To_Increase = 25
+   viMeditate_ratio = 30
+
+properties:
+
+   % Take and give this much mana when struck
+   piBaseEffect = 2
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+   
+   StealStat(who=$,what=$,state=0)
+   {
+      local iStealAmount;
+      
+      iStealAmount = piBaseEffect * state / 100;
+      if Send(what,@GetMana) > iStealAmount
+      {
+         Send(what,@LoseMana,#amount=iStealAmount);
+         Send(who,@GainMana,#amount=iStealAmount,#bRespectMax=TRUE);
+
+         if IsClass(who,&User)
+         {
+            Send(who,@MsgSendUser,#message_rsc=barbed_msg,
+                                  #parm1=iStealAmount);
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

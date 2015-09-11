@@ -35,6 +35,15 @@ resources:
    skill_school_fencing = "Weaponcraft"
    skill_school_brawling = "Brawling"
    skill_school_thievery = "Thievery"
+   skill_school_witchery_xaerdun = "Witchery, through Xaerdun"
+   skill_school_witchery_nequzon = "Witchery, through Nequzon"
+   skill_school_witchery_iwodach = "Witchery, through Iwodach"
+   skill_school_sorcery = "Sorcery"
+   skill_school_banditry = "Banditry"
+   skill_school_faren = "Faren"
+   skill_school_shalille = "Shal'ille"
+   skill_school_qor = "Qor"
+   skill_school_jala = "Jala"
 
    skill_meditate_ratio_rsc = \
       "\n\nIt will cost you %i training points to improve in this skill."
@@ -55,6 +64,7 @@ classvars:
 
    viSkill_num = $
    viSchool = $
+   viSubSchool = $
 
    viSkill_level = 1
 
@@ -78,6 +88,8 @@ classvars:
    viAnimation_end = 1
    viIcon_animation_start = 2
    viIcon_animation_end = 2
+
+   vbUtilitySkill = FALSE
 
 properties:
 
@@ -116,6 +128,52 @@ messages:
          oSchool = skill_school_thievery;
       }
 
+      if viSchool = SS_WITCHERY
+      {
+         if viSubSchool = SSS_WITCHERY_XAERDUN
+         {
+            oSchool = skill_school_witchery_xaerdun;
+         }
+         if viSubSchool = SSS_WITCHERY_NEQUZON
+         {
+            oSchool = skill_school_witchery_nequzon;
+         }
+         if viSubSchool = SSS_WITCHERY_IWODACH
+         {
+            oSchool = skill_school_witchery_iwodach;
+         }
+      }
+
+      if viSchool = SKS_SORCERY
+      {
+         oSchool = skill_school_sorcery;
+      }
+
+      if viSchool = SKS_BANDITRY
+      {
+         oSchool = skill_school_banditry;
+      }
+      
+      if viSchool = SS_FAREN
+      {
+         oSchool = skill_school_faren;
+      }
+      
+      if viSchool = SS_SHALILLE
+      {
+         oSchool = skill_school_shalille;
+      }
+      
+      if viSchool = SS_QOR
+      {
+         oSchool = skill_school_qor;
+      }
+      
+      if viSchool = SS_JALA
+      {
+         oSchool = skill_school_jala;
+      }
+
       return oSchool;
    }
 
@@ -135,6 +193,52 @@ messages:
          rSchool = skill_school_thievery;
       }
 
+      if viSchool = SS_WITCHERY
+      {
+         if viSubSchool = SSS_WITCHERY_XAERDUN
+         {
+            rSchool = skill_school_witchery_xaerdun;
+         }
+         if viSubSchool = SSS_WITCHERY_NEQUZON
+         {
+            rSchool = skill_school_witchery_nequzon;
+         }
+         if viSubSchool = SSS_WITCHERY_IWODACH
+         {
+            rSchool = skill_school_witchery_iwodach;
+         }
+      }
+
+      if viSchool = SKS_SORCERY
+      {
+         rSchool = skill_school_sorcery;
+      }
+
+      if viSchool = SKS_BANDITRY
+      {
+         rSchool = skill_school_banditry;
+      }
+      
+      if viSchool = SS_FAREN
+      {
+         rSchool = skill_school_faren;
+      }
+      
+      if viSchool = SS_SHALILLE
+      {
+         rSchool = skill_school_shalille;
+      }
+      
+      if viSchool = SS_QOR
+      {
+         rSchool = skill_school_qor;
+      }
+      
+      if viSchool = SS_JALA
+      {
+         rSchool = skill_school_jala;
+      }
+
       % Base description.
       AddPacket(4,skill_desc_rsc, 4,rSchool, 4,viSkill_Level, 4,vrDesc);
 
@@ -143,6 +247,7 @@ messages:
       
       % Add meditate ratio.
       if piMeditate_ratio = 0
+         OR Send(who,@GetSkillAbility,#Skill_num=viSkill_num) = 99
       {
          AddPacket(4,skill_nothing);
       }
@@ -587,6 +692,10 @@ messages:
       return TRUE;
    }
 
+   IsUtilitySkill()
+   {
+      return vbUtilitySkill;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

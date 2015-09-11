@@ -1,0 +1,105 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SorcerySettings is ExpansionSettings
+
+% This class keeps settings for the Sorcery school.
+
+% Sorcery is a school of metamagic skills empowered by tattoos.
+% Each Sorcery skill changes how your spells function.
+%
+% A major theme of Sorcery is personal enchantment reservation.
+% Players who buy the appropriate spirit link skills will no longer be able
+% to cast that level of personal enchantment on others (regardless of school).
+% Instead, they themselves are always the target, and the buff no longer
+% expires with time. This 'permanent' buff comes at a cost of a loss of 
+% a percentage of max mana (mana regeneration ignores this loss).
+% Players are actually meant to skip the levels of spirit link they don't want
+% to use. That may make a particular level more difficult to advance through.
+%
+%
+% Another major theme of Sorcery is careful design between levels to cater to
+% fighters vs mages. Levels 1-3 are very good for hybrids,
+% Levels 4 and 5 are great for mages,
+% and Level 6 is great for fighters.
+% This makes choosing an appropriate level very challenging, as the costs
+% are very different for different character builds.
+% 
+
+% Level 1:
+% Efficiency - spell vigor cost reduction, extremely slow to imp, max 20% red
+% Minor Spirit Link - reserve level 1 buffs
+% Charged Clutch - your weapons can deal the element of your active touch spell
+%
+% Level 2: 
+% Devotion - holy & unholy mastery, 2 bonus dmg with no resistance interaction
+% Moderate Spirit Link - reserve level 2 buffs
+% Blood Magic - use your own health if out of reagents.
+%
+% Level 3:
+% Entropy - cold & acid mastery, 2 bonus dmg with no resistance interaction
+% Spirit Link - reserve level 3 buffs
+% Force Spike - use extra mana to cast anyway despite a fizzle
+%
+% Level 4:
+% Energy - fire & shock mastery, 2 bonus dmg with no resistance interaction
+% Major Spirit Link - reserve level 4 buffs
+% Will Surge - use vigor if out of mana, no synergy with level 1 Efficiency
+%
+% Level 5:
+% Master Spirit Link - reserve level 5 buffs
+% Volatile Focus - cast immediately if trance disrupted, equal postcast delay
+% Intensity - bludgeon & quake mastery, 2 bonus dmg (ignores resist/vuln)
+%
+% Level 6:
+% Mind and body one - your reserved buffs resist being purged.
+%                     Purge deals you damage for each reserved buff.
+%
+% Lethality - slash, thrust, & pierce mastery, 2 bonus dmg (no resist/vuln)
+%
+%
+%
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Sorcery does not start available. It must be made active via quests 
+   %    done by players.
+   pbSorceryActive = FALSE
+   
+   % If this is set to FALSE, Sorcery school is turned off for this server.
+   pbSorceryAccessible = TRUE
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetSorceryActive()
+   {
+      return bound(pbSorceryActive,0,1);
+   }
+   
+   GetSorceryAccessible()
+   {
+      return bound(pbSorceryAccessible,0,1);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

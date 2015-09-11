@@ -1097,6 +1097,13 @@ properties:
 
    % Spectator mode?
    pbSpectatorMode = FALSE
+ 
+   % Spells reserved on mana. Format [spell, mana reserved, state]
+   plReservedSpells = $
+   piBaseMax_mana = 0
+
+   % Banditry stance object
+   poStance = $
 
 messages:
 
@@ -1112,6 +1119,15 @@ messages:
    Delete()
    {
       local i;
+
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),
+           @StopTracking,#oTarget=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),
+           @StopSneaking,#who=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),
+           @StopHiding,#who=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),
+           @StopSpying,#who=self);
 
       Send(self,@QuitGuild);
       foreach i in Send(SYS,@GetGuilds)
@@ -1181,6 +1197,7 @@ messages:
       }
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
+      Send(self,@UnReserveAllSpells);
 
       Send(&SwordShard,@ForgetQuester,#quester=self);
       Send(&RiijaSword,@ForgetQuester,#quester=self);
@@ -1190,6 +1207,8 @@ messages:
          DeleteTimer(ptBondedItemReport);
          ptBondedItemReport = $;
       }
+
+      poStance = $;
 
       Send(SYS,@SystemRemoveFromChampionLists,#oldchamp = self);
       Send(Send(SYS,@GetLibrary),@DeleteCompletedQuest,#who=self,#id=-1);
@@ -1496,7 +1515,7 @@ messages:
 
    AddExertion(amount = 0, SetToThreshold = FALSE)
    {
-      local iExertionAdded, iPercentReduced, iVigorLost;
+      local iExertionAdded, iPercentReduced, iVigorLost, i;
 
       % If we cannot gain vigor due to Second Wind, return out if trying
       % to take away exertion
@@ -1509,6 +1528,12 @@ messages:
 
       if iExertionAdded > 0
       {
+         foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+         {
+            iExertionAdded = Send(Nth(i,2),@ModifyExertion,
+                                    #state=Nth(i,3),#amount=iExertionAdded);
+         }
+
          % Parliament adjustment for exertion reduction.  Remove a % from
          % the amount added.
          iPercentReduced = Send(Send(SYS,@GetParliament),@GetFactionVigorBonus,#who=self);
@@ -1660,20 +1685,6 @@ messages:
       }
 
       return TRUE;
-   }
-
-   TryDeflect(what = $,caster=$)
-   {
-      local oDeflect;
-
-      oDeflect = Send(SYS,@FindSpellByNum,#Num=SID_DEFLECT);
-      if Send(self,@IsEnchanted,#what=oDeflect)
-      {
-         return Send(oDeflect,@TryDeflect,#caster=caster,#victim=self,
-                     #oSpell=what);
-      }
-
-      return FALSE;
    }
 
    NewOwner(what = $)
@@ -2817,6 +2828,7 @@ messages:
       % Remove the guy from the Assassin's game.
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
+      Send(self,@UnReserveAllSpells);
       piLight = 5;
 
       % Be sure they aren't declared a 'former member' by any existing guilds.
@@ -2854,6 +2866,7 @@ messages:
    AddDefaultSkills()
    "Add the skills that all players have."
    {
+      Send(self,@AddSkill,#num=SKID_AWARENESS,#initial=TRUE);
       return;
    }
 
@@ -3132,10 +3145,22 @@ messages:
 
    HealthTimer()
    {
-      local iDifference;
+      local iDifference, i;
       
       iDifference = bound(piMax_Health*100 - piHealth,-100,100);
       ptHealth = $;
+      
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDifference = Send(Nth(i,2),@ModifyRegenAmount,
+                                 #state=Nth(i,3),#regen=iDifference);
+      }
+
+      if iDifference < 0
+         AND piHealth <= 100
+      {
+         iDifference = 0;
+      }
 
       if iDifference > 0
       {
@@ -3144,6 +3169,31 @@ messages:
       else
       {
          Send(self,@LoseHealth,#amount=-iDifference,#decay=TRUE,#precision=TRUE);
+      }
+
+      return;
+   }
+
+   FinishTranceEarly(oTrance=$)
+   {
+      local i;
+      
+      foreach i in plEnchantments
+      {
+         if Nth(i,2) = oTrance
+         {
+            if IsTimer(Nth(i,1))
+            {
+               DeleteTimer(Nth(i,1));
+               SetNth(i,1,$);
+            }
+            
+            Send(Nth(i,2),@EndEnchantment,#who=self,#state=Nth(i,3));
+
+            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                 #type=ENCHANTMENT_PLAYER);
+            plEnchantments = DelListElem(plEnchantments,i);
+         }
       }
 
       return;
@@ -3191,11 +3241,6 @@ messages:
             else
             {
                Send(self,@ResetPlayerFlagList,#who=self);
-            }
-
-            if poOwner <> $
-            {
-               Send(poOwner,@SomethingChanged,#what=self);
             }
 
             if poOwner <> $
@@ -3317,6 +3362,8 @@ messages:
          }
       }
 
+      Send(self,@UnReserveAllSpells);
+
       plPassiveImprovement = $;
 
       return;
@@ -3356,6 +3403,8 @@ messages:
             removedSomething = TRUE;
          }
       }
+
+      Send(self,@UnReserveAllSpells);
 
       % Just to be sure, reset the player's flag list.
       % this should remove any excess flags like invis or shadowform.
@@ -3445,8 +3494,13 @@ messages:
 
             iTime = First(i);
 
+            % Permanent enchantments have no timer
             if iTime = $
-               OR IsTimer(iTime)
+            {
+               continue;
+            }
+
+            if IsTimer(iTime)
                OR iTime < 1
             {
                % Give them a short timer, and log this for debugging purposes.
@@ -3496,6 +3550,14 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if Send(First(i),@IsIllusion)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+
       % Kludgy, but oh well.  Not like any other code from this era is
       % exactly well-engineered or even "good", really.
       foreach i in plActive
@@ -3520,6 +3582,14 @@ messages:
          if Send(oSpell,@GetSchool) = school
          {
             Send(self,@RemoveEnchantment,#what=Nth(i,2),#report=report);
+         }
+      }
+
+      foreach i in plReservedSpells
+      {
+         if Send(First(i),@GetSchool) = school
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
          }
       }
 
@@ -3585,6 +3655,14 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if First(i) = what
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+
       return;
    }
 
@@ -3602,6 +3680,14 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if IsClass(First(i),class)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+      
       % Rest of this now done in Battler.
       propagate;
    }
@@ -3629,6 +3715,12 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         Send(self,@ShowAddEnchantment,#what=Nth(i,1),
+                                       #type=ENCHANTMENT_PLAYER);
+      }
+
       if ptSecondWind <> $
       {
          Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,
@@ -3640,6 +3732,34 @@ messages:
             #num=SID_CRYSTALIZE_MANA),#type=ENCHANTMENT_PLAYER);
       }
 
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,
+            #what=Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),
+            #type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,
+            #what=Send(SYS,@FindSkillByNum,#num=SKID_HIDE),
+            #type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,
+            #what=Send(SYS,@FindSkillByNum,#num=SKID_SPY),
+            #type=ENCHANTMENT_PLAYER);
+      }
+      
+      If Send(self,@GetStance) <> $
+      {
+         Send(self,@ShowAddEnchantment,
+            #what=Send(self,@GetStance),
+            #type=ENCHANTMENT_PLAYER);
+      }
+ 
       return;
    }
 
@@ -4712,6 +4832,7 @@ messages:
 
       % Check attack time.
       if NOT Send(self,@IsOkayAttackTime)
+         AND NOT IsClass(stroke_obj,&Throw)
       {
          return FALSE;
       }
@@ -4843,7 +4964,9 @@ messages:
 
       % Special case:  Ranged weapons in windy room.
       %  Do this after paying the costs so that the arrow is used.
-      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
+      if use_weapon <> $
+         AND (IsClass(use_weapon,&RangedWeapon)
+              OR IsClass(stroke_obj,&Throw))
       {
          lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
                               #byClass=&Winds);
@@ -4930,6 +5053,16 @@ messages:
 
          if iDist > iSquareRange
          {
+            if NOT IsClass(stroke_obj,&Throw)
+               AND Send(self,@GetSkillAbility,#skill_num=SKID_THROW) > 0
+            {
+               Post(Send(SYS,@FindSkillByNum,#num=SKID_THROW),@TryThrow,
+                  #who=self,
+                  #what=oTarget,
+                  #use_weapon=use_weapon);
+               return FALSE;
+            }
+
             Send(self,@SendAttackOutOfRangeMessage,#what=oFinalTarget,
                  #use_weapon=use_weapon,#stroke_obj=stroke_obj);
 
@@ -5082,6 +5215,19 @@ messages:
          Send(self,@MsgSendUser,#message_rsc=bad_line_of_sight);
          iOffense = iOffense / 2;
       }
+      
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iOffense = Send(Nth(i,2),@ModifyHitRoll,
+                                  #who=self,#what=what,#hit_roll=iOffense,
+                                  #state=Nth(i,3));
+      }
+
+      if Send(self,@GetStance) <> $
+      {
+         iOffense = Send(Send(self,@GetStance),@LastPriorityModifyHitRoll,
+            #who=self,#what=what,#hit_roll=iOffense);
+      }
 
       return Bound(iOffense,1,2000);
    }
@@ -5091,7 +5237,7 @@ messages:
    "Ranges from 1 to 2000."
    {
       local i, oWeapon, oShield, iParry, iDodge, iBlock, iAgility,
-            iDefense, iHealth, oMonster;
+            iDefense, iHealth, oMonster, iShocked;
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5141,7 +5287,32 @@ messages:
       iDefense = iDefense + Send(Send(SYS,@GetParliament),
                                  @GetFactionDefenseBonus,#who=self);
 
-      return Bound(iDefense,1,2000);
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDefense = Send(Nth(i,2),@ModifyDefensePower,
+                                 #who=self,#what=what,#defense_power=iDefense,
+                                 #state=Nth(i,3));
+      }
+
+      if Send(self,@GetStance) <> $
+      {
+         iDefense = Send(Send(self,@GetStance),@LastPriorityModifyDefensePower,
+            #who=self,#what=what,#defense_power=iDefense);
+      }
+
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         % Check for Shocked status effect, which lowers defense.
+         iShocked = Send(self,@GetStatusEffect,#type=STATUS_SHOCKED);
+         iDefense = iDefense - (iShocked * Send(Send(SYS,@GetExpansionSettings,
+                                        #find_class=&ElementalEffectsSettings),
+                                                         @GetElementalMultiple,
+                                                        #type=STATUS_SHOCKED));
+      }
+
+      return bound(iDefense,1,2000);
    }
 
    % The next three messages deal with the three defense skills.  These
@@ -5296,6 +5467,13 @@ messages:
 
       % Convert to high precision. Super dirty, will be cleaned up shortly.
       iDamageBonus = iDamageBonus*100;
+      
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDamage = Send(Nth(i,2),@ModifyDamage,
+                                 #who=self,#what=what,#damage=iDamage,
+                                 #state=Nth(i,3));
+      }
 
       iDamage = iDamage + iDamageBonus;
 
@@ -5303,9 +5481,15 @@ messages:
    }
 
    % This is the type of damage done.
-   GetDamageType(what = $, use_weapon = $)
+   GetDamageType(what = $, use_weapon = $, stroke_obj = $)
    {
       local oWeapon, oMonster;
+ 
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetDamageType,#who=self);
+      }
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5333,9 +5517,15 @@ messages:
       return Send(oWeapon,@GetAttackType);
    }
 
-   GetSpellType(what = $, use_weapon = $)
+   GetSpellType(what = $, use_weapon = $, damaging_now = FALSE, stroke_obj = $)
    {
-      local oWeapon, oMonster;
+      local oWeapon, oMonster, oTouchSpell;
+
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetSpellType,#who=self);
+      }
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5352,6 +5542,27 @@ messages:
       else
       {
          oWeapon = use_weapon;
+      }
+
+      if poStance <> $
+         AND IsClass(poStance,&ChargedClutch)
+         AND oWeapon <> $
+         AND IsClass(oWeapon,&Weapon)
+         AND NOT IsClass(oWeapon,&TouchAttackSpell)
+         AND NOT IsClass(oWeapon,&RangedWeapon)
+         AND NOT IsClass(oWeapon,&NeruditeSword)
+      {
+         oTouchSpell = Send(self,@GetActiveTouchSpell);
+         
+         if oTouchSpell <> $
+         {
+            return Send(poStance,
+                        @ModifyWeaponSpellType,
+                        #who=self,
+                        #oWeapon=oWeapon,
+                        #oTouchSpell=oTouchSpell,
+                        #damaging_now=damaging_now);
+         }
       }
 
       if oWeapon = $
@@ -5403,7 +5614,14 @@ messages:
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
             iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
-            bAttackerEmpowered, bShielded;
+            bAttackerEmpowered, bShielded, oRod,
+            iCorrode, iCorrodeMultiple, iCorrodeReduction;
+
+      % Check for stat steals
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&DrainHex)
+      {
+         Send(Nth(i,2),@StealStat,#who=what,#what=self,#state=Nth(i,3));
+      }
 
       if NOT precision
       {
@@ -5443,7 +5661,35 @@ messages:
                            #report_resistance=report_resistance);
             Send(i,@DefendingHit,#who=self,#what=what);
          }
-      
+
+         if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+         {
+            iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+            if iCorrode > 0
+            {
+               iCorrodeMultiple = Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalMultiple,
+                  #type = STATUS_CORRODE);
+         
+               iCorrodeReduction = (iCorrode/iCorrodeMultiple);
+               
+               if aspell = 0
+               {
+                  damage = bound(damage + iCorrodeReduction*100,1,$);
+               }
+               else
+               {
+                  if atype <> 0
+                  {
+                     damage = bound(damage + iCorrodeReduction/2*100,1,$);
+                  }
+               }
+            }
+         }
+
          iResistance = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
 
          foreach i in plRadiusEnchantments
@@ -5464,6 +5710,63 @@ messages:
                Send(First(i),@ImproveAbility,#who=self,#target=what);
             }
          }
+    
+         if IsClass(what,&Player)
+         {
+            if (aspell & ATCK_SPELL_HOLY
+               OR aspell & ATCK_SPELL_UNHOLY)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_DEVOTION) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_DEVOTION),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+            if (aspell & ATCK_SPELL_COLD
+               OR aspell & ATCK_SPELL_ACID)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENTROPY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENTROPY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+            if (aspell & ATCK_SPELL_FIRE
+               OR aspell & ATCK_SPELL_SHOCK)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENERGY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENERGY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+            if (aspell & ATCK_SPELL_QUAKE
+               OR atype & ATCK_WEAP_BLUDGEON)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_INTENSITY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_INTENSITY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell,
+                                     #atype=atype);
+            }
+            if (atype & ATCK_WEAP_SLASH
+               OR atype & ATCK_WEAP_THRUST
+               OR atype & ATCK_WEAP_PIERCE)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_LETHALITY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_LETHALITY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell,
+                                     #atype=atype);
+            }
+         }
 
          % Add attmods AFTER resistance/suscep mods.
          damage = damage + bonus;
@@ -5473,6 +5776,19 @@ messages:
 
       % Make sure we don't deal negative damage.
       damage = Bound(damage,0,$);
+
+      if IsClass(what,&Player)
+         AND Send(what,@GetStance) <> $
+      {
+         damage = Send(Send(what,@GetStance),@LastPriorityModifyDamage,
+            #who=what,#what=self,#damage=damage);
+      }
+      
+      if Send(self,@GetStance) <> $
+      {
+         damage = Send(Send(self,@GetStance),@LastPriorityModifyDefenseDamage,
+            #who=self,#what=what,#damage=damage);
+      }
 
       iDuration = 800;
       if damage <= 600
@@ -5658,9 +5974,33 @@ messages:
          Send(shrunken,@DamageTaken,#what=what,#amount=damage/100);
       }
 
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         % Apply possible elemental status effects
+         if atype = 0
+         {
+            if aspell <> 0
+            {
+               Send(self,@ApplyElementalStatusEffects,#damage=damage/100,
+                         #aspell=aspell);
+            }
+         }
+         else
+         {
+            % Apply only half the effects from partially magical attacks
+            if aspell <> 0
+            {
+               Send(self,@ApplyElementalStatusEffects,#damage=(damage/100/2),
+                         #aspell=aspell);
+            }
+         }
+      }
+
       return damage;
    }
-
+ 
    % This message kicks in when damage is done to the opponent.
    DidDamage(what = $, amount = 0)
    {
@@ -5715,13 +6055,7 @@ messages:
       if oWeapon = $
       {
          % This will return $ if there's no Touch Attacks enchanting player.
-         oWeapon = Send(self,@GetEnchantmentsByClass,
-               #EnchClass=&TouchAttackSpell);
-         if oWeapon <> $
-         {
-            % The spell object is the second element of the list. Get that.
-            oWeapon = Nth(first(oWeapon),2);
-         }
+         oWeapon = Send(self,@GetActiveTouchSpell);
       }
 
       return oWeapon;
@@ -6379,7 +6713,7 @@ messages:
    "Have we waited long enough since the last attack/spell? Sets new "
    "valid attack time (time in msec, default 1 second)."
    {
-      local i;
+      local i, n, iChilled, iChilledMultiple, iChilledTotal;
 
       if ptAttackTimer <> $
       {
@@ -6395,8 +6729,39 @@ messages:
          i = time;
       }
 
+      foreach n in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         i = Send(Nth(n,2),@ModifyDelay,
+                           #state=Nth(n,3),#iDelay=i);
+      }
+
       if i > 0
       {
+         if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+         {
+            iChilled = Send(self,@GetStatusEffect,#type=STATUS_CHILLED);
+            if iChilled > 0
+            {
+               iChilledMultiple = Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalMultiple,
+                  #type = STATUS_CHILLED);
+
+               iChilledTotal = iChilled * iChilledMultiple;
+
+               if iChilledTotal > 100
+               {
+                  while iChilledTotal > 100
+                  {
+                     i = i + 100;
+                     iChilledTotal = iChilledTotal - 100;
+                  }
+               }
+            }
+         }
+         
          ptAttackTimer = CreateTimer(self,@AttackTimer,i);
       }
 
@@ -6705,7 +7070,15 @@ messages:
       iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                            #who=self,#hpregen=TRUE);
 
-      return bound(iTime,1000,60000);
+      iTime = bound(iTime,1000,60000);
+
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,
+            #who=self,#iTime=iTime);
+      }
+
+      return iTime;
    }
 
    CalculateManaTime()
@@ -6713,7 +7086,7 @@ messages:
    {
       local iTime, oSpell, iSpellPower;
 
-      if piMana > piMax_mana
+      if piMana > piBaseMax_mana
       {
          iTime = BOOST_DECAY_TIME;
       }
@@ -6721,7 +7094,7 @@ messages:
       {
          iTime = BASE_REGEN_TIME + (25-Send(self,@GetMysticism))*1000;
          iTime = iTime * 200 / bound(piVigor,1,$);
-         iTime = iTime/ bound(piMax_Mana,1,$);
+         iTime = iTime/ bound(piBaseMax_mana,1,$);
 
          iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                               #who=self,#hpregen=FALSE);
@@ -6739,6 +7112,12 @@ messages:
             iTime = Send(oSpell,@AdjustManaTime,#iSpellPower=iSpellPower,
                            #time=iTime);
          }
+      }
+
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRejuvenationTime,
+            #who=self,#iTime=iTime);
       }
 
       return iTime;
@@ -6788,7 +7167,7 @@ messages:
          return;
       }
 
-      if piFlags & PFLAG_TRANCE AND NOT decay
+      if NOT decay
       {
          Send(self,@BreakTrance,#event=EVENT_DAMAGE);
       }
@@ -6828,7 +7207,7 @@ messages:
    GainHealthNormal(amount = $, precision = FALSE)
    "Don't add beyond piMax_health"
    {
-      local iOldhealth;
+      local iOldhealth,iMantled, iMantledDivisor;
 
       if amount = $
       {
@@ -6845,9 +7224,24 @@ messages:
 
       iOldhealth = piHealth;
 
+      if Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalEffectsActive)
+      {
+         iMantled = Send(self,@GetStatusEffect,#type=STATUS_MANTLED);
+         if iMantled > 0
+         {
+            iMantledDivisor = Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&ElementalEffectsSettings),
+                  @GetElementalMultiple,
+                  #type = STATUS_MANTLED);
+            amount = amount - (iMantled/iMantledDivisor)*100;
+         }
+      }
+
       if amount < 0
       {
-         return;
+         return 0;
       }
 
       if piHealth > piMax_health*100
@@ -7160,7 +7554,8 @@ messages:
 
    ComputeMaxMana()
    {
-      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility;
+      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility,
+            iSumPercentReduction;
 
       index = 1;
       iNodelist = piNodelist;
@@ -7194,6 +7589,11 @@ messages:
                                           #state=Nth(i,3));
          }
       }
+      
+      if IsClass(self,&DM)
+      {
+         piMax_mana = 200;
+      }
 
       oCrystalizeMana = Send(SYS,@FindSpellByNum,#num=SID_CRYSTALIZE_MANA);
       iCrystalizeManaAbility = Send(self,@GetSpellAbility,
@@ -7210,6 +7610,17 @@ messages:
       {
          piMax_mana = Send(self, @GetInitialMaxMana);
       }
+
+      piBaseMax_mana = piMax_mana;
+      
+      iSumPercentReduction = 0;
+      foreach i in plReservedSpells
+      {
+         iSumPercentReduction = iSumPercentReduction + Nth(i,2);
+      }
+      iSumPercentReduction = Bound(iSumPercentReduction,0,100);
+      
+      piMax_mana = piBaseMax_mana - (piBaseMax_mana*iSumPercentReduction)/100;
 
       Send(self,@NewMana);
 
@@ -7869,8 +8280,8 @@ messages:
 
       lOldList = plSchools;
 
-      % 11 elements right now.
-      plSchools = [ 0,0,0,0,0,0,0,0,0,0,0 ];
+      % 15 elements right now.
+      plSchools = [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ];
 
       foreach i in plSpells
       {
@@ -11476,6 +11887,12 @@ messages:
 
       iTime = 1000 + (30* (51-Send(self,@getStamina)));
 
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,
+            #who=self,#iTime=iTime);
+      }
+
       return iTime;
    }
 
@@ -11613,6 +12030,18 @@ messages:
    {
       local i, oEnch,state, bFound, oYellNum, oYellRoom;
 
+      if event = EVENT_RUN
+         OR event = EVENT_DAMAGE
+         OR event = EVENT_REST
+         OR event = EVENT_ATTACK
+         OR event = EVENT_CAST
+      {
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@StopHiding,#who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@StopSneaking,
+            #who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@StopSpying,#who=self);
+      }
+
       bFound = FALSE;
       foreach i in plEnchantments
       {
@@ -11625,8 +12054,18 @@ messages:
                state = Nth(i,3);
             }
 
-            Send(oEnch,@BreakTrance,#who=self,#state=state,
-                  #event=event,#what=what);
+            if IsClass(oEnch,&Trance)
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                    #event=event,#what=what,
+                    #time_remaining=GetTimeRemaining(Nth(i,1)));
+            }
+            else
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                     #event=event,#what=what);
+            }
+
             bFound = TRUE;
          }
       }
@@ -11756,6 +12195,7 @@ messages:
 
       Send(self,@UnuseAllItems);
       Send(self,@RemoveAllEnchantments);
+      Send(self,@UnReserveAllSpells);
       Send(self,@RecalcBulkAndWeight);
       Send(self,@ResetPlayerFlagList);
 
@@ -11876,6 +12316,17 @@ messages:
          }
       }
 
+      poStance = $;
+
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),
+           @StopTracking,#oTarget=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),
+           @StopSneaking,#who=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),
+           @StopHiding,#who=self);
+      Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),
+           @StopSpying,#who=self);
+
       % Reset death costs to 0.
       piDeathCost = 0;
 
@@ -11928,6 +12379,8 @@ messages:
 
          if IsClass(nObj,&UtilitySpell)
             OR IsClass(nObj,&Blink)
+            OR (IsClass(nObj,&Skill)
+               AND Send(nObj,@IsUtilitySkill))
          {
             continue;
          }
@@ -12162,6 +12615,7 @@ messages:
 
          if NOT IsClass(nobj,&Blink)  % DON'T COUNT BLINK!
             AND NOT IsClass(nobj,&UtilitySpell) % Don't count utility spells
+            AND NOT (IsClass(nobj,&Skill) AND Send(nobj,@IsUtilitySkill))
          {
             if nSchool = SS_KRAANAN
                AND nLevel > iKraanan
@@ -12454,6 +12908,7 @@ messages:
 
             if iLevel > iWeapon
                AND iLevel < 50       % Catch DM only skills
+               AND NOT Send(oSpellObj,@IsUtilitySkill)
             {
                iWeapon = iLevel;
             }
@@ -14584,7 +15039,7 @@ messages:
 
    SumDamageReduction()
    {
-      local iArmor, d;
+      local iArmor, d, iCorrode, iCorrodeMultiple;
 
       iArmor = 0;
 
@@ -14598,6 +15053,22 @@ messages:
          if IsClass(d,&ArmorOfGort)
          {
             iArmor = iArmor + (Send(self,@GetEnchantedState,#what=d) / 25);
+         }
+      }
+
+      if Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalEffectsActive)
+      {
+         iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+         if iCorrode > 0
+         {
+            iCorrodeMultiple = Send(Send(SYS,@GetExpansionSettings,
+               #find_class=&ElementalEffectsSettings),
+               @GetElementalMultiple,
+               #type = STATUS_CORRODE);
+
+            iArmor = iArmor - (iCorrode/iCorrodeMultiple);
          }
       }
 
@@ -14948,6 +15419,351 @@ messages:
       }
 
       propagate;
+   }
+   
+   GetHexIncEffect(iSpellPower=0)
+   {
+      local iRunesEff;
+      
+      iRunesEff = 0;
+      if Send(self,@GetSkillAbility,#Skill_num=SKID_UNHALLOWED_RUNES) > 0
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_UNHALLOWED_RUNES),
+               @DoSkill,#who=self)
+      {
+         iRunesEff = Send(Send(SYS,@FindSkillByNum,
+                                      #num=SKID_UNHALLOWED_RUNES),
+                                      @GetIncHexEffectiveness,#who=self);
+      }
+      
+      return iSpellPower + 1 + iRunesEff;
+   }
+
+   GetHexResistance()
+   {
+      local iArcaneKnowledgeRes;
+      
+      iArcaneKnowledgeRes = 0;
+      if Send(self,@GetSkillAbility,#Skill_num=SKID_ARCANE_KNOWLEDGE) > 0
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_ARCANE_KNOWLEDGE),
+               @DoSkill,#who=self)
+      {
+         iArcaneKnowledgeRes = Send(Send(SYS,@FindSkillByNum,
+                                      #num=SKID_ARCANE_KNOWLEDGE),
+                                      @GetHexResistance,#who=self);
+      }
+      
+      return bound(piHexResistance+iArcaneKnowledgeRes,-100,100);
+   }
+
+   GetCasterMaxHexes()
+   {
+      local iHexesMax;
+      iHexesMax = Send(Send(SYS,@GetExpansionSettings,
+                  #find_class=&WitcherySettings),
+                  @GetHexesMax);
+
+      if Send(self,@GetSkillAbility,#Skill_num=SKID_BLOOD_RUNES) > 0
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_BLOOD_RUNES),
+               @DoSkill,#who=self)
+      {
+         iHexesMax = iHexesMax + Send(Send(SYS,@FindSkillByNum,
+                                      #num=SKID_BLOOD_RUNES),
+                                      @GetMaxHexesIncrease);
+      }
+                  
+      return iHexesMax;
+   }
+
+   ReserveSpell(oSpell=$,iPercentManaReserved=0,iSpellPower=0)
+   {
+      local iState;
+      
+      iState=Send(oSpell,@GetStateValue,
+                        #iSpellpower=iSpellpower,
+                        #who=self,
+                        #target=self);
+
+      if oSpell <> $
+         AND NOT Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         plReservedSpells = 
+            Cons([oSpell,iPercentManaReserved,iState],plReservedSpells);
+         Post(self,@ComputeMaxMana);
+         Post(self,@DrawResistances);
+         Send(self,@ShowAddEnchantment,#what=oSpell,#type=ENCHANTMENT_PLAYER);
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+   
+   UnReserveSpell(oSpell=$)
+   {
+      local i;
+
+      if oSpell <> $
+         AND Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         foreach i in plReservedSpells
+         {
+            if First(i) = oSpell
+            {
+               Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+               Post(self,@ComputeMaxMana);
+               Post(self,@DrawResistances);
+               plReservedSpells = DelListElem(plReservedSpells,i);
+               Send(self,@ShowRemoveEnchantment,#what=oSpell,
+                                                #type=ENCHANTMENT_PLAYER);
+               return TRUE;
+            }
+         }
+      }
+      return FALSE;
+   }
+   
+   UnReserveAllSpells()
+   {
+      local i;
+
+      foreach i in plReservedSpells
+      {
+         Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+         Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),
+                                          #type=ENCHANTMENT_PLAYER);
+         plReservedSpells = DelListElem(plReservedSpells,i);
+      }
+      Post(self,@ComputeMaxMana);
+
+      return;
+   }
+   
+   GetPercentManaReserved(oSpell=$)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetMaxManaWithoutReservedPenalties()
+   {
+      return piBaseMax_mana;
+   }
+   
+   GetPercentReservedManaTotal()
+   {
+      local i, iPercentReservedTotal;
+      
+      iPercentReservedTotal = 0;
+      
+      foreach i in plReservedSpells
+      {
+         iPercentReservedTotal = iPercentReservedTotal + Nth(i,2);
+      }
+      
+      return iPercentReservedTotal;
+   }
+   
+   GetReservedSpells()
+   {
+      return plReservedSpells;
+   }
+   
+   HasReservedSpell(oSpell=$)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+   
+   ReservesForThisLevel(iLevel=0)
+   {
+      if iLevel = 1
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_ONE);
+      }
+      if iLevel = 2
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_TWO);
+      }
+      if iLevel = 3
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_THREE);
+      }
+      if iLevel = 4
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FOUR);
+      }
+      if iLevel = 5
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FIVE);
+      }
+      return FALSE;
+   }
+   
+   UseReserveSkill(oSpell=$,iSpellPower=0)
+   {
+      local iLevel;
+      
+      iLevel = Send(oSpell,@GetLevel);
+      
+      if iLevel = 1
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_ONE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 2
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_TWO),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 3
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_THREE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 4
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FOUR),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 5
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FIVE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      return;
+   }
+   
+   IsEnchanted(what=$,byClass=&Spell)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if (what = $
+            AND IsClass(First(i),byClass))
+            OR First(i) = what
+         {
+            return TRUE;
+         }
+      }
+      
+      propagate;
+   }
+
+   GetEnchantedState(what=$)
+   {
+      local i;
+
+      foreach i in plReservedSpells
+      {
+         if Nth(i,1) = what
+         {
+            return Nth(i,3);
+         }
+      }
+
+      propagate;
+   }
+   
+   InflictWait(time=1000)
+   {
+      if ptAttackTimer <> $
+      {
+         DeleteTimer(ptAttackTimer);
+         ptAttackTimer = $;
+      }
+      
+      ptAttackTimer = CreateTimer(self,@AttackTimer,time);
+      
+      return;
+   }
+   
+   GetActiveTouchSpell()
+   {
+      local i;
+      
+      foreach i in plEnchantments
+      {
+         if IsClass(Nth(i,2),&TouchAttackSpell)
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      foreach i in plReservedSpells
+      {
+         if IsClass(Nth(i,1),&TouchAttackSpell)
+         {
+            return Nth(i,1);
+         }
+      }
+      
+      return $;
+   }
+
+   ClearStance()
+   {
+      if poStance <> $
+      {
+         Send(Send(self,@GetStance),@EndStance,#who=self);
+      }
+      poStance = $;
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+
+   BeginStance(what=$)
+   {
+      poStance = what;
+      
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+
+   GetStance()
+   {
+      return poStance;
    }
 
 end
