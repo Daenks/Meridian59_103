@@ -166,14 +166,6 @@ session_node * GetSessionByID(int session_id)
 		return NULL;
 }
 
-int GetIPBySessionId(int session_id)
-{
-   if ((num_sessions > 0) && (session_id <= num_sessions))
-      return sessions[session_id].conn.addr.s_addr;
-      
-   return 0;
-}
-
 session_node * GetSessionByAccount(account_node *a)
 {
 	int i;
@@ -495,6 +487,19 @@ void CloseSession(int session_id)
 	s->state = -1;
 	
 	LeaveSessionLock();
+}
+
+// Hangs up a session straight away, instead of posting to main loop.
+void HangupSessionNow(session_node *s)
+{
+   if (!s->connected)
+      return;
+
+   if (s->conn.type != CONN_SOCKET)
+      return;
+
+   CloseSession(s->session_id);
+   HangupSession(s);
 }
 
 void HangupSession(session_node *s)

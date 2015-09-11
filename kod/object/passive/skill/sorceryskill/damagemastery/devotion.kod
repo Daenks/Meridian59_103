@@ -1,0 +1,51 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Devotion is DamageMastery
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   devotion_name_rsc = "devotion"
+   devotion_icon_rsc = iremcurs.bgf
+   devotion_desc_rsc = \
+      "A devoted mage excels at the handling of holy energies. It matters not "
+      "whether that holiness stems from good or evil."
+
+classvars:
+
+   vrName = devotion_name_rsc
+   vrIcon = devotion_icon_rsc
+   vrDesc = devotion_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_DEVOTION
+   viSchool = SKS_SORCERY
+   viSkill_Level = 2
+   viChance_to_Increase = 30
+   viMeditate_ratio = 70
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viDamageTypeOne = ATCK_SPELL_HOLY
+   viDamageTypeTwo = ATCK_SPELL_UNHOLY
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

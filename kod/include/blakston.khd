@@ -18,8 +18,12 @@
    % symbolizes positive infinity for quantities that must be non-negative
    INFINITE_COUNT = -1
 
-   % Special way to send message to system.
+   % Special way to send message to system and other objects created by
+   % blakserv.
    SYS = 0
+   SETTINGS_OBJECT = 1
+   REALTIME_OBJECT = 2
+   EVENTENGINE_OBJECT = 3
 
    % Maximum integer value in blakod
    %  Truncated a bit for fudge factor room.  Useful for timer bounds.
@@ -51,6 +55,7 @@
    MOVEON_NOTIFY     = 3
 
    % Object flags for client.
+   OF_AUTOLOOT       = 0x00000001
    OF_GROUPING       = 0x00000002
    OF_PLAYER         = 0x00000004
    OF_ATTACKABLE     = 0x00000008
@@ -66,11 +71,13 @@
    OF_APPLYABLE      = 0x00001000
    OF_SAFETY         = 0x00002000
    OF_TEMPSAFE       = 0x00004000
-
+   OF_REAGENTBAG     = 0x00008000
    OF_BOUNCING       = 0x00010000
    OF_FLICKERING     = 0x00020000
    OF_FLASHING       = 0x00040000
    OF_PHASING        = 0x00080000
+   OF_AUTOCOMBINE    = 0x00100000
+   OF_SPELLPOWER     = 0x00200000
 
    % Drawing effects flags, separate from the boolean object flags.
    DRAWFX_NONE           = 0
@@ -181,6 +188,12 @@
    LIGHT_NEWSGLOBE = 0x3DFF
    % Very dim white, with blue tint, for the Tos Fountain generally.
    LIGHT_FOUNTAIN  = 0x0C6C
+
+   % Used for shirts/pants on players and humans.
+   SHIRT_MASK = 0x00ff
+   SHIRT_MUL  = 0x0001
+   PANTS_MASK = 0xff00
+   PANTS_MUL  = 0x0100
 
    %%% Palette translations
 
@@ -1544,6 +1557,11 @@
    % When wounded, monster will seek the closest ally and move to them
    AI_MOVE_REGROUP            = 0x0000040
    AI_MOVE_WALKTHROUGH_WALLS  = 0x0000080
+   % monster will continue moving even if the room has no users
+   AI_MOVE_WHEN_ALONE         = 0x0000100
+   AI_CAN_PATROL              = 0x0000200
+   AI_HAS_TARGET_LOCATION     = 0x0000400
+   AI_LOOPING_PATROL          = 0x0000800
    AI_NOFIGHT                 = 0x0001000
    % monster will fight other monsters
    AI_FIGHT_MONSTERS          = 0x0002000
@@ -1697,6 +1715,8 @@
    ITEM_USE_SHIRT = 0x0800
    % In theory, used for masks.
    ITEM_USE_FACE = 0x1000
+   % Banditry-specific weapon.
+   ITEM_USE_THROWING_DAGGERS = 0x2000
 
    ITEMTYPE_MISC =     0
    ITEMTYPE_WEAPON =   0x000001
@@ -1811,6 +1831,7 @@
    % Missile weapons ammo-type, determined by each missile weapon.
    AMMO_ARROW = 1
    AMMO_BOLT  = 2
+   AMMO_DAGGER= 3
 
    %%% Attack types
 
@@ -1857,6 +1878,14 @@
    ATCK_SPELL_ACID       = 0x0040
    ATCK_SPELL_QUAKE      = 0x0080
 
+   % Elemental status effect types
+   STATUS_SHOCKED        = 1
+   STATUS_CHILLED        = 2
+   STATUS_BURNING        = 3
+   STATUS_CORRODE        = 4
+   STATUS_HUMBLED        = 5
+   STATUS_MANTLED        = 6
+
    % For hunter swords
    ATCK_SPELL_HUNTERSWORD= 0x0100
 
@@ -1875,6 +1904,7 @@
    STROKE_ZAP = 23
    STROKE_ICY_FINGERS = 24
    STROKE_ACID_TOUCH = 25
+   STROKE_UNHOLY_TOUCH = 26
 
    %%% Unique skill constants
 
@@ -1909,6 +1939,56 @@
    SKID_PROFICIENCY_SHORT_SWORD = 457
    % Duplicate, for the easily confused.
    SKID_PROFICIENCY_SHORTSWORD = 457
+   
+   % Witchery skills
+   SKID_ARCANE_KNOWLEDGE = 458
+   SKID_ROTE_MEMORIZATION = 459
+   SKID_EFFICIENT_CASTING = 460
+   SKID_ANCIENT_PACT = 461
+   SKID_UNHALLOWED_RUNES = 462
+   SKID_BLOOD_RUNES = 463
+   SKID_OSTRACIZATION = 464
+   
+   % Sorcery skills
+   SKID_LINK_ONE = 480
+   SKID_LINK_TWO = 481
+   SKID_LINK_THREE = 482
+   SKID_LINK_FOUR = 483
+   SKID_LINK_FIVE = 484
+   SKID_BLOOD_MAGIC = 485
+   SKID_FORCE_SPIKE = 486
+   SKID_WILL_SURGE = 487
+   SKID_VOLATILE_FOCUS = 488
+   SKID_CHARGED_CLUTCH = 489
+   SKID_SOUL_AND_BODY_ONE = 490
+   SKID_DEVOTION = 491
+   SKID_ENTROPY = 492
+   SKID_ENERGY = 493
+   SKID_EFFICIENCY = 494
+   SKID_INTENSITY = 495
+   SKID_LETHALITY = 496
+
+   % Banditry skills.
+   SKID_AWARENESS = 500
+   SKID_LIGHT_FEET = 501
+   SKID_STAB = 502
+   SKID_PROFICIENCY_DAGGER = 503
+   SKID_PERCEPTION = 504
+   SKID_THROW = 505
+   SKID_TUMBLE = 506
+   SKID_TRACK = 507
+   SKID_PROFICIENCY_THROW = 508
+   SKID_PRECISION = 509
+   SKID_SNEAK = 510
+   SKID_SPY = 511
+   SKID_TIGHT_GRIP = 512
+   SKID_HIDE = 513
+   SKID_BACKSTAB = 514
+   SKID_POISED_SOUL = 515
+   SKID_SWIFT_HANDS = 516
+   SKID_HEAVY_ARMS = 517
+   SKID_RECKLESS_HEART = 518
+   SKID_FOCUSED_MIND = 519
 
    %%% Unique spell constants
 
@@ -2091,6 +2171,27 @@
    SID_DEATH_RIFT = 185
    SID_PHASE = 186
    SID_MEDITATE = 187
+   SID_UNHOLY_TOUCH = 188
+   
+   SID_HEX_VULNERABILITY = 210
+   SID_HEX_SLOW = 211
+   SID_HEX_LEECHES = 212
+   SID_HEX_FRAILTY = 213
+   SID_HEX_BARBS = 214
+   SID_HEX_HUMILITY = 215
+   SID_HEX_CORRUPTION = 216
+   SID_HEX_FLAMMABILITY = 217
+   SID_HEX_CONDUCTIVITY = 218
+   SID_HEX_ALGIDITY = 219
+   SID_HEX_CORROSION = 220
+   SID_HEX_FESTER = 221
+   SID_HEX_MUTE = 222
+   SID_HEX_WEAKEN = 223
+   SID_HEX_EXHAUSTION = 224
+   SID_HEX_SAP = 225
+   SID_HEX_BESTILL = 226
+   SID_HEX_BECLOUD = 227
+   SID_HEX_BLACK_MANTLE = 228
 
    % Depreciated spell IDs
    SID_LIGHTNING = 1                   % use SID_LIGHTNING_BOLT
@@ -2168,12 +2269,21 @@
    SS_RIIJA = 5
    SS_JALA = 6
    SS_DM_COMMAND = 7
+   SS_WITCHERY = 8
+
+   % Witchery subschools
+   SSS_WITCHERY_XAERDUN = 1
+   SSS_WITCHERY_NEQUZON = 2
+   SSS_WITCHERY_IWODACH = 3
+   SSS_WITCHERY_RAUMLAR = 4
 
    % We may use skill an spell schools in the same routines, thus no overlap.
    SKS_FENCING = 10
    SKS_BRAWLING = 11
    SKS_TELEPATHY = 12
    SKS_THIEVERY = 13
+   SKS_SORCERY = 14
+   SKS_BANDITRY = 15
 
    % Enchantment icon showing
    ENCHANTMENT_SHOW_NONE = 0
@@ -2235,7 +2345,7 @@
 
    % First set of flags (in piFlags)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG_MASK              = 0x1C63D7E
+   PFLAG_MASK              = 0x7C63D7E
 
    PFLAG_INVISIBLE         = 0x0000001
    PFLAG_MURDERER          = 0x0000002
@@ -2265,10 +2375,13 @@
    PFLAG_MOVED_SINCE_ENTRY = 0x0400000
    PFLAG_GROUPING          = 0x0800000
    PFLAG_KILLED_BY_PLAYER  = 0x1000000
+   PFLAG_REAGENTBAG        = 0x2000000
+   PFLAG_AUTOLOOT          = 0x4000000
+   % This PFLAG is full.
 
    % Second set of player flags (in piFlags2)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG2_MASK             = 0x003E80
+   PFLAG2_MASK             = 0x00FE80
 
    PFLAG2_HASTED           = 0x000001
    PFLAG2_DANCING          = 0x000002
@@ -2288,6 +2401,14 @@
    % Sum of the other squelched flags.
    PFLAG2_SQUELCHED_ALL    = 0x001E00
    PFLAG2_TEMPSAFE         = 0x002000
+   PFLAG2_AUTOCOMBINE      = 0x004000
+   PFLAG2_SPELLPOWER       = 0x008000
+
+   % Third set of player flags (in piFlags3)
+   % piFlags3 can now be used as a proper bitfield, and no longer
+   % modifies player advancement.
+   % A mask of flags that are unaffected by ResetPlayerFlagList
+   PFLAG3_MASK             = 0x0000000
 
    % Set of flags just for DM's
    % DM is completely invisible
@@ -2517,6 +2638,37 @@
    COUNCILOR_FOUR  = 4
    COUNCILOR_FIVE  = 5
 
+   %%% Reputation
+   
+   REP_MONSTER_MIN = 0
+   REP_MONSTER_MAX = 13
+   % monster factions
+   REP_NEUTRAL    = 0
+   REP_FAROL      = 1
+   REP_ORC        = 2
+   REP_TROLL      = 3
+   REP_FARNOHL    = 4
+   REP_LICH       = 5
+   REP_PSAVAR     = 6
+   REP_KKAVAR     = 7
+   REP_CTAVAR     = 8
+   REP_FEY_GOOD   = 9
+   REP_FEY_EVIL   = 10
+   REP_FROGMEN    = 11
+   REP_HERETIC    = 12
+   REP_UNDEAD     = 13
+   
+   REP_TOWN_MIN   = 10001
+   REP_TOWN_MAX   = 10007
+   % Town Reputation
+   REP_TOS        = 10001
+   REP_BARLOQUE   = 10002
+   REP_CORNOTH    = 10003
+   REP_JASPER     = 10004
+   REP_MARION     = 10005
+   REP_KOCATAN    = 10006
+   REP_KO_OUTPOST = 10007
+   
    %%% Animation types
 
    ANIMATE_NONE         = 1
@@ -3401,6 +3553,48 @@
    HUNGER_4 = 8
    HUNGER_5 = 10
 
+   %%% Game Event Bit Field (double wide!!)
+   % This is a double wide bitfield, remember to add both a high byte and low
+   % byte for your event.  When you run out of flag room in the low byte, increment
+   % the high byte value and start over with lowbyte = 0x00000001 (or 0x1, etc.)
+   % for example if the high byte is 0x2 and you run out of lowbytes for that
+   % high byte, put your event at high byte = 0x3 and lowbyte = 0x1.  It is
+   % probably best to keep this list in order to avoid confusion
+   %%% Game Event High Byte
+   GAMEEVENT_HIBYTE_CHAOS            = 0x1
+   GAMEEVENT_HIBYTE_WAR              = 0x1
+   GAMEEVENT_HIBYTE_NODE_ATK         = 0x1
+   GAMEEVENT_HIBYTE_FACT_GAME        = 0x1
+   GAMEEVENT_HIBYTE_TERRITORY        = 0x1
+   GAMEEVENT_HIBYTE_TOKEN            = 0x1
+   GAMEEVENT_HIBYTE_EASTER_EGG       = 0x1
+   GAMEEVENT_HIBYTE_EASTER_INVASION  = 0x1
+   GAMEEVENT_HIBYTE_RAT_INVASION     = 0x1
+   GAMEEVENT_HIBYTE_ORC_INVASION     = 0x1
+   GAMEEVENT_HIBYTE_QORMAS           = 0x1
+   
+   %%% Game Event Low Byte
+   GAMEEVENT_LOBYTE_CHAOS            = 0x1
+   GAMEEVENT_LOBYTE_WAR              = 0x2
+   GAMEEVENT_LOBYTE_NODE_ATK         = 0x4
+   GAMEEVENT_LOBYTE_FACT_GAME        = 0x8
+   GAMEEVENT_LOBYTE_TERRITORY        = 0x10
+   GAMEEVENT_LOBYTE_TOKEN            = 0x20
+   GAMEEVENT_LOBYTE_EASTER_EGG       = 0x40
+   GAMEEVENT_LOBYTE_EASTER_INVASION  = 0x80
+   GAMEEVENT_LOBYTE_RAT_INVASION     = 0x100
+   GAMEEVENT_LOBYTE_ORC_INVASION     = 0x200
+   GAMEEVENT_LOBYTE_QORMAS           = 0x400
+   
+   %%% Game Event Time Scale Constants
+   GAMEEVENT_SCALE_SECONDS          = 0
+   GAMEEVENT_SCALE_MINUTES          = 1
+   GAMEEVENT_SCALE_HOURS            = 2
+   GAMEEVENT_SCALE_DAYS             = 3
+   GAMEEVENT_SCALE_WEEKS            = 4
+   GAMEEVENT_SCALE_MONTHS           = 5
+   GAMEEVENT_SCALE_YEARS            = 6
+   
    %%% War Event
 
    % Included here for use in admin window.
@@ -3438,3 +3632,16 @@
    % Survival options
    OPT_NATURAL = 1    % Rooms with natural monster spawn only
    OPT_PVP_ON = 2     % Players can fight
+   
+   % Gear settings
+   ARMOR_SYSTEM_CLASSIC = 1
+   ARMOR_SYSTEM_PERCENTAGE = 2
+
+   RESISTANCE_SYSTEM_CLASSIC = 1
+   RESISTANCE_SYSTEM_COMBINED = 2
+   
+   SPELLPOWER_PENALTY_SYSTEM_CLASSIC = 1
+   SPELLPOWER_PENALTY_SYSTEM_PERCENTAGE = 2
+   
+   RING_SWITCH_DELAY_CLASSIC = 0
+   RING_SWITCH_DELAY_MODERN = 2000

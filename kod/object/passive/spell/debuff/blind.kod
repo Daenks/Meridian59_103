@@ -69,6 +69,8 @@ properties:
    % Min and max values for Dazzle duration.
    piMinBlind = 3000 % Recommended value 4000.
    piMaxBlind = 20000 % Recommended value 12000.
+   
+   piUseHexBehavior = TRUE
 
 messages:
 

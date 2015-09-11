@@ -43,8 +43,8 @@ Bool LoadAll(void)
 	if (LoadControlFile(&last_save_time) == False)
 	{
 		lprintf("LoadAll initializing a new game\n");
-		SetSystemObjectID(CreateObject(SYSTEM_CLASS,0,NULL));
-		CreateBuiltIn();
+		CreateBuiltInObjects();
+		CreateBuiltInAccounts();
 		return False;
 	}
 	
@@ -54,8 +54,8 @@ Bool LoadAll(void)
 	if (LoadAccounts(load_name) == False)
 	{
 		lprintf("LoadAll error loading accounts, initializing a new game\n");
-		SetSystemObjectID(CreateObject(SYSTEM_CLASS,0,NULL));
-		CreateBuiltIn();
+		CreateBuiltInObjects();
+		CreateBuiltInAccounts();
 		return False;
 	}
 	
@@ -77,7 +77,7 @@ Bool LoadAllButAccount(void)
 	if (LoadControlFile(&last_save_time) == False)
 	{
 		/* couldn't load anything in, so system is dead */
-		SetSystemObjectID(CreateObject(SYSTEM_CLASS,0,NULL));
+		CreateBuiltInObjects();
 		return False;
 	}
 	
@@ -97,6 +97,9 @@ Bool LoadAllButAccountAtTime(char *time_str)
 	if (LoadBlakodStrings(load_name) == False)
 		load_ok = False;
 	
+   sprintf(load_name, "%s%s%s", ConfigStr(PATH_LOADSAVE), DYNAMIC_RSC_FILE_SAVE, time_str);
+   LoadDynamicRsc(load_name);
+
 	sprintf(load_name,"%s%s%s",ConfigStr(PATH_LOADSAVE),GAME_FILE_SAVE,time_str);
 	if (!LoadGame(load_name)) 
 	{
@@ -105,16 +108,53 @@ Bool LoadAllButAccountAtTime(char *time_str)
 		and start a new game. */
 		
 		ClearObject();
-		ClearList(); 
+		ClearList();
 		ClearTimer();
 		ClearUser();
-		SetSystemObjectID(CreateObject(SYSTEM_CLASS,0,NULL));
+		CreateBuiltInObjects();
 	}
 	
-	sprintf(load_name,"%s%s%s",ConfigStr(PATH_LOADSAVE),DYNAMIC_RSC_FILE_SAVE,time_str);
-	LoadDynamicRsc(load_name);
-	
 	return load_ok;
+}
+
+Bool LoadFromKod(int save_time)
+{
+   // Check for a sane time value.
+   if (save_time < 0 || save_time > INT_MAX)
+   {
+      bprintf("LoadFromKod got invalid save game time!");
+      return false;
+   }
+
+   lprintf("LoadFromKod loading game\n");
+
+   // Boot everyone from game.
+   ForEachSession(HangupSessionNow);
+
+   ResetRoomData();
+   ResetUser();
+   ResetString();
+   ResetTimer();
+   ResetList();
+   ResetTables();
+   ResetObject();
+
+   // Set the save game we want to load in LASTSAVE.
+   lprintf("Game save time forced to (%i)\n", save_time);
+   SaveControlFile(save_time);
+
+   // Can't reload accounts because sessions have pointers to accounts.
+   if (!LoadAllButAccount())
+      bprintf("LoadFromKod couldn't reload all, system dead\n");
+
+   // List nodes for client parameters.
+   AllocateParseClientListNodes();
+
+   // Since it's an older saved game, tell Blakod that everyone's off.
+   // Calls LoadedFromDisk() in system.kod.
+   SendTopLevelBlakodMessage(GetSystemObjectID(), LOADED_GAME_MSG, 0, NULL);
+
+   return true;
 }
 
 Bool LoadControlFile(int *last_save_time)

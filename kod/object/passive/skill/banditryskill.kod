@@ -1,0 +1,55 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BanditrySkill is Skill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   BanditrySkill_name_rsc = "banditry skill"
+   BanditrySkill_icon_rsc = isecwind.bgf
+   BanditrySkill_desc_rsc = \
+      "Banditry is a school of skills based on knowledge, tactics, and "
+      "control. "
+      "In many ways, the opposite kin of Weaponcraft. "
+      "Banditry masters win fights by timing, skill, and planning rather "
+      "than brute force. "
+
+   BanditrySkill_intro = "This is a Banditry skill."
+
+classvars:
+
+   vrName = BanditrySkill_name_rsc
+   vrIcon = BanditrySkill_icon_rsc
+   vrDesc = BanditrySkill_desc_rsc
+
+   vrSkill_intro = BanditrySkill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_BANDITRY
+   viSkill_num = SKID_DEFAULT
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = FALSE
+
+properties:
+
+messages:
+   
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

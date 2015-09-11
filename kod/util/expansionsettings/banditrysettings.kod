@@ -1,0 +1,135 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BanditrySettings is ExpansionSettings
+
+% Banditry is a school of informational skills, rogue weapons, and stances.
+%   Stances are unique modifications to personal combat that make tradeoffs.
+%   For example, Heavy Arms increases defense and drops offense.
+%
+
+% 1: Awareness, Stab, Light Feet
+% 2: Perception, Dagger Wielding, Swift Hands
+% 3: Sneak, Throw, Tumble
+% 4: Hide, Throwing Precision, Heavy Arms
+% 5: Track, Backstab, Tight Grip
+% 6: Spy, Reckless Heart
+%
+% LEVEL ONE
+% Awareness informs players of the comings and goings of others.
+%    Awareness only works on those you can attack.
+%    Awareness will not turn you outlaw when used against whites.
+%    Awareness is a utility skill given to all players for free.
+%    (because its functionality can be replicated via cheat)
+% Stab is the dagger basic stroke.
+% Light feet is a stance that reduces vigor consumption of running.
+%
+% LEVEL TWO
+% Perception tells you who is casting what on who in the room.
+%    Perception only works on casters you can attack.
+%    Perception will not turn you outlaw.
+% Dagger Wielding is the dagger proficiency.
+%    Daggers are low damage low range melee piercing weapons whose
+%    main advantage is that they work very well with backstabs
+%    and throwing daggers (throwing daggers use throw/ throwing prof).
+% Swift Hands is a stance that
+%    increases offense by up to 25% for as little as 50% defense loss.
+%
+% LEVEL THREE
+% Sneak lets you enter rooms without triggering Awareness; & mobs aggro less.
+%    Requires you to walk for four seconds.
+%    You must continue walking to remain sneaking.
+% Throw is the basic stroke for throwing daggers.
+%    Throwing daggers are not your typical ranged weapon. They exist
+%    purely as ammo, and only fire if you would miss a melee swing due to
+%    being out of range. If you are in throwing range, instead
+%    of missing your swing and being forced to wait, you will throw a
+%    dagger instead for a small amount of piercing damage.
+%    Counts as a ranged attack, and will be hampered by winds/sandstorm.
+% Tumble allows you to evade a small percentage of attacks.
+%    Tumbling is at tension with the offense/defense system.
+%    You will avoid the same percentage of successful attacks (up to ~10%) no
+%    matter what else you are doing.
+%    However, tumbling only operates on otherwise successful hits,
+%    so high defense shrinks the amount Tumbling is actually
+%    helping you.
+%    Players and Monsters cannot tumble while held.
+%
+% LEVEL FOUR
+% Hide allows you to eliminate your dot from the minimap.
+%    Requires you to walk for four seconds while sneaking.
+%    You must continue walking to remain sneaking and hidden.
+% Throwing Precision is throwing's proficiency.
+% Heavy Arms is a stance that
+%    increases defense up to 25% at the cost of 50% offense.
+%
+% LEVEL FIVE
+% Track informs you of a specific target's whereabouts when you change
+%    screens, if that target is within 3 rooms and not Hiding.
+%    You must also be able to attack your target.
+%    For example, while Track won't turn you orange, it also
+%    won't report on whites if you have your safety on,
+%    anyone in guilded zones if you can't attack them,
+%    and anyone in inns or safe zones.
+%    It also does not track to / in guild halls.
+%    "Mules" will not be able to Track under pretty much
+%    any circumstances. (must be moving, not angeled, attackable etc)
+% Backstab allows you to deal a tremendous guaranteed hit on a target
+%    that currently has 95% or more of its health. Requires you to be sneaking
+%    and hiding. The hit can only be evaded by Tumbling, and ignores
+%    armor and resistances. (absolute damage)
+% Tight Grip allows you to resist Disarms.
+%
+% LEVEL SIX
+% Reckless Heart is a stance that increases all damage you deal by 20%,
+%    while also increasing the damage you take by 20%.
+% Spy allows you to step into rooms invisibly for a few seconds. Walls
+%    and area attacks will still hit you. Requires you to be sneaking
+%    and hiding.
+%
+%
+%
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Banditry does not start available. It must be made active via quests 
+   %    done by players.
+   pbBanditryActive = FALSE
+   
+   % If this is set to FALSE, Banditry school is turned off for this server.
+   pbBanditryAccessible = TRUE
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetBanditryActive()
+   {
+      return bound(pbBanditryActive,0,1);
+   }
+   
+   GetBanditryAccessible()
+   {
+      return bound(pbBanditryAccessible,0,1);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

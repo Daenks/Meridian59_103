@@ -1,0 +1,117 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Tumble is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Tumble_name_rsc = "tumble"
+   Tumble_icon_rsc = dodgeico.bgf
+   Tumble_desc_rsc = \
+      "Skilled fighters can entirely tumble out of the way of an attack."
+   
+   tumble_success = "You tumble out of the way of %s's attack!"
+   enemy_tumbled = "%s tumbles out of the way of your attack!"
+
+classvars:
+
+   vrName = Tumble_name_rsc
+   vrIcon = Tumble_icon_rsc
+   vrDesc = Tumble_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_TUMBLE
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 3
+   viChance_to_Increase = 35
+   viMeditate_ratio = 200
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+   
+   AttemptTumble(who=$, what=$)
+   {
+      local chance, iAgility, iAbility;
+      
+      if IsClass(who,&Monster)
+      {
+         chance = Send(who,@GetTumbling);
+         
+         % No tumbling if you aren't moving.
+         if Send(who,@IsEnchanted,#byClass=&Hold)
+         {
+            return FALSE;
+         }
+      }
+
+      if IsClass(who,&Player)
+      {
+         % No tumbling if you aren't moving.
+         if Send(who,@CheckPlayerFlag,#flag=PFLAG_NO_MOVE)
+         {
+            return FALSE;
+         }
+
+         % This skill can be used by both players and monsters.
+         iAgility = Send(who,@GetAgility);
+         iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+
+         if iAbility = 0
+         {
+            return FALSE;
+         }
+
+         % Up to 5% from skill, and 5-7% from stat
+         chance = ((iAbility+1)/20) + (iAgility / 10);
+      }
+
+      if chance > Random(1,100)
+      {
+         Send(self,@ImproveAbility,#who=who);
+      
+         if IsClass(who,&Player)
+         {
+            Send(who,@MsgSendUser,
+               #message_rsc=tumble_success,#parm1=Send(what,@GetName));
+         }
+         
+         if IsClass(what,&Player)
+         {
+            Send(what,@MsgSendUser,
+               #message_rsc=enemy_tumbled,#parm1=Send(who,@GetName));
+         }
+
+         return TRUE;
+      }
+      
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,72 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Lethality is DamageMastery
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   lethality_name_rsc = "lethality"
+   lethality_icon_rsc = scimico.bgf
+   lethality_desc_rsc = \
+      "The elements of slashing, piercing, and thrusting are among "
+      "the hardest in nature to control. Master sorcerers can employ those "
+      "fickle forces to lethal effect."
+
+classvars:
+
+   vrName = lethality_name_rsc
+   vrIcon = lethality_icon_rsc
+   vrDesc = lethality_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LETHALITY
+   viSchool = SKS_SORCERY
+   viSkill_Level = 6
+   viChance_to_Increase = 10
+   viMeditate_ratio = 200
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viDamageTypeOne = ATCK_WEAP_SLASH
+   viDamageTypeTwo = ATCK_WEAP_THRUST
+   viDamageTypeThree = ATCK_WEAP_PIERCE
+
+properties:
+
+messages:
+   
+   AddDamage(who=$,damage=0,aspell=0,atype=0)
+   {
+      local iAbility;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      
+      if (atype & viDamageTypeOne
+         OR atype & viDamageTypeTwo
+         OR atype & viDamageTypeThree)
+         AND Random(1,100) <= iAbility
+      {
+         Send(self,@DoSkill,#who=who);
+         return damage +
+                      ((viDamageBonusMax*100)*(iAbility+1))/100;
+      }
+      
+      return damage;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

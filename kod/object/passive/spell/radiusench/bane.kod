@@ -1,0 +1,119 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BaneEnchantment is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+   
+   default_hurt_caster = "A tide of energy retaliates against your spell."
+   default_kills_you = \
+      "The oncoming tide of energy carries you straight to "
+      "the Underworld!"
+
+   default_bane_name_rsc = "Bane"
+   default_bane_icon_rsc = iqorbane.bgf
+   default_bane_desc_rsc = \
+      "Permeates an area with magic that punishes certain types of casting. "
+      "Requires yrxl sap and fairy wings to cast."
+
+classvars:
+   
+   vrBaneHurt = default_hurt_caster
+   vrBaneKills = default_kills_you
+
+   vrIcon = default_bane_icon_rsc
+   vrDesc = default_bane_desc_rsc
+   vrName = default_bane_name_rsc   
+
+   viSpell_level = 4
+   viSpellExertion = 5
+
+   viCast_time = 5000
+
+   viChance_To_Increase = 40
+   viMeditate_ratio = 30
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
+   
+   viBanedSchool = SS_QOR
+   viRetaliationDamageType = ATCK_SPELL_HOLY
+
+properties:
+
+   piOldAreaEnchStyle = TRUE
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Yrxlsap,1],plReagents);
+      plReagents = Cons([&FairyWing,1],plReagents);
+
+      return;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDuration;
+
+      iDuration = 45 + (iSpellPower*3);  %% 30 - 228 seconds
+      iDuration = iDuration * 1000;      %% convert to seconds            
+
+      return iDuration;
+   }
+
+   SuccessfulCastTrigger(who=$,state=$,oSpell=$,iSpellPower=0)
+   {
+      local iDamageAmt;
+
+      if oSpell = $
+         OR who = $
+         OR state = $
+      {
+         return;
+      }
+      
+      if Send(oSpell,@GetSchool) = viBanedSchool
+      {
+         if IsClass(who,&Player)
+         {
+            Send(who,@MsgSendUser,#message_rsc=vrBaneHurt);
+         }
+
+         % Up to 5 damage from bane, +up to 15 from enemy power and level
+         % Due to rounding, level 5 spells = *2, while level 6 = *3
+         % So using this against something like Blind or Purge would <= 15 dmg
+         iDamageAmt = (Nth(state,2)/20) + 
+                      ((iSpellPower+1)/20) * (Send(oSpell,@GetLevel)/2);
+
+         if Send(who,@AssessDamage,#report=FALSE,#what=Nth(state,3),
+                 #damage=iDamageAmt,#aspell=viRetaliationDamageType) = $
+         {
+            if IsClass(who,&Player)
+            {
+               Send(who,@MsgSendUser,#message_rsc=vrBaneKills);
+            }
+            
+            Send(who,@Killed,#what=Nth(state,3));
+            Send(Nth(state,3),@KilledSomething,#what=who);
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,111 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChargedClutch is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   ChargedClutch_name_rsc = "charged clutch"
+   ChargedClutch_icon_rsc = ienchant.bgf
+   ChargedClutch_desc_rsc = \
+      "A basic stance that allows a mage with charged hands to imbue "
+      "his weapon strikes with elemental energies."
+   
+   ChargedClutch_begin = "You send mana coursing through your hands."
+   ChargedClutch_end = "You let the charge in your hands fade."
+
+classvars:
+
+   vrName = ChargedClutch_name_rsc
+   vrIcon = ChargedClutch_icon_rsc
+   vrDesc = ChargedClutch_desc_rsc
+   
+   stance_begin_msg = ChargedClutch_begin
+   stance_end_msg = ChargedClutch_end
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_CHARGED_CLUTCH
+   viSchool = SKS_SORCERY
+   viSkill_Level = 1
+   viChance_to_Increase = 10
+   viMeditate_ratio = 40
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   
+   viBaseManaCost = 4
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+   
+   ModifyWeaponSpellType(who=$,oWeapon=$,oTouchSpell=$,damaging_now=FALSE)
+   {
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost, lElements;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iSpellAbility = Send(who,@GetSpellAbility,
+                               #spell_num=Send(oTouchSpell,@GetSpellNum));
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iInitialCost = viBaseManaCost;
+      iCoefficient = Bound(298 - iAbility - iSpellAbility,100,300);
+      
+      iSacrifice = (iInitialCost * iCoefficient)/100;
+
+      if Send(who,@GetMana) >= iSacrifice
+         AND Random(1,100) <= iAbility
+      {
+         if damaging_now
+         {
+            Send(self,@DoSkill,#who=who,#iSacrifice=iSacrifice);
+         }
+         
+         if NOT IsClass(oWeapon,&RiijaSword)
+         {
+            return Send(oTouchSpell,@GetAttackSpell);
+         }
+         else
+         {
+            lElements = [ATCK_SPELL_FIRE + ATCK_SPELL_ALL,
+                         ATCK_SPELL_COLD + ATCK_SPELL_ALL,
+                         ATCK_SPELL_SHOCK + ATCK_SPELL_ALL,
+                         ATCK_SPELL_ACID + ATCK_SPELL_ALL];
+            return Nth(lElements,Random(1,4));
+         }
+      }
+      
+      return Send(oWeapon,@GetAttackSpell);
+   }
+
+   DoSkill(who=$,iSacrifice=0)
+   {
+      Send(who,@LoseMana,#amount=iSacrifice);
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

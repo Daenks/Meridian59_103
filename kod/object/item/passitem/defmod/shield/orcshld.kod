@@ -88,9 +88,27 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_PIERCE,15],
-               [-ATCK_SPELL_HOLY,-20]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,5],
+                  [-ATCK_SPELL_HOLY,-20]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [ATCK_WEAP_PIERCE,15],
+                  [-ATCK_SPELL_HOLY,-20]
+                ];
+      }
+      
+      return [];
    }
 
    SendOverlayAnimation(animation = $)

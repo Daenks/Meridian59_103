@@ -17,6 +17,14 @@ int C_Invalid(int object_id,local_var_type *local_vars,
 	      int num_normal_parms,parm_node normal_parm_array[],
 	      int num_name_parms,parm_node name_parm_array[]);
 
+int C_SaveGame(int object_id,local_var_type *local_vars,
+      int num_normal_parms,parm_node normal_parm_array[],
+      int num_name_parms,parm_node name_parm_array[]);
+
+int C_LoadGame(int object_id, local_var_type *local_vars,
+      int num_normal_parms, parm_node normal_parm_array[],
+      int num_name_parms, parm_node name_parm_array[]);
+
 int C_AddPacket(int object_id,local_var_type *local_vars,
 		int num_normal_parms,parm_node normal_parm_array[],
 		int num_name_parms,parm_node name_parm_array[]);
@@ -213,6 +221,10 @@ int C_Nth(int object_id,local_var_type *local_vars,
 	  int num_normal_parms,parm_node normal_parm_array[],
 	  int num_name_parms,parm_node name_parm_array[]);
 
+int C_IsListMatch(int object_id,local_var_type *local_vars,
+		int num_normal_parms,parm_node normal_parm_array[],
+		int num_name_parms,parm_node name_parm_array[]);
+
 int C_List(int object_id,local_var_type *local_vars,
 	   int num_normal_parms,parm_node normal_parm_array[],
 	   int num_name_parms,parm_node name_parm_array[]);
@@ -244,6 +256,10 @@ int C_InsertListElem(int object_id,local_var_type *local_vars,
 int C_DelListElem(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
 		  int num_name_parms,parm_node name_parm_array[]);
+
+int C_GetTimeZoneOffset(int object_id, local_var_type *local_vars,
+         int num_normal_parms, parm_node normal_parm_array[],
+         int num_name_parms, parm_node name_parm_array[]);
 
 int C_GetTime(int object_id,local_var_type *local_vars,
 	      int num_normal_parms,parm_node normal_parm_array[],
@@ -286,6 +302,10 @@ int C_DeleteTableEntry(int object_id,local_var_type *local_vars,
 		       int num_name_parms,parm_node name_parm_array[]);
 
 int C_DeleteTable(int object_id,local_var_type *local_vars,
+		  int num_normal_parms,parm_node normal_parm_array[],
+		  int num_name_parms,parm_node name_parm_array[]);
+
+int C_IsTable(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
 		  int num_name_parms,parm_node name_parm_array[]);
 

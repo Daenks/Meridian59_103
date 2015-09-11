@@ -34,6 +34,8 @@
 
 #define MAX_DEPTH 2000
 
+#define BOF_VERSION 6
+
 enum
 {
    USER_CLASS = 1,
@@ -69,14 +71,27 @@ enum
    DM_CLASS = 32,
    FIND_USER_BY_STRING_MSG = 33,
    CREATOR_CLASS = 34,
-   RECYCLED_MSG = 35,
-   OLD_PARM = 36
+   SETTINGS_CLASS = 35,
+   REALTIME_CLASS = 36,
+   EVENTENGINE_CLASS = 37,
+   MAX_BUILTIN_CLASS = 37
 
    // To add other C-accessible KOD identifiers,
    // see the BLAKCOMP's table of BuiltinIds[].
    //
    // The compiler assumes those builtins before
    // it reads any KODBASE.TXT.
+};
+
+// Enum for object constants blakod can use to call built-in objects.
+enum
+{
+   SYSTEM_OBJECT = 0,
+   SETTINGS_OBJECT = 1,
+   REALTIME_OBJECT = 2,
+   EVENTENGINE_OBJECT = 3,
+   MAX_BUILTIN_OBJECT = 3,
+   NUM_BUILTIN_OBJECTS = 4
 };
 
 #define MAX_PROC_TIME 5000
@@ -112,6 +127,7 @@ enum
 #define ERROR_FILE "error.txt"
 #define LOG_FILE "log.txt"
 #define GOD_FILE "god.txt"
+#define ADMIN_FILE "admin.txt"
 
 #define KODBASE_FILE "kodbase.txt"
 
@@ -123,6 +139,7 @@ enum
 #define NOMINMAX
 #include <windows.h>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include "resource.h"
 #include <crtdbg.h>
 #include <io.h>
@@ -207,11 +224,13 @@ typedef struct
 
 /* in main.c */
 extern DWORD main_thread_id;
+void MainReloadGameData();
 char * GetLastErrorStr();
 #define WM_BLAK_MAIN_READ           (WM_APP + 4000)
 #define WM_BLAK_MAIN_RECALIBRATE    (WM_APP + 4001)
 #define WM_BLAK_MAIN_DELETE_ACCOUNT (WM_APP + 4002)
 #define WM_BLAK_MAIN_VERIFIED_LOGIN (WM_APP + 4003)
+#define WM_BLAK_MAIN_LOAD_GAME      (WM_APP + 4004)
 
 #include "bof.h"
 
@@ -296,6 +315,8 @@ char * GetLastErrorStr();
 #include "maintenance.h"
 #include "block.h"
 #include "database.h"
+
+#include "jansson.h"
 
 #endif
 

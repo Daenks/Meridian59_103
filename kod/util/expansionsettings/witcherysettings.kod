@@ -1,0 +1,181 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WitcherySettings is ExpansionSettings
+
+% This class keeps settings for the Witchery school.
+
+   % Hexes are debuffs that do not do anything themselves.
+   %    Instead, they react to other conditions on the afflicted target.
+   %    For example, they may increase fire damage taken, or reduce
+   %    outgoing damage from melee weapons.
+   
+   % Hexes have an inherent 'limit' in number. Default is one,
+   %    meaning a player or monster that already has a hex will lose
+   %    a random hex if another is cast on him in order to make room.
+   %    Max number of hexes and replacement behavior can be modified in 
+   %    Witchery settings.
+   
+   % Hexes tend to have a high casting cost, and long but flat duration.
+   
+   % Hexes all scale in effect based on caster ability and bonuses,
+   %    as well as target Hex Resistance.
+   
+   % Hexes inform the whole room when they are cast.
+   
+   % Most Hexes are in the Witchery school of spells.
+   %
+   % Witchery, is, however, not a single school of thought.
+   %    Its practitioners have ancient rivalries, and will not teach
+   %    students from hated disciplines.
+   %
+   % Xaerdun, the demon of greed, has no alliances or rivalries.
+   %    As a practitioner of Witchery, all are offered knowledge and
+   %    power through Xaerdun - for a price.
+   % 
+   % Those who draw power from an ancient pact with the demon Nequzon
+   %    tend to favor magical combat and the untamed elements. Allies
+   %    of Nequzon may not learn Iwodach magics.
+   %
+   % Those who have learned from Iwodach draw their traditions
+   %    from the ancient Biskalane battle witches. They favor scholarly
+   %    knowledge employed through physical combat. Iwodach battle witches
+   %    revile arcane Nequzon cowards.
+   %
+   % Not all students of witchery are keen on harming others.
+   %    The demoness Ventdal protected witches during their persecution,
+   %    and she still protects those who forsake greed.
+   %    She won't offer her power to followers of Xaerdun.
+   %      (NPC humans will use these)
+   %
+   % Nobody knows how to ally with the demon of sadism, Raumlar. His
+   %    hexes are rare and powerful. (generally monster only hexes)
+   %
+   %
+   %
+   % Level 1 Xaerdun:
+   % Fester - victim's regeneration is slowed.
+   % Mute - attempts to prevent victim from communicating.
+   %
+   %    Level 1 Nequzon skills/spells:
+   %       Barbs - steals mana from afflicted target when hit.
+   %
+   %    Level 1 Iwodach skills/spells:
+   %       Weaken - victim deals less damage with melee attacks.
+   %
+   % Level 2 Xaerdun:
+   % Leeches - steals health from afflicted target when hit.
+   % Exhaustion - victim's vigor costs increase.
+   %
+   %    Level 2 Nequzon skills/spells:
+   %       Corrosion - reduces victim's acid resistance.
+   %
+   %    Level 2 Iwodach skills/spells:
+   %       Arcane knowledge (skill) - you gain hex resistance.
+   %
+   % Level 3 Xaerdun:
+   % Sap - steals vigor from afflicted target when hit.
+   % Bestill - lowers victim's defense.
+   %
+   %    Level 3 Nequzon skills/spells:
+   %       Rote memorization (skill) - your hex mana costs decrease.
+   %       Algidity - reduces victim's cold resistance.
+   %
+   %    Level 3 Iwodach skills/spells:
+   %       Humility - reduces victim's holy resistance.
+   %       Corruption - reduces victim's unholy resistance.
+   %
+   % Level 4 Xaerdun:
+   % Becloud - lowers victim's offense with ranged weapons.
+   %
+   %    Level 4 Nequzon skills/spells:
+   %       Flammability - reduces victim's fire resistance.
+   %       Conductivity - reduces victim's shock resistance.
+   %
+   %    Level 4 Iwodach skills/spells:
+   %       Ancient Pact (skill) - your hex durations increase.
+   %       Efficient Casting (skill) - your hex vigor costs decrease.
+   %
+   % Level 5 Xaerdun:
+   % Slow - target's postcast delays increase.
+   % Unhallowed Runes (skill) - you gain increased hex effectiveness.
+   %
+   %    Level 5 Nequzon skills/spells:
+   %       Vulnerability - reduces target's magic resistance.
+   %
+   %    Level 5 Iwodach skills/spells:
+   %       Frailty - reduces target's weapon resistance.
+   %
+   % Level 6 Xaerdun:
+   % Blood Runes (skill) - you may inflict an extra hex on your victims
+   %                         at the cost of your own health.
+   %
+   %    Level 6 Nequzon skills/spells:
+   %       Ostracization (skill) - your curses do not expire naturally.
+   %
+   %    Level 6 Iwodach skills/spells:
+   %       Black mantle - lowers effectiveness of heals on victim. Extremely
+   %                       high effectiveness can cause heals to harm instead.
+   %                       Harms deal unholy damage.
+   %
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Witchery does not start available. It must be made active via quests 
+   %    done by players.
+   pbWitcheryActive = FALSE
+   
+   % If this is set to FALSE, Witchery school is turned off for this server.
+   pbWitcheryAccessible = TRUE
+
+   % How many hexes can any given battler have at once?
+   piHexesMax = 1
+
+   % If this is FALSE, hexes that would go over the hex limit don't
+   %    replace previous hexes, and instead fail
+   pbHexesReplace = TRUE
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetWitcheryActive()
+   {
+      return bound(pbWitcheryActive,0,1);
+   }
+   
+   GetWitcheryAccessible()
+   {
+      return bound(pbWitcheryAccessible,0,1);
+   }
+
+   GetHexesMax()
+   {
+      return piHexesMax;
+   }
+   
+   GetHexesReplace()
+   {
+      return pbHexesReplace;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

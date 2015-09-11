@@ -93,9 +93,18 @@ messages:
 
    GetBaseSpellModifier(oSpell=$)
    {
+      local iSpellpowerPenaltySystem;
+
       if Send(oSpell,@GetSchool) = piSchool
       {
-         return Bound(4 * piLevel,5,20);
+         if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_PERCENTAGE
+         {
+            return Bound(8 * piLevel,5,40);
+         }
+         if iSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_CLASSIC
+         {
+            return Bound(4 * piLevel,5,20);
+         }
       }
 
       return 5;
@@ -269,10 +278,28 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ ATCK_WEAP_ALL, -10],
-               [-ATCK_SPELL_FIRE,-20],
-               [-ATCK_SPELL_SHOCK,15]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,-10],
+                  [-ATCK_SPELL_ALL,-10]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [ ATCK_WEAP_ALL, -10],
+                  [-ATCK_SPELL_FIRE,-20],
+                  [-ATCK_SPELL_SHOCK,15]
+                ];
+      }
+      
+      return $;
    }
 
    GetOverlay()

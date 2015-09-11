@@ -118,6 +118,9 @@ enum
    SENDMESSAGE = 11,
    POSTMESSAGE = 12,
 
+   SAVEGAME = 19,
+   LOADGAME = 20,
+
    GODLOG = 21,
    DEBUG = 22,
    ADDPACKET = 23,
@@ -179,7 +182,9 @@ enum
    SWAPLISTELEM = 112,
    INSERTLISTELEM = 113,
    LAST = 114,
+   ISLISTMATCH = 115,
 
+   GETTIMEZONEOFFSET = 119,
    GETTIME = 120,
    GETTICKCOUNT = 121,
 
@@ -192,6 +197,7 @@ enum
    GETTABLEENTRY = 143,
    DELETETABLEENTRY = 144,
    DELETETABLE = 145,
+   ISTABLE = 146,
 
    RECYCLEUSER = 151,
 
@@ -220,8 +226,8 @@ enum
    TAG_CLASS = 10,
    TAG_MESSAGE = 11,
    TAG_DEBUGSTR = 12,
-   TAG_OVERRIDE = 13,     // For overriding a class variable with a property
-   TAG_RESERVED = 14,     // Reserved for future expansion
+   TAG_TABLE = 13,
+   TAG_OVERRIDE = 14,     // For overriding a class variable with a property
    TAG_INVALID = 15,
 };
 

@@ -65,6 +65,8 @@ properties:
    piSpellPowerModifier = 40 % Recommended value 30.
    piDeviation = 50 % Recommended value 10%.
    viCast_time = 0 % Recommended value 600 (milliseconds).
+   
+   piUseHexBehavior = TRUE
 
 messages:
 

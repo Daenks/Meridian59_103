@@ -1,0 +1,52 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Entropy is DamageMastery
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   entropy_name_rsc = "entropy"
+   entropy_icon_rsc = isplacid.bgf
+   entropy_desc_rsc = \
+      "Those mages that endure the tests of time often find that the most "
+      "powerful magics are those that work with the natural flow of all "
+      "things to chill and corrode."
+
+classvars:
+
+   vrName = entropy_name_rsc
+   vrIcon = entropy_icon_rsc
+   vrDesc = entropy_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_ENTROPY
+   viSchool = SKS_SORCERY
+   viSkill_Level = 3
+   viChance_to_Increase = 25
+   viMeditate_ratio = 80
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viDamageTypeOne = ATCK_SPELL_COLD
+   viDamageTypeTwo = ATCK_SPELL_ACID
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

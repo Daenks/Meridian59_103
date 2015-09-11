@@ -1,0 +1,94 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BloodRunes is WitcherySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   blood_runes_name_rsc = "blood runes"
+   blood_runes_icon_rsc = slashico.bgf
+   blood_runes_desc_rsc = \
+      "Drawing the necessary runes in blood allows a skilled ally of Xaerdun "
+      "to layer an additional hex on a victim."
+
+   blood_runes_increase = \
+      "You draw your runes in blood."
+
+classvars:
+
+   vrName = blood_runes_name_rsc
+   vrIcon = blood_runes_icon_rsc
+   vrDesc = blood_runes_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_Num = SKID_BLOOD_RUNES
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSkill_level = 6
+   viChance_to_increase = 10
+   viMeditate_ratio = 99
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+   
+   piMaxHexesIncrease = 1
+
+   piHealthCost = 30
+
+messages:
+
+   GetRequisiteStat(who=$)
+   "Varies from skill to skill and spell to spell."
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   GetMaxHexesIncrease(who=$)
+   {
+      return piMaxHexesIncrease;
+   }
+
+   DoSkill(who=$)
+   {
+      local iAbility, iStat, iHealthCost;
+      
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      if bound(iAbility-6,1,93) + iStat/10 <= Random(1,100)
+      {
+         return FALSE;
+      }
+
+      iHealthCost = (piHealthCost * (100-(iAbility/2))) / 100;
+      if Send(who,@GetHealth) > iHealthCost
+      {
+         Send(who,@LoseHealth,#amount=iHealthCost);
+      }
+      else
+      {
+         return FALSE;
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=blood_runes_increase);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

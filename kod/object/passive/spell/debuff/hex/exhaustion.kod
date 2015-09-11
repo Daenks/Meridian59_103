@@ -1,0 +1,84 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Exhaustion is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   exhaustion_cast_rsc = "%s%s suddenly seems tired."
+   exhaustion_already_enchanted = \
+      "That poor soul is already afflicted by exhaustion."
+   exhaustion_start = "Your every action begins to take a greater toll."
+   exhaustion_stop  = "The strange exhaustion passes."
+   has_been_hexed_exhaustion = \
+      "%s%s suddenly seems tired!"
+
+   exhaustion_name_rsc = "exhaustion"
+   exhaustion_icon_rsc = ienfeebl.bgf
+   exhaustion_desc_rsc = \
+      "Bonds a spiritual burden to the victim's soul that makes every effort "
+      "more exhausting."
+      "This hex requires three orc teeth to cast."
+
+   exhaustion_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = exhaustion_name_rsc
+   vrIcon = exhaustion_icon_rsc
+   vrDesc = exhaustion_desc_rsc
+
+   vrAlreadyEnchanted = exhaustion_already_enchanted
+   vrEnchantment_On = exhaustion_start
+   vrEnchantment_Off = exhaustion_stop
+   vrSuccess = exhaustion_cast_rsc
+   vrInformRoom = has_been_hexed_exhaustion
+
+   viSpell_num = SID_HEX_EXHAUSTION
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 2
+   viMana = 10
+   viSpell_Exertion = 30
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = exhaustion_sound
+   viChance_To_Increase = 25
+   viMeditate_ratio = 30
+
+properties:
+
+   % Vigor costs increase by this percent
+   piBaseEffect = 50
+
+   piFlatDuration = 80000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,3],plReagents);
+
+      return;
+   }
+   
+   ModifyExertion(amount=0,state=0)
+   {
+      return (amount * (100 + ((piBaseEffect*state)/100))) / 100;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

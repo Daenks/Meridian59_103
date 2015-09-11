@@ -1,0 +1,66 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dagger is Weapon
+
+constants:
+
+   include blakston.khd
+   include protocol.khd
+
+resources:
+
+   Dagger_name_rsc = "dagger"
+   Dagger_icon_rsc = bkswd.bgf
+   Dagger_desc_rsc = \
+   "This elegant blade looks like it would fit snugly between a pair of shoulder blades."
+
+classvars:
+
+   vrName = Dagger_name_rsc
+   vrIcon = Dagger_icon_rsc
+   vrDesc = Dagger_desc_rsc
+
+   viWeaponType = WEAPON_TYPE_THRUST
+   viWeaponQuality = WEAPON_QUALITY_LOW
+
+   vrWeapon_window_overlay = BlackDagger_window_overlay_rsc
+   vrWeapon_overlay = BlackDagger_player_overlay
+   
+   viProficiency_Needed = SKID_PROFICIENCY_DAGGER
+
+   viGround_group = 2
+   viInventory_group = 1
+   viBroken_group = 3
+
+   viValue_average = 50
+   viBulk = 35
+   viWeight = 25
+   
+   vcAmmo = &ThrowingDagger
+
+properties:
+
+   piAttack_type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_PIERCE
+
+messages:
+
+   GetParryAbility(who=$)
+   {
+      return send(who,@GetSkillAbility,#skill_num=SKID_PARRY) * 2;
+   }
+
+   GetAmmoType()
+   {
+      return vcAmmo;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

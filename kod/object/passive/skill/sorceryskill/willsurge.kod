@@ -1,0 +1,95 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WillSurge is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   will_surge_name_rsc = "will surge"
+   will_surge_icon_rsc = lightnin.bgf
+   will_surge_desc_rsc = \
+      "By sheer force of will, a skilled mage that is out of mana can use "
+      "his own vigor to fuel spells."
+      
+   not_enough_vigor = \
+      "You don't have enough vigor to surge this spell."
+   sacrifice_vigor = \
+      "You feel drained as the spell siphons %i vigor to complete its work."
+
+classvars:
+
+   vrName = will_surge_name_rsc
+   vrIcon = will_surge_icon_rsc
+   vrDesc = will_surge_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_WILL_SURGE
+   viSchool = SKS_SORCERY
+   viSkill_Level = 4
+   viChance_to_Increase = 15
+   viMeditate_ratio = 150
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetStamina);
+   }
+   
+   AttemptVigorSacrifice(who=$,oSpell=$,iSpellPower=0)
+   {
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iSpellAbility = Send(who,@GetSpellAbility,
+                               #spell_num=Send(oSpell,@GetSpellNum));
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iInitialCost = Send(oSpell,@GetManaCost,
+                                 #who=who,#iSpellPower=iSpellPower);
+      iCoefficient = Bound(298 - iAbility - iSpellAbility,100,300);
+      
+      iSacrifice = (iInitialCost * iCoefficient)/100;
+
+      if iSacrifice + Send(oSpell,@GetExertion) >= Send(who,@GetVigor)
+      {
+         Send(who,@MsgSendUser,#message_rsc=not_enough_vigor);
+         return FALSE;
+      }
+      
+      Send(who,@AddExertion,#amount=iSacrifice*10000);
+      Send(who,@MsgSendUser,#message_rsc=sacrifice_vigor,
+                            #parm1=iSacrifice);
+
+      Send(self,@DoSkill,#who=who);
+      
+      return TRUE;
+   }
+
+   DoSkill(who=$)
+   {
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

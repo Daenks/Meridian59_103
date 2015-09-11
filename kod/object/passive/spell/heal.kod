@@ -26,6 +26,13 @@ resources:
       "of the mage who heals another good soul.  "
       "Requires one herb to cast."
 
+   heal_harm_rsc = \
+      "%s%s's corrupted spell harms you for ~r~B%i~B~n hitpoints!"
+   heal_harm_self_rsc = \
+      "Your corrupted spell harms you for ~r~B%i~B~n hitpoints!"
+   heal_harm_other_rsc = \
+      "Your corrupted heal harms %s%s for ~r~B%i~B~n hitpoints!"
+      
    heal_cast_rsc = \
       "%s%s's spell heals some minor injuries, restoring ~g~B%i~B~n hitpoints."
    heal_cast_self = \
@@ -108,19 +115,57 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower=0)
    {
-      local iHeal, oTarget;
+      local iHeal, oTarget, i;
 
       oTarget = First(lTargets);
 
       iHeal = Random(100,500) + ((iSpellPower + 1)*5) + (Send(oTarget,@GetKarma)*5);
       iHeal = Bound(iHeal,0,1000);
-
-      iHeal = Send(oTarget,@GainHealthNormal,#amount=iHeal,#precision=TRUE);
-
-      % A little boost for casting on newbies, even if you're the newbie!
-      if NOT Send(oTarget,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+      
+      foreach i in Send(oTarget,@GetEnchantmentsByClass,#enchClass=&Hex)
       {
-         iHeal = iHeal + random(200,500);
+         iHeal = Send(Nth(i,2),@ModifyHeal,#amount=iHeal,#state=Nth(i,3));
+      }
+
+      if iHeal < 0
+         AND Send(who,@AllowPlayerAttack,#victim=oTarget)
+      {
+         if who <> oTarget
+         {
+            Send(who,@MsgSendUser,#message_rsc=heal_harm_other_rsc,
+                                  #parm1=Send(oTarget,@GetDef),
+                                  #parm2=Send(oTarget,@GetName),
+                                  #parm3=-iHeal/100);
+            Send(oTarget,@MsgSendUser,#message_rsc=heal_harm_rsc,
+                                      #parm1=Send(who,@GetCapDef),
+                                      #parm2=Send(who,@GetName),
+                                      #parm3=-iHeal/100);
+            Send(oTarget,@AssessDamage,#what=who,
+                                       #damage=-iHeal,
+                                       #aspell=ATCK_SPELL_ALL+ATCK_SPELL_HOLY,
+                                       #precision=TRUE);         
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=heal_harm_self_rsc,
+                                  #parm1=Send(who,@GetCapDef),
+                                  #parm2=Send(who,@GetName),
+                                  #parm3=-iHeal/100);
+            Send(who,@AssessDamage,#what=who,
+                                   #damage=-iHeal,
+                                   #aspell=ATCK_SPELL_ALL+ATCK_SPELL_HOLY,
+                                   #precision=TRUE);
+         }
+         propagate;
+      }
+      else
+      {
+         % A little boost for casting on newbies, even if you're the newbie!
+         if NOT Send(oTarget,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         {
+            iHeal = iHeal + random(200,500);
+         }
+         iHeal = Send(oTarget,@GainHealthNormal,#amount=iHeal,#precision=TRUE);
       }
 
       if who <> oTarget

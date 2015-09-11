@@ -1,0 +1,100 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Leeches is DrainHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   leeches_cast_rsc = "%s%s becomes infested with phantom leeches."
+   leeches_already_enchanted = \
+      "That poor soul is already afflicted by leeches."
+   leeches_start = "Phantom leeches appear on your skin!"
+   leeches_stop  = "The phantom leeches crawling upon you disappear."
+   has_been_hexed_leeches = \
+      "%s%s becomes infested with phantom leeches!"
+
+   leeched_msg = "Your strike leeches %i health!"
+   leeched_from_msg = "You shiver as %i health drains away."
+
+   leeches_name_rsc = "leeches"
+   leeches_icon_rsc = ienfeebl.bgf
+   leeches_desc_rsc = \
+      "Afflicts your victim with phantom leeches that grant all who strike them "
+      "a bit of sapped health. "
+      "This hex requires two orc teeth to cast."
+
+   leeches_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = leeches_name_rsc
+   vrIcon = leeches_icon_rsc
+   vrDesc = leeches_desc_rsc
+
+   vrAlreadyEnchanted = leeches_already_enchanted
+   vrEnchantment_On = leeches_start
+   vrEnchantment_Off = leeches_stop
+   vrSuccess = leeches_cast_rsc
+   vrInformRoom = has_been_hexed_leeches
+
+   viSpell_num = SID_HEX_LEECHES
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 2
+   viMana = 15
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = leeches_sound
+   viChance_To_Increase = 10
+   viMeditate_ratio = 70
+
+properties:
+
+   % Take and give this much health when struck (/100)
+   piBaseEffect = 200
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,3],plReagents);
+
+      return;
+   }
+   
+   StealStat(who=$,what=$,state=0)
+   {
+      local iStealAmount;
+      
+      iStealAmount = piBaseEffect * state / 100;
+      if Send(what,@GetExactHealth) > iStealAmount
+      {
+         Send(what,@LoseHealth,#amount=iStealAmount,#precision=TRUE);
+         Send(who,@GainHealthNormal,#amount=iStealAmount,#precision=TRUE);
+
+         if IsClass(who,&User)
+         {
+            Send(who,@MsgSendUser,#message_rsc=leeched_msg,
+                                  #parm1=iStealAmount/100);
+         }
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

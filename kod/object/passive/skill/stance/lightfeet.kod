@@ -1,0 +1,76 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LightFeet is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   LightFeet_name_rsc = "light feet"
+   LightFeet_icon_rsc = ihaste.bgf
+   LightFeet_desc_rsc = "A basic stance for beginners that structures the "
+                        "body for less exertion while running."
+
+   LightFeet_skill_intro = \
+      "Banditry Lv. 1: A stance that reduces the vigor cost of running."
+   
+   LightFeet_begin = "You spread your feet slightly and shift your weight."
+   LightFeet_end = "You return your feet to their normal position."
+
+classvars:
+
+   vrName = LightFeet_name_rsc
+   vrIcon = LightFeet_icon_rsc
+   vrDesc = LightFeet_desc_rsc
+   
+   stance_begin_msg = LightFeet_begin
+   stance_end_msg = LightFeet_end   
+
+   vrSkill_intro = LightFeet_skill_intro
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LIGHT_FEET
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 1
+   viChance_to_Increase = 20
+   viMeditate_ratio = 10
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   ModifyExertion(who=$, exertion=0)
+   {
+      local iLightFeetAbility, iStat, iExertionReduction;
+
+      iLightFeetAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iExertionReduction = ((iLightFeetAbility+1)/2) + (iStat/2);
+      iExertionReduction = Bound(iExertionReduction, 0, 100);
+
+      Send(self,@ImproveAbility,#who=who);  
+
+      return exertion * (100-iExertionReduction) / 100;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -360,8 +360,6 @@ properties:
    piDay = 0
    piYear = 0
 
-   poRealTime = $
-   
    % outdoor brightness level (0-100), updated hourly
    piBrightness
    % updated here and there
@@ -381,20 +379,15 @@ properties:
    poNodeAttack = $
    poRentableRoomMaintenance = $
    poSurvivalRoomMaintenance = $
-   
+
    % Singleton object that keeps track of various game statistics
    poStatistics = $
-   
-   % Singleton object that holds global game settings
-   poSettings = $
 
-   % object that handles automated events
-   poEventEngine = $
+   % List that holds expansion module setting objects
+   poExpansionSettings = $
 
    poWarEvent = $
    
-   poQormas = $
-
    % Hash table for users.
    phUsers
    % Hash table for rooms.
@@ -415,9 +408,6 @@ properties:
    plCargoTypes = $
 
    psTemp = $
-
-   % Non-null when there's a chaos night ("frenzy") running
-   poChaosNight = $
 
    pbDecay_counter = 0
 
@@ -504,6 +494,9 @@ properties:
 
    % A list of room type objects used forr room icons
    plRoomIcons = $
+   
+   % Keeps track of the last save before a frenzy.
+   psSaveGame = $
 
 messages:
 
@@ -516,13 +509,11 @@ messages:
    {
       % This shouldn't be changed!
       vlLevelPoints = [1,2,4,6,8,10];
-      
-      Send(self,@RecreateRealTime);
 
       % Reset the list of naughty words
       Send(self,@ResetNaughtyWords);
 
-      Send(self,@RecreateSettings);
+      Send(self,@RecreateExpansionSettings);
 
       Send(self,@RecreateNecromancerBalance);
       Send(self,@CreateUserTable);
@@ -538,7 +529,6 @@ messages:
 
       Send(self,@RecreateAssassinGame);
       Send(self,@RecreateQuestEngine);
-      Send(self,@RecreateEventEngine);
       Send(self,@RecreateNodeAttack);
       Send(self,@RecreateRentableRoomMaintenance);
       Send(self,@RecreateSurvivalRoomMaintenance);
@@ -562,8 +552,6 @@ messages:
 
       poHolder1 = Create(&Holder);
       poHolder2 = Create(&Holder);
-
-      Send(self,@RecalcLightAndWeather);
 
       poMoney = Create(&Money,#number=1);
       poTotem = Create(&Totem);
@@ -607,6 +595,11 @@ messages:
       % Reset our level points.
       vlLevelPoints = [1,2,4,6,8,10];
 
+      % Recreate settings.
+      Send(SETTINGS_OBJECT,@Recreate);
+      Send(REALTIME_OBJECT,@Recreate);
+      Send(EVENTENGINE_OBJECT,@Recreate);
+
       if piRecreate_State <> RECREATE_NOT
       {
          Debug("Recreate attempted when recreate is already in progress.");
@@ -623,16 +616,14 @@ messages:
 
       piRecreate_State = RECREATE_PHASE_ONE;
       Debug("Starting: Recreate phase ONE");
-      
-      Send(self,@RecreateRealTime);
-      
+
       plSavedFlagStates = Send(self,@ListCopy,#source=Send(Send(self,@GetTerritoryGame),@SaveFlagStates));
       plSavedSenate = Send(self,@ListCopy,#source=Send(Send(self,@GetTokenGame),@GetSenate));
 
       % Don't leave any active spellcasting objects
       Send(self,@DeleteAllSpellTotems);
  
-      Send(self,@RecreateSettings);
+      Send(self,@RecreateExpansionSettings);
       Send(self,@RecreateNecromancerBalance);
       Send(self,@ClearAllQuests);
       Send(self,@CreateAllBanksIfNew);
@@ -649,7 +640,6 @@ messages:
       Send(self,@RecreateRentableRoomMaintenance);
       Send(self,@RecreateSurvivalRoomMaintenance);
       Send(self,@RecreateWarEvent);
-      Send(self,@RecreateEventEngine);
 
       % These don't need to be done here.
       % RecreateAllRooms calls CreateAllRoomsIfNew. Calling it again here
@@ -803,11 +793,6 @@ messages:
          Send(self,@RefigureAllAbilityTotals);
       }
 
-      if poQormas <> $
-      {
-         Send(poQormas,@Reset);
-      }
-      
       Send(self,@RecalcLightAndWeather);
       Send(self,@ReturnShrineAllegiance);
       Send(self,@RecreateStatistics);  % Must create after anything you want to measure
@@ -865,20 +850,6 @@ messages:
 
       return;
    }
-   
-   RecreateRealTime()
-   {
-      if poRealTime <> $
-      {
-         Send(poRealTime,@Recreate);
-      }
-      else
-      {
-         poRealTime = Create(&RealTime);
-      }
-
-      return;
-   }
 
    CheckUserTable()
    {
@@ -901,7 +872,7 @@ messages:
    {
       local i;
 
-      phUsers = CreateTable();
+      phUsers = CreateTable(19463);
 
       foreach i in plUsers
       {
@@ -915,7 +886,7 @@ messages:
    {
       local i;
 
-      phRooms = CreateTable();
+      phRooms = CreateTable(2999);
 
       foreach i in plRooms
       {
@@ -929,7 +900,7 @@ messages:
    {
       local i;
 
-      phSpells = CreateTable();
+      phSpells = CreateTable(2999);
 
       foreach i in plSpells
       {
@@ -1026,11 +997,12 @@ messages:
          Send(i,@GarbageCollecting);
       }
 
-      phUsers = $;
-      phRooms = $;
-      phSpells = $;
-      phSkills = $;
-      phItemAtts = $;
+      % Don't clear these on GC any more.
+      %phUsers = $;
+      %phRooms = $;
+      %phSpells = $;
+      %phSkills = $;
+      %phItemAtts = $;
 
       Send(poStatistics,@GarbageCollecting);
 
@@ -1049,11 +1021,12 @@ messages:
          }
       }
 
-      Send(self,@CreateUserTable);
-      Send(self,@CreateRoomTable);
-      Send(self,@CreateSpellTable);
-      Send(self,@CreateSkillTable);
-      Send(self,@CreateItemAttTable);
+      % Tables are GC'd now, don't need to recreate them.
+      %Send(self,@CreateUserTable);
+      %Send(self,@CreateRoomTable);
+      %Send(self,@CreateSpellTable);
+      %Send(self,@CreateSkillTable);
+      %Send(self,@CreateItemAttTable);
 
       foreach i in plUsers_logged_on
       {
@@ -1210,15 +1183,7 @@ messages:
    
       plUsers_logged_on = Cons(what,plUsers_logged_on);
 
-      if poChaosNight <> $
-      {
-         Send(poChaosNight, @UserLogon, #who = what);
-      }
-      
-      if (poQormas <> $)
-      {
-         Send(poQormas, @UserLogon, #who = what);
-      }
+      Send(EVENTENGINE_OBJECT,@UserLogon,#who=what);
 
       return;
    }
@@ -1279,10 +1244,7 @@ messages:
          }
       }
 
-      if (poQormas <> $)
-      {
-         Send(poQormas,@UserLogoff,#who=what);
-      }
+      Send(EVENTENGINE_OBJECT,@UserLogoff,#who=what);
 
       return;
    }
@@ -1461,11 +1423,6 @@ messages:
       Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewDay);
 
       Send(self,@VerifyUsersLoggedOn);
-      
-      if (poQormas <> $)
-      {
-         Send(poQormas,@NewDay);
-      }
 
       return;
    }
@@ -1778,6 +1735,9 @@ messages:
       local i, rMessage, bMurder, oSoldierShield, oToken, oGuild, oKillerGuild,
             param2, param3, param4, param5, param6, param7, type5, type7,
             war_string1, war_string2, oBook, oMaster;
+
+      % Notify the event engine
+      Send(EVENTENGINE_OBJECT,@UserKilled,#who=what,#killer=killer);
 
       if IsClass(what,&Guest)
          OR (killer = $)
@@ -3050,15 +3010,38 @@ messages:
       return poStatistics;
    }
 
-   RecreateSettings()
+   RecreateExpansionSettings()
    {
-      poSettings = Create(&Settings, #server_num = Send(self, @GetServerNumber));
+      poExpansionSettings = $;
+      poExpansionSettings = Cons(Create(&ImbueSettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&DesertSettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&EquipmentSettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&WitcherySettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&SorcerySettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&BanditrySettings),poExpansionSettings);
+      poExpansionSettings = Cons(Create(&ElementalEffectsSettings),poExpansionSettings);
       return;
    }
 
-   GetSettings()
+   GetExpansionSettings(find_class=$)
    {
-      return poSettings;
+      local i;
+
+      if find_class <> $
+         AND poExpansionSettings <> $
+      {
+         foreach i in poExpansionSettings
+         {
+            if IsClass(i,find_class)
+            {
+               return i;
+            }
+         }
+         
+         return $;
+      }
+
+      return poExpansionSettings;
    }
 
    % Shrine utility
@@ -3255,6 +3238,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_ZAP,#class=&Zap);
       Send(self,@CreateOneSpellIfNew,#num=SID_VAMPIRIC_DRAIN,#class=&VampiricDrain);
       Send(self,@CreateOneSpellIfNew,#num=SID_HOLY_TOUCH,#class=&HolyTouch);
+      Send(self,@CreateOneSpellIfNew,#num=SID_UNHOLY_TOUCH,#class=&UnholyTouch);
       Send(self,@CreateOneSpellIfNew,#num=SID_ICY_FINGERS,#class=&IcyFingers);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_WINDS,#class=&Winds);
@@ -3436,6 +3420,25 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_VULNERABILITY,#class=&Vulnerability);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_SLOW,#class=&Slow);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BARBS,#class=&Barbs);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_LEECHES,#class=&Leeches);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FRAILTY,#class=&Frailty);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_HUMILITY,#class=&Humility);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CORRUPTION,#class=&Corruption);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FLAMMABILITY,#class=&Flammability);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CONDUCTIVITY,#class=&Conductivity);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_ALGIDITY,#class=&Algidity);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CORROSION,#class=&Corrosion);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FESTER,#class=&Fester);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_MUTE,#class=&Mute);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_WEAKEN,#class=&Weaken);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_SAP,#class=&Sap);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BESTILL,#class=&Bestill);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BECLOUD,#class=&Becloud);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BLACK_MANTLE,#class=&BlackMantle);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);
@@ -3659,6 +3662,53 @@ messages:
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_SECOND_WIND,#class=&SecondWind);
        Send(self,@CreateOneSKillIfNew,#num=SKID_DISARM,#class=&Disarm);
+       
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ARCANE_KNOWLEDGE,#class=&ArcaneKnowledge);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ROTE_MEMORIZATION,#class=&RoteMemorization);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EFFICIENT_CASTING,#class=&EfficientCasting);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ANCIENT_PACT,#class=&AncientPact);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_UNHALLOWED_RUNES,#class=&UnhallowedRunes);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_RUNES,#class=&BloodRunes);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_OSTRACIZATION,#class=&Ostracization);
+
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_ONE,#class=&LinkOne);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_TWO,#class=&LinkTwo);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_THREE,#class=&LinkThree);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FOUR,#class=&LinkFour);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FIVE,#class=&LinkFive);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_MAGIC,#class=&BloodMagic);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_FORCE_SPIKE,#class=&ForceSpike);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_WILL_SURGE,#class=&WillSurge);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_VOLATILE_FOCUS,#class=&VolatileFocus);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SOUL_AND_BODY_ONE,#class=&SoulAndBodyOne);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_DEVOTION,#class=&Devotion);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENTROPY,#class=&Entropy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENERGY,#class=&Energy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EFFICIENCY,#class=&Efficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_INTENSITY,#class=&Intensity);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LETHALITY,#class=&Lethality);   
+
+       Send(self,@CreateOneSKillIfNew,#num=SKID_AWARENESS,#class=&Awareness);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LIGHT_FEET,#class=&LightFeet);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_STAB,#class=&Stab);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_DAGGER,#class=&DaggerProficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PERCEPTION,#class=&Perception);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_THROW,#class=&Throw);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TUMBLE,#class=&Tumble);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_THROW,#class=&ThrowingProficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SNEAK,#class=&Sneak);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_HIDE,#class=&Hide);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SWIFT_HANDS,#class=&SwiftHands);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_HEAVY_ARMS,#class=&HeavyArms);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_RECKLESS_HEART,#class=&RecklessHeart);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_FOCUSED_MIND,#class=&FocusedMind);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SPY,#class=&Spy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BACKSTAB,#class=&Backstab);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TIGHT_GRIP,#class=&TightGrip);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_POISED_SOUL,#class=&PoisedSoul);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TRACK,#class=&Track);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_CHARGED_CLUTCH,#class=&ChargedClutch);
+
 
        return;
    }
@@ -4898,20 +4948,6 @@ messages:
       return TRUE;
    }
 
-   RecreateEventEngine()
-   {
-      if poEventEngine <> $
-      {
-         Send(poEventEngine,@Recreate);
-      }
-      else
-      {
-         poEventEngine = Create(&GameEventEngine);
-      }
-
-      return TRUE;
-   }
-   
    GetNecromancerBalance()
    {
       return poNecromancerBalance;
@@ -5051,82 +5087,127 @@ messages:
 
       return;
    }
-   
-   GetRealTimeObject()
-   {
-      return poRealTime;
-   }
-   
-   GetEventEngine()
-   {
-      return poEventEngine;
-   }
-   
-   GetQormas()
-   {
-      return poQormas;
-   }
-   
-   StartQormas()
-   {
-      % Qormas already started!
-      if (poQormas <> $)
-      {
-         return system_failure_rsc;
-      }
-      
-      poQormas = Create(&Qormas);
-      Send(poQormas,@StartQormas);
-      
-      return system_success_rsc;
-   }
-   
-   EndQormas()
-   {
-      % No Qormas to end!
-      if (poQormas = $)
-      {
-         return system_failure_rsc;
-      }
-      
-      Send(poQormas,@EndQormas);
-      Send(poQormas,@Delete);
-      poQormas = $;
-      
-      return system_success_rsc;
-   }
 
+   StartEvent(event_type=$)
+   "event_type should be the class type of an event"
+   {
+      if (event_type=$)
+      {
+         return;
+      }
+      
+      return Send(EVENTENGINE_OBJECT,@EventStart,#parm1=event_type);
+   }
+   
+   EndEvent(event_obj=$)
+   {
+      if (event_obj=$)
+      {
+         return;
+      }
+      
+      return Send(EVENTENGINE_OBJECT,@EventEnd,#parm1=event_obj);
+   }
+   
+   SaveGame_K(IKnowThisIsDangerous=$)
+   {
+   
+      % psSaveGame keeps track of the system save before frenzy starts.
+      % If this already exists, don't start the frenzy.
+      if psSaveGame <> $
+      {
+         Debug("Not saving while System is already tracking ",
+            "a save game!");
+
+         return system_failure_rsc;
+      }
+      
+      if (IKnowThisIsDangerous = 820965)
+      {
+         % Save the game.
+         psSaveGame = SaveGame();
+      }
+      return;
+   }
+   
+   LoadGame_K(IKnowThisIsDangerous=$)
+   {
+      if (IKnowThisIsDangerous=730527)
+      {
+         % If we don't have a save game, don't try to reload.
+         if psSaveGame = $
+         {
+            Debug("System has no save game, not ending chaos night!");
+
+            return system_failure_rsc;
+         }
+         % LoadGame will schedule a game reload in the blakserv main thread,
+         % which will kick all users offline and reload the saved game. This
+         % is performed in the main thread so that blakod interpreting isn't
+         % affected.
+         LoadGame(psSaveGame);
+         psSaveGame = $;
+      }
+      
+      return;
+   }
+   
    GetChaosNight()
    "Return true if there's a chaos night (\"frenzy\") running."
    {
-      return poChaosNight <> $;
+      return send(EVENTENGINE_OBJECT,@IsChaosNightActive);
    }
 
-   StartChaosNight()
+   % HACK in case EVENTENGINE_OBJECT hasn't been created yet,
+   % don't call this, ever.  It is'nt useful for anything else.
+   IsChaosNightActive()
    {
-      % Chaos night MUST be started after a system save, and afterwards,
-      %  the attending guardian MUST revert back to that old save game!
-      % You have been warned!
-      if Send(self, @GetChaosNight)
-      {
-         return system_failure_rsc;
-      }
+      return false;
+   }
 
-      poChaosNight = Create(&ChaosNight);
-      return system_success_rsc;
+   ScheduleChaosNight(iMonth=$,iDay=$,iYear=$,
+                      iHour=21,iMinute=0,
+                      duration=60,
+                      duration_scale=GAMEEVENT_SCALE_MINUTES)
+   {
+      Send(EVENTENGINE_OBJECT,@ScheduleStartEvent,
+         #iClass=&ChaosNight,
+         #iYear=iYear,
+         #iMonth=iMonth,
+         #iDay=iDay,
+         #iHour=iHour,
+         #iMinute=iMinute,
+         #parm2=duration,
+         #parm3=duration_scale);
+         
+      return;
+   }
+   
+   StartChaosNight(duration=60,duration_scale=GAMEEVENT_SCALE_MINUTES)
+   {
+      if (NOT Send(self,@GetChaosNight))
+      {
+         return Send(EVENTENGINE_OBJECT,@EventStart,
+            #parm1=&ChaosNight,
+            #parm2=duration,
+            #parm3=duration_scale);
+      }
+   
+      return system_failure_rsc;
    }
 
    EndChaosNight()
    {
-      % This should never be called in a real game!
-      if NOT Send(self, @GetChaosNight)
+      local oChaosNight;
+   
+      if (Send(self,@GetChaosNight))
       {
-         return system_failure_rsc;
+         oChaosNight = Send(EVENTENGINE_OBJECT,
+                           @FindEventOfType,#event_type=&ChaosNight);
+         Send(EVENTENGINE_OBJECT,@EventEnd,#parm1=oChaosNight);
       }
-
-      Send(poChaosNight, @Delete);
-      poChaosNight = $;
-      return system_success_rsc;
+   
+      return;
    }
 
    EnableRoomIllusions()
@@ -5252,9 +5333,12 @@ messages:
       plMonsterTemplates = cons(create(&GroundWorm),plMonsterTemplates);
       plMonsterTemplates = cons(create(&GroundWormLarva),plMonsterTemplates);
       plMonsterTemplates = cons(create(&GroundWormQueen),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&Human),plMonsterTemplates);
       plMonsterTemplates = cons(create(&RebelTroop),plMonsterTemplates);
       plMonsterTemplates = cons(create(&DukeTroop),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&DukeMage),plMonsterTemplates);
       plMonsterTemplates = cons(create(&PrincessTroop),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&PrincessMage),plMonsterTemplates);
       plMonsterTemplates = cons(create(&NecromancerTroop),plMonsterTemplates);
 
       plMonsterTemplates = cons(create(&XeoFire),plMonsterTemplates);
@@ -5367,7 +5451,8 @@ messages:
       plItemTemplates = cons(create(&ReagentBag),plItemTemplates);
 
       plItemTemplates = cons(create(&Money),plItemTemplates);
-      plItemTemplates = cons(create(&StatsResetToken),plItemTemplates);
+      plItemTemplates = cons(create(&StatsResetToken,#temporary=FALSE),
+                              plItemTemplates);
 
       % Gems
       plItemTemplates = cons(create(&GemRiijaPower),plItemTemplates);
@@ -5632,6 +5717,9 @@ messages:
       plItemTemplates = cons(create(&Axe),plItemTemplates);
       plItemTemplates = cons(create(&Hammer),plItemTemplates);
       plItemTemplates = cons(create(&Mace),plItemTemplates);
+ 
+      plItemTemplates = cons(create(&Dagger),plItemTemplates);
+      plItemTemplates = cons(create(&ThrowingDagger),plItemTemplates);
 
       plItemTemplates = cons(create(&ShieldRod),plItemTemplates);
       plItemTemplates = cons(create(&DamageRod),plItemTemplates);
@@ -5656,7 +5744,7 @@ messages:
 
       % Check for frenzy active first, to avoid running
       % this accidentally.
-      if poChaosNight = $
+      if (NOT Send(self,@GetChaosNight))
       {
          return;
       }
@@ -6516,7 +6604,7 @@ messages:
 
    GetLogoffPenaltyGhostTime()
    {
-      return Send(Send(self,@GetSettings),@GetLogoffPenaltyGhostTime);
+      return Send(SETTINGS_OBJECT,@GetLogoffPenaltyGhostTime);
    }
 
    TempDisableLogoffPenalties()
@@ -6529,7 +6617,7 @@ messages:
          ptLogoffPenaltyTempDisable = $;
       }
 
-      iDisableDuration = (Send(Send(self,@GetSettings),@GetLogoffPenaltyGhostTime)*150)/100;
+      iDisableDuration = (Send(SETTINGS_OBJECT,@GetLogoffPenaltyGhostTime)*150)/100;
 
       ptLogoffPenaltyTempDisable = CreateTimer(self,@LogoffPenaltyTempDisableTrigger,iDisableDuration);
 
@@ -6861,7 +6949,7 @@ messages:
          iMaxLearnPoints = 0;
          iTotalLearnPoints = 0;
 
-         iMaxLearnPoints = Send(poSettings,@GetMaxLearnPoints)
+         iMaxLearnPoints = Send(SETTINGS_OBJECT,@GetMaxLearnPoints)
                               + (Send(i,@GetRawIntellect) * 2) / 5;
 
          iTotalLearnPoints = Send(i,@GetTotalLearnPoints);
@@ -6893,6 +6981,38 @@ messages:
       }
 
       return iList;
+   }
+
+   FixSpellLevelChange(iSID=0)
+   "Removes a spell from one level and adds it to another for all players "
+   "who have the spell, and also have the second level."
+   {
+      local i, oSpell, iPercent, iTP;
+
+      oSpell = Send(self,@FindSpellByNum,#num=iSID);
+
+      foreach i in plUsers
+      {
+         if Send(i,@HasSpell,#num=iSID)
+         {
+            iPercent = Send(i,@GetSpellAbility,#spell_num=iSID);
+            Send(i,@RemoveSpell,#num=iSID);
+            if Send(i,@PlayerCanLearn,#spell_num=iSID) = PLAYER_LEARN_SUCCESS
+            {
+               Send(i,@AddSpell,#num=iSID,#iability=iPercent);
+               Debug("Readded spell ",Send(oSpell,@GetName)," to ",
+                     Send(i,@GetTrueName));
+            }
+            else
+            {
+               iTP = Send(oSpell,@GetMeditateRatio);
+               Send(i,@AddTrainingPoints,#points=iTP * iPercent,#bCap=FALSE);
+               Debug("Added ",iTP * iPercent," TP to ",Send(i,@GetTrueName));
+            }
+         }
+      }
+
+      return;
    }
 
    AdminListPlayersOverHP(hp=$)
@@ -7622,22 +7742,19 @@ messages:
    
    GetUniqueIPs()
    {
-      local i,j,lUserIPList,lIP,bFound;
-      
+      local i, j, lUserIPList, lIP, bFound;
+
       lUserIPList = $;
-      
+
       foreach i in plUsers_logged_on
       {
          bFound = FALSE;
-      
-         lIP = send(i,@GetIP);
-         
+
+         lIP = Send(i,@GetIP);
+
          foreach j in lUserIPList
          {
-            if Nth(lIP,1) = Nth(j,1)
-               AND Nth(lIP,2) = Nth(j,2)
-               AND Nth(lIP,3) = Nth(j,3)
-               AND Nth(lIP,4) = Nth(j,4)
+            if IsListMatch(lIP,j)
             {
                bFound = TRUE;
             }
@@ -7647,10 +7764,10 @@ messages:
             lUserIPList = Cons(lIP,lUserIPList);
          }
       }
-      
+
       return Length(lUserIPList);
    }
-   
+
    SortItemsByType(lItems = $, lClassOrder=$)
    {
       local lBaseList, lSortedItems, oItem, lSuperClass, cClass,

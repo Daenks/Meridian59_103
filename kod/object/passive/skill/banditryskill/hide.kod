@@ -1,0 +1,152 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Hide is BanditrySkill
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   Hide_name_rsc = "hide"
+   Hide_icon_rsc = ifade.bgf
+   Hide_desc_rsc = \
+      "Allows the user to mask their presence, thereby avoiding general "
+      "detection "
+      "and targeting by others. To attempt to begin hiding, walk slowly "
+      "while sneaking for four seconds."
+   
+   begin_hiding_rsc = "You blend in with the natural presence of the area."
+   fail_hide_rsc = "You fail to hide."
+   
+   hide_stop = "You stop hiding."
+
+classvars:
+
+   vrName = Hide_name_rsc
+   vrIcon = Hide_icon_rsc
+   vrDesc = Hide_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_HIDE
+   viSchool = SKS_BANDITRY
+   viSkill_Level = 4
+   viChance_to_Increase = 10
+   viMeditate_ratio = 100
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+   plHiding = $
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetAgility);
+   }
+   
+   DoSkill(who=$)
+   {
+      local chance, iAgility, iAbility;
+      
+      if Send(self,@IsHiding,#who=who)
+      {
+         return;
+      }
+      
+      iAgility = Send(self,@GetRequisiteStat,#who=who);
+      iAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      
+      chance = (iAgility/2) + iAbility;
+      chance = bound(chance,5,95);
+      
+      if chance > Random(1,100)
+      {
+         Send(self,@BeginHiding,#who=who);
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=fail_hide_rsc);
+         return;
+      }
+      
+      propagate;
+   }
+   
+   BeginHiding(who=$)
+   {
+      if who <> $
+         AND IsClass(who,&Player)
+         AND (plHiding = $ OR FindListElem(plHiding,who) = 0)
+      {
+         plHiding = Cons(who,plHiding);
+         Send(who,@MsgSendUser,#message_rsc=begin_hiding_rsc);
+         if Send(who,@GetOwner) <> $
+         {
+            Post(Send(who,@GetOwner),@SomethingChanged,#what=who);
+            Post(who,@ShowAddEnchantment,#what=self,
+               #type=ENCHANTMENT_PLAYER);
+         }
+      }
+
+      return;
+   }
+   
+   StopHiding(who=$)
+   {
+      if plHiding <> $
+         AND FindListElem(plHiding,who) <> 0
+      {
+         Send(who,@ClearAccruedHide);
+         plHiding = DelListElem(plHiding,who);
+         Send(who,@MsgSendUser,#message_rsc=hide_stop);
+         if Send(who,@GetOwner) <> $
+         {
+            Post(Send(who,@GetOwner),@SomethingChanged,#what=who);
+            Post(who,@ShowRemoveEnchantment,#what=self,
+               #type=ENCHANTMENT_PLAYER);
+         }
+      }
+
+      return;
+   }
+   
+   IsHiding(who=$)
+   {
+      local i;
+      
+      foreach i in plHiding
+      {
+         if i = who
+         {
+            return 1;
+         }
+      }
+      
+      return 0;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x02;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

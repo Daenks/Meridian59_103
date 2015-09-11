@@ -1,0 +1,84 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Slow is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   slow_cast_rsc = "%s%s begins moving more slowly."
+   slow_already_enchanted = "That poor soul is already slowed."
+   slow_start = "The world speeds up around you."
+   slow_stop  = "The world around you slows to a normal pace."
+   has_been_hexed_slow = \
+      "%s%s begins moving more slowly."
+
+   slow_name_rsc = "slow"
+   slow_icon_rsc = ienfeebl.bgf
+   slow_desc_rsc = \
+      "Slows your victim considerably. "
+      "This hex requires two orc teeth to cast."
+
+   slow_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = slow_name_rsc
+   vrIcon = slow_icon_rsc
+   vrDesc = slow_desc_rsc
+
+   vrAlreadyEnchanted = slow_already_enchanted
+   vrEnchantment_On = slow_start
+   vrEnchantment_Off = slow_stop
+   vrSuccess = slow_cast_rsc
+   vrInformRoom = has_been_hexed_slow
+
+   viSpell_num = SID_HEX_SLOW
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 5
+   viMana = 30
+   viSpell_Exertion = 20
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = slow_sound
+   viChance_To_Increase = 15
+   viMeditate_ratio = 50
+
+properties:
+
+   % Increases postcast delays by this percent
+   piBaseEffect = 25
+
+   piFlatDuration = 30000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+   
+   ModifyDelay(iDelay=$,state=0)
+   {
+      iDelay = iDelay * (100 + ((piBaseEffect * state)/100)) / 100;
+
+      return iDelay;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

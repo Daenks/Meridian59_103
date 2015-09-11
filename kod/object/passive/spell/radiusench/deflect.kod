@@ -1,0 +1,183 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%S%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Deflect is RadiusEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   Deflect_name_rsc = "deflect"
+   Deflect_icon_rsc = imirror.bgf
+   Deflect_desc_rsc = \
+      "Calls upon Kraanan's will to form a protective barrier around the "
+      "caster which protects their allies from direct damaging attack magics "
+      "- but "
+      "not from other magics, such as enchantments.  "
+      "Requires a vial of solagh and one kriipa claw to cast."
+
+   Deflect_spell_intro = \
+      "Kraanan Level 4: Forms a magical barrier around the target, protecting"
+      "them from harm of magics that damage directly."
+
+   Deflect_sound = kdeflect.wav
+
+   Deflect_success_to_victim = \
+      "The deflection bubble surrounding you bounces %s's spell back onto "
+      "its caster!"
+   Deflect_success_to_caster = \
+      "A barrier of mystical energy coalesces in front of %s, bouncing "
+      "your spell back at you!"
+   Deflect_failure_to_victim = \
+      "The deflection bubble surrounding you attempts to bounce %s's spell "
+      "back, "
+      "but is not strong enough."
+
+   Deflect_cast = \
+      "You extend a silvery dome of light out from your fingertips."
+   Deflect_starts = "A silvery dome of light emerges from %s's fingertips."
+   Deflect_ends = "The dome of silvery energy maintained by %s dissipates."
+   Deflect_caster_ends = "Your dome of silvery energy dissipates."
+   Deflect_caster_enter = "You feel magical deflection energies surround you."
+   Deflect_enter = \
+      "You are encompassed by a dome of silvery energy emanating from %s."
+   Deflect_leave = \
+      "You have passed outside the dome of silvery energy emanating from %s."
+
+classvars:
+
+   radius_ench_cast = Deflect_cast
+   radius_ench_starts = Deflect_starts
+   radius_ench_ends = Deflect_ends
+   radius_ench_caster_ends = Deflect_caster_ends
+   radius_ench_caster_enter = Deflect_caster_enter
+   radius_ench_enter = Deflect_enter
+   radius_ench_leave = Deflect_leave
+
+   viSpellExertion = 10
+   vrName = Deflect_name_rsc
+   vrIcon = Deflect_icon_rsc
+   vrDesc = Deflect_desc_rsc
+
+   viSpell_num = SID_DEFLECT
+
+   vrSpell_intro = Deflect_spell_intro
+
+   viMana = 20
+   viManaDrain = 5
+   viDrainTime = 5000
+   viSpell_level = 4
+   viSchool = SS_KRAANAN
+
+   viChance_To_Increase = 20
+   viMeditate_ratio = 30
+
+   viFlash = FLASH_GOOD_SELF
+
+   vrSucceed_wav = Deflect_sound
+
+   viIndefinite = ARTICLE_AN
+   viChance_To_Increase = 35
+   viMeditate_ratio = 30
+   viBaseRange = 6
+
+   viAffectsGuildmates = TRUE
+   viAffectsEnemies = TRUE
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Solagh,1],plReagents);
+      plReagents = Cons([&KriipaClaw,1],plReagents);
+
+      return;
+   }
+
+   CalculateRange(who=$, iSpellPower=25)
+   {
+      return viBaseRange;
+   }
+
+   GetStateValue(who=$,iSpellPower=0,Target=$)
+   {
+      local iReflectOdds;
+
+      iReflectOdds = iSpellPower * 3 / 4;
+
+      return Bound(iReflectOdds,10,75);
+   }
+   
+   TryDeflect(caster=$,victim=$,oSpell=$,power=0,source=$)
+   "Returns TRUE if the spell is deflected."
+   {
+      local i, iReflectOdds;
+
+      if oSpell = $
+         OR NOT Send(oSpell,@IsHarmful)
+         OR NOT Send(oSpell,@GetNumSpellTargets) = 1
+         OR NOT IsClass(oSpell,&AttackSpell)
+         OR source = $
+      {
+         return FALSE;
+      }
+
+      % Deflect can only protect from outside the radius
+      if Send(caster,@IsAffectedByRadiusEnchantment,#what=self,#caster=source)
+      {
+         return FALSE;
+      }
+      
+      if Send(victim,@IsAffectedByRadiusEnchantment,#what=self,#caster=source)
+      {
+         iReflectOdds = 25 + (power+1) / 4;
+         if iReflectOdds > Random(0,100)
+         {
+            Send(self,@SendMessageTryDeflectSuccess,
+               #victim=victim,#caster=caster);
+            return TRUE;
+         }
+
+         Send(self,@SendMessageTryDeflectFailure,#victim=victim,#caster=caster);
+      }
+
+      return FALSE;
+   }
+
+   SendMessageTryDeflectSuccess(victim=$,caster=$)
+   {
+      Send(victim,@MsgSendUser,#message_rsc=Deflect_success_to_victim,
+           #parm1=Send(caster,@GetName));
+      Send(caster,@MsgSendUser,#message_rsc=Deflect_success_to_caster,
+           #parm1=Send(victim,@GetName));
+
+      return;
+   }
+
+   SendMessageTryDeflectFailure(victim=$,caster=$)
+   {
+      Send(victim,@MsgSendUser,#message_rsc=Deflect_failure_to_victim,
+           #parm1=Send(caster,@GetName));
+
+      return;
+   }
+
+   GetPotionClass()
+   {
+      return &DeflectPotion;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

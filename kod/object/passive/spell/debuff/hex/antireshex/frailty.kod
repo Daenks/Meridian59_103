@@ -1,0 +1,82 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Frailty is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   frailty_cast_rsc = \
+      "%s%s suddenly seems frail."
+   frailty_already_enchanted = \
+      "That poor soul is already afflicted by frailty."
+   frailty_start = "You suddenly feel frail."
+   frailty_stop  = "The feeling of frailty passes."
+   has_been_hexed_frailty = \
+      "%s%s suddenly seems more frail somehow."
+
+   frailty_name_rsc = "frailty"
+   frailty_icon_rsc = ienfeebl.bgf
+   frailty_desc_rsc = \
+      "Weakens the target's bones, making them more vulnerable to "
+      "physical assault. "
+      "This hex requires two orc teeth to cast."
+
+   frailty_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = frailty_name_rsc
+   vrIcon = frailty_icon_rsc
+   vrDesc = frailty_desc_rsc
+
+   vrAlreadyEnchanted = frailty_already_enchanted
+   vrEnchantment_On = frailty_start
+   vrEnchantment_Off = frailty_stop
+   vrSuccess = frailty_cast_rsc
+   vrInformRoom = has_been_hexed_frailty
+
+   viSpell_num = SID_HEX_FRAILTY
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_IWODACH
+   viSpell_level = 5
+   viMana = 30
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = frailty_sound
+   viChance_To_Increase = 15
+   viMeditate_ratio = 40
+
+   viResistanceType = ATCK_WEAP_ALL
+
+properties:
+
+   % Effectively reduces weapon resistance by this percent base
+   piBaseEffect = 20
+
+   piFlatDuration = 12000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,3],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -559,66 +559,106 @@ char * name_goto_cond(int cond)
 
 char * name_function(int fnum)
 {
-   static char s[20];
+   static char s[25];
 
    switch (fnum)
    {
    case CREATEOBJECT : return "Create";
-//   case DELETEOBJECT : return "Delete";
-   case ISCLASS: return "IsClass";
-   case GETCLASS: return "GetClass";
+   //   case DELETEOBJECT : return "Delete";
+   case ISCLASS : return "IsClass";
+   case GETCLASS : return "GetClass";
 
    case SENDMESSAGE : return "Send";
+   case POSTMESSAGE : return "Post";
+
+   case SAVEGAME : return "SaveGame";
+   case LOADGAME : return "LoadGame";
 
    case GODLOG : return "GodLog";
    case DEBUG : return "Debug";  
    case ADDPACKET : return "AddPacket";
    case SENDPACKET : return "SendPacket";
+   case SENDCOPYPACKET : return "SendCopyPacket";
+   case CLEARPACKET : return "ClearPacket";
+   case GETINACTIVETIME : return "GetInactiveTime";
+   case DUMPSTACK : return "DumpStack";
 
-
+   case ISSTRING : return "IsString";
    case STRINGEQUAL : return "StringEqual";
    case STRINGCONTAIN : return "StringContain";
    case SETRESOURCE : return "SetResource";
+   case PARSESTRING : return "ParseString";
+   case SETSTRING : return "SetString";
    case CREATESTRING : return "CreateString";
-   case ISSTRING : return "IsString";
+   case STRINGSUBSTITUTE : return "StringSubstitute";
+   case APPENDTEMPSTRING : return "AppendTempString";
+   case CLEARTEMPSTRING : return "ClearTempString";
+   case GETTEMPSTRING : return "GetTempString";
+   case STRINGLENGTH : return "StringLength";
+   case STRINGCONSISTSOF : return "StringConsistsOf";
+
+   case SETCLASSVAR : return "SetClassVar";
 
    case CREATETIMER : return "CreateTimer";
    case DELETETIMER : return "DeleteTimer";
+   case GETTIMEREMAINING : return "GetTimeRemaining";
    case ISTIMER : return "IsTimer";
 
-   case MOVESECTORBSP: return "MoveSectorBSP";
-   case CHANGETEXTUREBSP: return "ChangeTextureBSP";
+   case MOVESECTORBSP : return "MoveSectorBSP";
+   case CHANGETEXTUREBSP : return "ChangeTextureBSP";
    case CREATEROOMDATA : return "LoadRoom";
    case FREEROOM : return "FreeRoom";
    case ROOMDATA : return "RoomData";
    case CANMOVEINROOM : return "CanMoveInRoom";
+   case CANMOVEINROOMFINE : return "CanMoveInRoomFine";
    case CANMOVEINROOMHIGHRES : return "CanMoveInRoomHighRes";
    case GETHEIGHT : return "GetHeight";
-   case GETHEIGHTFLOORBSP: return "GetHeightFloorBSP";
-   case GETHEIGHTCEILINGBSP: return "GetHeightCeilingBSP";
-   case LINEOFSIGHTBSP: return "LineOfSightBSP";
+   case GETHEIGHTFLOORBSP : return "GetHeightFloorBSP";
+   case GETHEIGHTCEILINGBSP : return "GetHeightCeilingBSP";
+   case LINEOFSIGHTBSP : return "LineOfSightBSP";
+
+   case MINIGAMENUMBERTOSTRING : return "MiniGameNumberToString";
+   case MINIGAMESTRINGTONUMBER : return "MiniGameStringToNumber";
 
    case APPENDLISTELEM : return "AppendListElem";
    case CONS  : return "Cons";
    case FIRST  : return "First";
    case REST  : return "Rest";
    case LENGTH  : return "Length";
+   case ISLISTMATCH : return "IsListMatch";
    case NTH  : return "Nth";
    case MLIST  : return "List";
    case ISLIST : return "IsList";
    case SETFIRST : return "SetFirst";
    case SETNTH : return "SetNth";
-   case SWAPLISTELEM : return "SwapListElem";
    case DELLISTELEM : return "DelListElem";
+   case FINDLISTELEM : return "FindListElem";
+   case SWAPLISTELEM : return "SwapListElem";
    case INSERTLISTELEM : return "InsertListElem";
    case LAST : return "Last";
 
+   case GETTIMEZONEOFFSET : return "GetTimeZoneOffset";
    case GETTIME : return "GetTime";
    case GETTICKCOUNT : return "GetTickCount";
-   case SETCLASSVAR : return "SetClassVar";
+
+   case ABS : return "Abs";
+   case BOUND : return "Bound";
+   case SQRT : return "Sqrt";
+
+   case CREATETABLE : return "CreateTable";
+   case ADDTABLEENTRY : return "AddTableEntry";
+   case GETTABLEENTRY : return "GetTableEntry";
+   case DELETETABLEENTRY : return "DeleteTableEntry";
+   case DELETETABLE : return "DeleteTable";
+   case ISTABLE : return "IsTable";
+
+   case RECYCLEUSER : return "RecycleUser";
+
+   case ISOBJECT : return "IsObject";
 
    case RANDOM  : return "Random";
    case RECORDSTAT : return "RecordStat";
+   case GETSESSIONIP : return "GetSessionIP";
    default : sprintf(s,"Unknown function %i",fnum); return s;
    }
 

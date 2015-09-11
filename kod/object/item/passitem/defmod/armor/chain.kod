@@ -37,6 +37,9 @@ classvars:
    viHits_init_max = 650
 
    viSpell_modifier = -15
+   % Used instead of viSpell_modifier if penalty percentage system is in use
+   viSpell_penalty_percentage = -15
+
    viValue_average = 1000
    viWeight = 200
    viBulk = 250
@@ -58,11 +61,29 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_THRUST,5],
-               [ATCK_WEAP_PIERCE,25],
-               [ATCK_WEAP_BLUDGEON,15],
-               [ATCK_WEAP_SLASH,20]
-             ];
+      local iArmorSystem;
+
+      iArmorSystem = Send(Send(SYS,@GetExpansionSettings,
+                          #find_class=&EquipmentSettings),
+                          @GetArmorSystem);
+
+      if iArmorSystem = ARMOR_SYSTEM_PERCENTAGE
+      {
+         return [ [ATCK_WEAP_ALL,20],
+                  [-ATCK_SPELL_ALL,20]
+                ];
+      }
+
+      if iArmorSystem = ARMOR_SYSTEM_CLASSIC
+      {
+         return [ [ATCK_WEAP_THRUST,5],
+                  [ATCK_WEAP_PIERCE,25],
+                  [ATCK_WEAP_BLUDGEON,15],
+                  [ATCK_WEAP_SLASH,20]
+                ];
+      }
+      
+      return [];
    }
 
    GetHeatDamage()

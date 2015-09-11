@@ -128,6 +128,15 @@ messages:
 
       if NOT bHasEnchantment
       {
+         lEnchantment = Send(target,@GetReservedSpells);
+         if lEnchantment <> $
+         {
+            bHasEnchantment = TRUE;
+         }
+      }
+
+      if NOT bHasEnchantment
+      {
          Send(who,@MsgSendUser,#message_rsc=Purge_not_enchanted, 
                #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
 
@@ -247,6 +256,28 @@ messages:
             AND NOT Send(oSpell,@IsHarmful)
          {
             lEnchantments = cons(oSpell,lEnchantments);
+         }
+      }
+
+      lList = Send(who,@GetReservedSpells);
+      
+      foreach oEnchantment in lList
+      {
+         % Try to retain reserved spells with Soul and Body One
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_SOUL_AND_BODY_ONE) > 0
+         {
+            if NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SOUL_AND_BODY_ONE),
+                            @AttemptToRetain,
+                            #who=who,
+                            #oEnchantment=Nth(oEnchantment,1),
+                            #iChance=iChance)
+            {
+               lEnchantments = Cons(Nth(oEnchantment,1),lEnchantments);
+            }
+         }
+         else
+         {
+            lEnchantments = Cons(Nth(oEnchantment,1),lEnchantments);
          }
       }
 

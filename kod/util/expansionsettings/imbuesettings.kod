@@ -1,0 +1,66 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ImbueSettings is ExpansionSettings
+
+% This class keeps settings for the gear-based imbue system.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Imbues default active. Turning this to zero will temporarily disable them.
+   %    They will remain in weapons and armor until turned on again.
+   pbImbuesActive = 1
+
+   % Base drop rate is one hundred percent. Zero turns off drops completely.
+   ppBaseDropRate = 100
+
+   % Can imbues be recovered from armor and weapons?
+   % Default FALSE. If TRUE, players can recover imbues and re-use elsewhere.
+   %
+   % Designer's note: strong advisory AGAINST recoverable imbues without
+   %   significant content support/changes. Recoverable imbues means players
+   %   will develop 'pools' of awesome imbues that they just move around from
+   %   armor to armor and character to character, which will significantly
+   %   shorten the content system and greatly increase average player power.
+   %
+   pbImbuesRecoverable = FALSE
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetImbuesActive()
+   {
+      return bound(pbImbuesActive,0,1);
+   }
+
+   GetBaseDropRate()
+   {
+      return bound(ppBaseDropRate,0,$);
+   }
+
+   GetImbuesRecoverable()
+   {
+      return bound(pbImbuesRecoverable,0,1);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

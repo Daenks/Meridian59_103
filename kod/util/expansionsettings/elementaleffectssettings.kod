@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalEffectsSettings is ExpansionSettings
+
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+properties:
+
+   % Elemental Status Effects default on.
+   pbElementalEffectsActive = True
+
+   % Status effect multiples
+   % Shocked temporarily reduces defense by a multiple of damage taken (X*m defense)
+   % Chilled temporarily slows attack and cast timers (X*m ms)
+   % Burning temporarily deals burning damage over time by a divisor (X/m damage)
+   % Corrode temporarily lowers armor (X/m armor), can go negative
+   % Humbled temporarily lowers resistances (X/m resist)
+   % Mantled temporarily lowers the effect of healing on the victim (X/m healing)
+   piShockedMultiple = 4
+   piChilledMultiple = 10
+   piBurningDivisor = 3
+   piCorrodeDivisor = 6
+   piHumbledDivisor = 2
+   piMantledDivisor = 3
+   
+   piStatusEffectReductionTime = 3000
+   piStatusEffectReductionAmount = 10
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetElementalEffectsActive()
+   {
+      return bound(pbElementalEffectsActive,0,1);
+   }
+
+   GetElementalMultiple(type=STATUS_SHOCKED)
+   {
+      if type = STATUS_SHOCKED
+      {
+         return piShockedMultiple;
+      }
+      if type = STATUS_CHILLED
+      {
+         return piChilledMultiple;
+      }
+      if type = STATUS_BURNING
+      {
+         return bound(piBurningDivisor,2,100);
+      }
+      if type = STATUS_CORRODE
+      {
+         return bound(piCorrodeDivisor,1,100);
+      }
+      if type = STATUS_HUMBLED
+      {
+         return bound(piHumbledDivisor,1,100);
+      }
+      if type = STATUS_MANTLED
+      {
+         return bound(piMantledDivisor,1,100);
+      }
+      return 0;
+   }
+   
+   GetStatusEffectReductionTime()
+   {
+      return piStatusEffectReductionTime;
+   }
+   
+   GetStatusEffectReductionAmount()
+   {
+      return piStatusEffectReductionAmount;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

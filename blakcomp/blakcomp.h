@@ -30,7 +30,7 @@
 #include "util.h"
 #include "table.h"
 
-#define BOF_VERSION 5
+#define BOF_VERSION 6
 
 #define IDBASE        10000      /* Lowest # of user-defined id.  Builtin ids have lower #s */
 #define RESOURCEBASE  20000      /* Lowest # of user-defined resource. */
@@ -49,6 +49,21 @@
 
 typedef int Bool;
 enum {False = 0, True = 1};
+
+// enum for built-in class IDs. These appear in blakserv.h also.
+enum
+{
+   USER_CLASS = 0,
+   SYSTEM_CLASS = 4,
+   GUEST_CLASS = 20,
+   ADMIN_CLASS = 23,
+   DM_CLASS = 32,
+   CREATOR_CLASS = 34,
+   SETTINGS_CLASS = 35,
+   REALTIME_CLASS = 36,
+   EVENTENGINE_CLASS = 37,
+   MAX_BUILTIN_CLASS = 37
+};
 
 enum { C_NUMBER, C_STRING, C_NIL, C_FNAME, C_RESOURCE, C_CLASS, C_MESSAGE, C_OVERRIDE }; 
 

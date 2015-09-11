@@ -1,0 +1,50 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LinkTwo is SpiritLink
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   link_two_name_rsc = "moderate spirit link"
+   link_two_icon_rsc = imanafoc.bgf
+   link_two_desc_rsc = \
+      "Moderate spirit link allows a spellcaster to reserve a portion of his "
+      "spirit to permanently maintain weak personal enchantments."
+
+classvars:
+
+   vrName = link_two_name_rsc
+   vrIcon = link_two_icon_rsc
+   vrDesc = link_two_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LINK_TWO
+   viSchool = SKS_SORCERY
+   viSkill_Level = 2
+   viChance_to_Increase = 40
+   viMeditate_ratio = 30
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viReserveLevel = 2
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

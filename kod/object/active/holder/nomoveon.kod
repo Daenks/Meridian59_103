@@ -27,7 +27,7 @@ properties:
    piFine_col = 0
 
    % List of enchantments applied by radius spells.
-   % Each element is [song object, spellpower, caster]
+   % Each element is [song object, spellpower, caster, room]
    % Support for players, monsters, and items
    plRadiusEnchantments = $
 
@@ -184,7 +184,7 @@ messages:
       return;
    }
 
-   AddRadiusEnchantment(what=$,iPower=0,source=$)
+   AddRadiusEnchantment(what=$,iPower=0,source=$,oRoom=$)
    {
       local i;
       
@@ -193,13 +193,15 @@ messages:
          if Nth(i,1) = what
             AND Nth(i,2) = iPower
             AND Nth(i,3) = source
+            AND Nth(i,4) = oRoom
          {
             return;
          }
       }
 
-      plRadiusEnchantments = Cons([what,iPower,source],plRadiusEnchantments);
-      
+      plRadiusEnchantments = Cons([what,iPower,source,oRoom],
+                                  plRadiusEnchantments);
+
       If IsClass(self,&User)
       {
          Send(self,@ShowAddEnchantment,#what=what,#type=2);
@@ -214,7 +216,7 @@ messages:
       return;
    }
 
-   RemoveRadiusEnchantment(what=$,iPower=0,source=$)
+   RemoveRadiusEnchantment(what=$,iPower=0,source=$,oRoom=$)
    {
       local i;
 
@@ -223,6 +225,7 @@ messages:
          if Nth(i,1) = what
             AND Nth(i,2) = iPower
             AND Nth(i,3) = source
+            AND Nth(i,4) = oRoom
          {
             If IsClass(self,&User)
             {
@@ -511,6 +514,23 @@ messages:
       }
 
       return iResult;
+   }
+   
+   TryDeflect(what = $,caster=$)
+   {
+      local oDeflect, lRadiusEnchantment;
+
+      foreach lRadiusEnchantment in plRadiusEnchantments
+      {
+         if Send(Nth(lRadiusEnchantment,1),@TryDeflect,
+            #caster=caster,#victim=self,#oSpell=what,
+            #power=Nth(lRadiusEnchantment,2),#source=Nth(lRadiusEnchantment,3))
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
    }
 
 end

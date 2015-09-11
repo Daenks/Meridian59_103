@@ -1,0 +1,85 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BlackMantle is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   black_mantle_cast_rsc = \
+      "%s%s becomes shrouded in slicing whispers of darkness."
+   black_mantle_already_enchanted = "That poor soul is already black mantled."
+   black_mantle_start = "Whispering slices of darkness surround you."
+   black_mantle_stop  = "The whispering darkness around you departs."
+   has_been_hexed_black_mantle = \
+      "%s%s becomes shrouded in slicing whispers of darkness!"
+
+   black_mantle_name_rsc = "black mantle"
+   black_mantle_icon_rsc = ienfeebl.bgf
+   black_mantle_desc_rsc = \
+      "Shrouds your victim in a legion of wight spirits, who will "
+      "hamper any attempt at healing. "
+      "This hex requires two orc teeth to cast."
+
+   black_mantle_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = black_mantle_name_rsc
+   vrIcon = black_mantle_icon_rsc
+   vrDesc = black_mantle_desc_rsc
+
+   vrAlreadyEnchanted = black_mantle_already_enchanted
+   vrEnchantment_On = black_mantle_start
+   vrEnchantment_Off = black_mantle_stop
+   vrSuccess = black_mantle_cast_rsc
+   vrInformRoom = has_been_hexed_black_mantle
+
+   viSpell_num = SID_HEX_BLACK_MANTLE
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_IWODACH
+   viSpell_level = 6
+   viMana = 40
+   viSpell_Exertion = 20
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = black_mantle_sound
+   viChance_To_Increase = 10
+   viMeditate_ratio = 200
+
+properties:
+
+   % Reduces heals by this percentage minus state
+   piBaseEffect = 120
+
+   piFlatDuration = 25000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+   ModifyHeal(amount = 0,state=0)
+   {                 
+      amount = amount * (piBaseEffect-state) / 100;
+      return amount;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
