@@ -80,6 +80,20 @@ char* db				= 0;
 	)																\
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
+#define SQLQUERY_CREATETABLE_PLAYERDEATH						    "\
+	CREATE TABLE `player_death`										\
+	(																\
+	  `idplayer_death`			INT(11) NOT NULL AUTO_INCREMENT,	\
+	  `player_death_victim`		VARCHAR(45) NOT NULL,				\
+	  `player_death_killer`		VARCHAR(45) NOT NULL,				\
+      `player_death_room`		VARCHAR(45) NOT NULL,				\
+	  `player_death_attack`		VARCHAR(45) NOT NULL,				\
+	  `player_death_ispvp`		TINYINT(1) NOT NULL,				\
+	  `player_death_time`		DATETIME NOT NULL,					\
+	  PRIMARY KEY (`idplayer_death`)								\
+	)																\
+	ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;"
+
 #define SQLQUERY_CREATEPROC_MONEYTOTAL				"\
 	CREATE PROCEDURE WriteTotalMoney(				\n\
 	IN total_money INT(11))							\n\
@@ -136,15 +150,50 @@ char* db				= 0;
 		`player_damaged_time` = now();			\n\
 	END"
 
+#define SQLQUERY_CREATEPROC_PLAYERLOGIN				"\
+	CREATE PROCEDURE WritePlayerLogin(				\n\
+	  IN account	VARCHAR(45),					\n\
+	  IN charname	VARCHAR(45),					\n\
+	  IN ip			VARCHAR(45))					\n\
+	BEGIN											\n\
+	  INSERT INTO `player_logins`					\n\
+      SET											\n\
+		`player_logins_account_name` = account,		\n\
+		`player_logins_character_name` = charname,	\n\
+		`player_logins_IP` = ip,					\n\
+		`player_logins_time` = now();				\n\
+	END"
+
+#define SQLQUERY_CREATEPROC_PLAYERDEATH				"\
+	CREATE PROCEDURE WritePlayerDeath(				\n\
+	  IN victim		VARCHAR(45),					\n\
+	  IN killer		VARCHAR(45),					\n\
+	  IN room		VARCHAR(45),					\n\
+	  IN attack 	VARCHAR(45),					\n\
+	  IN ispvp		tinyint(1))						\n\
+	BEGIN											\n\
+	  INSERT INTO `player_death`					\n\
+      SET											\n\
+		`player_death_victim` = victim,				\n\
+		`player_death_killer` = killer,				\n\
+		`player_death_room` = room,					\n\
+		`player_death_attack` = attack,				\n\
+		`player_death_ispvp` = ispvp,				\n\
+		`player_death_time` = now();				\n\
+	END"
+
+
 #define SQLQUERY_CALL_WRITETOTALMONEY			"CALL WriteTotalMoney(?);"
 #define SQLQUERY_CALL_WRITEMONEYCREATED			"CALL WriteMoneyCreated(?);"
 #define SQLQUERY_CALL_WRITEPLAYERLOGIN			"CALL WritePlayerLogin(?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERASSESSDAMAGE	"CALL WritePlayerAssessDamage(?,?,?,?,?,?,?);"
+#define SQLQUERY_CALL_WRITEPLAYERDEATH			"CALL WritePlayerDeath(?,?,?,?,?);"
 
 #define SQLQUERY_DROPPROC_TOTALMONEY			"DROP PROCEDURE IF EXISTS WriteTotalMoney;"
 #define SQLQUERY_DROPPROC_MONEYCREATED			"DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
 #define SQLQUERY_DROPPROC_PLAYERLOGIN			"DROP PROCEDURE IF EXISTS WritePlayerLogin;"
 #define SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE	"DROP PROCEDURE IF EXISTS WritePlayerAssessDamage;"
+#define SQLQUERY_DROPPROC_PLAYERDEATH			"DROP PROCEDURE IF EXISTS WriteDeathNatural;"
 #pragma endregion
 
 #pragma region Public
@@ -324,6 +373,48 @@ BOOL MySQLRecordPlayerAssessDamage(char* who, char* attacker, int aspell, int at
 	
 	return enqueued;
 };
+
+BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack, int ispvp)
+{
+	BOOL							enqueued;
+	sql_record_playerdeath*			record;
+	sql_queue_node*					node;
+
+	if (state == 0 || !victim || !killer || !room || !attack || !ispvp)
+		return FALSE;
+
+	// allocate
+	record = (sql_record_playerdeath*)malloc(sizeof(sql_record_playerdeath));
+	node = (sql_queue_node*)malloc(sizeof(sql_queue_node));
+
+	// set values
+	record->victim = _strdup(victim);
+	record->killer = _strdup(killer);
+	record->room = _strdup(room);
+	record->attack = _strdup(attack);
+	record->ispvp = ispvp;
+
+	// attach to node
+	node->type = STAT_PLAYERDEATH;
+	node->data = record;
+
+	// try to enqueue
+	enqueued = _MySQLEnqueue(node);
+
+	// cleanup in case of fail
+	if (!enqueued)
+	{
+		free(record->victim);
+		free(record->killer);
+		free(record->room);
+		free(record->attack);
+
+		free(record);
+		free(node);
+	}
+
+	return enqueued;
+};
 #pragma endregion
 
 #pragma region Internal
@@ -460,18 +551,21 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_CREATETABLE_MONEYCREATED);
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERLOGINS);
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDAMAGED);
+	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDEATH);
 
 	// drop procedures
 	mysql_query(mysql, SQLQUERY_DROPPROC_TOTALMONEY);
 	mysql_query(mysql, SQLQUERY_DROPPROC_MONEYCREATED);
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERLOGIN);
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE);
+	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERDEATH);
 	
 	// recreate them
 	mysql_query(mysql, SQLQUERY_CREATEPROC_MONEYTOTAL);
 	mysql_query(mysql, SQLQUERY_CREATEPROC_MONEYCREATED);
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERLOGIN);
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERASSESSDAMAGE);
+	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERDEATH);
 
 	// set state to schema verified
 	state = SCHEMAVERIFIED;
@@ -605,6 +699,10 @@ void _MySQLWriteNode(sql_queue_node* Node, BOOL ProcessNode)
 
 		case STAT_ASSESS_DAM:
 			_MySQLWritePlayerAssessDamage((sql_record_playerassessdamage*)Node->data, ProcessNode);
+			break;
+
+		case STAT_PLAYERDEATH:
+			_MySQLWritePlayerDeath((sql_record_playerdeath*)Node->data, ProcessNode);
 			break;
 	}
 };
@@ -755,5 +853,60 @@ void _MySQLWritePlayerAssessDamage(sql_record_playerassessdamage* Data, BOOL Pro
 	free(Data->who);
 	free(Data->attacker);
 	free(Data->weapon);
+};
+
+void _MySQLWritePlayerDeath(sql_record_playerdeath* Data, BOOL ProcessNode)
+{
+	MYSQL_BIND params[2];
+	unsigned long len_victim = (unsigned long)strlen(Data->victim);
+	unsigned long len_killer = (unsigned long)strlen(Data->killer);
+	unsigned long len_room = (unsigned long)strlen(Data->room);
+	unsigned long len_attack = (unsigned long)strlen(Data->attack);
+
+	// really write it, or just free mem at end?
+	if (ProcessNode)
+	{
+		// allocate parameters
+		memset(params, 0, sizeof(params));
+
+		// set parameter 0
+		params[0].buffer_type = MYSQL_TYPE_STRING;
+		params[0].buffer = Data->victim;
+		params[0].length = &len_victim;
+		params[0].is_null = 0;
+
+		// set parameter 1
+		params[1].buffer_type = MYSQL_TYPE_STRING;
+		params[1].buffer = Data->killer;
+		params[1].length = &len_killer;
+		params[1].is_null = 0;
+
+		// set parameter 2
+		params[2].buffer_type = MYSQL_TYPE_STRING;
+		params[2].buffer = Data->room;
+		params[2].length = &len_room;
+		params[2].is_null = 0;
+
+		// set parameter 3
+		params[3].buffer_type = MYSQL_TYPE_STRING;
+		params[3].buffer = Data->attack;
+		params[3].length = &len_attack;
+		params[3].is_null = 0;
+
+		// set parameter 4
+		params[4].buffer_type = MYSQL_TYPE_LONG;
+		params[4].buffer = &Data->ispvp;
+		params[4].length = 0;
+		params[4].is_null = 0;
+
+		// call stored procedure
+		_MySQLCallProc(SQLQUERY_CALL_WRITEPLAYERDEATH, params);
+	}
+
+	// internal strings cleanup
+	free(Data->victim);
+	free(Data->killer);
+	free(Data->room);
+	free(Data->attack);
 };
 #pragma endregion

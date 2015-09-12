@@ -3608,6 +3608,7 @@
    STAT_MONEYCREATED = 2
    STAT_PLAYERLOGIN = 3
    STAT_ASSESS_DAM = 4
+   STAT_PLAYERDEATH = 5
    
    % Survival options
    OPT_NATURAL = 1    % Rooms with natural monster spawn only

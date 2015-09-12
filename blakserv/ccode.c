@@ -4555,9 +4555,9 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_name_parms,parm_node name_parm_array[])
 {	
 	val_type stat_type, stat1, stat2, stat3, stat4, stat5, stat6, stat7;
-	resource_node *r_who_damaged, *r_who_attacker, *r_weapon;
+	resource_node *r_who_damaged, *r_who_attacker, *r_weapon, *r_victim, *r_cause, *r_killer, *r_room, *r_attack;
 
-	// The first paramenter to RecordStat() should alwasy be a STAT_TYPE
+	// The first paramenter to RecordStat() should always be a STAT_TYPE
 	stat_type = RetrieveValue(object_id,local_vars,normal_parm_array[0].type, normal_parm_array[0].value);
 	if (stat_type.v.tag != TAG_INT)
 	{
@@ -4656,6 +4656,52 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 						r_who_attacker->resource_val[0], 
 						stat3.v.data, stat4.v.data, stat5.v.data, stat6.v.data, 
 						r_weapon->resource_val[0]);
+				}
+			}
+			break;
+
+		case STAT_PLAYERDEATH:
+			if (num_normal_parms != 6)
+			{
+				bprintf("Wrong Number of Paramenters in C_RecordStat() STAT_PLAYERDEATH");
+				break;
+			}
+
+			stat1 = RetrieveValue(object_id, local_vars, normal_parm_array[1].type, normal_parm_array[1].value);
+			stat2 = RetrieveValue(object_id, local_vars, normal_parm_array[2].type, normal_parm_array[2].value);
+			stat3 = RetrieveValue(object_id, local_vars, normal_parm_array[3].type, normal_parm_array[3].value);
+			stat4 = RetrieveValue(object_id, local_vars, normal_parm_array[4].type, normal_parm_array[4].value);
+			stat5 = RetrieveValue(object_id, local_vars, normal_parm_array[5].type, normal_parm_array[5].value);
+
+			if (stat1.v.tag != TAG_RESOURCE ||
+				stat2.v.tag != TAG_RESOURCE ||
+				stat3.v.tag != TAG_RESOURCE ||
+				stat4.v.tag != TAG_RESOURCE ||
+				stat5.v.tag != TAG_INT)
+			{	
+				bprintf("Wrong Type of Parameter in C_RecordStat() STAT_PLAYERDEATH");
+				break;
+			}
+			else
+			{
+				r_victim = GetResourceByID(stat1.v.data);
+				r_killer = GetResourceByID(stat2.v.data);
+				r_room = GetResourceByID(stat3.v.data);
+				r_attack = GetResourceByID(stat4.v.data);
+
+				if (!r_victim || !r_killer || !r_room || !r_attack ||
+					!r_victim->resource_val[0] || !r_killer->resource_val[0] || !r_room->resource_val[0] || !r_attack->resource_val[0])
+				{
+					bprintf("NULL string in C_RecordStat() for STAT_PLAYERDEATH");
+				}
+				else
+				{
+					MySQLRecordPlayerDeath(
+						r_victim->resource_val[0],
+						r_killer->resource_val[0],
+						r_room->resource_val[0],
+						r_attack->resource_val[0],
+						stat5.v.data);
 				}
 			}
 			break;

@@ -46,6 +46,7 @@ typedef struct sql_record_totalmoney sql_record_totalmoney;
 typedef struct sql_record_moneycreated sql_record_moneycreated;
 typedef struct sql_record_playerlogin sql_record_playerlogin;
 typedef struct sql_record_playerassessdamage sql_record_playerassessdamage;
+typedef struct sql_record_playerdeath sql_record_playerdeath;
 typedef enum sql_recordtype sql_recordtype;
 typedef enum sql_worker_state sql_worker_state;
 
@@ -92,12 +93,22 @@ struct sql_record_playerassessdamage
 	char* weapon;
 };
 
+struct sql_record_playerdeath
+{
+	char* victim;
+	char* killer;
+	char* room;
+	char* attack;
+	int ispvp;
+};
+
 enum sql_recordtype
 {
 	STAT_TOTALMONEY		= 1,
 	STAT_MONEYCREATED	= 2,
 	STAT_PLAYERLOGIN	= 3,
-	STAT_ASSESS_DAM		= 4
+	STAT_ASSESS_DAM		= 4,
+	STAT_PLAYERDEATH	= 5
 };
 
 enum sql_worker_state
@@ -117,6 +128,7 @@ BOOL MySQLRecordTotalMoney(int total_money);
 BOOL MySQLRecordMoneyCreated(int money_created);
 BOOL MySQLRecordPlayerLogin(char* account, char* character, char* ip);
 BOOL MySQLRecordPlayerAssessDamage(char* who, char* attacker, int aspell, int atype, int applied, int original, char* weapon);
+BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack, int ispvp);
 
 void __cdecl _MySQLWorker(void* Parameters);
 void _MySQLVerifySchema();
@@ -128,4 +140,5 @@ void _MySQLWriteTotalMoney(sql_record_totalmoney* Data, BOOL ProcessNode);
 void _MySQLWriteMoneyCreated(sql_record_moneycreated* Data, BOOL ProcessNode);
 void _MySQLWritePlayerLogin(sql_record_playerlogin* Data, BOOL ProcessNode);
 void _MySQLWritePlayerAssessDamage(sql_record_playerassessdamage* Data, BOOL ProcessNode);
+void _MySQLWritePlayerDeath(sql_record_playerdeath* Data, BOOL ProcessNode);
 #endif
