@@ -9402,7 +9402,7 @@ messages:
 
       % Record-keeping. Keep this before the token check,
       % so we can give proper message.
-      Send(SYS,@UserKilled,#what=self,#killer=what);
+      Send(SYS,@UserKilled,#what=self,#killer=what,#oRoom=oRoom,#stroke_obj=stroke_obj);
       Send(Send(SYS,@GetStatistics),@PlayerDiedCounter);
 
       % Token death?
