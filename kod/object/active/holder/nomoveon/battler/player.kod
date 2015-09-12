@@ -9238,7 +9238,7 @@ messages:
 
    %%% Player Killed %
 
-   Killed(what = $)
+   Killed(what = $, stroke_obj = $)
    {
       local lItems,i, j, amount, oBody, oSoldierShield, bNo_drop_death, oItemAtt,
             oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, oItem,

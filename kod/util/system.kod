@@ -1741,11 +1741,11 @@ messages:
             Send(poNecromancerBalance,@IncrementHKCounter);
          }
 
-		 RecordStat(STAT_PLAYERDEATH, Send(what,@GetTrueName), Send(killer,@GetTrueName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), 1);	 
+		   RecordStat(STAT_PLAYERDEATH, Send(what,@GetTrueName), Send(killer,@GetTrueName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), TRUE);	 
       }
 		else
 	  {
-		 RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName), Send(killer,@GetName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), 0);
+		   RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName), Send(killer,@GetName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), FALSE);
 	  }
 
       Send(Send(self,@FindRoomByNum,#num=RID_TOS_GRAVEYARD),@PlayerKilled,

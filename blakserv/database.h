@@ -105,17 +105,17 @@ struct sql_record_playerdeath
 enum sql_recordtype
 {
 	STAT_TOTALMONEY		= 1,
-	STAT_MONEYCREATED	= 2,
-	STAT_PLAYERLOGIN	= 3,
+	STAT_MONEYCREATED	   = 2,
+	STAT_PLAYERLOGIN	   = 3,
 	STAT_ASSESS_DAM		= 4,
-	STAT_PLAYERDEATH	= 5
+	STAT_PLAYERDEATH	   = 5
 };
 
 enum sql_worker_state
 {
 	STOPPED			= 0,
-	STOPPING		= 1,
-	STARTING		= 2,
+	STOPPING		   = 1,
+	STARTING		   = 2,
 	INITIALIZED		= 3,
 	CONNECTED		= 4,
 	SCHEMAVERIFIED	= 5

@@ -33,167 +33,167 @@ char* db				= 0;
 
 #pragma region SQL
 #define SQLQUERY_CREATETABLE_MONEYTOTAL										"\
-	CREATE TABLE `player_money_total`										\
-	(																		\
+	CREATE TABLE `player_money_total`										   \
+	(																		            \
 	  `idplayer_money_total`		INT(11) NOT NULL AUTO_INCREMENT,		\
-	  `player_money_total_time`		DATETIME NOT NULL,						\
-	  `player_money_total_amount`	INT(11) NOT NULL,						\
-	  PRIMARY KEY (`idplayer_money_total`)									\
-	)																		\
+	  `player_money_total_time`		DATETIME NOT NULL,					\
+	  `player_money_total_amount`	INT(11) NOT NULL,						   \
+	  PRIMARY KEY (`idplayer_money_total`)									   \
+	)																		            \
 	ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;"
 
-#define SQLQUERY_CREATETABLE_PLAYERLOGINS									"\
-	CREATE TABLE `player_logins`											\
-	(																		\
+#define SQLQUERY_CREATETABLE_PLAYERLOGINS									   "\
+	CREATE TABLE `player_logins`											      \
+	(																		            \
 	  `idplayer_logins`					INT(11) NOT NULL AUTO_INCREMENT,	\
-	  `player_logins_account_name`		VARCHAR(45) NOT NULL,				\
+	  `player_logins_account_name`		VARCHAR(45) NOT NULL,			\
 	  `player_logins_character_name`	VARCHAR(45) NOT NULL,				\
-	  `player_logins_IP`				VARCHAR(45) NOT NULL,				\
+	  `player_logins_IP`				VARCHAR(45) NOT NULL,				   \
 	  `player_logins_time`				DATETIME NOT NULL,					\
-	  PRIMARY KEY (`idplayer_logins`)										\
-	)																		\
+	  PRIMARY KEY (`idplayer_logins`)										   \
+	)																		            \
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-#define SQLQUERY_CREATETABLE_MONEYCREATED							"\
-	CREATE TABLE `money_created`									\
-	(																\
+#define SQLQUERY_CREATETABLE_MONEYCREATED							   "\
+	CREATE TABLE `money_created`									      \
+	(																            \
 	  `idmoney_created`			INT(11) NOT NULL AUTO_INCREMENT,	\
-	  `money_created_amount`	INT(11) NOT NULL,					\
+	  `money_created_amount`	INT(11) NOT NULL,					   \
 	  `money_created_time`		DATETIME NOT NULL,					\
-	  PRIMARY KEY (`idmoney_created`)								\
-	)																\
+	  PRIMARY KEY (`idmoney_created`)								   \
+	)																            \
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
 #define SQLQUERY_CREATETABLE_PLAYERDAMAGED							"\
-	CREATE TABLE `player_damaged`									\
-	(																\
-	  `idplayer_damaged`		INT(11) NOT NULL AUTO_INCREMENT,	\
+	CREATE TABLE `player_damaged`									      \
+	(																            \
+	  `idplayer_damaged`		INT(11) NOT NULL AUTO_INCREMENT,	   \
 	  `player_damaged_who`		VARCHAR(45) NOT NULL,				\
 	  `player_damaged_attacker` VARCHAR(45) NOT NULL,				\
-	  `player_damaged_aspell`	INT(11) NOT NULL,					\
-	  `player_damaged_atype`	INT(11) NOT NULL,					\
-	  `player_damaged_applied`	INT(11) NOT NULL,					\
+	  `player_damaged_aspell`	INT(11) NOT NULL,					   \
+	  `player_damaged_atype`	INT(11) NOT NULL,					   \
+	  `player_damaged_applied`	INT(11) NOT NULL,					   \
 	  `player_damaged_original` INT(11)	NOT NULL,					\
 	  `player_damaged_weapon`	VARCHAR(45) NOT NULL,				\
 	  `player_damaged_time`		DATETIME NOT NULL,					\
-	  PRIMARY KEY (`idplayer_damaged`)								\
-	)																\
+	  PRIMARY KEY (`idplayer_damaged`)								   \
+	)																            \
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-#define SQLQUERY_CREATETABLE_PLAYERDEATH						    "\
-	CREATE TABLE `player_death`										\
-	(																\
+#define SQLQUERY_CREATETABLE_PLAYERDEATH						      "\
+	CREATE TABLE `player_death`										   \
+	(																            \
 	  `idplayer_death`			INT(11) NOT NULL AUTO_INCREMENT,	\
 	  `player_death_victim`		VARCHAR(45) NOT NULL,				\
 	  `player_death_killer`		VARCHAR(45) NOT NULL,				\
       `player_death_room`		VARCHAR(45) NOT NULL,				\
 	  `player_death_attack`		VARCHAR(45) NOT NULL,				\
-	  `player_death_ispvp`		TINYINT(1) NOT NULL,				\
+	  `player_death_ispvp`		TINYINT(1) NOT NULL,				   \
 	  `player_death_time`		DATETIME NOT NULL,					\
-	  PRIMARY KEY (`idplayer_death`)								\
-	)																\
+	  PRIMARY KEY (`idplayer_death`)								      \
+	)																            \
 	ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;"
 
-#define SQLQUERY_CREATEPROC_MONEYTOTAL				"\
-	CREATE PROCEDURE WriteTotalMoney(				\n\
-	IN total_money INT(11))							\n\
-	BEGIN											\n\
-	  INSERT INTO `player_money_total`				\n\
-      SET											\n\
+#define SQLQUERY_CREATEPROC_MONEYTOTAL				   "\
+	CREATE PROCEDURE WriteTotalMoney(				   \n\
+	IN total_money INT(11))							      \n\
+	BEGIN											            \n\
+	  INSERT INTO `player_money_total`				   \n\
+      SET											         \n\
 		`player_money_total_amount` = total_money,	\n\
-		`player_money_total_time` = now();			\n\
+		`player_money_total_time` = now();			   \n\
 	END"
 
-#define SQLQUERY_CREATEPROC_MONEYCREATED		"\
-	CREATE PROCEDURE WriteMoneyCreated(			\n\
-	IN money_created INT(11))					\n\
-	BEGIN										\n\
-	  INSERT INTO `money_created`				\n\
-      SET										\n\
-		`money_created_amount` = money_created,	\n\
-		`money_created_time` = now();			\n\
+#define SQLQUERY_CREATEPROC_MONEYCREATED		   "\
+	CREATE PROCEDURE WriteMoneyCreated(			   \n\
+	IN money_created INT(11))					      \n\
+	BEGIN										            \n\
+	  INSERT INTO `money_created`				      \n\
+      SET										         \n\
+		`money_created_amount` = money_created,   \n\
+		`money_created_time` = now();			      \n\
 	END"
 
-#define SQLQUERY_CREATEPROC_PLAYERLOGIN				"\
+#define SQLQUERY_CREATEPROC_PLAYERLOGIN			"\
 	CREATE PROCEDURE WritePlayerLogin(				\n\
-	  IN account	VARCHAR(45),					\n\
-	  IN charname	VARCHAR(45),					\n\
-	  IN ip			VARCHAR(45))					\n\
-	BEGIN											\n\
-	  INSERT INTO `player_logins`					\n\
-      SET											\n\
-		`player_logins_account_name` = account,		\n\
-		`player_logins_character_name` = charname,	\n\
-		`player_logins_IP` = ip,					\n\
-		`player_logins_time` = now();				\n\
+	  IN account	VARCHAR(45),					   \n\
+	  IN charname	VARCHAR(45),					   \n\
+	  IN ip			VARCHAR(45))					   \n\
+	BEGIN											         \n\
+	  INSERT INTO `player_logins`					   \n\
+      SET											      \n\
+		`player_logins_account_name` = account,	\n\
+		`player_logins_character_name` = charname,\n\
+		`player_logins_IP` = ip,					   \n\
+		`player_logins_time` = now();				   \n\
 	END"
 
 #define SQLQUERY_CREATEPROC_PLAYERASSESSDAMAGE "\
-	CREATE PROCEDURE WritePlayerAssessDamage(	\n\
-	  IN who		VARCHAR(45),				\n\
-	  IN attacker	VARCHAR(45),				\n\
-	  IN aspell		INT(11),					\n\
-	  IN atype		INT(11),					\n\
-	  IN applied	INT(11),					\n\
-	  IN original	INT(11),					\n\
-	  IN weapon		VARCHAR(45))				\n\
-	BEGIN										\n\
-	  INSERT INTO `player_damaged`				\n\
-      SET										\n\
-		`player_damaged_who` = who,				\n\
-		`player_damaged_attacker` = attacker,	\n\
-		`player_damaged_aspell` = aspell,		\n\
-		`player_damaged_atype` = atype,			\n\
-		`player_damaged_applied` = applied,		\n\
-		`player_damaged_original` = original,	\n\
-		`player_damaged_weapon` = weapon,		\n\
-		`player_damaged_time` = now();			\n\
+	CREATE PROCEDURE WritePlayerAssessDamage(	   \n\
+	  IN who		VARCHAR(45),				         \n\
+	  IN attacker	VARCHAR(45),				      \n\
+	  IN aspell		INT(11),					         \n\
+	  IN atype		INT(11),					         \n\
+	  IN applied	INT(11),					         \n\
+	  IN original	INT(11),					         \n\
+	  IN weapon		VARCHAR(45))				      \n\
+	BEGIN										            \n\
+	  INSERT INTO `player_damaged`				   \n\
+      SET										         \n\
+		`player_damaged_who` = who,				   \n\
+		`player_damaged_attacker` = attacker,	   \n\
+		`player_damaged_aspell` = aspell,		   \n\
+		`player_damaged_atype` = atype,			   \n\
+		`player_damaged_applied` = applied,		   \n\
+		`player_damaged_original` = original,	   \n\
+		`player_damaged_weapon` = weapon,		   \n\
+		`player_damaged_time` = now();			   \n\
 	END"
 
-#define SQLQUERY_CREATEPROC_PLAYERLOGIN				"\
+#define SQLQUERY_CREATEPROC_PLAYERLOGIN			"\
 	CREATE PROCEDURE WritePlayerLogin(				\n\
-	  IN account	VARCHAR(45),					\n\
-	  IN charname	VARCHAR(45),					\n\
-	  IN ip			VARCHAR(45))					\n\
-	BEGIN											\n\
-	  INSERT INTO `player_logins`					\n\
-      SET											\n\
-		`player_logins_account_name` = account,		\n\
-		`player_logins_character_name` = charname,	\n\
-		`player_logins_IP` = ip,					\n\
-		`player_logins_time` = now();				\n\
+	  IN account	VARCHAR(45),					   \n\
+	  IN charname	VARCHAR(45),					   \n\
+	  IN ip			VARCHAR(45))					   \n\
+	BEGIN											         \n\
+	  INSERT INTO `player_logins`					   \n\
+      SET											      \n\
+		`player_logins_account_name` = account,	\n\
+		`player_logins_character_name` = charname,\n\
+		`player_logins_IP` = ip,					   \n\
+		`player_logins_time` = now();				   \n\
 	END"
 
-#define SQLQUERY_CREATEPROC_PLAYERDEATH				"\
+#define SQLQUERY_CREATEPROC_PLAYERDEATH			"\
 	CREATE PROCEDURE WritePlayerDeath(				\n\
-	  IN victim		VARCHAR(45),					\n\
-	  IN killer		VARCHAR(45),					\n\
-	  IN room		VARCHAR(45),					\n\
-	  IN attack 	VARCHAR(45),					\n\
-	  IN ispvp		tinyint(1))						\n\
-	BEGIN											\n\
-	  INSERT INTO `player_death`					\n\
-      SET											\n\
+	  IN victim		VARCHAR(45),					   \n\
+	  IN killer		VARCHAR(45),					   \n\
+	  IN room		VARCHAR(45),					   \n\
+	  IN attack 	VARCHAR(45),					   \n\
+	  IN ispvp		tinyint(1))						   \n\
+	BEGIN											         \n\
+	  INSERT INTO `player_death`					   \n\
+      SET											      \n\
 		`player_death_victim` = victim,				\n\
 		`player_death_killer` = killer,				\n\
 		`player_death_room` = room,					\n\
 		`player_death_attack` = attack,				\n\
-		`player_death_ispvp` = ispvp,				\n\
-		`player_death_time` = now();				\n\
+		`player_death_ispvp` = ispvp,				   \n\
+		`player_death_time` = now();				   \n\
 	END"
 
 
-#define SQLQUERY_CALL_WRITETOTALMONEY			"CALL WriteTotalMoney(?);"
+#define SQLQUERY_CALL_WRITETOTALMONEY			   "CALL WriteTotalMoney(?);"
 #define SQLQUERY_CALL_WRITEMONEYCREATED			"CALL WriteMoneyCreated(?);"
-#define SQLQUERY_CALL_WRITEPLAYERLOGIN			"CALL WritePlayerLogin(?,?,?);"
+#define SQLQUERY_CALL_WRITEPLAYERLOGIN			   "CALL WritePlayerLogin(?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERASSESSDAMAGE	"CALL WritePlayerAssessDamage(?,?,?,?,?,?,?);"
-#define SQLQUERY_CALL_WRITEPLAYERDEATH			"CALL WritePlayerDeath(?,?,?,?,?);"
+#define SQLQUERY_CALL_WRITEPLAYERDEATH			   "CALL WritePlayerDeath(?,?,?,?,?);"
 
-#define SQLQUERY_DROPPROC_TOTALMONEY			"DROP PROCEDURE IF EXISTS WriteTotalMoney;"
-#define SQLQUERY_DROPPROC_MONEYCREATED			"DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
-#define SQLQUERY_DROPPROC_PLAYERLOGIN			"DROP PROCEDURE IF EXISTS WritePlayerLogin;"
-#define SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE	"DROP PROCEDURE IF EXISTS WritePlayerAssessDamage;"
-#define SQLQUERY_DROPPROC_PLAYERDEATH			"DROP PROCEDURE IF EXISTS WriteDeathNatural;"
+#define SQLQUERY_DROPPROC_TOTALMONEY			   "DROP PROCEDURE IF EXISTS WriteTotalMoney;"
+#define SQLQUERY_DROPPROC_MONEYCREATED			   "DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
+#define SQLQUERY_DROPPROC_PLAYERLOGIN			   "DROP PROCEDURE IF EXISTS WritePlayerLogin;"
+#define SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE	   "DROP PROCEDURE IF EXISTS WritePlayerAssessDamage;"
+#define SQLQUERY_DROPPROC_PLAYERDEATH			   "DROP PROCEDURE IF EXISTS WritePlayerDeath;"
 #pragma endregion
 
 #pragma region Public
@@ -857,7 +857,7 @@ void _MySQLWritePlayerAssessDamage(sql_record_playerassessdamage* Data, BOOL Pro
 
 void _MySQLWritePlayerDeath(sql_record_playerdeath* Data, BOOL ProcessNode)
 {
-	MYSQL_BIND params[2];
+	MYSQL_BIND params[5];
 	unsigned long len_victim = (unsigned long)strlen(Data->victim);
 	unsigned long len_killer = (unsigned long)strlen(Data->killer);
 	unsigned long len_room = (unsigned long)strlen(Data->room);
