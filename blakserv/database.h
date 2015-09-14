@@ -124,6 +124,7 @@ struct sql_record_player
 struct sql_record_playersuicide
 {
    int account_id;
+   char* name;
 };
 
 enum sql_recordtype
@@ -158,7 +159,7 @@ BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack
 BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* guild,
                         int max_health, int max_mana, int might, int p_int, int myst,
                         int stam, int agil, int aim);
-BOOL MySQLRecordPlayerSuicide(int account_id);
+BOOL MySQLRecordPlayerSuicide(int account_id, char* name);
 
 void __cdecl _MySQLWorker(void* Parameters);
 void _MySQLVerifySchema();
