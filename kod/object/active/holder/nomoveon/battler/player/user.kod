@@ -767,7 +767,7 @@ messages:
 
    UserLogon(session_id = $)
    {
-      local i;
+      local i, boundRoom;
 
       poSession = session_id;
       pbLogged_on = TRUE;
@@ -794,6 +794,25 @@ messages:
       {
          % Advertise as normally.
          Send(SYS,@SystemUserLogonAdvertise,#what=self);
+
+         if piBound_Room <> $
+            AND piBound_Room > 0
+         {
+            boundRoom = piBound_Room;
+         }
+         else
+         {
+            boundRoom = piHomeroom;
+         }
+
+         % Inserting and Updating player in MySQL
+         % passing session id, getting account id on server
+         RecordStat(STAT_PLAYER, poSession, Send(self,@GetTrueName), piHomeroom, boundRoom, 
+                     Send(self,@GetTrueName), Send(self,@GetBaseMaxHealth), piMax_mana, Send(self,@GetRawMight), 
+                     Send(self,@GetRawIntellect), Send(self,@GetRawMysticism), Send(self,@GetRawStamina), Send(self,@GetRawAgility), 
+                     Send(self,@GetRawAim));
+         
+         
       }
       else
       {
