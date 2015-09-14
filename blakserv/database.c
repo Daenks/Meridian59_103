@@ -64,20 +64,20 @@ char* db				= 0;
 	)																            \
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-#define SQLQUERY_CREATETABLE_PLAYERDAMAGED							"\
-	CREATE TABLE `player_damaged`									      \
-	(																            \
-	  `idplayer_damaged`		INT(11) NOT NULL AUTO_INCREMENT,	   \
-	  `player_damaged_who`		VARCHAR(45) NOT NULL,				\
-	  `player_damaged_attacker` VARCHAR(45) NOT NULL,				\
-	  `player_damaged_aspell`	INT(11) NOT NULL,					   \
-	  `player_damaged_atype`	INT(11) NOT NULL,					   \
-	  `player_damaged_applied`	INT(11) NOT NULL,					   \
-	  `player_damaged_original` INT(11)	NOT NULL,					\
-	  `player_damaged_weapon`	VARCHAR(45) NOT NULL,				\
-	  `player_damaged_time`		DATETIME NOT NULL,					\
-	  PRIMARY KEY (`idplayer_damaged`)								   \
-	)																            \
+#define SQLQUERY_CREATETABLE_PLAYERDAMAGED							   "\
+	CREATE TABLE `player_damaged`									         \
+	(																               \
+	  `idplayer_damaged`		      INT(11) NOT NULL AUTO_INCREMENT,	\
+	  `player_damaged_who`		   VARCHAR(45) NOT NULL,				\
+	  `player_damaged_attacker`   VARCHAR(45) NOT NULL,				\
+	  `player_damaged_aspell`	   INT(11) NOT NULL,					   \
+	  `player_damaged_atype`	   INT(11) NOT NULL,					   \
+	  `player_damaged_applied`	   INT(11) NOT NULL,					   \
+	  `player_damaged_original`   INT(11)	NOT NULL,					\
+	  `player_damaged_weapon`	   VARCHAR(45) NOT NULL,				\
+	  `player_damaged_time`		   DATETIME NOT NULL,					\
+	  PRIMARY KEY (`idplayer_damaged`)								      \
+	)																               \
 	ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
 #define SQLQUERY_CREATETABLE_PLAYERDEATH						      "\
@@ -86,11 +86,35 @@ char* db				= 0;
 	  `idplayer_death`			INT(11) NOT NULL AUTO_INCREMENT,	\
 	  `player_death_victim`		VARCHAR(45) NOT NULL,				\
 	  `player_death_killer`		VARCHAR(45) NOT NULL,				\
-      `player_death_room`		VARCHAR(45) NOT NULL,				\
+     `player_death_room`		VARCHAR(45) NOT NULL,				\
 	  `player_death_attack`		VARCHAR(45) NOT NULL,				\
-	  `player_death_ispvp`		TINYINT(1) NOT NULL,				   \
+	  `player_death_ispvp`		INT(1) NOT NULL,				      \
 	  `player_death_time`		DATETIME NOT NULL,					\
 	  PRIMARY KEY (`idplayer_death`)								      \
+	)																            \
+	ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;"
+
+#define SQLQUERY_CREATETABLE_PLAYER  						         "\
+	CREATE TABLE `player`     										      \
+	(																            \
+	  `idplayer`			     INT(11) NOT NULL AUTO_INCREMENT,	\
+	  `player_account_id`     int(11) NOT NULL,                 \
+     `player_name`           VARCHAR(45) NOT NULL,             \
+     `player_home`           INT(11) DEFAULT NULL,             \
+     `player_bind`           INT(11) DEFAULT NULL,             \
+     `player_guild`          VARCHAR(45) DEFAULT NULL,         \
+     `player_max_health`     INT(4) DEFAULT NULL,              \
+     `player_max_mana`       INT(4) DEFAULT NULL,              \
+     `player_might`          INT(4) DEFAULT NULL,              \
+     `player_int`            INT(4) DEFAULT NULL,              \
+     `player_myst`           INT(4) DEFAULT NULL,              \
+     `player_stam`           INT(4) DEFAULT NULL,              \
+     `player_agil`           INT(4) DEFAULT NULL,              \
+     `player_aim`            INT(4) DEFAULT NULL,              \
+     `player_suicide`        INT(1) DEFAULT '0',               \
+     `player_suicide_time`   DATETIME DEFAULT NULL,            \
+     PRIMARY KEY(`idplayer`),								            \
+     UNIQUE KEY `player_name` (`player_name`)                  \
 	)																            \
 	ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;"
 
@@ -170,7 +194,7 @@ char* db				= 0;
 	  IN killer		VARCHAR(45),					   \n\
 	  IN room		VARCHAR(45),					   \n\
 	  IN attack 	VARCHAR(45),					   \n\
-	  IN ispvp		tinyint(1))						   \n\
+	  IN ispvp		INT(1))						      \n\
 	BEGIN											         \n\
 	  INSERT INTO `player_death`					   \n\
       SET											      \n\
@@ -182,18 +206,89 @@ char* db				= 0;
 		`player_death_time` = now();				   \n\
 	END"
 
+#define SQLQUERY_CREATEPROC_PLAYER			      "\
+	CREATE PROCEDURE WritePlayer(	               \
+     IN account_id   INT(11),					      \
+	  IN name		   VARCHAR(45),					\
+	  IN home		   INT(11),					      \
+	  IN bind		   INT(11),					      \
+	  IN guild 	      VARCHAR(45),					\
+	  IN max_health   INT(4),						   \
+     IN max_mana     INT(4),						   \
+     IN might        INT(4),						   \
+     IN p_int        INT(4),						   \
+     IN myst         INT(4),						   \
+     IN stam         INT(4),						   \
+     IN agil         INT(4),						   \
+     IN aim          INT(4))						   \
+	BEGIN											         \
+	  INSERT INTO `player` 				            \
+      (  `player_account_id`,				         \
+         `player_name`, 			               \
+         `player_home`, 				            \
+         `player_bind`, 				            \
+         `player_guild`, 				            \
+         `player_max_health`, 				      \
+         `player_max_mana`, 				         \
+         `player_might`, 				            \
+         `player_int`, 				               \
+         `player_myst`, 				            \
+         `player_stam`, 				            \
+         `player_agil`, 				            \
+         `player_aim`) 				               \
+         VALUES (account_id, 				         \
+            name, 				                  \
+            home, 				                  \
+            bind, 				                  \
+            guild, 				                  \
+            max_health, 				            \
+            max_mana, 				               \
+            might, 				                  \
+            p_int, 				                  \
+            myst, 				                  \
+            stam, 				                  \
+            agil, 				                  \
+            aim)				                     \
+		ON DUPLICATE KEY UPDATE                   \
+      `player_home` = home,                     \
+      `player_bind` = bind,                     \
+      `player_guild` = guild,                   \
+      `player_max_health` = max_health,         \
+      `player_max_mana` = max_mana,             \
+      `player_might` = might,                   \
+      `player_int` = p_int,                     \
+      `player_myst` = myst,                     \
+      `player_stam` = stam,                     \
+      `player_agil` = agil,                     \
+      `player_aim` = aim;				            \
+	END"
+
+#define SQLQUERY_CREATEPROC_PLAYERSUICIDE			"\
+	CREATE PROCEDURE WritePlayerSuicide(			\n\
+     IN account_id   INT(11),					      \n\
+	BEGIN											         \n\
+	  UPDATE `player`					               \n\
+      SET											      \n\
+		`player_suicide` = 1,			            \n\
+      `player_suicide_time` = now(),            \n\
+      WHERE `player_account_id = account_id;    \n\
+	END"
 
 #define SQLQUERY_CALL_WRITETOTALMONEY			   "CALL WriteTotalMoney(?);"
 #define SQLQUERY_CALL_WRITEMONEYCREATED			"CALL WriteMoneyCreated(?);"
 #define SQLQUERY_CALL_WRITEPLAYERLOGIN			   "CALL WritePlayerLogin(?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERASSESSDAMAGE	"CALL WritePlayerAssessDamage(?,?,?,?,?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERDEATH			   "CALL WritePlayerDeath(?,?,?,?,?);"
+#define SQLQUERY_CALL_WRITEPLAYER      			"CALL WritePlayer(?,?,?,?,?,?,?,?,?,?,?,?,?);"
+#define SQLQUERY_CALL_WRITEPLAYERSUICIDE			"CALL WritePlayerSuicide(?);"
 
 #define SQLQUERY_DROPPROC_TOTALMONEY			   "DROP PROCEDURE IF EXISTS WriteTotalMoney;"
 #define SQLQUERY_DROPPROC_MONEYCREATED			   "DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
 #define SQLQUERY_DROPPROC_PLAYERLOGIN			   "DROP PROCEDURE IF EXISTS WritePlayerLogin;"
 #define SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE	   "DROP PROCEDURE IF EXISTS WritePlayerAssessDamage;"
 #define SQLQUERY_DROPPROC_PLAYERDEATH			   "DROP PROCEDURE IF EXISTS WritePlayerDeath;"
+#define SQLQUERY_DROPPROC_PLAYER    			   "DROP PROCEDURE IF EXISTS WritePlayer;"
+#define SQLQUERY_DROPPROC_PLAYERSUICIDE		   "DROP PROCEDURE IF EXISTS WritePlayerSuicide;"
 #pragma endregion
 
 #pragma region Public
@@ -415,6 +510,91 @@ BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack
 
 	return enqueued;
 };
+
+
+BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* guild,
+                        int max_health, int max_mana, int might, int p_int, int myst, 
+                        int stam, int agil, int aim)
+   {
+   BOOL							enqueued;
+   sql_record_player*		record;
+   sql_queue_node*			node;
+
+   if (state == 0 || !account_id || !name || !home || !bind || !guild || !max_health || 
+       !max_mana || !might || !p_int || !myst || !stam || !agil || !aim)
+      return FALSE;
+
+   // allocate
+   record = (sql_record_player*)malloc(sizeof(sql_record_player));
+   node = (sql_queue_node*)malloc(sizeof(sql_queue_node));
+
+   // set values
+   record->account_id = account_id;
+   record->name = _strdup(name);
+   record->home = home;
+   record->bind = bind;
+   record->guild = _strdup(guild);
+   record->max_health = max_health;
+   record->max_mana = max_mana;
+   record->might = might;
+   record->p_int = p_int;
+   record->myst = myst;
+   record->stam = stam;
+   record->agil = agil;
+   record->aim = aim;
+
+   // attach to node
+   node->type = STAT_PLAYER;
+   node->data = record;
+
+   // try to enqueue
+   enqueued = _MySQLEnqueue(node);
+
+   // cleanup in case of fail
+   if (!enqueued)
+   {
+      free(record->name);
+      free(record->guild);
+
+      free(record);
+      free(node);
+   }
+
+   return enqueued;
+};
+
+BOOL MySQLRecordPlayerSuicide(int account_id)
+{
+   BOOL							      enqueued;
+   sql_record_playersuicide*		record;
+   sql_queue_node*					node;
+
+   if (state == 0 || !account_id)
+      return FALSE;
+
+   // allocate
+   record = (sql_record_playersuicide*)malloc(sizeof(sql_record_playersuicide));
+   node = (sql_queue_node*)malloc(sizeof(sql_queue_node));
+
+   // set values
+   record->account_id = account_id;
+
+   // attach to node
+   node->type = STAT_PLAYERSUICIDE;
+   node->data = record;
+
+   // try to enqueue
+   enqueued = _MySQLEnqueue(node);
+
+   // cleanup in case of fail
+   if (!enqueued)
+   {
+      free(record);
+      free(node);
+   }
+
+   return enqueued;
+};
 #pragma endregion
 
 #pragma region Internal
@@ -552,6 +732,7 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERLOGINS);
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDAMAGED);
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDEATH);
+   mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYER);
 
 	// drop procedures
 	mysql_query(mysql, SQLQUERY_DROPPROC_TOTALMONEY);
@@ -559,6 +740,8 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERLOGIN);
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERASSESSDAMAGE);
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERDEATH);
+   mysql_query(mysql, SQLQUERY_DROPPROC_PLAYER);
+   mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERSUICIDE);
 	
 	// recreate them
 	mysql_query(mysql, SQLQUERY_CREATEPROC_MONEYTOTAL);
@@ -566,6 +749,8 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERLOGIN);
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERASSESSDAMAGE);
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERDEATH);
+   mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYER);
+   mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERSUICIDE);
 
 	// set state to schema verified
 	state = SCHEMAVERIFIED;
@@ -704,6 +889,14 @@ void _MySQLWriteNode(sql_queue_node* Node, BOOL ProcessNode)
 		case STAT_PLAYERDEATH:
 			_MySQLWritePlayerDeath((sql_record_playerdeath*)Node->data, ProcessNode);
 			break;
+
+      case STAT_PLAYER:
+         _MySQLWritePlayer((sql_record_player*)Node->data, ProcessNode);
+         break;
+
+      case STAT_PLAYERSUICIDE:
+         _MySQLWritePlayerSuicide((sql_record_playersuicide*)Node->data, ProcessNode);
+         break;
 	}
 };
 
@@ -908,5 +1101,128 @@ void _MySQLWritePlayerDeath(sql_record_playerdeath* Data, BOOL ProcessNode)
 	free(Data->killer);
 	free(Data->room);
 	free(Data->attack);
+};
+
+void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode)
+{
+   MYSQL_BIND params[13];
+   unsigned long len_name = (unsigned long)strlen(Data->name);
+   unsigned long len_guild = (unsigned long)strlen(Data->guild);
+
+   // really write it, or just free mem at end?
+   if (ProcessNode)
+   {
+
+      // allocate parameters
+      memset(params, 0, sizeof(params));
+
+      // set parameter 0
+      params[0].buffer_type = MYSQL_TYPE_LONG;
+      params[0].buffer = &Data->account_id;
+      params[0].length = 0;
+      params[0].is_null = 0;
+
+      // set parameter 1
+      params[1].buffer_type = MYSQL_TYPE_STRING;
+      params[1].buffer = Data->name;
+      params[1].length = &len_name;
+      params[1].is_null = 0;
+
+      // set parameter 2
+      params[2].buffer_type = MYSQL_TYPE_LONG;
+      params[2].buffer = &Data->home;
+      params[2].length = 0;
+      params[2].is_null = 0;
+
+      // set parameter 3
+      params[3].buffer_type = MYSQL_TYPE_LONG;
+      params[3].buffer = &Data->bind;
+      params[3].length = 0;
+      params[3].is_null = 0;
+
+      // set parameter 4
+      params[4].buffer_type = MYSQL_TYPE_STRING;
+      params[4].buffer = Data->guild;
+      params[4].length = &len_guild;
+      params[4].is_null = 0;
+
+      // set parameter 5
+      params[5].buffer_type = MYSQL_TYPE_LONG;
+      params[5].buffer = &Data->max_health;
+      params[5].length = 0;
+      params[5].is_null = 0;
+
+      // set parameter 6
+      params[6].buffer_type = MYSQL_TYPE_LONG;
+      params[6].buffer = &Data->max_mana;
+      params[6].length = 0;
+      params[6].is_null = 0;
+
+      // set parameter 7
+      params[7].buffer_type = MYSQL_TYPE_LONG;
+      params[7].buffer = &Data->might;
+      params[7].length = 0;
+      params[7].is_null = 0;
+
+      // set parameter 8
+      params[8].buffer_type = MYSQL_TYPE_LONG;
+      params[8].buffer = &Data->p_int;
+      params[8].length = 0;
+      params[8].is_null = 0;
+
+      // set parameter 9
+      params[9].buffer_type = MYSQL_TYPE_LONG;
+      params[9].buffer = &Data->myst;
+      params[9].length = 0;
+      params[9].is_null = 0;
+
+      // set parameter 10
+      params[10].buffer_type = MYSQL_TYPE_LONG;
+      params[10].buffer = &Data->stam;
+      params[10].length = 0;
+      params[10].is_null = 0;
+
+      // set parameter 11
+      params[11].buffer_type = MYSQL_TYPE_LONG;
+      params[11].buffer = &Data->agil;
+      params[11].length = 0;
+      params[11].is_null = 0;
+
+      // set parameter 12
+      params[12].buffer_type = MYSQL_TYPE_LONG;
+      params[12].buffer = &Data->aim;
+      params[12].length = 0;
+      params[12].is_null = 0;
+
+ 
+      // call stored procedure
+      _MySQLCallProc(SQLQUERY_CALL_WRITEPLAYER, params);
+   }
+
+   // internal strings cleanup
+   free(Data->name);
+   free(Data->guild);
+};
+
+void _MySQLWritePlayerSuicide(sql_record_playersuicide* Data, BOOL ProcessNode)
+{
+   MYSQL_BIND params[1];
+
+   // really write it, or just free mem at end?
+   if (ProcessNode)
+   {
+      // allocate parameters
+      memset(params, 0, sizeof(params));
+
+      // set parameter 0
+      params[0].buffer_type = MYSQL_TYPE_LONG;
+      params[0].buffer = &Data->account_id;
+      params[0].length = 0;
+      params[0].is_null = 0;
+
+      // call stored procedure
+      _MySQLCallProc(SQLQUERY_CALL_WRITEPLAYERSUICIDE, params);
+   }
+
 };
 #pragma endregion
