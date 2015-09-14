@@ -4558,6 +4558,8 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 	resource_node *r_who_damaged, *r_who_attacker, *r_weapon, *r_victim, *r_cause, *r_killer, *r_room, *r_attack,
                   *r_name, *r_home, *r_bind, *r_guild;
 
+   session_node *session;
+
 	// The first paramenter to RecordStat() should always be a STAT_TYPE
 	stat_type = RetrieveValue(object_id,local_vars,normal_parm_array[0].type, normal_parm_array[0].value);
 	if (stat_type.v.tag != TAG_INT)
@@ -4714,8 +4716,6 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 				break;
 			}
 
-         session_node *session;
-
 			stat1 = RetrieveValue(object_id, local_vars, normal_parm_array[1].type, normal_parm_array[1].value);
 			stat2 = RetrieveValue(object_id, local_vars, normal_parm_array[2].type, normal_parm_array[2].value);
 			stat3 = RetrieveValue(object_id, local_vars, normal_parm_array[3].type, normal_parm_array[3].value);
@@ -4785,23 +4785,40 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 			break;
 
       case STAT_PLAYERSUICIDE:
-         if (num_normal_parms != 2)
+         if (num_normal_parms != 3)
          {
             bprintf("Wrong Number of Paramenters in C_RecordStat() STAT_PLAYERSUICIDE");
             break;
          }
 
          stat1 = RetrieveValue(object_id, local_vars, normal_parm_array[1].type, normal_parm_array[1].value);
+         stat2 = RetrieveValue(object_id, local_vars, normal_parm_array[2].type, normal_parm_array[2].value);
 
-         if (stat1.v.tag != TAG_INT)
+         if (stat1.v.tag != TAG_SESSION)
+         {
+            bprintf("C_RecordStat STAT_PLAYERSUICIDE can't use non-session %i,%i\n", stat1.v.tag, stat1.v.data);
+            return NIL;
+         }
+
+         if (stat2.v.tag != TAG_RESOURCE)
          {
             bprintf("Wrong Type of Parameter in C_RecordStat() STAT_PLAYERSUICIDE");
             break;
          }
+
+         session = GetSessionByID(stat1.v.data);
+         r_name = GetResourceByID(stat2.v.data);
+
+         if (!session->account->account_id || !r_name || !r_name->resource_val[0])
+         {
+            bprintf("NULL string in C_RecordStat() for STAT_PLAYER");
+         }
          else
          {
-            MySQLRecordPlayerSuicide(stat1.v.data);
+
+            MySQLRecordPlayerSuicide(session->account->account_id, r_name->resource_val[0]);
          }
+
          break;
 
       

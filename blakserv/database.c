@@ -266,12 +266,14 @@ char* db				= 0;
 #define SQLQUERY_CREATEPROC_PLAYERSUICIDE			"\
 	CREATE PROCEDURE WritePlayerSuicide(			\n\
      IN account_id   INT(11),					      \n\
+     IN name		   VARCHAR(45))					\n\
 	BEGIN											         \n\
 	  UPDATE `player`					               \n\
       SET											      \n\
 		`player_suicide` = 1,			            \n\
-      `player_suicide_time` = now(),            \n\
-      WHERE `player_account_id = account_id;    \n\
+      `player_suicide_time` = now()             \n\
+      WHERE `player_account_id` = account_id    \n\
+         AND `player_name` = name;              \n\
 	END"
 
 #define SQLQUERY_CALL_WRITETOTALMONEY			   "CALL WriteTotalMoney(?);"
@@ -280,7 +282,7 @@ char* db				= 0;
 #define SQLQUERY_CALL_WRITEPLAYERASSESSDAMAGE	"CALL WritePlayerAssessDamage(?,?,?,?,?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERDEATH			   "CALL WritePlayerDeath(?,?,?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYER      			"CALL WritePlayer(?,?,?,?,?,?,?,?,?,?,?,?,?);"
-#define SQLQUERY_CALL_WRITEPLAYERSUICIDE			"CALL WritePlayerSuicide(?);"
+#define SQLQUERY_CALL_WRITEPLAYERSUICIDE			"CALL WritePlayerSuicide(?,?);"
 
 #define SQLQUERY_DROPPROC_TOTALMONEY			   "DROP PROCEDURE IF EXISTS WriteTotalMoney;"
 #define SQLQUERY_DROPPROC_MONEYCREATED			   "DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
@@ -563,13 +565,13 @@ BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* gu
    return enqueued;
 };
 
-BOOL MySQLRecordPlayerSuicide(int account_id)
+BOOL MySQLRecordPlayerSuicide(int account_id, char* name)
 {
    BOOL							      enqueued;
    sql_record_playersuicide*		record;
    sql_queue_node*					node;
 
-   if (state == 0 || !account_id)
+   if (state == 0 || !account_id || !name)
       return FALSE;
 
    // allocate
@@ -578,6 +580,7 @@ BOOL MySQLRecordPlayerSuicide(int account_id)
 
    // set values
    record->account_id = account_id;
+   record->name = name;
 
    // attach to node
    node->type = STAT_PLAYERSUICIDE;
@@ -589,6 +592,8 @@ BOOL MySQLRecordPlayerSuicide(int account_id)
    // cleanup in case of fail
    if (!enqueued)
    {
+      free(record->name);
+
       free(record);
       free(node);
    }
@@ -1206,7 +1211,9 @@ void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode)
 
 void _MySQLWritePlayerSuicide(sql_record_playersuicide* Data, BOOL ProcessNode)
 {
-   MYSQL_BIND params[1];
+   MYSQL_BIND params[2];
+
+   unsigned long len_name = (unsigned long)strlen(Data->name);
 
    // really write it, or just free mem at end?
    if (ProcessNode)
@@ -1219,6 +1226,12 @@ void _MySQLWritePlayerSuicide(sql_record_playersuicide* Data, BOOL ProcessNode)
       params[0].buffer = &Data->account_id;
       params[0].length = 0;
       params[0].is_null = 0;
+
+      // set parameter 1
+      params[1].buffer_type = MYSQL_TYPE_STRING;
+      params[1].buffer = Data->name;
+      params[1].length = &len_name;
+      params[1].is_null = 0;
 
       // call stored procedure
       _MySQLCallProc(SQLQUERY_CALL_WRITEPLAYERSUICIDE, params);
