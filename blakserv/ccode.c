@@ -3956,6 +3956,7 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
                   *r_name, *r_home, *r_bind, *r_guild;
 
    session_node *session;
+   string_node *snod;
 
 	// The first paramenter to RecordStat() should always be a STAT_TYPE
 	stat_type = RetrieveValue(object_id,local_vars,normal_parm_array[0].type, normal_parm_array[0].value);
@@ -4133,10 +4134,9 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
             return NIL;
          }
 
-			if (stat2.v.tag != TAG_RESOURCE ||
+        if (stat2.v.tag != TAG_RESOURCE ||
 				stat3.v.tag != TAG_INT ||
 				stat4.v.tag != TAG_INT ||
-				stat5.v.tag != TAG_RESOURCE ||
             stat6.v.tag != TAG_INT ||
             stat7.v.tag != TAG_INT ||
             stat8.v.tag != TAG_INT ||
@@ -4146,29 +4146,47 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
             stat12.v.tag != TAG_INT ||
             stat13.v.tag != TAG_INT)
 			{	
+
+            bprintf("no guild, creating string %i TAG_STRING %d", stat5.v.data, TAG_STRING);
+
 				bprintf("Wrong Type of Parameter in C_RecordStat() STAT_PLAYER");
 				break;
 			}
 			else
 			{  
+            if (stat5.v.tag != TAG_STRING) 
+            {
+               snod = GetTempString();
+            }
+            else 
+            {
+               snod = GetStringByID(stat5.v.data);
+            }
+            
+            if (snod == NULL)
+            {
+               bprintf("C_RecordStat guild string is null");
+               break;
+            }
+
             session = GetSessionByID(stat1.v.data);
 				r_name = GetResourceByID(stat2.v.data);
-				r_guild = GetResourceByID(stat5.v.data);
+            char *guild = snod->data;
 
-				if (!session->account->account_id || !r_name || !r_guild ||
-					!r_name->resource_val[0] || !r_guild->resource_val[0])
+				if (!session->account->account_id || !r_name || !guild ||
+					!r_name->resource_val[0])
 				{
 					bprintf("NULL string in C_RecordStat() for STAT_PLAYER");
 				}
 				else
 				{
- 
+   
 					MySQLRecordPlayer(
                   session->account->account_id,
                   r_name->resource_val[0],
                   stat3.v.data,
                   stat4.v.data,
-                  r_guild->resource_val[0],
+                  guild,
                   stat6.v.data, 
                   stat7.v.data, 
                   stat8.v.data, 
