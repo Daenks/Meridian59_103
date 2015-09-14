@@ -770,7 +770,7 @@ messages:
 
    UserLogon(session_id = $)
    {
-      local i, boundRoom;
+      local i, boundRoom, guild;
 
       poSession = session_id;
       pbLogged_on = TRUE;
@@ -856,22 +856,17 @@ messages:
       % passing session id, getting account id on server
       if poGuild <> $
       {  
-         Debug("Guild Name", Send(poGuild,@GetName), " - ", poGuild);
-
-         RecordStat(STAT_PLAYER, poSession, Send(self,@GetTrueName), piHomeroom, boundRoom, 
-                  Send(poGuild,@GetTrueName), Send(self,@GetBaseMaxHealth), piMax_mana, Send(self,@GetRawMight), 
-                  Send(self,@GetRawIntellect), Send(self,@GetRawMysticism), Send(self,@GetRawStamina), Send(self,@GetRawAgility), 
-                  Send(self,@GetRawAim));
-
+         guild = Send(poGuild,@GetName);
       }
       else
       {
-         RecordStat(STAT_PLAYER, poSession, Send(self,@GetTrueName), piHomeroom, boundRoom, 
-                  system_blank_resource, Send(self,@GetBaseMaxHealth), piMax_mana, Send(self,@GetRawMight), 
+         guild = system_blank_resource;
+      }
+
+      RecordStat(STAT_PLAYER, poSession, Send(self,@GetTrueName), piHomeroom, boundRoom, 
+                  guild, Send(self,@GetBaseMaxHealth), piMax_mana, Send(self,@GetRawMight), 
                   Send(self,@GetRawIntellect), Send(self,@GetRawMysticism), Send(self,@GetRawStamina), Send(self,@GetRawAgility), 
                   Send(self,@GetRawAim));
-
-      }
 
       return;
    }
