@@ -383,6 +383,9 @@ properties:
    % Singleton object that keeps track of various game statistics
    poStatistics = $
 
+   % List that holds expansion module setting objects
+   poExpansionSettings = $
+
    poWarEvent = $
    
    % Hash table for users.
@@ -510,6 +513,7 @@ messages:
       % Reset the list of naughty words
       Send(self,@ResetNaughtyWords);
 
+      Send(self,@RecreateExpansionSettings);
       Send(self,@RecreateNecromancerBalance);
       Send(self,@CreateUserTable);
       Send(self,@CreateRoomTable);
@@ -618,6 +622,7 @@ messages:
       % Don't leave any active spellcasting objects
       Send(self,@DeleteAllSpellTotems);
  
+      Send(self,@RecreateExpansionSettings);
       Send(self,@RecreateNecromancerBalance);
       Send(self,@ClearAllQuests);
       Send(self,@CreateAllBanksIfNew);
@@ -3002,6 +3007,34 @@ messages:
    GetStatistics()
    {
       return poStatistics;
+   }
+
+   RecreateExpansionSettings()
+   {
+      poExpansionSettings = $;
+      poExpansionSettings = Cons(Create(&EquipmentSettings),poExpansionSettings);
+      return;
+   }
+
+   GetExpansionSettings(find_class=$)
+   {
+      local i;
+
+      if find_class <> $
+         AND poExpansionSettings <> $
+      {
+         foreach i in poExpansionSettings
+         {
+            if IsClass(i,find_class)
+            {
+               return i;
+            }
+         }
+         
+         return $;
+      }
+
+      return poExpansionSettings;
    }
 
    % Shrine utility

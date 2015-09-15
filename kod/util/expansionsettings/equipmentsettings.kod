@@ -1,0 +1,77 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+EquipmentSettings is ExpansionSettings
+
+% This class keeps settings for armor, weapons, and items.
+
+constants:
+
+   include blakston.khd
+
+   % ARMOR_SYSTEM_CLASSIC = 1
+   % ARMOR_SYSTEM_PERCENTAGE = 2
+
+   % RESISTANCE_SYSTEM_CLASSIC = 1
+   % RESISTANCE_SYSTEM_COMBINED = 2
+
+   % SPELLPOWER_PENALTY_SYSTEM_CLASSIC = 1
+   % SPELLPOWER_PENALTY_SYSTEM_PERCENTAGE = 2
+   
+   % RING_SWITCH_DELAY_CLASSIC = 0
+   % RING_SWITCH_DELAY_MODERN = 2000
+   
+resources:
+
+classvars:
+
+properties:
+
+   % What values should armor hold?
+   piArmorSystem = ARMOR_SYSTEM_CLASSIC
+
+   % What resistance calculations do we use?
+   piResistanceSystem = RESISTANCE_SYSTEM_CLASSIC
+
+   % What spellpower penalty system do we use?
+   piSpellpowerPenaltySystem = SPELLPOWER_PENALTY_SYSTEM_CLASSIC
+
+   % The postcast delay after changing rings
+   piRingSwitchDelay = RING_SWITCH_DELAY_CLASSIC
+
+messages:
+
+   Constructor(server_num = $)
+   {
+      return;
+   }
+
+   GetArmorSystem()
+   {
+      return piArmorSystem;
+   }
+
+   GetResistanceSystem()
+   {
+      return piResistanceSystem;
+   }
+
+   GetSpellpowerPenaltySystem()
+   {
+      return piSpellpowerPenaltySystem;
+   }
+
+   GetRingSwitchDelay()
+   {
+      return piRingSwitchDelay;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
