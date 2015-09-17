@@ -119,7 +119,7 @@ static char INIQuickStart[]   = "QuickStart";
 
 static int   DefaultRedialDelay   = 60;
 static char  DefaultHostname[]    = "cheater";
-static char  DefaultDomainFormat[] = "meridian%d.openmeridian.org"; // MUST have a %d in it somewhere.
+static char  DefaultDomainFormat[] = "meridian%d.arantis.org"; // MUST have a %d in it somewhere.
 static char  DefaultSockPortFormat[] = "59%.2d";
 static int   DefaultServerNum     = 101;
 static int   DefaultTimeout       = 1440; // 1 day in minutes (60*24)
@@ -243,7 +243,7 @@ void ConfigLoad(void)
    config.halocolor    = GetConfigInt(interface_section, INIHaloColor, 0, ini_file);
    config.colorcodes   = GetConfigInt(interface_section, INIColorCodes, True, ini_file);
    config.map_annotations = GetConfigInt(interface_section, INIMapAnnotations, True, ini_file);
-   config.language     = GetConfigInt(interface_section, INILanguage, 0, ini_file);
+   config.language     = GetConfigInt(interface_section, INILanguage, 1, ini_file);
    config.guest        = GetConfigInt(misc_section, INIGuest, False, ini_file);
    config.server_low   = GetConfigInt(misc_section, INIServerLow, 0, ini_file);
    config.server_high  = GetConfigInt(misc_section, INIServerHigh, 0, ini_file);

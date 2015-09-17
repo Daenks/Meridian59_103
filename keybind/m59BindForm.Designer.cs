@@ -239,7 +239,7 @@
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(490, 233);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Movement";
+            this.tabPage1.Text = "Bewegung";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // buttonMouselookToggleMod
@@ -259,7 +259,7 @@
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(95, 13);
             this.label12.TabIndex = 34;
-            this.label12.Text = "Mouselook Toggle";
+            this.label12.Text = "Mouselook an/aus";
             // 
             // buttonMouselookToggle
             // 
@@ -289,7 +289,7 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(23, 13);
             this.label11.TabIndex = 31;
-            this.label11.Text = "Flip";
+            this.label11.Text = "Drehung 180°";
             // 
             // buttonFlip
             // 
@@ -319,7 +319,7 @@
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(70, 13);
             this.label10.TabIndex = 28;
-            this.label10.Text = "Look Straight";
+            this.label10.Text = "Blick zentrieren";
             // 
             // buttonLookStraight
             // 
@@ -349,7 +349,7 @@
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(62, 13);
             this.label9.TabIndex = 25;
-            this.label9.Text = "Look Down";
+            this.label9.Text = "Blick nach unten";
             // 
             // buttonLookDown
             // 
@@ -379,7 +379,7 @@
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(48, 13);
             this.label8.TabIndex = 22;
-            this.label8.Text = "Look Up";
+            this.label8.Text = "Blick nach oben";
             // 
             // buttonLookUp
             // 
@@ -409,7 +409,7 @@
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(57, 13);
             this.label7.TabIndex = 19;
-            this.label7.Text = "Run/Walk";
+            this.label7.Text = "Laufen/Gehen";
             // 
             // buttonRunWalk
             // 
@@ -439,7 +439,7 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 16;
-            this.label6.Text = "Slide Right";
+            this.label6.Text = "Seitlich rechts";
             // 
             // buttonSlideRight
             // 
@@ -469,7 +469,7 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(51, 13);
             this.label5.TabIndex = 13;
-            this.label5.Text = "Slide Left";
+            this.label5.Text = "Seitlich links";
             // 
             // buttonSlideLeft
             // 
@@ -499,7 +499,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(57, 13);
             this.label4.TabIndex = 10;
-            this.label4.Text = "Turn Right";
+            this.label4.Text = "Drehung rechts";
             // 
             // buttonTurnRight
             // 
@@ -529,7 +529,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(50, 13);
             this.label3.TabIndex = 7;
-            this.label3.Text = "Turn Left";
+            this.label3.Text = "Drehung links";
             // 
             // buttonTurnLeft
             // 
@@ -559,7 +559,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(55, 13);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Backward";
+            this.label2.Text = "Rückwärts";
             // 
             // buttonBackward
             // 
@@ -589,7 +589,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(45, 13);
             this.label1.TabIndex = 1;
-            this.label1.Text = "Forward";
+            this.label1.Text = "Vorwärts";
             // 
             // buttonForward
             // 
@@ -630,7 +630,7 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(490, 233);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Communication";
+            this.tabPage2.Text = "Kommunikation";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // buttonEmoteMod
@@ -661,7 +661,7 @@
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(37, 13);
             this.label19.TabIndex = 18;
-            this.label19.Text = "Emote";
+            this.label19.Text = "Ego";
             // 
             // buttonWhoMod
             // 
@@ -691,7 +691,7 @@
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(30, 13);
             this.label18.TabIndex = 15;
-            this.label18.Text = "Who";
+            this.label18.Text = "Wer spielt?";
             // 
             // buttonBroadcastMod
             // 
@@ -721,7 +721,7 @@
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(55, 13);
             this.label17.TabIndex = 12;
-            this.label17.Text = "Broadcast";
+            this.label17.Text = "Mitteilung an alle";
             // 
             // buttonYellMod
             // 
@@ -751,7 +751,7 @@
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(24, 13);
             this.label16.TabIndex = 9;
-            this.label16.Text = "Yell";
+            this.label16.Text = "Rufen";
             // 
             // buttonTellMod
             // 
@@ -781,7 +781,7 @@
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(24, 13);
             this.label15.TabIndex = 6;
-            this.label15.Text = "Tell";
+            this.label15.Text = "Telepathie";
             // 
             // buttonChatMod
             // 
@@ -811,7 +811,7 @@
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(29, 13);
             this.label14.TabIndex = 3;
-            this.label14.Text = "Chat";
+            this.label14.Text = "Chat aktivieren";
             // 
             // buttonSayMod
             // 
@@ -841,7 +841,7 @@
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(25, 13);
             this.label13.TabIndex = 0;
-            this.label13.Text = "Say";
+            this.label13.Text = "Sagen";
             // 
             // tabPage3
             // 
@@ -877,7 +877,7 @@
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage3.Size = new System.Drawing.Size(490, 233);
             this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Interaction";
+            this.tabPage3.Text = "Interaktion";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // buttonAttackMod
@@ -908,7 +908,7 @@
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(38, 13);
             this.label28.TabIndex = 24;
-            this.label28.Text = "Attack";
+            this.label28.Text = "Angreifen";
             // 
             // buttonWithdrawMod
             // 
@@ -938,7 +938,7 @@
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(52, 13);
             this.label27.TabIndex = 21;
-            this.label27.Text = "Withdraw";
+            this.label27.Text = "Auszahlen";
             // 
             // buttonDepositMod
             // 
@@ -968,7 +968,7 @@
             this.label26.Name = "label26";
             this.label26.Size = new System.Drawing.Size(43, 13);
             this.label26.TabIndex = 18;
-            this.label26.Text = "Deposit";
+            this.label26.Text = "Einzahlen";
             // 
             // buttonBuyMod
             // 
@@ -998,7 +998,7 @@
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(25, 13);
             this.label25.TabIndex = 15;
-            this.label25.Text = "Buy";
+            this.label25.Text = "Kaufen";
             // 
             // buttonOfferMod
             // 
@@ -1028,7 +1028,7 @@
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(30, 13);
             this.label24.TabIndex = 12;
-            this.label24.Text = "Offer";
+            this.label24.Text = "Anbieten";
             // 
             // buttonExamineMod
             // 
@@ -1058,7 +1058,7 @@
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(47, 13);
             this.label23.TabIndex = 9;
-            this.label23.Text = "Examine";
+            this.label23.Text = "Untersuchen";
             // 
             // buttonLookMod
             // 
@@ -1088,7 +1088,7 @@
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(31, 13);
             this.label22.TabIndex = 6;
-            this.label22.Text = "Look";
+            this.label22.Text = "Anschauen";
             // 
             // buttonPickUpMod
             // 
@@ -1118,7 +1118,7 @@
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(45, 13);
             this.label21.TabIndex = 3;
-            this.label21.Text = "Pick Up";
+            this.label21.Text = "Nehmen";
             // 
             // buttonOpenMod
             // 
@@ -1148,7 +1148,7 @@
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(33, 13);
             this.label20.TabIndex = 0;
-            this.label20.Text = "Open";
+            this.label20.Text = "Öffnen";
             // 
             // tabPage4
             // 
@@ -1178,7 +1178,7 @@
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage4.Size = new System.Drawing.Size(490, 233);
             this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Targeting";
+            this.tabPage4.Text = "Zielauswahl";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // buttonSelectTargetMod
@@ -1209,7 +1209,7 @@
             this.label35.Name = "label35";
             this.label35.Size = new System.Drawing.Size(71, 13);
             this.label35.TabIndex = 21;
-            this.label35.Text = "Select Target";
+            this.label35.Text = "Ziel auswählen";
             // 
             // buttonTabBackwardMod
             // 
@@ -1239,7 +1239,7 @@
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(77, 13);
             this.label34.TabIndex = 18;
-            this.label34.Text = "Tab Backward";
+            this.label34.Text = "Tab zurück";
             // 
             // buttonTabForwardMod
             // 
@@ -1269,7 +1269,7 @@
             this.label33.Name = "label33";
             this.label33.Size = new System.Drawing.Size(67, 13);
             this.label33.TabIndex = 15;
-            this.label33.Text = "Tab Forward";
+            this.label33.Text = "Tab vor";
             // 
             // buttonTargetSelfMod
             // 
@@ -1299,7 +1299,7 @@
             this.label32.Name = "label32";
             this.label32.Size = new System.Drawing.Size(59, 13);
             this.label32.TabIndex = 12;
-            this.label32.Text = "Target Self";
+            this.label32.Text = "Sich selbst \nmarkieren";
             // 
             // buttonTargetClearMod
             // 
@@ -1329,7 +1329,7 @@
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(65, 13);
             this.label31.TabIndex = 9;
-            this.label31.Text = "Target Clear";
+            this.label31.Text = "Ziel aufheben";
             // 
             // buttonTargetPreviousMod
             // 
@@ -1359,7 +1359,7 @@
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(82, 13);
             this.label30.TabIndex = 6;
-            this.label30.Text = "Target Previous";
+            this.label30.Text = "Vorheriges Ziel";
             // 
             // buttonTargetNextMod
             // 
@@ -1389,7 +1389,7 @@
             this.label29.Name = "label29";
             this.label29.Size = new System.Drawing.Size(63, 13);
             this.label29.TabIndex = 3;
-            this.label29.Text = "Target Next";
+            this.label29.Text = "Nächstes Ziel";
             // 
             // tabPage5
             // 
@@ -1407,7 +1407,7 @@
             this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage5.Size = new System.Drawing.Size(490, 233);
             this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "Map";
+            this.tabPage5.Text = "Karte";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // buttonMapZoomOutMod
@@ -1438,7 +1438,7 @@
             this.label38.Name = "label38";
             this.label38.Size = new System.Drawing.Size(78, 13);
             this.label38.TabIndex = 9;
-            this.label38.Text = "Map Zoom Out";
+            this.label38.Text = "Hinauszoomen";
             // 
             // buttonMapZoomInMod
             // 
@@ -1468,7 +1468,7 @@
             this.label37.Name = "label37";
             this.label37.Size = new System.Drawing.Size(70, 13);
             this.label37.TabIndex = 6;
-            this.label37.Text = "Map Zoom In";
+            this.label37.Text = "Hineinzoomen";
             // 
             // buttonMapMod
             // 
@@ -1498,7 +1498,7 @@
             this.label36.Name = "label36";
             this.label36.Size = new System.Drawing.Size(28, 13);
             this.label36.TabIndex = 3;
-            this.label36.Text = "Map";
+            this.label36.Text = "Karte öffnen";
             // 
             // tabPage6
             // 
@@ -1509,7 +1509,7 @@
             this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage6.Size = new System.Drawing.Size(490, 233);
             this.tabPage6.TabIndex = 5;
-            this.tabPage6.Text = "Mouse";
+            this.tabPage6.Text = "Maus";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // groupBox2
@@ -1525,7 +1525,7 @@
             this.groupBox2.Size = new System.Drawing.Size(276, 199);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Mouse Scale";
+            this.groupBox2.Text = "Mouselook";
             // 
             // labelMouselookYScaleValue
             // 
@@ -1552,7 +1552,7 @@
             this.label40.Name = "label40";
             this.label40.Size = new System.Drawing.Size(99, 13);
             this.label40.TabIndex = 3;
-            this.label40.Text = "Mouselook Y Scale";
+            this.label40.Text = "Mouselook Y Achse";
             // 
             // label39
             // 
@@ -1561,7 +1561,7 @@
             this.label39.Name = "label39";
             this.label39.Size = new System.Drawing.Size(99, 13);
             this.label39.TabIndex = 2;
-            this.label39.Text = "Mouselook X Scale";
+            this.label39.Text = "Mouselook X Achse";
             // 
             // trackBarMouseYScale
             // 
@@ -1594,7 +1594,7 @@
             this.checkBoxInvertMouse.Name = "checkBoxInvertMouse";
             this.checkBoxInvertMouse.Size = new System.Drawing.Size(88, 17);
             this.checkBoxInvertMouse.TabIndex = 0;
-            this.checkBoxInvertMouse.Text = "Invert Mouse";
+            this.checkBoxInvertMouse.Text = "Maus umkehren";
             this.checkBoxInvertMouse.UseVisualStyleBackColor = true;
             this.checkBoxInvertMouse.CheckedChanged += new System.EventHandler(this.checkBoxInvertMouse_CheckedChanged);
             // 
@@ -1611,7 +1611,7 @@
             this.groupBox1.Size = new System.Drawing.Size(186, 173);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Options";
+            this.groupBox1.Text = "Optionen";
             // 
             // checkBoxSoftwareRenderer
             // 
@@ -1620,7 +1620,7 @@
             this.checkBoxSoftwareRenderer.Name = "checkBoxSoftwareRenderer";
             this.checkBoxSoftwareRenderer.Size = new System.Drawing.Size(115, 17);
             this.checkBoxSoftwareRenderer.TabIndex = 4;
-            this.checkBoxSoftwareRenderer.Text = "Software Renderer";
+            this.checkBoxSoftwareRenderer.Text = "Software Grafikmodus";
             this.checkBoxSoftwareRenderer.UseVisualStyleBackColor = true;
             this.checkBoxSoftwareRenderer.CheckedChanged += new System.EventHandler(this.checkBoxSoftwareRenderer_CheckedChanged);
             // 
@@ -1631,7 +1631,7 @@
             this.checkBoxDynamicLighting.Name = "checkBoxDynamicLighting";
             this.checkBoxDynamicLighting.Size = new System.Drawing.Size(107, 17);
             this.checkBoxDynamicLighting.TabIndex = 2;
-            this.checkBoxDynamicLighting.Text = "Dynamic Lighting";
+            this.checkBoxDynamicLighting.Text = "dynamische Beleuchtung";
             this.checkBoxDynamicLighting.UseVisualStyleBackColor = true;
             this.checkBoxDynamicLighting.CheckedChanged += new System.EventHandler(this.checkBoxDynamicLighting_CheckedChanged);
             // 
@@ -1642,7 +1642,7 @@
             this.checkBoxAttackOnTarget.Name = "checkBoxAttackOnTarget";
             this.checkBoxAttackOnTarget.Size = new System.Drawing.Size(108, 17);
             this.checkBoxAttackOnTarget.TabIndex = 3;
-            this.checkBoxAttackOnTarget.Text = "Attack On Target";
+            this.checkBoxAttackOnTarget.Text = "Angriff bei Zielauswahl";
             this.checkBoxAttackOnTarget.UseVisualStyleBackColor = true;
             this.checkBoxAttackOnTarget.CheckedChanged += new System.EventHandler(this.checkBoxAttackOnTarget_CheckedChanged);
             // 
@@ -1653,7 +1653,7 @@
             this.checkBoxAlwaysRun.Name = "checkBoxAlwaysRun";
             this.checkBoxAlwaysRun.Size = new System.Drawing.Size(82, 17);
             this.checkBoxAlwaysRun.TabIndex = 2;
-            this.checkBoxAlwaysRun.Text = "Always Run";
+            this.checkBoxAlwaysRun.Text = "immer rennen";
             this.checkBoxAlwaysRun.UseVisualStyleBackColor = true;
             this.checkBoxAlwaysRun.CheckedChanged += new System.EventHandler(this.checkBoxAlwaysRun_CheckedChanged);
             // 
@@ -1664,7 +1664,7 @@
             this.checkBoxQuickChat.Name = "checkBoxQuickChat";
             this.checkBoxQuickChat.Size = new System.Drawing.Size(79, 17);
             this.checkBoxQuickChat.TabIndex = 1;
-            this.checkBoxQuickChat.Text = "Quick Chat";
+            this.checkBoxQuickChat.Text = "schnelles Chatten";
             this.checkBoxQuickChat.UseVisualStyleBackColor = true;
             this.checkBoxQuickChat.CheckedChanged += new System.EventHandler(this.checkBoxQuickChat_CheckedChanged);
             // 
@@ -1675,7 +1675,7 @@
             this.checkBoxClassicKeyBind.Name = "checkBoxClassicKeyBind";
             this.checkBoxClassicKeyBind.Size = new System.Drawing.Size(118, 17);
             this.checkBoxClassicKeyBind.TabIndex = 0;
-            this.checkBoxClassicKeyBind.Text = "Classic Key Binding";
+            this.checkBoxClassicKeyBind.Text = "klassische Tastenbelegung";
             this.checkBoxClassicKeyBind.UseVisualStyleBackColor = true;
             this.checkBoxClassicKeyBind.CheckedChanged += new System.EventHandler(this.checkBoxClassicKeyBind_CheckedChanged);
             // 
@@ -1685,7 +1685,7 @@
             this.buttonRestoreDefaults.Name = "buttonRestoreDefaults";
             this.buttonRestoreDefaults.Size = new System.Drawing.Size(95, 23);
             this.buttonRestoreDefaults.TabIndex = 2;
-            this.buttonRestoreDefaults.Text = "Restore Defaults";
+            this.buttonRestoreDefaults.Text = "Standardeinstellungen";
             this.buttonRestoreDefaults.UseVisualStyleBackColor = true;
             this.buttonRestoreDefaults.Click += new System.EventHandler(this.buttonRestoreDefaults_Click);
             // 
@@ -1706,7 +1706,7 @@
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 4;
-            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.Text = "Abbrechen";
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
@@ -1716,7 +1716,7 @@
             this.buttonHelp.Name = "buttonHelp";
             this.buttonHelp.Size = new System.Drawing.Size(44, 23);
             this.buttonHelp.TabIndex = 5;
-            this.buttonHelp.Text = "Help";
+            this.buttonHelp.Text = "Hilfe";
             this.buttonHelp.UseVisualStyleBackColor = true;
             this.buttonHelp.Click += new System.EventHandler(this.buttonHelp_Click);
             // 
@@ -1733,7 +1733,7 @@
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "M59Bind";
-            this.Text = "Meridian 59 Bind Editor";
+            this.Text = "Meridian 59 Tasteneinstellungen";
             this.Load += new System.EventHandler(this.M59Bind_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);

@@ -257,12 +257,12 @@ keymap interface_key_table[] = {
 
 { VK_SPACE,       KEY_ANY,              A_GO },
 { VK_RETURN,      KEY_ANY,              A_LOOK },
-{ VK_SINGLEQUOTE, KEY_ANY,              A_TEXTINSERT,   "say " },
-{ '1',            KEY_SHIFT,            A_TEXTINSERT,   "yell " },
-{ '3',            KEY_SHIFT,            A_TEXTINSERT,   "who" },
-{ VK_SEMICOLON,   KEY_ANY,              A_TEXTINSERT,   "emote " },
-{ VK_PERIOD,      KEY_ANY,              A_TEXTINSERT,   "tell " },
-{ VK_SLASH,       KEY_SHIFT,            A_TEXTINSERT,   "help" },
+{ VK_SINGLEQUOTE, KEY_ANY,              A_TEXTINSERT,   "sagen " },
+{ '1',            KEY_SHIFT,            A_TEXTINSERT,   "rufen " },
+{ '3',            KEY_SHIFT,            A_TEXTINSERT,   "wer spielt?" },
+{ VK_SEMICOLON,   KEY_ANY,              A_TEXTINSERT,   "ego " },
+{ VK_PERIOD,      KEY_ANY,              A_TEXTINSERT,   "telepathie " },
+{ VK_SLASH,       KEY_SHIFT,            A_TEXTINSERT,   "hilfe" },
 
 { VK_ADD,         KEY_ANY,              A_MAPZOOMIN },
 { VK_SUBTRACT,    KEY_ANY,              A_MAPZOOMOUT },
@@ -309,7 +309,7 @@ static TypedCommand commands[] = {
 { "emote",          CommandEmote, },
 { "ego",            CommandEmote, },
 { "who",            CommandWho, },
-{ "wer",            CommandWho, },
+{ "wer spielt?",    CommandWho, },
 { "quit",           CommandQuit, },
 { "beenden",        CommandQuit, },
 { "tell",           CommandTell, },
@@ -328,9 +328,9 @@ static TypedCommand commands[] = {
 { "put",            CommandPut, },
 { "ablegen",        CommandPut, }, 
 { "delgroup",       CommandGroupDelete, },
-{ "gruppelöschen",  CommandGroupDelete, }, 
+{ "gruppel�schen",  CommandGroupDelete, }, 
 { "dgroup",         CommandGroupDelete, },
-{ "gruppelöschen",  CommandGroupDelete, }, 
+{ "gruppel�schen",  CommandGroupDelete, }, 
 { "newgroup",       CommandGroupNew, },
 { "neuegruppe",     CommandGroupNew, },
 { "ngroup",         CommandGroupNew, },
@@ -370,7 +370,7 @@ static TypedCommand commands[] = {
 { "harakiri",       CommandSuicide, },
 { "neutral",        CommandNeutral, },
 { "happy",          CommandHappy, },
-{ "glücklich",      CommandHappy, },
+{ "gl�cklich",      CommandHappy, },
 { "sad",            CommandSad, },
 { "traurig",        CommandSad, },
 { "wry",            CommandWry, },
@@ -444,8 +444,8 @@ static ascii_key	gAsciiKeyMap[] =
 	{"pagedown",VK_NEXT},
 	{"up",		VK_UP},
 	{"down",	VK_DOWN},
-	{"left",	VK_LEFT},
-	{"right",	VK_RIGHT},
+	{"links",	VK_LEFT},
+	{"rechts",	VK_RIGHT},
 	{"tab",		VK_TAB},
 	{"numpad0",	VK_NUMPAD0},
 	{"numpad1",	VK_NUMPAD1},
@@ -484,14 +484,14 @@ static action_label	gActionLabels[] =
 	// movement
 	{"forward",			A_FORWARD,			NULL},
 	{"backward",		A_BACKWARD,			NULL},
-	{"left",			A_TURNLEFT,			NULL},
-	{"right",			A_TURNRIGHT,		NULL},
+	{"links",			A_TURNLEFT,			NULL},
+	{"rechts",			A_TURNRIGHT,		NULL},
 	{"slideleft",		A_SLIDELEFT,		NULL},
 	{"slideright",		A_SLIDERIGHT,		NULL},
 	{"forward",			A_FORWARDFAST,		NULL},
 	{"backward",		A_BACKWARDFAST,		NULL},
-	{"left",			A_TURNFASTLEFT,		NULL},
-	{"right",			A_TURNFASTRIGHT,	NULL},
+	{"links",			A_TURNFASTLEFT,		NULL},
+	{"rechts",			A_TURNFASTRIGHT,	NULL},
 	{"slideleft",		A_SLIDELEFTFAST,	NULL},
 	{"slideright",		A_SLIDERIGHTFAST,	NULL},
 	{"lookup",			A_LOOKUP,			NULL},
@@ -524,11 +524,11 @@ static action_label	gActionLabels[] =
 
 	// chat
 	{"chat",			A_GOTOSAY,			NULL},
-	{"say",				A_TEXTINSERT,		"say "},
-	{"tell",			A_TEXTINSERT,		"tell "},
-	{"yell",			A_TEXTINSERT,		"yell "},
-	{"broadcast",		A_TEXTINSERT,		"broadcast "},
-	{"emote",			A_TEXTINSERT,		"emote "},
+	{"say",				A_TEXTINSERT,		"sagen "},
+	{"tell",			A_TEXTINSERT,		"telepathie "},
+	{"yell",			A_TEXTINSERT,		"rufen "},
+	{"broadcast",		A_TEXTINSERT,		"mitteilen "},
+	{"emote",			A_TEXTINSERT,		"ego "},
 	{"who",				A_WHO,				NULL},
 
 	// end
@@ -581,11 +581,11 @@ keymap	gCustomKeys[] =
 
 	// chat
 	{-1,				-1,				A_GOTOSAY,			NULL},
-	{-1,				-1,				A_TEXTINSERT,		"say "},
-	{-1,				-1,				A_TEXTINSERT,		"tell "},
-	{-1,				-1,				A_TEXTINSERT,		"yell "},
-	{-1,				-1,				A_TEXTINSERT,		"broadcast "},
-	{-1,				-1,				A_TEXTINSERT,		"emote "},
+	{-1,				-1,				A_TEXTINSERT,		"sagen "},
+	{-1,				-1,				A_TEXTINSERT,		"telepathie "},
+	{-1,				-1,				A_TEXTINSERT,		"rufen "},
+	{-1,				-1,				A_TEXTINSERT,		"mitteilen "},
+	{-1,				-1,				A_TEXTINSERT,		"ego "},
 	{-1,				-1,				A_WHO,				NULL},
 
 	// aliases (fkey hotkeys)
@@ -772,8 +772,8 @@ void CustomConfigInit(void)
 
 		WritePrivateProfileString("keys", "forward", "w", "./config.ini");
 		WritePrivateProfileString("keys", "backward", "s", "./config.ini");
-		WritePrivateProfileString("keys", "left", "left", "./config.ini");
-		WritePrivateProfileString("keys", "right", "right", "./config.ini");
+		WritePrivateProfileString("keys", "links", "links", "./config.ini");
+		WritePrivateProfileString("keys", "rechts", "rechts", "./config.ini");
 		WritePrivateProfileString("keys", "slideleft", "a", "./config.ini");
 		WritePrivateProfileString("keys", "slideright", "d", "./config.ini");
 		WritePrivateProfileString("keys", "run/walk", "shift", "./config.ini");

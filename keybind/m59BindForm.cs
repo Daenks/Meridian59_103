@@ -34,8 +34,8 @@ namespace m59bind
             // Movement Tab
             buttonForward.Text = m59BindProgram.GetIni(configFile, "keys", "forward", "w");
             buttonBackward.Text = m59BindProgram.GetIni(configFile, "keys", "backward", "s");
-            buttonTurnLeft.Text = m59BindProgram.GetIni(configFile, "keys", "left", "left");
-            buttonTurnRight.Text = m59BindProgram.GetIni(configFile, "keys", "right", "right");
+            buttonTurnLeft.Text = m59BindProgram.GetIni(configFile, "keys", "links", "links");
+            buttonTurnRight.Text = m59BindProgram.GetIni(configFile, "keys", "rechts", "rechts");
             buttonSlideLeft.Text = m59BindProgram.GetIni(configFile, "keys", "slideleft", "a");
             buttonSlideRight.Text = m59BindProgram.GetIni(configFile, "keys", "slideright", "d");
             buttonRunWalk.Text = m59BindProgram.GetIni(configFile, "keys", "run/walk", "shift");
@@ -137,8 +137,8 @@ namespace m59bind
             // Movement Tab
             buttonForward.Text = "w";
             buttonBackward.Text = "s";
-            buttonTurnLeft.Text = "left";
-            buttonTurnRight.Text = "right";
+            buttonTurnLeft.Text = "links";
+            buttonTurnRight.Text = "rechts";
             buttonSlideLeft.Text = "a";
             buttonSlideRight.Text = "d";
             buttonRunWalk.Text = "shift";
@@ -207,8 +207,8 @@ namespace m59bind
             // movement tab
             m59BindProgram.WriteIni(configFile, "keys", "forward", buttonForward.Text);
             m59BindProgram.WriteIni(configFile, "keys", "backward", buttonBackward.Text);
-            m59BindProgram.WriteIni(configFile, "keys", "left", buttonTurnLeft.Text);
-            m59BindProgram.WriteIni(configFile, "keys", "right", buttonTurnRight.Text);
+            m59BindProgram.WriteIni(configFile, "keys", "links", buttonTurnLeft.Text);
+            m59BindProgram.WriteIni(configFile, "keys", "rechts", buttonTurnRight.Text);
             m59BindProgram.WriteIni(configFile, "keys", "slideleft", buttonSlideLeft.Text);
             m59BindProgram.WriteIni(configFile, "keys", "slideright", buttonSlideRight.Text);
             m59BindProgram.WriteIni(configFile, "keys", "run/walk", buttonRunWalk.Text);
@@ -463,10 +463,10 @@ namespace m59bind
                     returnString = "up";
                     break;
                 case Keys.Left:
-                    returnString = "left";
+                    returnString = "links";
                     break;
                 case Keys.Right:
-                    returnString = "right";
+                    returnString = "rechts";
                     break;
                 case Keys.Tab:
                     returnString = "tab";

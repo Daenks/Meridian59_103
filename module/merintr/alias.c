@@ -37,18 +37,18 @@ typedef struct
 
 static HotkeyAlias aliases[] =
 {
-   { VK_F1,   "help",     True, },
-   { VK_F2,   "rest",     True, },
-   { VK_F3,   "stand",    True, },
-   { VK_F4,   "neutral",  True, },
-   { VK_F5,   "happy",    True, },
-   { VK_F6,   "sad",      True, },
-   { VK_F7,   "wry",      True, },
-   { VK_F8,   "wave",     True, },
-   { VK_F9,   "point",    True, },
-   { VK_F10,  "addgroup", True, },
-   { VK_F11,  "mail",     True, },
-   { VK_F12,  "quit",     True, },
+   { VK_F1,   "Hilfe",     True, },
+   { VK_F2,   "Rasten",     True, },
+   { VK_F3,   "Aufstehen",    True, },
+   { VK_F4,   "Neutral",  True, },
+   { VK_F5,   "Glücklich",    True, },
+   { VK_F6,   "Traurig",      True, },
+   { VK_F7,   "Grimmig",      True, },
+   { VK_F8,   "Winken",     True, },
+   { VK_F9,   "Deuten",    True, },
+   { VK_F10,  "Addgroup", True, },
+   { VK_F11,  "Mail",     True, },
+   { VK_F12,  "Quit",     True, },
 };
 
 static VerbAlias* _apVerbAliases = NULL;
@@ -57,15 +57,15 @@ static int _nAllocated = 0;
 #define CHUNKSIZE 10
 
 static char _szDefaultVerbAliases[] =
-   "chuckle=emote chuckles.\0"
-   "giggle=emote giggles.\0"
-   "hail=tellguild Hail Guildmembers!\0"
-   "laugh=emote laughs.\0"
-   "laughat=emote laughs at ~~!\0"
-   "smile=emote smiles.\0"
-   "smileat=emote smiles at ~~.\0"
-   "wink=emote winks.\0"
-   "winkat=emote winks at ~~.\0"
+   "lachen=ego lacht.\0"
+   "kichern=ego kichert.\0"
+   "hail=tellguild Hail Gildenmitglieder!\0"
+   "lachen=ego lacht.\0"
+   "lachenüb=ego lacht über ~~!\0"
+   "grinsen=ego grinst.\0"
+   "grinsenüb=ego grinst über ~~.\0"
+   "winken=ego winkt.\0"
+   "winkenzu=ego winkt zu ~~.\0"
    "\0";
 
 static char alias_section[] = "Aliases";   // Section for aliases in INI file
