@@ -49,6 +49,8 @@ typedef struct sql_record_playerassessdamage sql_record_playerassessdamage;
 typedef struct sql_record_playerdeath sql_record_playerdeath;
 typedef struct sql_record_player sql_record_player;
 typedef struct sql_record_playersuicide sql_record_playersuicide;
+typedef struct sql_record_guild sql_record_guild;
+typedef struct sql_record_guilddisband sql_record_guilddisband;
 typedef enum sql_recordtype sql_recordtype;
 typedef enum sql_worker_state sql_worker_state;
 
@@ -108,8 +110,8 @@ struct sql_record_player
 {
    int account_id;
    char* name;
-   int home;
-   int bind;
+   char* home;
+   char* bind;
    char* guild;
    int max_health;
    int max_mana;
@@ -127,6 +129,18 @@ struct sql_record_playersuicide
    char* name;
 };
 
+struct sql_record_guild
+{
+   char* name;
+   char* leader;
+   char* hall;
+};
+
+struct sql_record_guilddisband
+{
+   char* name;
+};
+
 enum sql_recordtype
 {
 	STAT_TOTALMONEY		= 1,
@@ -135,7 +149,9 @@ enum sql_recordtype
 	STAT_ASSESS_DAM		= 4,
 	STAT_PLAYERDEATH	   = 5,
    STAT_PLAYER          = 6,
-   STAT_PLAYERSUICIDE   = 7
+   STAT_PLAYERSUICIDE   = 7,
+   STAT_GUILD           = 8,
+   STAT_GUILDDISBAND    = 9
 };
 
 enum sql_worker_state
@@ -156,10 +172,12 @@ BOOL MySQLRecordMoneyCreated(int money_created);
 BOOL MySQLRecordPlayerLogin(char* account, char* character, char* ip);
 BOOL MySQLRecordPlayerAssessDamage(char* who, char* attacker, int aspell, int atype, int applied, int original, char* weapon);
 BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack, int ispvp);
-BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* guild,
+BOOL MySQLRecordPlayer( int account_id, char* name, char* home, char* bind, char* guild,
                         int max_health, int max_mana, int might, int p_int, int myst,
                         int stam, int agil, int aim);
 BOOL MySQLRecordPlayerSuicide(int account_id, char* name);
+BOOL MySQLRecordGuild(char* name, char* leader, char* hall);
+BOOL MySQLRecordGuildDisband(char* name);
 
 void __cdecl _MySQLWorker(void* Parameters);
 void _MySQLVerifySchema();
@@ -174,4 +192,6 @@ void _MySQLWritePlayerAssessDamage(sql_record_playerassessdamage* Data, BOOL Pro
 void _MySQLWritePlayerDeath(sql_record_playerdeath* Data, BOOL ProcessNode);
 void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode);
 void _MySQLWritePlayerSuicide(sql_record_playersuicide* Data, BOOL ProcessNode);
+void _MySQLWriteGuild(sql_record_guild* Data, BOOL ProcessNode);
+void _MySQLWriteGuildDisband(sql_record_guilddisband* Data, BOOL ProcessNode);
 #endif

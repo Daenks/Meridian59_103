@@ -9,7 +9,10 @@
 
         <!-- Meridian 59 -->
         <script src="js/site.js"></script>
-        <script src="js/player_controller.js"></script>
-        <script src="js/server_controller.js"></script>
+        <?php
+            $controller_name = basename($_SERVER["SCRIPT_FILENAME"], '.php');
+            echo '<script src="js/'.$controller_name.'_controller.js"></script>';
+        ?>
+
     </body>
 </html>
