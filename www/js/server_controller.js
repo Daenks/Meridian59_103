@@ -2,6 +2,28 @@
 //TODO: build a display chart function...?
 
 jQuery( document ).ready(function($) {
+
+    /**
+     * Charts and Canvas Functions
+     */
+
+    function m59DrawChart(chartType, chartData){
+        // Reset the chart space. This was the only sure way I found to do it
+        $('#canvas-container').html('<canvas id="canvas" height="500" width="900"></canvas>');
+        var canvasCxt = document.getElementById("canvas").getContext("2d");
+        var serverChart = new Chart(canvasCxt);
+
+        //clean up any current charts
+        switch(chartType){
+            case 'bar':
+                serverChart.Bar(chartData, {responsive : true});
+                break;
+            case 'line':
+                serverChart.Line(chartData, {responsive : true});
+                break;
+        }
+    }
+
     /**
      *  Display Avg PvP Damage
      */
@@ -32,8 +54,7 @@ jQuery( document ).ready(function($) {
                                         }]
                     }
 
-                    var ctx = document.getElementById("canvas").getContext("2d");
-                    window.myBar = new Chart(ctx).Bar(barChartData, {responsive : true});
+                    m59DrawChart('bar', barChartData);
 
                 }
             });
@@ -61,7 +82,7 @@ jQuery( document ).ready(function($) {
                         datasetData.push(parseInt(chartData[i].amount));
                     }
 
-                    var barChartData = {
+                    var lineChartData = {
                         labels : labelsArray,
                         datasets : [{
                             label: "",
@@ -75,8 +96,7 @@ jQuery( document ).ready(function($) {
                         }]
                     }
 
-                    var ctx = document.getElementById("canvas").getContext("2d");
-                    window.myBar = new Chart(ctx).Line(barChartData, {responsive : true});
+                    m59DrawChart('line', lineChartData);
 
                 }
             });
@@ -102,7 +122,7 @@ jQuery( document ).ready(function($) {
                         datasetData.push(parseInt(chartData[i].amount));
                     }
 
-                    var barChartData = {
+                    var lineChartData = {
                         labels : labelsArray,
                         datasets : [{
                             label: "",
@@ -116,8 +136,7 @@ jQuery( document ).ready(function($) {
                         }]
                     }
 
-                    var ctx = document.getElementById("canvas").getContext("2d");
-                    window.myBar = new Chart(ctx).Line(barChartData, {responsive : true});
+                    m59DrawChart('line', lineChartData);
 
                 }
             });

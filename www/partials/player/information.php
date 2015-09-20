@@ -1,8 +1,7 @@
 <div class="col-sm-8" id="player-information">
     <h1 class="player_name"></h1>
 
-    <div id="suicide-alert" class="alert alert-dismissible alert-danger hidden">
-        <button type="button" class="close" data-dismiss="alert">×</button>
+    <div id="suicide-alert" class="alert alert-danger hidden">
         <strong>Suicide Notice:</strong> <span class="player_name"></span> committed suicide at <span class="player_suicide_time"></span>
     </div>
 

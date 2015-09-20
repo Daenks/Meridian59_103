@@ -3,8 +3,8 @@
         <ul class="nav navbar-nav">
             <li><!--  class="dropdown" -->
                 <!-- class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" -->
-                <a href="servers.php" class="" role="button">
-                    Server Stats
+                <a href="server.php" class="" role="button">
+                    Server
                     <!--<span class="caret"></span>-->
                 </a>
 
@@ -16,7 +16,10 @@
                 -->
             </li>
             <li>
-                <a href="players.php" class="" role="button">Player Stats</a>
+                <a href="player.php" class="" role="button">Players</a>
+            </li>
+            <li>
+                <a href="guild.php" class="" role="button">Guilds</a>
             </li>
         </ul>
     </div>

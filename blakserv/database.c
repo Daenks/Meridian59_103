@@ -100,8 +100,8 @@ char* db				= 0;
 	  `idplayer`			     INT(11) NOT NULL AUTO_INCREMENT,	\
 	  `player_account_id`     int(11) NOT NULL,                 \
      `player_name`           VARCHAR(45) NOT NULL,             \
-     `player_home`           INT(11) DEFAULT NULL,             \
-     `player_bind`           INT(11) DEFAULT NULL,             \
+     `player_home`           VARCHAR(255) DEFAULT NULL,        \
+     `player_bind`           VARCHAR(255) DEFAULT NULL,        \
      `player_guild`          VARCHAR(45) DEFAULT NULL,         \
      `player_max_health`     INT(4) DEFAULT NULL,              \
      `player_max_mana`       INT(4) DEFAULT NULL,              \
@@ -117,6 +117,22 @@ char* db				= 0;
      UNIQUE KEY `player_name` (`player_name`)                  \
 	)																            \
 	ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;"
+
+#define SQLQUERY_CREATETABLE_GUILD                             "\
+   CREATE TABLE `guild`                                        \
+   (                                                           \
+      `idguild`               INT(11) NOT NULL AUTO_INCREMENT, \
+      `guild_name`            VARCHAR(100) NOT NULL,           \
+      `guild_leader`          VARCHAR(45) NOT NULL,            \
+      `guild_hall`            VARCHAR(100) NOT NULL,           \
+      `guild_rent_paid`       INT(11) NOT NULL,                \
+      `guild_disbanded`       INT(1) NOT NULL DEFAULT '0',     \
+      `guild_disbanded_time`  DATETIME DEFAULT NULL,           \
+      PRIMARY KEY(`idguild`),								            \
+      UNIQUE KEY `guild_name` (`guild_name`)                   \
+   )                                                           \
+   ENGINE = InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET = latin1;"
+
 
 #define SQLQUERY_CREATEPROC_MONEYTOTAL				   "\
 	CREATE PROCEDURE WriteTotalMoney(				   \n\
@@ -210,8 +226,8 @@ char* db				= 0;
 	CREATE PROCEDURE WritePlayer(	               \
      IN account_id   INT(11),					      \
 	  IN name		   VARCHAR(45),					\
-	  IN home		   INT(11),					      \
-	  IN bind		   INT(11),					      \
+	  IN home		   VARCHAR(255),					\
+	  IN bind		   VARCHAR(255),					\
 	  IN guild 	      VARCHAR(45),					\
 	  IN max_health   INT(4),						   \
      IN max_mana     INT(4),						   \
@@ -276,6 +292,37 @@ char* db				= 0;
          AND `player_name` = name;              \n\
 	END"
 
+#define SQLQUERY_CREATEPROC_GUILD               "\
+	CREATE PROCEDURE WriteGuild(                 \
+     IN name      VARCHAR(100),					   \
+     IN leader    VARCHAR(100),			         \
+     IN hall      VARCHAR(100))				      \
+	BEGIN											         \
+	  INSERT INTO `guild` 				            \
+      (  `guild_name`,				               \
+         `guild_leader`, 			               \
+         `guild_hall`) 				               \
+         VALUES (                               \
+            name, 				                  \
+            leader, 				                  \
+            hall)				                     \
+		ON DUPLICATE KEY UPDATE                   \
+      `guild_leader` = leader,                  \
+      `guild_hall` = hall;                      \
+	END"
+
+#define SQLQUERY_CREATEPROC_GUILDDISBAND			"\
+	CREATE PROCEDURE WriteGuildDisband(		      \n\
+     IN name      VARCHAR(100))					   \n\
+	BEGIN											         \n\
+	  UPDATE `guild`					               \n\
+      SET											      \n\
+		`guild_hall` = '',		                  \n\
+      `guild_disbanded` = 1,			            \n\
+      `guild_disbanded_time` = now()            \n\
+      WHERE `guild_name` = name;                \n\
+	END"
+
 #define SQLQUERY_CALL_WRITETOTALMONEY			   "CALL WriteTotalMoney(?);"
 #define SQLQUERY_CALL_WRITEMONEYCREATED			"CALL WriteMoneyCreated(?);"
 #define SQLQUERY_CALL_WRITEPLAYERLOGIN			   "CALL WritePlayerLogin(?,?,?);"
@@ -283,6 +330,8 @@ char* db				= 0;
 #define SQLQUERY_CALL_WRITEPLAYERDEATH			   "CALL WritePlayerDeath(?,?,?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYER      			"CALL WritePlayer(?,?,?,?,?,?,?,?,?,?,?,?,?);"
 #define SQLQUERY_CALL_WRITEPLAYERSUICIDE			"CALL WritePlayerSuicide(?,?);"
+#define SQLQUERY_CALL_WRITEGUILD			         "CALL WriteGuild(?,?,?);"
+#define SQLQUERY_CALL_WRITEGUILDDISBAND         "CALL WriteGuildDisband(?);"
 
 #define SQLQUERY_DROPPROC_TOTALMONEY			   "DROP PROCEDURE IF EXISTS WriteTotalMoney;"
 #define SQLQUERY_DROPPROC_MONEYCREATED			   "DROP PROCEDURE IF EXISTS WriteMoneyCreated;"
@@ -291,6 +340,8 @@ char* db				= 0;
 #define SQLQUERY_DROPPROC_PLAYERDEATH			   "DROP PROCEDURE IF EXISTS WritePlayerDeath;"
 #define SQLQUERY_DROPPROC_PLAYER    			   "DROP PROCEDURE IF EXISTS WritePlayer;"
 #define SQLQUERY_DROPPROC_PLAYERSUICIDE		   "DROP PROCEDURE IF EXISTS WritePlayerSuicide;"
+#define SQLQUERY_DROPPROC_GUILD		            "DROP PROCEDURE IF EXISTS WriteGuild;"
+#define SQLQUERY_DROPPROC_GUILDDISBAND          "DROP PROCEDURE IF EXISTS WriteGuildDisband;"
 #pragma endregion
 
 #pragma region Public
@@ -514,7 +565,7 @@ BOOL MySQLRecordPlayerDeath(char* victim, char* killer, char* room, char* attack
 };
 
 
-BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* guild,
+BOOL MySQLRecordPlayer( int account_id, char* name, char* home, char* bind, char* guild,
                         int max_health, int max_mana, int might, int p_int, int myst, 
                         int stam, int agil, int aim)
    {
@@ -533,8 +584,8 @@ BOOL MySQLRecordPlayer( int account_id, char* name, int home, int bind, char* gu
    // set values
    record->account_id = account_id;
    record->name = _strdup(name);
-   record->home = home;
-   record->bind = bind;
+   record->home = _strdup(home);
+   record->bind = _strdup(bind);
    record->guild = _strdup(guild);
    record->max_health = max_health;
    record->max_mana = max_mana;
@@ -584,6 +635,80 @@ BOOL MySQLRecordPlayerSuicide(int account_id, char* name)
 
    // attach to node
    node->type = STAT_PLAYERSUICIDE;
+   node->data = record;
+
+   // try to enqueue
+   enqueued = _MySQLEnqueue(node);
+
+   // cleanup in case of fail
+   if (!enqueued)
+   {
+      free(record->name);
+
+      free(record);
+      free(node);
+   }
+
+   return enqueued;
+};
+
+BOOL MySQLRecordGuild(char* name, char* leader, char* hall)
+{
+   BOOL							      enqueued;
+   sql_record_guild*		         record;
+   sql_queue_node*					node;
+
+   if (state == 0 || !name || !leader || !hall)
+      return FALSE;
+
+   // allocate
+   record = (sql_record_guild*)malloc(sizeof(sql_record_guild));
+   node = (sql_queue_node*)malloc(sizeof(sql_queue_node));
+
+   // set values
+   record->name = _strdup(name);
+   record->leader = _strdup(leader); 
+   record->hall = _strdup(hall); 
+
+   // attach to node
+   node->type = STAT_GUILD;
+   node->data = record;
+
+   // try to enqueue
+   enqueued = _MySQLEnqueue(node);
+
+   // cleanup in case of fail
+   if (!enqueued)
+   {
+      free(record->name);
+      free(record->leader);
+      free(record->hall);
+
+      free(record);
+      free(node);
+   }
+
+   return enqueued;
+};
+
+BOOL MySQLRecordGuildDisband(char* name)
+{
+   BOOL							      enqueued;
+   sql_record_guilddisband*      record;
+   sql_queue_node*					node;
+
+   if (state == 0 || !name)
+      return FALSE;
+
+   // allocate
+   record = (sql_record_guilddisband*)malloc(sizeof(sql_record_guilddisband));
+   node = (sql_queue_node*)malloc(sizeof(sql_queue_node));
+
+   // set values
+   record->name = _strdup(name);
+
+   // attach to node
+   node->type = STAT_GUILDDISBAND;
    node->data = record;
 
    // try to enqueue
@@ -738,6 +863,7 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDAMAGED);
 	mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYERDEATH);
    mysql_query(mysql, SQLQUERY_CREATETABLE_PLAYER);
+   mysql_query(mysql, SQLQUERY_CREATETABLE_GUILD);
 
 	// drop procedures
 	mysql_query(mysql, SQLQUERY_DROPPROC_TOTALMONEY);
@@ -747,6 +873,8 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERDEATH);
    mysql_query(mysql, SQLQUERY_DROPPROC_PLAYER);
    mysql_query(mysql, SQLQUERY_DROPPROC_PLAYERSUICIDE);
+   mysql_query(mysql, SQLQUERY_DROPPROC_GUILD);
+   mysql_query(mysql, SQLQUERY_DROPPROC_GUILDDISBAND);
 	
 	// recreate them
 	mysql_query(mysql, SQLQUERY_CREATEPROC_MONEYTOTAL);
@@ -756,6 +884,8 @@ void _MySQLVerifySchema()
 	mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERDEATH);
    mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYER);
    mysql_query(mysql, SQLQUERY_CREATEPROC_PLAYERSUICIDE);
+   mysql_query(mysql, SQLQUERY_CREATEPROC_GUILD);
+   mysql_query(mysql, SQLQUERY_CREATEPROC_GUILDDISBAND);
 
 	// set state to schema verified
 	state = SCHEMAVERIFIED;
@@ -901,6 +1031,12 @@ void _MySQLWriteNode(sql_queue_node* Node, BOOL ProcessNode)
 
       case STAT_PLAYERSUICIDE:
          _MySQLWritePlayerSuicide((sql_record_playersuicide*)Node->data, ProcessNode);
+         break;
+      case STAT_GUILD:
+         _MySQLWriteGuild((sql_record_guild*)Node->data, ProcessNode);
+         break;
+      case STAT_GUILDDISBAND:
+         _MySQLWriteGuildDisband((sql_record_guilddisband*)Node->data, ProcessNode);
          break;
 	}
 };
@@ -1112,6 +1248,8 @@ void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode)
 {
    MYSQL_BIND params[13];
    unsigned long len_name = (unsigned long)strlen(Data->name);
+   unsigned long len_home = (unsigned long)strlen(Data->home);
+   unsigned long len_bind = (unsigned long)strlen(Data->bind);
    unsigned long len_guild = (unsigned long)strlen(Data->guild);
 
    // really write it, or just free mem at end?
@@ -1134,15 +1272,15 @@ void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode)
       params[1].is_null = 0;
 
       // set parameter 2
-      params[2].buffer_type = MYSQL_TYPE_LONG;
-      params[2].buffer = &Data->home;
-      params[2].length = 0;
+      params[2].buffer_type = MYSQL_TYPE_STRING;
+      params[2].buffer = Data->home;
+      params[2].length = &len_home;
       params[2].is_null = 0;
 
       // set parameter 3
-      params[3].buffer_type = MYSQL_TYPE_LONG;
-      params[3].buffer = &Data->bind;
-      params[3].length = 0;
+      params[3].buffer_type = MYSQL_TYPE_STRING;
+      params[3].buffer = Data->bind;
+      params[3].length = &len_bind;
       params[3].is_null = 0;
 
       // set parameter 4
@@ -1206,6 +1344,8 @@ void _MySQLWritePlayer(sql_record_player* Data, BOOL ProcessNode)
 
    // internal strings cleanup
    free(Data->name);
+   free(Data->home);
+   free(Data->bind);
    free(Data->guild);
 };
 
@@ -1235,6 +1375,68 @@ void _MySQLWritePlayerSuicide(sql_record_playersuicide* Data, BOOL ProcessNode)
 
       // call stored procedure
       _MySQLCallProc(SQLQUERY_CALL_WRITEPLAYERSUICIDE, params);
+   }
+
+};
+
+void _MySQLWriteGuild(sql_record_guild* Data, BOOL ProcessNode)
+{
+   MYSQL_BIND params[3];
+
+   unsigned long len_name = (unsigned long)strlen(Data->name);
+   unsigned long len_leader = (unsigned long)strlen(Data->leader);
+   unsigned long len_hall = (unsigned long)strlen(Data->hall);
+
+   // really write it, or just free mem at end?
+   if (ProcessNode)
+   {
+      // allocate parameters
+      memset(params, 0, sizeof(params));
+
+      // set parameter 0
+      params[0].buffer_type = MYSQL_TYPE_STRING;
+      params[0].buffer = Data->name;
+      params[0].length = &len_name;
+      params[0].is_null = 0;
+
+      // set parameter 1
+      params[1].buffer_type = MYSQL_TYPE_STRING;
+      params[1].buffer = Data->leader;
+      params[1].length = &len_leader;
+      params[1].is_null = 0;
+
+      // set parameter 2
+      params[2].buffer_type = MYSQL_TYPE_STRING;
+      params[2].buffer = Data->hall;
+      params[2].length = &len_hall;
+      params[2].is_null = 0;
+
+      // call stored procedure
+      _MySQLCallProc(SQLQUERY_CALL_WRITEGUILD, params);
+   }
+
+};
+
+void _MySQLWriteGuildDisband(sql_record_guilddisband* Data, BOOL ProcessNode)
+{
+   MYSQL_BIND params[1];
+
+   unsigned long len_name = (unsigned long)strlen(Data->name);
+
+   // really write it, or just free mem at end?
+   if (ProcessNode)
+   {
+      // allocate parameters
+      memset(params, 0, sizeof(params));
+
+      // set parameter 0
+      params[0].buffer_type = MYSQL_TYPE_STRING;
+      params[0].buffer = Data->name;
+      params[0].length = &len_name;
+      params[0].is_null = 0;
+
+      // call stored procedure
+      _MySQLCallProc(SQLQUERY_CALL_WRITEGUILDDISBAND, params);
    }
 
 };
