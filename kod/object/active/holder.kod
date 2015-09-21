@@ -1023,6 +1023,38 @@ messages:
       return TRUE;
    }
 
+   GetObjsOfClass(cClass=&NoMoveOn, search_active=TRUE, search_passive=FALSE)
+   {
+      local oObj, each_obj, lObjects;
+
+      lObjects = $;
+      
+      if search_active
+      {
+         foreach oObj in plActive
+         {
+            each_obj = Send(self,@HolderExtractObject,#data=oObj);
+            if IsClass(each_obj, cClass)
+            {
+               lObjects = Cons(each_obj, lObjects);
+            }
+         }
+      }
+
+      if search_passive
+      {
+         foreach oObj in plPassive
+         {
+            each_obj = Send(self,@HolderExtractObject,#data=oObj);
+            if IsClass(each_obj, cClass)
+            {
+               lObjects = Cons(each_obj, lObjects);
+            }
+         }
+      }
+
+      return lObjects;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
