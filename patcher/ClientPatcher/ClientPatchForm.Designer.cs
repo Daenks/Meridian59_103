@@ -90,7 +90,8 @@
             this.label1.Text = "Server Selection";
             // 
             // ddlServer
-            // 
+            //
+            this.ddlServer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ddlServer.FormattingEnabled = true;
             this.ddlServer.Location = new System.Drawing.Point(15, 57);
             this.ddlServer.Name = "ddlServer";
@@ -135,9 +136,9 @@
             this.gbOptions.Controls.Add(this.btnStartModify);
             this.gbOptions.Controls.Add(this.btnRemove);
             this.gbOptions.Controls.Add(this.btnAdd);
-            this.gbOptions.Location = new System.Drawing.Point(300, 12);
+            this.gbOptions.Location = new System.Drawing.Point(300, 14);
             this.gbOptions.Name = "gbOptions";
-            this.gbOptions.Size = new System.Drawing.Size(522, 321);
+            this.gbOptions.Size = new System.Drawing.Size(520, 318);
             this.gbOptions.TabIndex = 10;
             this.gbOptions.TabStop = false;
             this.gbOptions.Text = "Options";
@@ -352,6 +353,7 @@
             this.Controls.Add(this.btnPlay);
             this.Controls.Add(this.pbProgress);
             this.Controls.Add(this.txtLog);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ClientPatchForm";
             this.Text = "OpenMeridian Client Patcher";
