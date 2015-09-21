@@ -12,7 +12,7 @@
 % then a target icon comes up a la apply() with which you choose your victim.
 % Well, at least ideally.  At this point there is no good way to code that,
 % so ranged weapons are like normal weapons with a range of 13 (the max range
-% for weapons).  
+% for weapons).
 % Ranged weapons do not break as often as melee weapons (not as much wear and
 % tear).
 %
@@ -25,6 +25,8 @@ constants:
    include blakston.khd
 
 resources:
+
+   include ranged.lkod
 
    ranged_desc_rsc = "This is a ranged weapon."
    ranged_wrong_ammo_rsc = "You have not equipped the proper missile to attack."
@@ -53,7 +55,7 @@ classvars:
    viRange = 100 * FINENESS
 
 properties:
-   
+
    piAttack_Type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_PIERCE
 
 messages:
@@ -93,20 +95,20 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
                if send(i,@GetAmmoType) = ammotype
                { 
                  iAttackType = send(i,@GetAttackType);
-               
+
                   break;
                }
             }
          }
       }
-      
+
       iAttackType = iAttackType |  piAttack_Type;
 
       return iAttackType;
@@ -126,20 +128,20 @@ messages:
 
       if IsClass(poOwner,&User)
       {
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
                if (send(i,@GetAmmoType) = ammotype)
                { 
                   iAttackType = send(i,@GetAttackSpell);
-               
+
                   break;
                }
             }
          }
       }
-      
+
       iAttackType = iAttackType | piAttack_Spell;
 
       return iAttackType;
@@ -161,10 +163,10 @@ messages:
       {
          hit_roll = hit_roll + ((viHit_roll_modifier*piHits)/piHits_Init);
       }
-      
+
       iWeapHit = hit_roll;
 
-      for i in plItem_Attributes
+      foreach i in plItem_Attributes
       {
          oWeapAtt = send(SYS,@FindItemAttByNum,
                          #num=send(self,@GetNumFromCompound,#compound=first(i)));
@@ -173,8 +175,8 @@ messages:
             hit_roll = send(oWeapAtt,@ModifyHitRoll,#hitroll=hit_roll,#wielder=poOwner,
                             #target=target,#lData=i);
          }
-      }     
-      
+      }
+
       return hit_roll;
    }
 
@@ -192,7 +194,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -204,28 +206,23 @@ messages:
             }
          }
       }
-	  
-	  iDamage = iDamage + viWeaponDamage;
-	  
+
+      iDamage = iDamage + viWeaponDamage;
+
       return iDamage;
    }
-
-   GetRange()
-   {
-      return viRange;
-   }   
 
    % This returns the weapon's attack name.  For ranged weapons, return the ammo name.
    GetAttackName()
    {
-      return ranged_ammo_name;      
+      return ranged_ammo_name;
    }
-     
+
    GetHitBonus()
    {
       return viHit_roll_modifier + piHitBonus;
    }
-   
+
    GetMinDamage()
    {
       local iDamage, ammotype, i;
@@ -240,7 +237,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -257,7 +254,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetMaxDamage()
    {
       local iDamage, ammotype, i;
@@ -273,7 +270,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -290,7 +287,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetMinDamageWithOwnerStats()
    {
       local iDamage, ammotype, i, oSkill;
@@ -306,7 +303,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -320,7 +317,7 @@ messages:
       }
 
       iDamage = (iDamage + viWeaponDamage)*100;
-      
+
       If IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
@@ -349,7 +346,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -363,7 +360,7 @@ messages:
       }
 
       iDamage = (iDamage + viWeaponDamage)*100;
-      
+
       If IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
@@ -376,7 +373,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetMinSpecialDamageWithOwnerStats()
    {
       local iDamage, ammotype, i, oSkill;
@@ -392,7 +389,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -404,7 +401,7 @@ messages:
             }
          }
       }
-      
+
       % No special ammo properties
       if iDamage = 0
       {
@@ -412,7 +409,7 @@ messages:
       }
 
       iDamage = (iDamage + viWeaponDamage)*100;
-      
+
       If IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
@@ -425,7 +422,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetMaxSpecialDamageWithOwnerStats()
    {
       local iDamage, ammotype, i, oSkill;
@@ -441,7 +438,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -453,7 +450,7 @@ messages:
             }
          }
       }
-      
+
       % No special ammo properties
       if iDamage = 0
       {
@@ -461,7 +458,7 @@ messages:
       }
 
       iDamage = (iDamage + viWeaponDamage)*100;
-      
+
       If IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
@@ -474,7 +471,7 @@ messages:
 
       return iDamage;
    }
-   
+
    % Some weapons and spells have special conditions, like nerudite arrows that can shatter
    GetMinSpecialDamage()
    {
@@ -491,7 +488,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -503,7 +500,7 @@ messages:
             }
          }
       }
-      
+
       % No special ammo properties
       if iDamage = 0
       {
@@ -514,7 +511,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetMaxSpecialDamage()
    {
       local iDamage, ammotype, i;
@@ -530,7 +527,7 @@ messages:
       if IsClass(poOwner,&User)
       {
          ammotype = send(self,@GetAmmoType);
-         for i in send(poOwner,@GetPlayerUsing)
+         foreach i in send(poOwner,@GetPlayerUsing)
          {
             if send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
@@ -542,7 +539,7 @@ messages:
             }
          }
       }
-      
+
       % No special ammo properties
       if iDamage = 0
       {
@@ -553,7 +550,7 @@ messages:
 
       return iDamage;
    }
-   
+
    GetBaseSpellModifier()
    {
       return viSpell_modifier;
@@ -561,10 +558,3 @@ messages:
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
-

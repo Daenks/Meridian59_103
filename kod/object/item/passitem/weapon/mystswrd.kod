@@ -16,12 +16,14 @@ constants:
 
 resources:
 
+   include mystswrd.lkod
+
    mysticsword_name_rsc = "mystic sword"
    mysticsword_icon_rsc = mystswd.bgf
    mysticsword_desc_rsc = \
       "Ancient runes adorn this fine weapon, a lightweight blade of "
       "unsurpassed excellence.  Kraanan's blessing surrounds this sword."
-   
+
    mysticsword_window_overlay_rsc = povmystsw.bgf
    mysticsword_player_overlay = mystwdov.bgf
 
@@ -48,6 +50,8 @@ classvars:
    viGround_group = 1
    viInventory_group = 3
    viBroken_group = 2
+
+   viRange = 3 * FINENESS
 
 properties:
 

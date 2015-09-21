@@ -16,6 +16,8 @@ constants:
 
 resources:
 
+   include object.lkod
+
    object_name_rsc = "something"
    object_icon_rsc = somethin.bgf
    object_desc_rsc = "You are looking at an object"
@@ -131,7 +133,7 @@ messages:
          poOwner = $;
       }
       
-      for i in plObject_attributes
+      foreach i in plObject_attributes
       {
          Send(i,@Delete);
       }
@@ -175,6 +177,13 @@ messages:
    {
       AddPacket(4,object_time_header_rsc, 4,Send(self,@GetName));
 
+      return;
+   }
+
+   SendTimeRemainingExtra()
+   "If anything extra needs to be sent after the time remaining packets "
+   "are added, this messsage should be overridden to do so."
+   {
       return;
    }
 
@@ -314,6 +323,9 @@ messages:
          AddPacket(4,object_time_blank_rsc);
       }
 
+      % Call this to add anything after the time resources if necessary.
+      Send(self,@SendTimeRemainingExtra);
+
       return;
    }
 
@@ -439,6 +451,50 @@ messages:
       return 0;
    }
 
+   GetHeightFloorAtObjectBSP()
+   "Returns the floor height at the object's coordinates in FINENESS from BSP."
+   "If the object is not in a room, this message recursively checks the owner's coordinates "
+   "until one in a room is found."
+   {
+      if poOwner <> $
+      {
+         if IsClass(poOwner,&Room)
+         {
+            return GetHeightFloorBSP(Send(poOwner,@GetRoomData),
+                        Send(self,@GetRow),Send(self,@GetCol),
+                        Send(self,@GetFineRow),Send(self,@GetFineCol));
+         }
+         else
+         {
+            Send(poOwner,@GetHeightFloorAtObjectBSP);
+         }
+      }
+
+      return 0;
+   }
+   
+   GetHeightCeilingAtObjectBSP()
+   "Returns the ceiling height at the object's coordinates in FINENESS from BSP."
+   "If the object is not in a room, this message recursively checks the owner's coordinates "
+   "until one in a room is found."
+   {
+      if poOwner <> $
+      {
+         if IsClass(poOwner,&Room)
+         {
+            return GetHeightCeilingBSP(Send(poOwner,@GetRoomData),
+                        Send(self,@GetRow),Send(self,@GetCol),
+                        Send(self,@GetFineRow),Send(self,@GetFineCol));
+         }
+         else
+         {
+            Send(poOwner,@GetHeightCeilingAtObjectBSP);
+         }
+      }
+
+      return 0;
+   }
+   
    GetOwner()
    {
       return poOwner;
@@ -717,6 +773,11 @@ messages:
    }
 
    MsgSendUser()
+   {
+      return;
+   }
+
+   MsgSendUserCallback()
    {
       return;
    }

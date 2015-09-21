@@ -16,6 +16,8 @@ constants:
 
 resources:
 
+   include pracbow.lkod
+
    PracticeBow_name_rsc = "practice bow"
    PracticeBow_desc_rsc = \
       "Carved for durability, this bow is generally used by students to practice "
@@ -31,7 +33,7 @@ classvars:
    viWeaponDamage = -3
    viRange = 30 * FINENESS
    viHit_roll_modifier = 200
-   
+
    viValue_average = 1750
    viBulk = 60
    viWeight = 50

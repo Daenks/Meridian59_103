@@ -16,6 +16,8 @@ constants:
 
 resources:
 
+   include neruswd.lkod
+
    NeruditeSword_name_rsc = "nerudite sword"
    NeruditeSword_icon_rsc = nerswd.bgf
    NeruditeSword_desc_rsc = \
@@ -50,6 +52,8 @@ classvars:
    viGround_group = 1
    viInventory_group = 3
    viBroken_group = 2
+
+   viRange = 3 * FINENESS
 
 properties:
 
