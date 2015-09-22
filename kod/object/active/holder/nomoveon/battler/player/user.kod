@@ -7503,9 +7503,9 @@ messages:
    {
       local iRow,iCol,lPos;
 
-      if IsClass(what,&DM)
+      if what <> self
+         AND IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
-         AND what <> self
       {
          return;
       }
