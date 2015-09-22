@@ -147,6 +147,37 @@ const char * RelativeTimeStr(int time)
 	return s;
 }
 
+UINT64 GetTimerMicro()
+{
+#ifdef BLAK_PLATFORM_WINDOWS
+
+   static LARGE_INTEGER frequency;
+   LARGE_INTEGER now;
+
+   if (frequency.QuadPart == 0)
+      QueryPerformanceFrequency(&frequency);
+
+   if (frequency.QuadPart == 0)
+   {
+      eprintf("GetTimerMicro can't get frequency\n");
+      return 0;
+   }
+
+   QueryPerformanceCounter(&now);
+   return (now.QuadPart * 1000000) / frequency.QuadPart;
+
+#else
+
+   struct timeval tv;
+   gettimeofday(&tv, NULL);
+
+   double time_in_us = tv.tv_sec * 1000000.0 + tv.tv_usec;
+
+   return (UINT64)time_in_us;
+
+#endif
+}
+
 UINT64 GetMilliCount()
 {
 #ifdef BLAK_PLATFORM_WINDOWS

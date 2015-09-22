@@ -2293,7 +2293,7 @@ int C_GetTimeRemaining(int object_id,local_var_type *local_vars,
 	}
 	
 	ret_val.v.tag = TAG_INT;
-	ret_val.v.data = (int)(t->time - GetMilliCount());
+	ret_val.v.data = (int)((t->time - GetTimerMicro())/1000);
 	if (ret_val.v.data < 0)
 		ret_val.v.data = 0;
 	

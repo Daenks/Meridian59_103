@@ -2037,7 +2037,7 @@ void AdminShowOneTimer(timer_node *t)
 		return;
 	}
 	
-	expire_time = (int)(t->time - GetMilliCount());
+	expire_time = (int)((t->time - GetTimerMicro()) / 1000);
 	
 	aprintf("%5i  %-14u%-8i%-20s\n",t->timer_id,expire_time,
 		t->object_id,GetNameByID(t->message_id));
