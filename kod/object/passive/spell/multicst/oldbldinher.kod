@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-BloodInheritance is MultiCastSpell
+OldBloodInheritance is MultiCastSpell
 
 constants:
 
@@ -16,34 +16,32 @@ constants:
 
 resources:
 
-   include bldinher.lkod
 
-
-   BloodInheritance_name_rsc = "blood inheritance"
-   BloodInheritance_icon_rsc = ibloodin.bgf
-   BloodInheritance_desc_rsc = \
+   OldBloodInheritance_name_rsc = "prismatic blood inheritance"
+   OldBloodInheritance_icon_rsc = ibloodin.bgf
+   OldBloodInheritance_desc_rsc = \
       "Infuses a weapon with the malevolent power of Qor.  "
       "It is impossible to predict exactly what form this dark "
       "benediction will take, but it will always be deadly.  "
       "Requires shaman blood, entroot berries, and orc teeth."
    
-   BloodInheritance_sound = qunbond.wav
+   OldBloodInheritance_sound = qunbond.wav
 
-   BloodInheritance_bad_target = "You must target this spell at a melee weapon."
-   BloodInheritance_bad_target2 = "You cannot give Qor's gift to a weapon which is already enchanted."
-   BloodInheritance_succeeded = "The evil force of your spell lashes out at %s%s, infusing it with Qor's power."
+   OldBloodInheritance_bad_target = "You must target this spell at a melee weapon."
+   OldBloodInheritance_bad_target2 = "You cannot give Qor's gift to a weapon which is already enchanted."
+   OldBloodInheritance_succeeded = "The evil force of your spell lashes out at %s%s, infusing it with Qor's power."
 
 classvars:
 
-   vrName = BloodInheritance_name_rsc
-   vrIcon = BloodInheritance_icon_rsc
-   vrDesc = BloodInheritance_desc_rsc
+   vrName = OldBloodInheritance_name_rsc
+   vrIcon = OldBloodInheritance_icon_rsc
+   vrDesc = OldBloodInheritance_desc_rsc
 
-   vrSucceed_wav = BloodInheritance_sound
+   vrSucceed_wav = OldBloodInheritance_sound
 
    viMana = 50
 
-   viSpell_num = SID_BLOOD_INHERITANCE
+   viSpell_num = SID_OLD_BLOOD_INHERITANCE
    viSchool = SS_QOR
    viSpell_level = 5
 
@@ -78,14 +76,14 @@ messages:
       if not isClass(first(lTargets),&Weapon)
          OR isClass(first(lTargets),&RangedWeapon)
       {
-         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target);
+         Send(who,@MsgSendUser,#message_rsc=OldBloodInheritance_bad_target);
          return;
       }
 
       % Can't have any other enchantments.
       if send(first(lTargets),@HasAnyAttribute)
       {
-         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target2);
+         Send(who,@MsgSendUser,#message_rsc=OldBloodInheritance_bad_target2);
          return;
       }
       
@@ -101,14 +99,14 @@ messages:
       {
          foreach oCaster in lCasters
          {
-            Send(oCaster,@MsgSendUser,#message_rsc=BloodInheritance_bad_target2);
+            Send(oCaster,@MsgSendUser,#message_rsc=OldBloodInheritance_bad_target2);
          }
          return;
       }
 
       foreach oCaster in lCasters
       {
-         Send(oCaster,@MsgSendUser,#message_rsc=BloodInheritance_succeeded,
+         Send(oCaster,@MsgSendUser,#message_rsc=OldBloodInheritance_succeeded,
                   #parm1=send(first(lTargets),@GetIndef),
                     #parm2=send(first(lTargets),@GetName));
       }

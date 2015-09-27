@@ -1805,6 +1805,7 @@
    WA_GLOWING              = 69
    WA_PURGER               = 70
    WA_SIPHON               = 71
+   WA_BLOOD_INHERITANCE    = 72
 
    %%% Herald shields
 
@@ -2134,6 +2135,7 @@
    SID_PHASE = 186
    SID_MEDITATE = 187
    SID_UNHOLY_TOUCH = 188
+   SID_OLD_BLOOD_INHERITANCE = 189
 
    % Depreciated spell IDs
    SID_LIGHTNING = 1                   % use SID_LIGHTNING_BOLT

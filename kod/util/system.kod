@@ -3320,6 +3320,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_BOND,#class=&Bond);
       Send(self,@CreateOneSpellIfNew,#num=SID_BLOOD_INHERITANCE,#class=&BloodInheritance);
       Send(self,@CreateOneSpellIfNew,#num=SID_DEATHS_DOOR,#class=&DeathsDoor);
+      Send(self,@CreateOneSpellIfNew,#num=SID_OLD_BLOOD_INHERITANCE,#class=&OldBloodInheritance);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_BREATH_OF_LIFE,#class=&BreathOfLife);
       Send(self,@CreateOneSpellIfNew,#num=SID_RESIST_ACID,#class=&ResistAcid);
@@ -3423,6 +3424,8 @@ messages:
       Send(self,@CreateOneItemAttIfNew,#num=IA_BONDED,#class=&ItemAttBonded);
       Send(self,@CreateOneItemAttIfNew,#num=WA_GLOWING,#class=&WeapAttGlowing);
       Send(self,@CreateOneItemAttIfNew,#num=IA_MADE,#class=&ItemAttMade);
+      Send(self,@CreateOneItemAttIfNew,#num=WA_BLOOD_INHERITANCE,
+            #class=&WeapAttBloodInheritance);
 
       % Keep these last, it's called the most often
       Send(self,@CreateOneItemAttIfNew,#num=IA_PKPOINTER,#class=&ItemAttPKPointer);

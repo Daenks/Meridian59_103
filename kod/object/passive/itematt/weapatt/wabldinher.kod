@@ -1,0 +1,175 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WeapAttBloodInheritance is WeaponAttribute
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%   This weapon is created by the Qor 5 spell Blood Inheritance.
+%
+%   Form is:
+%
+%      [ WA_BLOOD_INHERITANCE]
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+constants:
+
+   include blakston.khd
+   
+   IMBUED_VAMP   = 1
+   IMBUED_SIPHON = 2
+   IMBUED_BLIND  = 3
+   IMBUED_HOLD   = 4
+
+resources:
+
+   weapattBloodInheritance_desc = \
+      " Runes drawn in your blood provide conduits for unholy power."
+   blood_inheritance_dm = "blood inheritance"
+
+   bi_siphon_worked = "%s%s appears weary as %s mystical energy is sucked away!"
+   bi_siphon_worked_target = \
+      "Strands of energy spark from %s%s as the metal of %s weapon "
+      "rips away your mystical energy!"
+   bi_vamper_worked = "%s%s shudders as %s life is sucked away!"
+   bi_vamper_worked_target = \
+      "%s%s seems enervated as the metal of %s weapon touches your flesh!"
+   bi_blinder_worked = "%s%s stumbles away, screaming and clutching %s eyes!"
+   bi_holder_worked = "%s%s seems rooted to the very ground!"
+
+classvars:
+
+   vrDesc = weapattBloodInheritance_desc
+
+   viItem_Att_Num = WA_BLOOD_INHERITANCE
+
+   vrDM_trigger = blood_inheritance_dm
+
+properties:
+
+   % Being artificial, these procs occur three times less often.
+   piEffect_percent = 5
+
+   % Range of mana that can be taken
+   piMinManaStolen = 2
+   piMaxManaStolen = 6
+
+   % Percent of mana to give the attacker
+   piSiphonFactor = 150
+
+   % Vampiric drain stats
+   piMinHealthGain = 1
+   piMaxHealthGain = 8
+
+messages:
+
+   %%% Effect Functions
+
+   ModifyDamage(damage=0,target=$,wielder=$,lData=$)
+   "Blood inheritance imbues one of four evil spells in a weapon."
+   {
+      local oSpell, iImbuedSpell, iAmountTaken, iAmountGiven;
+      
+      if target = $
+         OR wielder = $
+      {
+         return damage;
+      }
+
+      if Random(1,100) <= piEffect_percent
+      {
+         iImbuedSpell = Send(self,@TranslatePowerFromCompound,
+                              #iCompound=First(lData));
+         
+         if iImbuedSpell = IMBUED_VAMP
+         {
+            Send(wielder,@GainHealth,
+                  #amount=Bound(damage,piMinHealthGain,piMaxHealthGain));
+            Send(wielder,@MsgSendUser,#message_rsc=bi_vamper_worked,
+                  #parm1=send(target,@GetCapDef),
+                  #parm2=Send(target,@GetName),
+                  #parm3=send(target,@GetHisHer));
+            Send(target,@MsgSendUser,#message_rsc=bi_vamper_worked_target,
+                  #parm1=Send(wielder,@GetCapDef),
+                  #parm2=Send(wielder,@GetName),
+                  #parm3=Send(wielder,@GetHisHer));
+         }
+         else if iImbuedSpell = IMBUED_SIPHON
+         {
+            iAmountTaken = Random(piMinManaStolen,piMaxManaStolen);
+            iAmountGiven = iAmountTaken * piSiphonFactor / 100;
+
+            Send(wielder,@GainMana,#amount=iAmountGiven,
+                  #bCapped=TRUE,#bRespectMax=TRUE);
+            Send(wielder,@MsgSendUser,#message_rsc=bi_siphon_worked,
+                  #parm1=send(target,@GetCapDef),
+                  #parm2=Send(target,@GetName),
+                  #parm3=send(target,@GetHisHer));
+
+            Send(target,@LoseMana,#amount=iAmountTaken);
+            Send(target,@MsgSendUser,#message_rsc=bi_siphon_worked_target,
+                  #parm1=Send(wielder,@GetCapDef),
+                  #parm2=Send(wielder,@GetName),
+                  #parm3=Send(wielder,@GetHisHer));
+         }
+         else if iImbuedSpell = IMBUED_BLIND
+         {
+            oSpell = Send(SYS,@FindSpellByNum,#num=SID_blind);
+
+            %% No duplicates
+            if NOT Send(target,@IsEnchanted,#what=oSpell)
+            {
+               Send(oSpell,@CastSpell,#who=self,#ltargets=[target],
+                     #iSpellPower=50,#bItemCast=TRUE);
+               Send(wielder,@MsgSendUser,#message_rsc=bi_blinder_worked,
+                     #parm1=Send(target,@GetCapDef),
+                     #parm2=Send(target,@GetName),
+                     #parm3=Send(target,@GetHisher));
+            }
+         }
+         else if iImbuedSpell = IMBUED_HOLD
+         {
+            oSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);
+
+            %% no duplicates
+            if NOT Send(target,@IsEnchanted,#what=oSpell)
+            {
+               Send(oSpell,@CastSpell,#who=self,#lTargets=[target],
+                     #iSpellPower=50,#bItemCast=TRUE);
+               Send(wielder,@MsgSendUser,#message_rsc=bi_holder_worked,
+                     #parm1=Send(target,@GetCapDef),
+                     #parm2=Send(target,@GetName));
+            }
+         }
+      }
+
+      return damage;
+   }
+
+   AddToTreasureTable()
+   {
+      return FALSE;
+   }
+
+   ItemReqLeaveOwner()
+   {
+      % Blood inheritances cannot be transferred.
+      % DMs, take care not to create these on the ground.
+      return FALSE;
+   }
+
+   IsMagicalEffect()
+   {
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

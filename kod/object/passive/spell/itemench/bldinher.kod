@@ -1,0 +1,161 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BloodInheritance is ItemEnchantment
+
+constants:
+
+   include blakston.khd
+   
+   CHOICE_VAMP   = 1
+   CHOICE_SIPHON = 2
+   CHOICE_BLIND  = 3
+   CHOICE_HOLD   = 4
+
+resources:
+
+   include bldinher.lkod
+
+   BloodInheritance_name_rsc = "blood inheritance"
+   BloodInheritance_icon_rsc = ibloodin.bgf
+   BloodInheritance_desc_rsc = \
+      "Infuses a weapon with the malevolent power of Qor.  "
+      "It is impossible to predict exactly what form this dark "
+      "benediction will take, but it will always be deadly.  "
+      "Requires shaman blood, entroot berries, and orc teeth."
+   
+   BloodInheritance_sound = qunbond.wav
+
+   BloodInheritance_bad_target = \
+      "You must target this spell at a melee weapon."
+   BloodInheritance_bad_target2 = \
+      "You cannot give Qor's gift to a weapon which already has it."
+   BloodInheritance_succeeded = \
+      "The evil force of your spell lashes out at %s%s, infusing it with Qor's power."
+
+classvars:
+
+   vrName = BloodInheritance_name_rsc
+   vrIcon = BloodInheritance_icon_rsc
+   vrDesc = BloodInheritance_desc_rsc
+
+   vrSucceed_wav = BloodInheritance_sound
+
+   viSpell_num = SID_BLOOD_INHERITANCE
+   viSchool = SS_QOR
+   viSpell_level = 5
+
+   viMana = 120
+   viSpellExertion = 120
+   viCast_time = 30000
+   viChance_To_Increase = 22
+   viMeditate_ratio = 666
+
+properties:                     
+
+messages:      
+
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&ShamanBlood,200],plReagents);
+      plReagents = Cons([&EntrootBerry,200],plReagents);
+      plReagents = Cons([&OrcTooth,200],plReagents);
+
+      return;
+   }
+
+   CanPayCosts(who = $, lTargets = $, iSpellPower = 0)
+   {
+      local oTarget;
+
+      oTarget = First(lTargets);
+
+      % Gotta be a melee weapon. This spell will only create magical weapons that
+      % can normally be obtained, so don't allow ranged weapon to be given procs.
+      if NOT IsClass(oTarget,&Weapon)
+         OR IsClass(oTarget,&RangedWeapon)
+      {
+         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target);
+         return;
+      }
+
+      % Can't Inheritance twice.
+      if Send(oTarget,@HasAttribute,#ItemAtt=WA_BLOOD_INHERITANCE)
+      {
+         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target2);
+         return;
+      }
+      
+      if Send(oTarget,@GetOwner) <> who
+      {
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   CastSpell(who = $, lTargets = $, iSpellPower = 0)
+   {
+      local oTarget, iRandom, iChoice;
+
+      oTarget = First(lTargets);
+
+      % Gotta be a melee weapon. This spell will only create magical weapons that
+      % can normally be obtained, so don't allow ranged weapon to be given procs.
+      if NOT IsClass(oTarget,&Weapon)
+         OR IsClass(oTarget,&RangedWeapon)
+      {
+         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target);
+         return;
+      }
+
+      % Can't Inheritance twice.
+      if Send(oTarget,@HasAttribute,#ItemAtt=WA_BLOOD_INHERITANCE)
+      {
+         Send(who,@MsgSendUser,#message_rsc=BloodInheritance_bad_target2);
+         return;
+      }
+
+      iRandom = Random(1,iSpellPower);
+
+      if iRandom >= 0
+      {
+         iChoice = CHOICE_VAMP;
+      }
+
+      if iRandom >= 30
+      {
+         iChoice = CHOICE_SIPHON;
+      }
+
+      if iRandom >= 60
+      {
+         iChoice = CHOICE_BLIND;
+      }
+
+      if iRandom >= 90
+      {
+         iChoice = CHOICE_HOLD;
+      }
+
+      Send(Send(SYS,@FindItemAttByNum,#Num=WA_BLOOD_INHERITANCE),@AddToItem,
+           #oItem=oTarget,#random_gen=FALSE,#iPower=iChoice);
+
+      Send(who,@MsgSendUser,#message_rsc=BloodInheritance_succeeded,
+            #parm1=send(oTarget,@GetDef),
+            #parm2=send(oTarget,@GetName));
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
