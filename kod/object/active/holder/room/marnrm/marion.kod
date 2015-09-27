@@ -200,6 +200,15 @@ messages:
       send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BWHITE,#iIntensity=5),
            #new_row=45,#new_col=7,#fine_row=32,#fine_col=32);
 
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Orange),
+           #new_row=52,#new_col=57,#fine_row=11,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Orange),
+           #new_row=65,#new_col=58,#fine_row=57,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Pear),
+           #new_row=52,#new_col=21,#fine_row=26,#fine_col=58);
+      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Pear),
+           #new_row=48,#new_col=21,#fine_row=52,#fine_col=50);
+
       propagate;
    }
 
