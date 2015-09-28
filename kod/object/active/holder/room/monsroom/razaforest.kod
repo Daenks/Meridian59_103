@@ -1,0 +1,79 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RazaForest is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_razaforest = razaforest.roo
+   room_name_razaforest = "Raza Forest"
+   razaforest_music = walk5.mp3
+
+classvars:
+
+   vrName = room_name_razaforest
+
+   viTeleport_row = 34
+   viTeleport_col = 44
+
+   viTerrain_type = TERRAIN_FOREST
+
+   viFlag_row = 9
+   viFlag_col = 9
+
+properties:
+
+   prRoom = room_razaforest
+   prMusic = razaforest_music
+   piRoom_num = RID_RAZA_FOREST
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = 8
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   pbSnowGroundTexture = TRUE
+
+   % Longer dispose time.
+   piDispose_delay = 240000
+
+   piGen_time = 30000
+   piGen_percent = 100
+
+   piInit_count_min = 3
+   piInit_count_max = 15
+
+   piMonster_count_max = 15
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&Bunny, 35], [&GiantRat, 30],
+                     [&SmallRat, 10], [&Centipede, 25] ];
+
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plExits = $;
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([LEAVE_SOUTH, RID_NEWB2, 2, 38, ROTATE_NONE], plEdge_exits);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
