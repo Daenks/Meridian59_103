@@ -80,7 +80,7 @@ messages:
       plEdge_Exits = Cons([LEAVE_EAST, RID_D6, 8, 4, ROTATE_NONE], plEdge_exits);
       plEdge_Exits = Cons([LEAVE_SOUTH, RID_C7, 4, 34, ROTATE_NONE], plEdge_exits);
       plEdge_Exits = Cons([LEAVE_NORTH, RID_C5, 55, 24, ROTATE_NONE], plEdge_exits);
-      plEdge_Exits = Cons([LEAVE_WEST, RID_B6, 39, 48, ROTATE_NONE], plEdge_exits);
+      plEdge_Exits = Cons([LEAVE_WEST, RID_RAZA_FOREST, 21, 71, ROTATE_NONE], plEdge_exits);
 
       propagate;
    }
