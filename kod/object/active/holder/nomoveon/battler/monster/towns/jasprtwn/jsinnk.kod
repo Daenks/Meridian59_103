@@ -81,7 +81,8 @@ messages:
          [ 
             Create(&LoadoutScroll,#labelled=TRUE),
             Create(&SetScroll,#labelled=TRUE),
-            Create(&Stew,#number=4)
+            Create(&Stew,#number=4),
+            Create(&Cookie,#number=3)
          ],
          $,
          [ 
