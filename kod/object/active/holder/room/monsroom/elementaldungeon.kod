@@ -1,0 +1,199 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalDungeon is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_elementaldungeon = "Elemental Dungeon"
+   room_elementaldungeon = elementaldungeon.roo
+   elementaldungeon_music = cave.mp3
+
+classvars:
+
+   vrName = room_name_elementaldungeon
+
+   viTeleport_row = 2
+   viTeleport_col = 2
+
+
+properties:
+
+   prRoom = room_elementaldungeon
+   piRoom_num = RID_ELEMENTAL_DUNGEON
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prMusic = elementaldungeon_music
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+   
+   ptDamageTimer = $
+
+messages:
+
+   Constructed()
+   {
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      Send(self,@StartDamageTimer);
+      Post(self,@LowerEntryway);
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      Send(self,@CancelDamageTimer);
+      propagate;
+   }
+   
+   StartDamageTimer()
+   {
+      if ptDamageTimer = $
+      {
+         ptDamageTimer = CreateTimer(self,@DealElementalDamage,500);
+      }
+      return;
+   }
+   
+   CancelDamageTimer()
+   {
+      if ptDamageTimer <> $
+      {
+         DeleteTimer(ptDamageTimer);
+      }
+      ptDamageTimer = $;
+      return;
+   }
+   
+   DealElementalDamage(timer=$)
+   {
+      ptDamageTimer = $;
+
+      Send(self,@BurnInFire);
+      Send(self,@FreezeInWater);
+      Send(self,@ShockInAir);
+      Send(self,@ShakeInEarth);
+      
+      Send(self,@StartDamageTimer);
+      return;
+   }
+   
+   BurnInFire()
+   {
+      local i, each_obj, iDamage;
+      
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&Player)
+            AND Send(each_obj,@GetHeightAtObject) = 500
+            AND Send(each_obj,@GetRow) < 50
+            AND Send(each_obj,@GetCol) < 82
+         {
+            iDamage = Send(each_obj,@AssessDamage,#report=TRUE,#what=each_obj,
+                            #aspell=ATCK_SPELL_FIRE,#damage=Random(1,5));
+            if iDamage = $
+            {
+               Send(each_obj,@KilledSomething,#what=each_obj);
+            }
+         }
+      }
+
+      return;
+   }
+
+   FreezeInWater()
+   {
+      local i, each_obj, iDamage;
+
+      % 474 deep
+      % 461 super deep
+      
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&Player)
+            AND Send(each_obj,@GetHeightAtObject) = 474
+         {
+            iDamage = Send(each_obj,@AssessDamage,#report=TRUE,#what=each_obj,
+                            #aspell=ATCK_SPELL_COLD,#damage=Random(1,5));
+            if iDamage = $
+            {
+               Send(each_obj,@KilledSomething,#what=each_obj);
+            }
+         }
+         else if IsClass(each_obj,&Player)
+            AND Send(each_obj,@GetHeightAtObject) = 461
+         {
+            iDamage = Send(each_obj,@AssessDamage,#report=TRUE,#what=each_obj,
+                            #aspell=ATCK_SPELL_COLD,#damage=Random(5,10));
+            if iDamage = $
+            {
+               Send(each_obj,@KilledSomething,#what=each_obj);
+            }
+         }
+      }
+      return;
+   }
+   
+   ShockInAir()
+   {
+      local i, each_obj, iDamage;
+      
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&Player)
+            AND Send(each_obj,@GetHeightAtObject) = 500
+            AND Send(each_obj,@GetRow) < 50
+            AND Send(each_obj,@GetCol) > 176
+            AND Random(1,10) = 1
+         {
+            iDamage = Send(each_obj,@AssessDamage,#report=TRUE,#what=each_obj,
+                            #aspell=ATCK_SPELL_SHOCK,#damage=Random(5,20));
+            if iDamage = $
+            {
+               Send(each_obj,@KilledSomething,#what=each_obj);
+            }
+         }
+      }
+   
+      return;
+   }
+   
+   ShakeInEarth()
+   {
+      return;
+   }
+
+   LowerEntryway()
+   {
+      Send(self,@SetSector,#sector=1,#animation=ANIMATE_FLOOR_LIFT,
+           #height=506,#speed=50);
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,104 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalDungeon2 is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_elementaldungeon2 = "Prism of Lightning"
+   room_elementaldungeon2 = elementaldungeon2.roo
+   elementaldungeon2_music = cave.mp3
+   
+   item_dropped_msg = \
+      "The %s falls into endless eternities of air!"
+
+classvars:
+
+   vrName = room_name_elementaldungeon2
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+
+properties:
+
+   prRoom = room_elementaldungeon2
+   piRoom_num = RID_ELEMENTAL_DUNGEON2
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prMusic = elementaldungeon2_music
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&XeoAir, 100] ];
+
+      plGenerators = [ [22, 24], [61, 20], [47, 68], [15, 37], [12,61],
+                       [31, 52], [64, 46], [33, 34], [35, 18] ];
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([LEAVE_EAST, RID_ELEMENTAL_DUNGEON1, 5, 5, 
+            ROTATE_NONE], plEdge_exits);
+
+      return;
+   }
+   
+   NewHold(what = $)
+   {
+      local i, each_obj;
+
+      if IsClass(what,&Item)
+      {
+         foreach i in plActive
+         {
+            each_obj = Send(self,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&Player)
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=item_dropped_msg,
+                     #parm1=Send(what,@GetName));
+            }
+         }
+         Post(what,@Delete);
+      }
+      propagate;
+   }
+   
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
