@@ -331,7 +331,6 @@ properties:
    plRooms = $
    plUsers = $
    plUsers_logged_on = $
-   plTreasure_types = $
    plSpells = $
    plSkills = $
    plItem_Attributes = $
@@ -352,6 +351,9 @@ properties:
 
    % A list of naughty words.
    plNaughtyWords = $
+
+   % A list of names that are retired and can only be set by an admin
+   plRetiredNames = $
 
    poHolder1 = $ % Temporary holders used in offers
    poHolder2 = $
@@ -394,6 +396,8 @@ properties:
    phSkills
    % Hash table for item attributes.
    phItemAtts
+   % Hash table for treasure types.
+   phTresTypes
 
    poMoney = $
 
@@ -508,6 +512,8 @@ messages:
 
       % Reset the list of naughty words
       Send(self,@ResetNaughtyWords);
+
+      Send(self,@ResetRetiredNames);
 
       Send(self,@RecreateNecromancerBalance);
       Send(self,@CreateUserTable);
@@ -793,6 +799,8 @@ messages:
       Send(self,@RecalcLightAndWeather);
       Send(self,@ReturnShrineAllegiance);
       Send(self,@RecreateStatistics);  % Must create after anything you want to measure
+
+      Send(self,@ResetRetiredNames);
 
       piRecreate_state = RECREATE_NOT;
       Debug("Successful recreate!");
@@ -1463,24 +1471,28 @@ messages:
       return;
    }
 
-   SystemNewTreasureType(what = $)
-   "Called by a treasure type to register itself on our list."
+   SystemNewTreasureType(what = $, iNum = 0)
+   "Called by a treasure type to register itself in our table."
    {
-      local i,tid;
+      local i, tid;
 
-      tid = Send(what,@GetTreasureTypeNum);
-
-      foreach i in plTreasure_types
+      if what = $
+         OR iNum < TID_NONE
       {
-         if Send(i,@GetTreasureTypeNum) = tid
-         {
-            % Should Send i delete here, but treasure types don't reference
-            % anything so should be ok for now.
-            plTreasure_types = DelListElem(plTreasure_types,i);
-         }
+         return;
       }
 
-      plTreasure_types = Cons(what,plTreasure_types);
+      if phTresTypes = $
+      {
+         phTresTypes = CreateTable(191);
+      }
+
+      if GetTableEntry(phTresTypes,iNum) = what
+      {
+         DeleteTableEntry(phTresTypes,iNum);
+      }
+
+      AddTableEntry(phTresTypes,iNum,what);
 
       return;
    }
@@ -1617,17 +1629,7 @@ messages:
 
    FindTreasureByNum(num = 0)
    {
-      local i;
-
-      foreach i in plTreasure_types
-      {
-         if Send(i,@GetTreasureTypeNum) = num
-         {
-            return i;
-         }
-      }
-
-      return $;
+      return GetTableEntry(phTresTypes, num);
    }
 
    GetSystemHolder1()
@@ -1711,7 +1713,7 @@ messages:
    {
       local i, rMessage, bMurder, oSoldierShield, oToken, oGuild, oKillerGuild,
             param2, param3, param4, param5, param6, param7, type5, type7,
-            war_string1, war_string2, oBook, oMaster, oKillingBlow;
+            war_string1, war_string2, oBook, oMaster;
 
       % Notify the event engine
       Send(EVENTENGINE_OBJECT,@UserKilled,#who=what,#killer=killer);
@@ -1723,20 +1725,9 @@ messages:
          return;
       }
 
-      oKillingBlow = $;
-
-      if stroke_obj <> $ AND Send(stroke_obj,@GetName) <> $
-      {
-         oKillingBlow = Send(stroke_obj,@GetName);
-      }
-      else
-      {
-          oKillingBlow = system_blank_resource;
-      }
-
       if isClass(what,&User) AND isClass(killer,&User)
       {
-         % Could be a war kill.  Check for it. 
+         % Could be a war kill.  Check for it.
          Send(Send(SYS,@GetWarEvent),@RecordWarKill,#who=killer,#victim=what);
 
          Send(poNecromancerBalance,@IncrementPKCounter);
@@ -1750,12 +1741,11 @@ messages:
             Send(poNecromancerBalance,@IncrementHKCounter);
          }
 
-		   RecordStat(STAT_PLAYERDEATH, Send(what,@GetTrueName), Send(killer,@GetTrueName), Send(oRoom,@GetName), oKillingBlow, TRUE);	 
+		   RecordStat(STAT_PLAYERDEATH, Send(what,@GetTrueName), Send(killer,@GetTrueName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), TRUE);	 
       }
 		else
 	  {
-         
-		   RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName), Send(killer,@GetName), Send(oRoom,@GetName), oKillingBlow, FALSE);
+		   RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName), Send(killer,@GetName), Send(oRoom,@GetName), Send(stroke_obj,@GetName), FALSE);
 	  }
 
       Send(Send(self,@FindRoomByNum,#num=RID_TOS_GRAVEYARD),@PlayerKilled,
@@ -3177,6 +3167,7 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_NIGHT_VISION,#class=&NightVision);
       Send(self,@CreateOneSpellIfNew,#num=SID_FIREBALL,#class=&Fireball);
       Send(self,@CreateOneSpellIfNew,#num=SID_DMRESCUE,#class=&DMRescue);
+      Send(self,@CreateOneSpellIfNew,#num=SID_SPECTATE,#class=&Spectate);
       Send(self,@CreateOneSpellIfNew,#num=SID_RESCUE,#class=&Rescue);
       Send(self,@CreateOneSpellIfNew,#num=SID_SMITE,#class=&Smite);
       Send(self,@CreateOneSpellIfNew,#num=SID_DAMN,#class=&Damn);
@@ -3808,6 +3799,9 @@ messages:
    "If the type already exists, it is deleted and a new one "
    "made.  This makes changing treasure types easy--just call us."
    {
+      % Recreate the table.
+      phTresTypes = CreateTable(191);
+
       Create(&NoTreasure);
       Create(&NewbieAreaTreasure);
 
@@ -3899,16 +3893,7 @@ messages:
 
    GetSun()
    {
-      local i;
-
-      foreach i in plBackground_objects
-      {
-         if IsClass(i,&Sun)
-         {
-            return i;
-         }
-      }
-      return $;
+      return GetListElemByClass(plBackground_objects,&Sun);
    }
 
    GetDayPhase()
@@ -4346,6 +4331,15 @@ messages:
       }
 
       % Name should be valid.
+
+      % pay homage to those who came before us
+      foreach i in plRetiredNames
+      {
+         if StringEqual(sName, i)
+         {
+            return FALSE;
+         }
+      }
 
       return TRUE;
    }
@@ -5120,13 +5114,6 @@ messages:
       return send(EVENTENGINE_OBJECT,@IsChaosNightActive);
    }
 
-   % HACK in case EVENTENGINE_OBJECT hasn't been created yet,
-   % don't call this, ever.  It is'nt useful for anything else.
-   IsChaosNightActive()
-   {
-      return false;
-   }
-
    ScheduleChaosNight(iMonth=$,iDay=$,iYear=$,
                       iHour=21,iMinute=0,
                       duration=60,
@@ -5391,6 +5378,7 @@ messages:
       plItemTemplates = cons(create(&Rose),plItemTemplates);
       plItemTemplates = cons(create(&Book),plItemTemplates);
       plItemTemplates = cons(create(&LoreTosApoth),plItemTemplates);
+      plItemTemplates = cons(create(&LoreHist1),plItemTemplates);
       
       plItemTemplates = cons(create(&JalaNecklace),plItemTemplates);
       plItemTemplates = cons(create(&NecromancerAmulet),plItemTemplates);
@@ -6373,6 +6361,62 @@ messages:
       return;
    }
 
+   ResetRetiredNames()
+   {
+      plRetiredNames = [ "Zaphod", "Zandramas" ]; 
+
+      plRetiredNames = cons("Zjiria",plRetiredNames);
+      plRetiredNames = cons("Q",plRetiredNames);
+      plRetiredNames = cons("Lady Jane",plRetiredNames);
+      plRetiredNames = cons("Regifan Du Bukise",plRetiredNames);
+      plRetiredNames = cons("Rhinosharkus",plRetiredNames);
+      plRetiredNames = cons("Tonto",plRetiredNames);
+      plRetiredNames = cons("Zangus Dixon",plRetiredNames);
+      plRetiredNames = cons("Mosiah",plRetiredNames);
+      plRetiredNames = cons("Mocker",plRetiredNames);
+      plRetiredNames = cons("Satin",plRetiredNames);
+      plRetiredNames = cons("Greenwich",plRetiredNames);
+      plRetiredNames = cons("Xian",plRetiredNames);
+      plRetiredNames = cons("Gort",plRetiredNames);
+      plRetiredNames = cons("Aphasia",plRetiredNames);
+      plRetiredNames = cons("Tendar",plRetiredNames);
+      plRetiredNames = cons("Vertigo",plRetiredNames);
+      plRetiredNames = cons("Omar",plRetiredNames);
+      plRetiredNames = cons("Bromm",plRetiredNames);
+      plRetiredNames = cons("Cat",plRetiredNames);
+      plRetiredNames = cons("Henry V",plRetiredNames);
+      plRetiredNames = cons("King Richard",plRetiredNames);
+      plRetiredNames = cons("Altir",plRetiredNames);
+      plRetiredNames = cons("Zardos",plRetiredNames);
+      plRetiredNames = cons("Zendar",plRetiredNames);
+      plRetiredNames = cons("Zwei",plRetiredNames);
+      plRetiredNames = cons("Zarea",plRetiredNames);
+      plRetiredNames = cons("Gandalf",plRetiredNames);
+      plRetiredNames = cons("Zathras",plRetiredNames);
+      plRetiredNames = cons("Detson",plRetiredNames);
+      plRetiredNames = cons("Geist",plRetiredNames);
+      plRetiredNames = cons("Gemini",plRetiredNames);
+      plRetiredNames = cons("Kyrra",plRetiredNames);
+      plRetiredNames = cons("Kana",plRetiredNames);
+      plRetiredNames = cons("ReQuiem",plRetiredNames);
+      plRetiredNames = cons("Izual",plRetiredNames);
+      plRetiredNames = cons("Prego",plRetiredNames);
+      plRetiredNames = cons("Thumper",plRetiredNames);
+      plRetiredNames = cons("Da Man",plRetiredNames);
+      plRetiredNames = cons("Alix",plRetiredNames);
+      plRetiredNames = cons("Psychochild",plRetiredNames);
+      plRetiredNames = cons("Aythya",plRetiredNames);
+      plRetiredNames = cons("Sif",plRetiredNames);
+      plRetiredNames = cons("Jinx",plRetiredNames);
+      plRetiredNames = cons("Sher Kahn",plRetiredNames);
+      plRetiredNames = cons("Bael",plRetiredNames);
+      plRetiredNames = cons("Kimo",plRetiredNames);
+      plRetiredNames = cons("Sol",plRetiredNames);
+      plRetiredNames = cons("Corliss",plRetiredNames);
+
+      return;
+   }
+
    AddNaughtyWord(string=$)
    {
       if string <> $
@@ -6933,9 +6977,9 @@ messages:
 
          % Give debug message for each player, describing what levels they have.
          Debug("Player ",i,Send(i,@GetTrueName)," has extra levels! Has ",
-               Nth(lSkills,1)," WC ",Nth(lSpells,1)," Shal'ille ",Nth(lSpells,2),
-               " Qor ",Nth(lSpells,3)," Kraanan ",Nth(lSpells,4)," Faren ",
-               Nth(lSpells,5)," Riija and ",Nth(lSpells,6), " Jala. Player has ",
+               First(lSkills),"WC ",First(lSpells),"Shal'ille ",Nth(lSpells,2),
+               "Qor ",Nth(lSpells,3),"Kraanan ",Nth(lSpells,4),"Faren ",
+               Nth(lSpells,5),"Riija and ",Nth(lSpells,6), "Jala. Player has ",
                Send(i,@GetRawIntellect)," intellect.");
       }
 
