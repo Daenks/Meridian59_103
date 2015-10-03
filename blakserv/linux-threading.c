@@ -22,7 +22,7 @@ BOOL InitMsgQueue()
 {
     main_thread_msgs.head = -1;
     main_thread_msgs.tail = -1;
-    main_thread_count = 0;
+    main_thread_msgs.count = 0;
     pthread_mutex_init(&main_thread_msgs.mux, NULL);
     pthread_cond_init(&main_thread_msgs.signal, NULL);
 }
