@@ -11,4 +11,5 @@ BOFS = inkycap.bof snack.bof watrskin.bof meatpie.bof apple.bof \
        gobletwn.bof kocmug.bof cheese.bof mint.bof turkyleg.bof chaosfood.bof \
        cookie.bof orange.bof pear.bof
 
+
 !include $(KODDIR)\kod.mak
