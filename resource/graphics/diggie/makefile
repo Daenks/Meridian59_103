@@ -6,7 +6,8 @@ OUTDIR = .
 
 .SUFFIXES: .bbg
 
-BGFS = neeleme.bgf neelemeX.bgf iunholyt.bgf
+BGFS = neeleme.bgf neelemeX.bgf iunholyt.bgf cookie.bgf orange.bgf pear.bgf xeoneru.bgf \
+       xeoneruX.bgf
 
 !include $(RESOURCEDIR)\copy.mak
 
