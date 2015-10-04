@@ -16,70 +16,94 @@
 pthread_mutex_t** mutexes;
 int num_mutexes = 0;
 
-MSGQUEUE main_thread_msgs;
+MSGQUEUE Msgs;
 
 BOOL InitMsgQueue()
 {
-    main_thread_msgs.head = -1;
-    main_thread_msgs.tail = -1;
-    main_thread_msgs.count = 0;
-    pthread_mutex_init(&main_thread_msgs.mux, NULL);
-    pthread_cond_init(&main_thread_msgs.signal, NULL);
+    Msgs.head = NULL;
+    Msgs.count = 0;
+    pthread_mutex_init(&Msgs.mux, NULL);
+    pthread_cond_init(&Msgs.msgEvent, NULL);
 }
 
 BOOL PostThreadMessage(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    // TODO: stub
+    // TODO: Review
+    MsgNode* temp;
+
     if (idThread != main_thread_id)
     {
         eprintf("PostThreadMessage: only main thread messages currently supported on Linux!");
         return FALSE;
     }
 
-    // lock mutex
-    // if zero messages
-    //   copy message into queue
-    //   set head to 0 set tail to 0
-    // else (already messages)
-    //   check if ring buffer is full
-    //   if count >= MAX_MESSAGES
-    //     error! message overflow!!!
-    //   else (we have more room)
-    //     if (tail < (MAX_MESSAGES - 1))
-    //       if (head < tail)
-    //       else (head > tail)
-    //     else if (tail == (MAX_MESSAGES - 1))
-    //       flip tail around to the beginning of the buffer
-    //       tail = 0; 
-    // unlock mutex
+    pthread_mutex_lock(&Msgs.mux);
 
-    return FALSE;
+    if (Msgs.head == NULL)
+    {
+        Msgs.head = (MsgNode*)malloc(sizeof(MsgNode));
+        Msgs.head->next = NULL;
+        Msgs.tail->prev = NULL;
+        Msgs.tail = Msgs.head;
+    }
+    else
+    {
+        Msgs.tail->next = (MsgNode*)malloc(sizeof(MsgNode));
+        Msgs.tail->next->prev = Msgs.tail;
+        Msgs.tail->next->next = NULL;
+        Msgs.tail = Msgs.tail->next;
+    }
+
+    Msgs.tail->msg.hwnd = (HWND)idThread;
+    Msgs.tail->msg.message = Msg;
+    Msgs.tail->msg.lParam = lParam;
+    Msgs.tail->msg.wParam = wParam;
+
+    Msgs.count++;
+
+    pthread_cond_signal(&Msgs.msgEvent);
+    pthread_mutex_unlock(&Msgs.mux);
+
+    return TRUE;
 }
 
 BOOL PeekMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg)
 {
-    // lock mutex
-    // if (count > 0)
-    //  copy head into lpMsg
-    //  decrement count
-    //  if count > 0
-    //   set head to head +1
-    //   if head > (MAX_MESSAGES - 1)
-    //    set head to
-    //   unlock mutex
-    //   return true
-    //  else
-    //   set head to -1
-    //   set tail to -1
-    //   unlock mutex
-    //   return true
-    // else
-    //  unlock mutex
-    //  return false (no messages)
-    
-    // TODO: Implement
+    // TODO: Finish
+    // TODO: handle wRemoveMsg
+    MsgNode* current;
 
-    return FALSE;
+    pthread_mutex_lock(&Msgs.mux);
+
+    if (Msgs.head == NULL)
+    {
+        return FALSE;
+    }
+
+    current = Msgs.head;
+
+    while(current != NULL && 
+            !((current->msg.hwnd == hWnd) &&
+                (current->msg.message >= wMsgFilterMin &&
+                 current->msg.message <= wMsgFilterMax)))
+    {
+        current = current->next;
+    }
+
+    if (current == NULL)
+    {
+        return FALSE;
+    }
+
+    lpMsg = (MSG*)malloc(sizeof(MSG));
+    lpMsg->hwnd = current->msg.hwnd;
+    lpMsg->message = current->msg.message;
+    lpMsg->lParam = current->msg.lParam;
+    lpMsg->wParam = current->msg.wParam;
+
+    pthread_mutex_unlock(&Msgs.mux);
+
+    return TRUE;
 
 }
 
@@ -87,7 +111,7 @@ BOOL PeekMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax,
 
 // WARNING:  A very poor assumption is made here that the "object" type is a mutex.
 // At this point in time that appears to be exactly how this function is being
-// called in all cases.  The original windows function can wait for a list of several
+// called in all cases.  The original windows function can wait for several types of
 // objects such as semaphores, events, and processes.  This function will clearly not
 // be able to handle objects like that (nor will the code compile unless someone in
 // the future implements those objects for linux - Matt (keen)
@@ -104,15 +128,22 @@ DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
 }
 
 
-DWORD WaitForMultipleObjects(DWORD nCount, const HANDLE *Handles, BOOL bWaitAll, DWORD  dwMilliseconds)
-{
-    // TODO: stub
-    return 0;
-}
+//DWORD WaitForMultipleObjects(DWORD nCount, const HANDLE *Handles, BOOL bWaitAll, DWORD  dwMilliseconds)
+//{
+//    // TODO: stub
+//    return 0;
+//}
 
 DWORD MsgWaitForMultipleObjects( DWORD nCount, const HANDLE *Handles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask)
 {
-    // TODO: stub
+    // TODO: stub, incomplete
+
+    pthread_mutex_lock(&Msgs.mux);
+    pthread_cond_wait(&Msgs.msgEvent, &Msgs.mux);
+
+    // cond_wait will unlock the mutex while waiting then lock it when it returns, we must unlock it now
+    pthread_mutex_unlock(&Msgs.mux);
+
     return 0;
 }
 

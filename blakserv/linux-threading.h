@@ -1,4 +1,4 @@
-// This software is distributed under a license that is described in
+// 
 // the LICENSE file that accompanies it.
 //
 /*
@@ -24,12 +24,13 @@ typedef struct _SECURITY_ATTRIBUTES {
   BOOL   bInheritHandle;
 } SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;
 
-typedef struct tagPOINT {
+typedef struct POINT {
   long x;
   long y;
 } POINT, *PPOINT;
 
-typedef struct tagMSG {
+// Windows ttype MSG struct for portability
+typedef struct MSG {
   HWND   hwnd;
   UINT   message;
   WPARAM wParam;
@@ -38,23 +39,30 @@ typedef struct tagMSG {
   POINT  pt;
 } MSG, *PMSG, *LPMSG;
 
+// Wrapper to turn MSG to a list
+typedef struct MsgNode
+{
+    MsgNode* next;
+    MsgNode* prev;
+    MSG     msg;
+} MsgNode;
+
 #define MSGBUFSIZE 256
 
 // simulate windows message queues
- typedef struct tagMSGQUEUE {
-   int head;
-   int tail;
+ typedef struct MSGQUEUE {
+   MsgNode* head;
+   MsgNode* tail;
    int count;
-   MSG MsgBuf[MSGBUFSIZE];
    pthread_mutex_t mux;
-   pthread_cond_t signal;
+   pthread_cond_t msgEvent;
 } MSGQUEUE;
 
 BOOL InitMsgQueue();
 BOOL PostThreadMessage(DWORD idThread, UINT Msg, WPARAM wParam, LPARAM lParam);
 BOOL PeekMessage(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg);
 DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
-DWORD WaitForMultipleObjects(DWORD nCount, const HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
+//DWORD WaitForMultipleObjects(DWORD nCount, const HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
 DWORD MsgWaitForMultipleObjects( DWORD nCount, const HANDLE *pHandles, BOOL bWaitAll, DWORD dwMilliseconds, DWORD dwWakeMask);
 HANDLE CreateMutex(LPSECURITY_ATTRIBUTES lpMutexAttributes, BOOL bInitialOwner, LPCTSTR lpName);
 BOOL ReleaseMutex(HANDLE hMutex);

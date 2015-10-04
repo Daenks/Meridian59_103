@@ -4581,7 +4581,8 @@ int C_MinigameStringToNumber(int object_id,local_var_type *local_vars,
 int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
 				int num_name_parms,parm_node name_parm_array[])
-{	
+{
+#ifdef BLAK_PLATFORM_WINDOWS
 	val_type stat_type, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9, stat10, stat11, stat12, stat13;
 	resource_node *r_who_damaged, *r_who_attacker, *r_weapon, *r_victim, *r_killer, *r_room, *r_attack,
       *r_name, *r_home, *r_bind, *r_leader, *r_ghall;

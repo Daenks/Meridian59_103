@@ -96,7 +96,6 @@ OBJS =  \
 	$(OUTDIR)/linux-critical_section.obj \
 	$(OUTDIR)/linux-threading.obj \
 	$(OUTDIR)/linux-interface.obj \
-	$(OUTDIR)/linux-msgqueue.obj \
 
 
 all : makedirs $(OUTDIR)/blakserv
