@@ -13,8 +13,6 @@
 #ifndef _ROOFILE_H
 #define _ROOFILE_H
 
-#include "geometry.h"
-
 #pragma region Macros
 /**************************************************************************************************************/
 /*                                           MACROS                                                           */
@@ -53,6 +51,7 @@
 #define ROUNDROOTOKODFINENESS(a) FINENESSKODTOROO(roundf(FINENESSROOTOKOD(a)))
 
 // from blakston.khd, used in BSPGetNextStepTowards across calls
+#define ESTATE_LONG_STEP 0x00002000
 #define ESTATE_AVOIDING  0x00004000
 #define ESTATE_CLOCKWISE 0x00008000
 
@@ -211,6 +210,8 @@ typedef struct room_type
    unsigned short SidesCount;
    Sector*        Sectors;
    unsigned short SectorsCount; 
+
+   astar          Astar;
 } room_type;
 #pragma endregion
 
@@ -219,13 +220,13 @@ typedef struct room_type
 /*                                          METHODS                                                           */
 /**************************************************************************************************************/
 bool  BSPGetHeight(room_type* Room, V2* P, float* HeightF, float* HeightFWD, float* HeightC, BspLeaf** Leaf);
-bool  BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, bool moveOutsideBSP);
+bool  BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOutsideBSP);
 bool  BSPLineOfSight(room_type* Room, V3* S, V3* E);
 void  BSPChangeTexture(room_type* Room, unsigned int ServerID, unsigned short NewTexture, unsigned int Flags);
 void  BSPMoveSector(room_type* Room, unsigned int ServerID, bool Floor, float Height, float Speed);
 bool  BSPGetLocationInfo(room_type* Room, V2* P, unsigned int QueryFlags, unsigned int* ReturnFlags, float* HeightF, float* HeightFWD, float* HeightC, BspLeaf** Leaf);
 bool  BSPGetRandomPoint(room_type* Room, int MaxAttempts, V2* P);
-bool  BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags);
+bool  BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags, int ObjectID);
 bool  BSPBlockerAdd(room_type* Room, int ObjectID, V2* P);
 bool  BSPBlockerMove(room_type* Room, int ObjectID, V2* P);
 bool  BSPBlockerRemove(room_type* Room, int ObjectID);
