@@ -5638,6 +5638,9 @@ messages:
       plItemTemplates = cons(create(&Bread),plItemTemplates);
       plItemTemplates = cons(create(&Grapes),plItemTemplates);
       plItemTemplates = cons(create(&Apple),plItemTemplates);
+      plItemTemplates = cons(create(&Cookie),plItemTemplates);
+      plItemTemplates = cons(create(&Pear),plItemTemplates);
+      plItemTemplates = cons(create(&Orange),plItemTemplates);
 
       plItemTemplates = cons(create(&EasterEgg),plItemTemplates);
 
