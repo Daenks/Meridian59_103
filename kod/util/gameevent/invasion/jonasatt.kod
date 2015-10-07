@@ -1,0 +1,298 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+JonasAttack is Invasion
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   JonasAttack_start_msg = \
+      "~B~k[Event]~n ~B~v The rebels are advancing!"
+
+   JonasAttack_end_msg = \
+      "~B~k[Event]~n ~B~v The rivals fall back in failure."
+
+   JonasAttack_phase2_msg = \
+      "~B~k[Event]~n ~B~v The rebels have brought mountain beast to assist them!"
+
+   JonasAttack_phase3_msg = \
+      "~B~k[Event]~n ~B~v The royal princess has sent her troops to assist in the attack."
+
+   JonasAttack_finalphase_msg = \
+      "~B~k[Event]~n ~B~v The royal guards have brought beast from the mountains to "
+      "assist them in there final attack!"
+
+classvars:
+
+   vrStartMessage = JonasAttack_start_msg
+   vrEndMessage = JonasAttack_end_msg
+
+   vbAnnounce = TRUE
+
+properties:
+
+   plEventRooms = $
+   piRebelTroop = 15
+   piTroll = 10
+   piPrincessTroop = 15
+   piGroundWormQueen = 10
+   piActiveRoom = RID_TOS, RID_TOS_EAST, RID_BLACKSTONE
+   piPhase = 0
+
+messages:
+
+   Constructor()
+   {
+      plEventRooms = [ RID_TOS, RID_TOS_EAST, RID_BLACKSTONE ];
+      if piActiveRoom = RID_TOS
+      {
+         plSpawnRects = [ [[54,5],[61,13]], [[49,11],[62,27]],
+                          [[54,29],[59,40]], [[14,16],[49,21]] ];
+      }
+      
+      if piActiveRoom = RID_BLACKSTONE
+      {
+         plSpawnRects = [ [[15,21],[15,38]], [[30,39],[30,25]],
+                             [[24,19],[24,37]], [[20,29],[39,29]] ];
+      }
+      
+      if piActiveRoom = RID_TOS_EAST
+      {
+         plSpawnRects = [ [[27,10],[13,5]], [[36,7],[42,16]],
+                          [[45,30],[37,25]], [[45,41],[23,22]] ];
+      }
+
+      propagate;
+   }
+
+   Update()
+   {
+      if piPhase = 1
+      {
+         if Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         {
+            Send(self,@PhaseTwo);
+         }
+      }
+
+      if piPhase = 2
+      {
+         if Send(self,@CountMonsters,#type=&Troll) = 0
+            AND Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         {
+            Send(self,@PhaseThree);
+         }
+      }
+
+      if piPhase = 3
+      {
+         if Send(self,@CountMonsters,#type=&PrincessTroop) = 0
+            AND Send(self,@CountMonsters,#type=&Troll) = 0
+            AND Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         {
+            Send(self,@FinalPhase);
+         }
+      }
+
+      if piPhase = 4
+      {
+         if Send(self,@CountMonsters,#type=&DarkAngel) = 0
+         {
+            % Call EventEnd to handle ending the event properly. This
+            % deletes the event in the GameEventEngine, which also calls
+            % the appropriate code in EndEvent, which handles the end of
+            % the specific event.
+            Send(self,@EventEnd);
+         }
+      }
+
+      propagate;
+   }
+
+   StartEvent()
+   {
+      Send(self,@PhaseOne);
+
+      propagate;
+   }
+
+   PhaseOne()
+   {
+      local i,lSpawnPoint;
+
+      piPhase = 1;
+
+      i = piRebelTroops;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&RebelTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      return;
+   }
+
+   PhaseTwo()
+   {
+      local i,lSpawnPoint;
+
+      piPhase = 2;
+
+      if vbAnnounce
+      {
+         Send(SYS,@SystemBroadcast,#type=SAY_MESSAGE,
+               #string=JonasAttack_phase2_msg);
+      }
+
+      i = piRebelTroops;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&RebelTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piTrolls;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&Troll),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      return;
+   }
+
+   PhaseThree()
+   {
+      local i,lSpawnPoint;
+
+      piPhase = 3;
+
+      if vbAnnounce
+      {
+         Send(SYS,@SystemBroadcast,#type=SAY_MESSAGE,
+               #string=JonasAttack_phase3_msg);
+      }
+
+      i = piRebelTroops;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&RebelTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piTrolls;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&Troll),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piPrincessTroop;
+      
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&PrincessTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      return;
+   }
+
+   FinalPhase()
+   {
+      local i,lSpawnPoint;
+
+      piPhase = 3;
+
+      if vbAnnounce
+      {
+         Send(SYS,@SystemBroadcast,#type=SAY_MESSAGE,
+               #string=JonasAttack_phase3_msg);
+      }
+
+      i = piRebelTroops;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&RebelTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piTrolls;
+
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&Troll),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piPrincessTroop;
+      
+      while (i > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&PrincessTroop),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
+      }
+
+      i = piGroundWormQueen;
+      
+      while (i-- > 0)
+      {
+         lSpawnPoint = Send(self,@MakeSpawnPoint);
+         Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
+               @NewHold,#what=Create(&GroundWormQueen),
+               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+      }
+
+      return;
+   }
+
+   EndEvent()
+   {
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
