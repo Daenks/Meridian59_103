@@ -21,6 +21,8 @@ constants:
 
 resources:
 
+   include reflectn.lkod
+
    reflection_name_rsc = "reflection"
 
    reflection_male_icon_rsc = btg.bgf
@@ -403,6 +405,11 @@ messages:
       return Send(poOriginal,@GetClientObjectType);
    }
 
+   GetOptimalRange()
+   {
+      return Send(self,@GetAttackRange);
+   }
+
    GetAttackRange()
    {
       local iWeapon;
@@ -587,7 +594,7 @@ messages:
             {
                piAnimation = PANM_BOW_FIRE;
 
-               for i in Send(poOriginal,@GetPlayerUsing)
+               foreach i in Send(poOriginal,@GetPlayerUsing)
                {
                   if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
                   {
