@@ -1,0 +1,418 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WaylayOasis is GuildHall
+
+constants:
+
+   include blakston.khd
+
+   CHEST_PASSAGE_SECTOR = 4
+   LIFT_DELAY = 10000
+   ENTRANCE_SECTOR1 = 1
+   ENTRANCE_SECTOR2 = 2
+   
+   AREA_OUTSIDE = 0
+   AREA_INSIDE_SOUTH = 1
+   AREA_INSIDE_SOUTH_HALLWAY = 2
+   AREA_SOUTH_LEDGES = 3
+   AREA_INSIDE_NORTH = 4
+   AREA_NORTH_LEDGES = 5
+   
+   InsideAreaSouthMinRow = 55
+   InsideAreaSouthMinFineRow = 6
+   InsideAreaSouthMaxRow = 79
+   InsideAreaSouthMaxFineRow = 20
+   InsideAreaSouthMinCol = 76
+   InsideAreaSouthMinFineCol = 10 
+   InsideAreaSouthMaxCol = 107
+   InsideAreaSouthMaxFineCol = 18
+   
+   InsideAreaSouthHallwayMinRow = 50
+   InsideAreaSouthHallwayMaxRow = 55
+   InsideAreaSouthHallwayMinCol = 100
+   InsideAreaSouthHallwayMaxCol = 62
+   
+   InsideAreaNorthMinRow = 10
+   InsideAreaNorthMinFineRow = 30
+   InsideAreaNorthMaxRow = 38
+   InsideAreaNorthMaxFineRow = 63
+   InsideAreaNorthMinCol = 78
+   InsideAreaNorthMinFineCol = 32 
+   InsideAreaNorthMaxCol = 106
+   InsideAreaNorthMaxFineCol = 52
+
+resources:
+
+   include waylayoasis.lkod
+
+   room_waylayoasis = waylayoasis.roo
+   room_name_waylayoasis = "Waylay Oasis"
+
+classvars:
+
+   vrName = room_name_waylayoasis
+
+   viTeleport_row = 58
+   viTeleport_col = 51
+
+   viInner_teleport_row = 68
+   viInner_teleport_col = 97
+
+   viNews_row = 71
+   viNews_col = 76
+   viNews_finerow = 5
+   viNews_finecol = 61
+
+   viFoyer_north = 1
+   viFoyer_south = 1
+   viFoyer_west = 1
+   viFoyer_east = 1
+
+   viLever_row = 39
+   viLever_col = 94
+   viLever_fine_row = 11
+   viLever_fine_col = 39
+
+   viQuality = 9
+
+   viSeconds_til_close = 8
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_waylayoasis
+   piRoom_num = RID_WAYLAYOASIS
+
+   ptSecret = $
+   ptEntrance = $
+   plInside_doors = $
+
+messages:
+
+   Constructor()
+   {
+      plGuild_doors = [ [68,106], [69,106], [70,106], [71,106], [72,106],
+                        [68,111], [69,111], [70,111], [71,111], [72,111]];
+      
+      plInside_doors = [ [68,106], [69,106], [70,106], [71,106], [72,106]];
+
+      % This is a box containing the guild door, used
+      % for removing players from it when it closes.
+      plEntrance = [ 6850, 7250, 10650, 11100 ];
+
+      propagate;
+   }
+ 
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([ LEAVE_WEST, RID_DESERTPATH1, 11, 58, ROTATE_NONE ],plEdge_Exits);
+      plEdge_Exits = Cons([ LEAVE_EAST, RID_DESERTBRIDGE, 4, 5, ANGLE_EAST ],plEdge_Exits);
+
+      propagate;
+   }
+
+   SomethingTryGo(what=$, row=$,  col = $)
+   {
+      local i;
+      
+      foreach i in plInside_doors
+      {
+         if row = First(i)
+            AND col = Nth(i,2)
+         {
+            Send(self,@OpenEntrancedoor);
+
+            return TRUE;
+         }
+      }
+
+      propagate;
+   }
+
+
+   InFoyer(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
+   {
+      if Send(self,@GetSection,#who=who,#iRow=iRow,#iCol=iCol,
+            #iFineRow=iFineRow,#iFineCol=iFineCol) = AREA_OUTSIDE
+      {
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   GetSection(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
+   {
+      if who <> $
+      {
+         if Send(who,@GetOwner) <> self
+         {
+            return FALSE;
+         }
+
+         iRow = Send(who,@GetRow);
+         iCol = Send(who,@GetCol);
+         iFineCol = Send(who,@GetFineCol);
+         iFineRow = Send(who,@GetFineRow);
+      }
+
+      if iRow >= InsideAreaSouthMinRow
+         AND iFineRow >= InsideAreaSouthMinFineRow
+         AND iRow <= InsideAreaSouthMaxRow
+         AND iFineRow <= InsideAreaSouthMaxFineRow
+         AND iCol >= InsideAreaSouthMinCol
+         AND iFineCol >= InsideAreaSouthMinFineCol
+         AND iCol <= InsideAreaSouthMaxCol
+         AND iFineCol <= InsideAreaSouthMaxFineCol
+      {
+         return AREA_INSIDE_SOUTH;
+      }
+
+      if iRow >= InsideAreaSouthHallwayMinRow
+         AND iRow <= InsideAreaSouthHallwayMaxRow
+         AND iCol >= InsideAreaSouthHallwayMinCol
+         AND iCol <= InsideAreaSouthHallwayMaxCol
+      {
+         return AREA_INSIDE_SOUTH_HALLWAY;
+      }
+      
+      if Send(who,@GetHeightAtObject) = 560
+         OR Send(who,@GetHeightAtObject) = 600
+      {
+         return AREA_SOUTH_LEDGES;
+      }
+
+      if iRow >= InsideAreaNorthMinRow
+         AND iFineRow >= InsideAreaNorthMinFineRow
+         AND iRow <= InsideAreaNorthMaxRow
+         AND iFineRow <= InsideAreaNorthMaxFineRow
+         AND iCol >= InsideAreaNorthMinCol
+         AND iFineCol >= InsideAreaNorthMinFineCol
+         AND iCol <= InsideAreaNorthMaxCol
+         AND iFineCol <= InsideAreaNorthMaxFineCol
+      {
+         return AREA_INSIDE_NORTH;
+      }
+      
+      if Send(who,@GetHeightAtObject) = 286
+         OR Send(who,@GetHeightAtObject) = 290
+         OR Send(who,@GetHeightAtObject) = 924
+      {
+         return AREA_NORTH_LEDGES;
+      }
+
+      return AREA_OUTSIDE;
+   }
+
+   ReqSomethingAttack(what = $,victim = $)
+   "No one may attack through the door if it's closed."
+   {
+      local iVictimSection, iAttackerSection;
+
+      if (what = $) or (victim = $)
+      {
+         propagate;
+      }
+
+      iVictimSection = Send(self,@GetSection,#who=victim);
+      iAttackerSection = Send(self,@GetSection,#who=what);
+
+      % The ledges are not protected from direct attacks from outside.
+      % Ledges will not get hit by earthquakes and other area attacks, though,
+      % and vice versa (no quaking from ledges)
+      if iAttackerSection = AREA_OUTSIDE
+      {
+         if iVictimSection = AREA_SOUTH_LEDGES
+            OR iVictimSection = AREA_NORTH_LEDGES
+         {
+            return TRUE;
+         }
+      }
+      if iVictimSection = AREA_OUTSIDE
+      {
+         if iAttackerSection = AREA_SOUTH_LEDGES
+            OR iAttackerSection = AREA_NORTH_LEDGES
+         {
+            return TRUE;
+         }
+      }
+
+      propagate;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_row > (Send(self,@GetRoomRows)-1) and (new_col < 30)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
+              #new_row=5,#new_col=7,#new_angle=ANGLE_SOUTH_EAST);
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-1) and (new_col > 50)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
+              #new_row=3,#new_col=33,#fine_col=44,#new_angle=ANGLE_SOUTH);
+              
+         return;
+      }
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      local i, o;
+
+      foreach i in [
+
+         [ 32, 111, 46,  14, OO_BONES ]
+
+      ]
+      {
+         o = create(&OrnamentalObject,#type=nth(i,5));
+         send(self,@NewHold,#what=o,
+            #new_row=nth(i,1),#new_col=nth(i,2),
+            #fine_row=nth(i,3),#fine_col=nth(i,4));
+      }
+
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=98,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=99,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=100,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=101,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=102,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=103,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=104,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=105,
+            #fine_row=15,#fine_col=7);
+
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=98,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=99,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=100,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=101,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=102,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=103,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=104,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=105,
+            #fine_row=48,#fine_col=7);
+            
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=67,#new_col=104,
+            #fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=68,#new_col=96,
+            #fine_row=57,#fine_col=58);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=71,#new_col=81,
+            #fine_row=22,#fine_col=40);
+            
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=20,#new_col=106,
+            #fine_row=33,#fine_col=19);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=19,#new_col=88,
+            #fine_row=37,#fine_col=35);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=32,#new_col=88,
+            #fine_row=30,#fine_col=35);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=32,#new_col=106,
+            #fine_row=30,#fine_col=19);
+            
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=28,#new_col=106,
+            #fine_row=15,#fine_col=19);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=24,#new_col=106,
+            #fine_row=48,#fine_col=19);
+
+      % Chest room
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=16,#new_col=79,
+            #fine_row=16,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=23,#new_col=79,
+            #fine_row=16,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=17,#new_col=80,
+            #fine_row=61,#fine_col=9,#new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=20,#new_col=80,
+            #fine_row=37,#fine_col=9,#new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=22,#new_col=82,
+            #fine_row=46,#fine_col=23,#new_angle=ANGLE_NORTH);
+
+      propagate;
+   }
+
+   OpenEntranceDoor()
+   {
+      if ptEntrance = $
+      {
+         Send(self,@TimeStampDoor);
+         Send(self,@SetSector,#sector=ENTRANCE_SECTOR2,
+               #animation=ANIMATE_CEILING_LIFT,#height=80,#speed=40);
+         ptEntrance = CreateTimer(self,@CloseEntranceDoor,LIFT_DELAY);
+         Send(self,@OpenEntranceDoorSound);
+      }
+
+      return;
+   }
+
+   CloseEntranceDoor()
+   {
+      Send(self,@SetSector,#sector=ENTRANCE_SECTOR2,
+            #animation=ANIMATE_CEILING_LIFT,#height=0,#speed=40);
+      Send(self,@CloseEntranceDoorSound);
+
+      % We now propagate this to handle removing players from the door,
+      % and so the door can still be entered while it is closing.
+      propagate;
+   }
+
+   OpenSecretDoor()
+   {
+      if ptSecret = $
+      {
+         Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+               #animation=ANIMATE_FLOOR_LIFT,#height=290,#speed=16);
+         Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+               #animation=ANIMATE_FLOOR_LIFT,#height=290,#speed=16);
+         ptSecret = CreateTimer(self,@CloseSecretDoor,LIFT_DELAY);
+         Send(self,@OpenSecretDoorSound);
+      }
+
+      return;
+   }
+
+   CloseSecretDoor()
+   {
+      ptSecret = $;
+      Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+            #animation=ANIMATE_FLOOR_LIFT,#height=350,#speed=16);
+      Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+            #animation=ANIMATE_FLOOR_LIFT,#height=350,#speed=16);
+      Send(self,@CloseSecretDoorSound);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
