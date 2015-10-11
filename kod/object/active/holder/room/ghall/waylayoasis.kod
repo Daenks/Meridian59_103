@@ -56,7 +56,8 @@ resources:
 
    room_waylayoasis = waylayoasis.roo
    room_name_waylayoasis = "Waylay Oasis"
-   waylayoasis_music = orcpit.mp3
+   waylayoasis_music = cz04.mp3
+   waylayoasis_music_snow = cz08.mp3
    
    waterfall_sound_oasis = wfall2.wav
 
@@ -131,6 +132,12 @@ messages:
    {
       plLooping_sounds = [[ waterfall_sound_oasis, 21, 40, 65, 100 ]];
 
+      propagate;
+   }
+   
+   StartSnow()
+   {
+      prMusic = waylayoasis_music_snow;
       propagate;
    }
  
