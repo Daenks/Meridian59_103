@@ -1308,6 +1308,11 @@ messages:
    {
       return FALSE;
    }
+   
+   FoyerDissipatesWallElements()
+   {
+      return TRUE;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

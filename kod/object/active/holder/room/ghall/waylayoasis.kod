@@ -18,13 +18,12 @@ constants:
    LIFT_DELAY = 10000
    ENTRANCE_SECTOR1 = 1
    ENTRANCE_SECTOR2 = 2
+   HALL_SECTORS = 5
+   LEDGE_SECTORS = 6
    
    AREA_OUTSIDE = 0
-   AREA_INSIDE_SOUTH = 1
-   AREA_INSIDE_SOUTH_HALLWAY = 2
-   AREA_SOUTH_LEDGES = 3
-   AREA_INSIDE_NORTH = 4
-   AREA_NORTH_LEDGES = 5
+   AREA_INSIDE = 1
+   AREA_LEDGES = 2
    
    InsideAreaSouthMinRow = 55
    InsideAreaSouthMinFineRow = 6
@@ -142,9 +141,28 @@ messages:
       propagate;
    }
 
+   ValidEntry(what=$)
+   {
+      % If they can't open the door, make sure they're outside the foyer
+      if NOT Send(self,@CanEnter,#who=what)
+         AND NOT Send(self,@InFoyer,#who=what)
+      {
+         Send(self,@Teleport,#what=what,#foyer=TRUE);
+      }
+
+      return;
+   }
 
    InFoyer(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
    {
+      if who <> $
+      {
+         iRow = Send(who,@GetRow);
+         iCol = Send(who,@GetCol);
+         iFineRow = Send(who,@GetFineRow);
+         iFineCol = Send(who,@GetFineCol);
+      }
+
       if Send(self,@GetSection,#who=who,#iRow=iRow,#iCol=iCol,
             #iFineRow=iFineRow,#iFineCol=iFineCol) = AREA_OUTSIDE
       {
@@ -156,62 +174,32 @@ messages:
 
    GetSection(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
    {
-      if who <> $
+      local iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID;
+      
+      if iRow = $
+         OR iCol = $
+         OR iFineRow = $
+         OR iFineCol = $
       {
-         if Send(who,@GetOwner) <> self
+         return AREA_OUTSIDE;
+      }
+
+      iQflags = LIQ_GET_SECTORINFO;
+
+      if GetLocationInfoBSP(
+                      prmRoom, iQflags, iRow, iCol, iFineRow, iFineCol,
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+      {
+         if iServerID = CHEST_PASSAGE_SECTOR
+            OR iServerID = HALL_SECTORS
          {
-            return FALSE;
+            return AREA_INSIDE;
          }
-
-         iRow = Send(who,@GetRow);
-         iCol = Send(who,@GetCol);
-         iFineCol = Send(who,@GetFineCol);
-         iFineRow = Send(who,@GetFineRow);
-      }
-
-      if iRow >= InsideAreaSouthMinRow
-         AND iFineRow >= InsideAreaSouthMinFineRow
-         AND iRow <= InsideAreaSouthMaxRow
-         AND iFineRow <= InsideAreaSouthMaxFineRow
-         AND iCol >= InsideAreaSouthMinCol
-         AND iFineCol >= InsideAreaSouthMinFineCol
-         AND iCol <= InsideAreaSouthMaxCol
-         AND iFineCol <= InsideAreaSouthMaxFineCol
-      {
-         return AREA_INSIDE_SOUTH;
-      }
-
-      if iRow >= InsideAreaSouthHallwayMinRow
-         AND iRow <= InsideAreaSouthHallwayMaxRow
-         AND iCol >= InsideAreaSouthHallwayMinCol
-         AND iCol <= InsideAreaSouthHallwayMaxCol
-      {
-         return AREA_INSIDE_SOUTH_HALLWAY;
-      }
-      
-      if Send(who,@GetHeightAtObject) = 560
-         OR Send(who,@GetHeightAtObject) = 600
-      {
-         return AREA_SOUTH_LEDGES;
-      }
-
-      if iRow >= InsideAreaNorthMinRow
-         AND iFineRow >= InsideAreaNorthMinFineRow
-         AND iRow <= InsideAreaNorthMaxRow
-         AND iFineRow <= InsideAreaNorthMaxFineRow
-         AND iCol >= InsideAreaNorthMinCol
-         AND iFineCol >= InsideAreaNorthMinFineCol
-         AND iCol <= InsideAreaNorthMaxCol
-         AND iFineCol <= InsideAreaNorthMaxFineCol
-      {
-         return AREA_INSIDE_NORTH;
-      }
-      
-      if Send(who,@GetHeightAtObject) = 286
-         OR Send(who,@GetHeightAtObject) = 290
-         OR Send(who,@GetHeightAtObject) = 924
-      {
-         return AREA_NORTH_LEDGES;
+         
+         if iServerID = LEDGE_SECTORS
+         {
+            return AREA_LEDGES;
+         }
       }
 
       return AREA_OUTSIDE;
@@ -227,24 +215,30 @@ messages:
          propagate;
       }
 
-      iVictimSection = Send(self,@GetSection,#who=victim);
-      iAttackerSection = Send(self,@GetSection,#who=what);
+      iVictimSection = Send(self,@GetSection,#who=victim,
+                             #iRow=Send(victim,@GetRow),
+                             #iCol=Send(victim,@GetCol),
+                             #iFineRow=Send(victim,@GetFineRow),
+                             #iFineCol=Send(victim,@GetFineCol));
+      iAttackerSection = Send(self,@GetSection,#who=what,
+                             #iRow=Send(what,@GetRow),
+                             #iCol=Send(what,@GetCol),
+                             #iFineRow=Send(what,@GetFineRow),
+                             #iFineCol=Send(what,@GetFineCol));
 
       % The ledges are not protected from direct attacks from outside.
       % Ledges will not get hit by earthquakes and other area attacks, though,
       % and vice versa (no quaking from ledges)
       if iAttackerSection = AREA_OUTSIDE
       {
-         if iVictimSection = AREA_SOUTH_LEDGES
-            OR iVictimSection = AREA_NORTH_LEDGES
+         if iVictimSection = AREA_LEDGES
          {
             return TRUE;
          }
       }
       if iVictimSection = AREA_OUTSIDE
       {
-         if iAttackerSection = AREA_SOUTH_LEDGES
-            OR iAttackerSection = AREA_NORTH_LEDGES
+         if iAttackerSection = AREA_LEDGES
          {
             return TRUE;
          }
@@ -411,6 +405,11 @@ messages:
       Send(self,@CloseSecretDoorSound);
 
       return;
+   }
+   
+   FoyerDissipatesWallElements()
+   {
+      return FALSE;
    }
 
 end

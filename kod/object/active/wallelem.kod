@@ -331,7 +331,8 @@ messages:
    LocationCheck(where = $)
    {
       if (IsClass(where,&GuildHall)
-            AND Send(where,@InFoyer,#who=poCaster))
+            AND Send(where,@InFoyer,#who=poCaster)
+            AND Send(where,@FoyerDissipatesWallElements))
          OR (Send(where,@IsArena)
             AND NOT Send(where,@InPlay,#what=self,#bNonPlayerOkay=TRUE))
       {
