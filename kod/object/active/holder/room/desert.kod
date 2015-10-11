@@ -20,30 +20,51 @@ constants:
    
    HEAT_MIN_DAMAGE = 8
    HEAT_MAX_DAMAGE = 17
+   
+   ACID_MIN_DAMAGE = 1
+   ACID_MAX_DAMAGE = 3
 
 resources:
 
    desert_music = cz08.mp3
    desert_music_snow = cz04.mp3
+   desert_music_acid_rain = cz07.mp3
+   desert_music_static_shock = cz01.mp3
    
    blizzard_damage_msg = "The biting cold gnaws at your bones."
    heat_damage_msg = \
       "The intense heat makes you sweat profusely under your heavy gear."
+   acid_rain_damage_msg = \
+      "Without a helmet to slough it away, the acidic rain burns "
+      "your exposed skin."
 
    DesertUseFireRing_msg = \
       "And, out here, the sun might just be the most dangerous enemy of all."
    DesertUseColdRing_msg = \
       "The icy breezes no longer bother you."
+   DesertUseAcidRing_msg = \
+      "You sigh with relief as the acid ceases to burn."
    DesertCastResistFire_msg = \
       "Faren's chill banishes the sun's heat."
    DesertCastResistCold_msg = \
       "Faren's magical fire battles away the gnawing desert chill."
+   DesertCastResistAcid_msg = \
+      "The chalkiness on your skin provides immediate relief from the "
+      "precipitating acid."
 
    snow_began_msg = \
       "Snow begins whipping across the sands as the last of the sun's heat "
       "fades."
    snow_ended_msg = \
       "The desert's burgeoning heat melts away the chill night's snow."
+   acid_rain_began_msg = \
+      "Horrendously noxious rain begins to fall."
+   acid_rain_ended_msg = \
+      "The noxious rain suddenly crystalizes as a cold flash point is reached."
+   bright_heat_began_msg = \
+      "The sun seems to bore down on you with particular ferocity."
+   bright_heat_ended_msg = \
+      "The sun passes behind ominous clouds."
 
 classvars:
 
@@ -54,6 +75,12 @@ classvars:
 
    viHeatVigorDrop = 30000
    vbDoHeat = TRUE
+   
+   viAcidRainVigorDrop = 10000
+   vbDoAcidRain = TRUE
+   
+   viStaticShockManaDrop = 5
+   vbDoStaticShock = TRUE
 
 properties:
 
@@ -61,10 +88,18 @@ properties:
    
    ptBlizzardDamageTimer = $
    ptHeatDamageTimer = $
+   ptAcidRainDamageTimer = $
+   ptStaticShockDamageTimer = $
    
    % Blizzard ebbs and rises
    piBlizzardDamageTime = 3000
    piHeatDamageTime = 5000
+   piAcidRainDamageTime = 1000
+   piStaticShockDamageTime = 6000
+
+   prMusic = desert_music
+   
+   piBrightHeat = FALSE
 
 messages:
 
@@ -80,12 +115,30 @@ messages:
             Send(self,@EndBlizzard);
             break;
          case DAY_PHASE_DAY:
+            if NOT piBrightHeat
+            {
+               Send(self,@StartBrightHeat);
+            }
             Send(self,@BeginHeat);
             break;
          case DAY_PHASE_DUSK:
+            if piBrightHeat
+            {
+               Send(self,@EndBrightHeat);
+            }
             Send(self,@EndHeat);
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@StartRain);
+            }
+            Send(self,@BeginAcidRain);
             break;
          case DAY_PHASE_NIGHT:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@EndRain);
+            }
+            Send(self,@EndAcidRain);
             if NOT Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
             {
                Send(self,@StartSnow);
@@ -96,7 +149,30 @@ messages:
 
       propagate;
    }
+
+   BeginAcidRain()
+   {
+      if pbUser_in_room
+         AND vbDoAcidRain
+         AND Send(SYS,@GetDayPhase) = DAY_PHASE_DUSK
+         AND ptAcidRainDamageTimer = $
+      {
+         ptAcidRainDamageTimer = CreateTimer(self,@DealAcidRainDamage,
+                                    piAcidRainDamageTime);
+      }
+      return;
+   }
    
+   EndAcidRain()
+   {
+      if ptAcidRainDamageTimer <> $
+      {
+         DeleteTimer(ptAcidRainDamageTimer);
+      }
+      ptAcidRainDamageTimer = $;
+      return;
+   }
+
    BeginHeat()
    {
       if pbUser_in_room
@@ -142,6 +218,37 @@ messages:
          DeleteTimer(ptBlizzardDamageTimer);
       }
       ptBlizzardDamageTimer = $;
+      return;
+   }
+
+   DealAcidRainDamage()
+   {
+      local i;
+      
+      ptAcidRainDamageTimer = $;
+
+      % Deals acid damage to players not wearing resist acid ring
+      % or using resist buff
+      foreach i in plActive
+      {
+         if IsClass(First(i),&Player)
+            AND NOT Send(First(i),@IsInCannotInteractMode)
+         {
+            if NOT Send(First(i),@IsUsingA,#class=&SimpleHelm)
+               AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistAcid)
+               AND NOT Send(First(i),@IsUsingA,#class=&AcidRing)
+            {
+               Send(First(i),@AssessDamage,#what=self,
+                     #damage=Random(ACID_MIN_DAMAGE,ACID_MAX_DAMAGE),
+                     #aspell=ATCK_SPELL_ACID,#report=FALSE);
+               Send(First(i),@AddExertion,#amount=viAcidRainVigorDrop);
+               Send(First(i),@MsgSendUser,#message_rsc=acid_rain_damage_msg);
+            }
+         }
+      }
+
+      Send(self,@BeginAcidRain);
+
       return;
    }
 
@@ -211,6 +318,7 @@ messages:
    {
       Post(self,@BeginHeat);
       Post(self,@BeginBlizzard);
+      Post(self,@BeginAcidRain);
 
       propagate;
    }
@@ -219,6 +327,7 @@ messages:
    {
       Post(self,@EndHeat);
       Post(self,@EndBlizzard);
+      Post(self,@EndAcidRain);
 
       propagate;
    }
@@ -288,6 +397,100 @@ messages:
       propagate;
    }
 
+   StartRain()
+   {
+      local i;
+
+      if Send(SYS,@GetDayPhase) <> DAY_PHASE_DUSK
+      {
+         return;
+      }
+
+      % Acid rain darkens the sand and pock marks rock.
+      Send(self,@ChangeTexture,#id=0,#new_texture=09080,#flags=CTF_FLOOR);
+      % Acid rain makes the water gross.
+      Send(self,@ChangeTexture,#id=13,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=14,#new_texture=09363,
+            #flags=CTF_NORMALWALL);
+      Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_SLOW);
+
+      prMusic = desert_music_acid_rain;
+
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            Send(First(i),@MsgSendUser,#message_rsc=acid_rain_began_msg);
+         }
+      }
+      propagate;
+   }
+   
+   EndRain()
+   {
+      local i;
+
+      % Remove gross sand.
+      Send(self,@RemoveTextureChange,#id=0);
+      % Remove sludge water textures.
+      Send(self,@RemoveTextureChange,#id=13);
+      % Remove sludge water sides.
+      Send(self,@RemoveTextureChange,#id=14);
+      % Reset sector flag changes to sludge water.
+      Send(self,@RemoveSectorFlagChange,#id=13);
+
+      prMusic = desert_music;
+
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            Send(First(i),@MsgSendUser,#message_rsc=acid_rain_ended_msg);
+         }
+      }
+      propagate;
+   }
+   
+   StartBrightHeat()
+   {
+      local i;
+      piBrightHeat = TRUE;
+
+      prMusic = desert_music;
+      
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            Send(First(i),@MsgSendUser,#message_rsc=bright_heat_began_msg);
+         }
+      }
+      return;
+   }
+   
+   EndBrightHeat()
+   {
+      local i;
+      
+      piBrightHeat = FALSE;
+      
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            Send(First(i),@MsgSendUser,#message_rsc=bright_heat_ended_msg);
+         }
+      }
+      
+      return;
+   }
+
    GetRegion()
    {
       return RID_DESERT;
@@ -316,6 +519,12 @@ messages:
          {
             Post(what,@MsgSendUser,#message_rsc=DesertUseColdRing_msg);
          }
+         if (IsClass(use_item,&AcidRing)
+            OR IsClass(use_item,&SimpleHelm))
+            AND ptAcidRainDamageTimer <> $
+         {
+            Post(what,@MsgSendUser,#message_rsc=DesertUseAcidRing_msg);
+         }
       }
 
       propagate;
@@ -334,6 +543,11 @@ messages:
             AND ptBlizzardDamageTimer <> $
          {
             Post(who,@MsgSendUser,#message_rsc=DesertCastResistCold_msg);
+         }
+         if IsClass(oSpell,&ResistAcid)
+            AND ptAcidRainDamageTimer <> $
+         {
+            Post(who,@MsgSendUser,#message_rsc=DesertCastResistAcid_msg);
          }
       }
 
