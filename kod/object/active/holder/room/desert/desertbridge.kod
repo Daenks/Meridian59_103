@@ -39,15 +39,11 @@ properties:
    piRoom_num = RID_DESERTBRIDGE
 
 messages:
-
-% West Entrance: row 3, col 1, fine row 15, fine col 27, face east
-% Coming from the east: row 18, col 182, fine row 49, fine col 59, face west
-
  
    CreateStandardExits()
    {
       plEdge_Exits = $;
-      plEdge_Exits = Cons([ LEAVE_WEST, RID_WAYLAYOASIS, 15, 15, ROTATE_NONE ],plEdge_Exits);
+      plEdge_Exits = Cons([ LEAVE_WEST, RID_WAYLAYOASIS, 48, 127, ROTATE_NONE ],plEdge_Exits);
       plEdge_Exits = Cons([ LEAVE_EAST, RID_DESERTDUNES, 5, 5, ROTATE_NONE ],plEdge_Exits);
 
       propagate;

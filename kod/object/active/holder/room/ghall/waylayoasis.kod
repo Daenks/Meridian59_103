@@ -145,7 +145,6 @@ messages:
    {
       plEdge_Exits = $;
       plEdge_Exits = Cons([ LEAVE_WEST, RID_DESERTPATH1, 11, 58, ROTATE_NONE ],plEdge_Exits);
-      plEdge_Exits = Cons([ LEAVE_EAST, RID_DESERTBRIDGE, 4, 5, ANGLE_EAST ],plEdge_Exits);
 
       propagate;
    }
@@ -345,6 +344,15 @@ messages:
 
    SomethingMoved(what = $,new_row = $, new_col = $)
    {
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTBRIDGE),
+              #new_row=3,#new_col=3,#fine_row=50,#fine_col=9,
+              #new_angle=ANGLE_EAST);
+         return;
+      }
+
       if new_row > (Send(self,@GetRoomRows)-1) and (new_col < 30)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
