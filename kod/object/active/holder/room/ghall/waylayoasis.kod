@@ -14,12 +14,14 @@ constants:
 
    include blakston.khd
 
-   CHEST_PASSAGE_SECTOR = 4
    LIFT_DELAY = 10000
-   ENTRANCE_SECTOR1 = 1
-   ENTRANCE_SECTOR2 = 2
-   HALL_SECTORS = 5
-   LEDGE_SECTORS = 6
+   ENTRANCE_SECTOR1 = 20
+   ENTRANCE_SECTOR2 = 21
+   
+   HALL_SECTORS_SOUTH = 22
+   LEDGE_SECTORS = 23
+   HALL_SECTORS_NORTH = 24
+   CHEST_PASSAGE_SECTOR = 25
    
    AREA_OUTSIDE = 0
    AREA_INSIDE = 1
@@ -54,10 +56,15 @@ resources:
 
    room_waylayoasis = waylayoasis.roo
    room_name_waylayoasis = "Waylay Oasis"
+   waylayoasis_music = orcpit.mp3
+   
+   waterfall_sound_oasis = wfall2.wav
 
 classvars:
 
    vrName = room_name_waylayoasis
+
+   viTerrain_type = TERRAIN_BADLANDS | TERRAIN_TEMPLE
 
    viTeleport_row = 58
    viTeleport_col = 51
@@ -84,6 +91,8 @@ classvars:
 
    viSeconds_til_close = 8
 
+   viWeatherZone = WEATHER_ZONE_DESERT
+
 properties:
 
    piBaseLight = LIGHT_DARK
@@ -98,6 +107,10 @@ properties:
    ptEntrance = $
    plInside_doors = $
 
+   prMusic = waylayoasis_music
+
+   pbSnowGroundTexture = TRUE
+
 messages:
 
    Constructor()
@@ -110,6 +123,13 @@ messages:
       % This is a box containing the guild door, used
       % for removing players from it when it closes.
       plEntrance = [ 6850, 7250, 10650, 11100 ];
+
+      propagate;
+   }
+
+   Constructed()
+   {
+      plLooping_sounds = [[ waterfall_sound_oasis, 21, 40, 65, 100 ]];
 
       propagate;
    }
@@ -139,6 +159,74 @@ messages:
       }
 
       propagate;
+   }
+
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)
+   "Conversation on ledges can be heard anywhere. "
+   "Also, chest only opens from inside areas (not ledges)."
+   {
+      local i, each_obj, iSpeakerSection, iEachObjSection;
+
+      if what = $
+      {
+         propagate;
+      }
+
+      if IsClass(what,&Admin) AND stringEqual(string,"shatterlock")
+      {
+         Send(self,@OpenEntranceDoor);
+
+         propagate;
+      }
+
+      if type = SAY_YELL OR NOT IsClass(what,&Player)
+      {
+         propagate;
+      }
+
+      iSpeakerSection = Send(self,@GetSection,#who=what,
+                              #iRow=Send(what,@GetRow),
+                              #iCol=Send(what,@GetCol),
+                              #iFineRow=Send(what,@GetFineRow),
+                              #iFineCol=Send(what,@GetFineCol));
+
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+
+         if Send(self,@SayRangeCheck,#talker=what,#hearer=each_obj)
+         {
+            iEachObjSection = Send(self,@GetSection,#who=each_obj,
+                                    #iRow=Send(each_obj,@GetRow),
+                                    #iCol=Send(each_obj,@GetCol),
+                                    #iFineRow=Send(each_obj,@GetFineRow),
+                                    #iFineCol=Send(each_obj,@GetFineCol));
+
+            if iSpeakerSection = iEachObjSection
+               OR iSpeakerSection = AREA_LEDGES
+            {
+               Send(each_obj,@SomeoneSaid,#what=what,#type=type,#string=string,
+                     #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
+                     #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
+            }
+            else
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=guildhall_muffled);
+            }
+         }
+      }
+
+      if poGuild_owner <> $
+         AND StringEqual(string,Send(poGuild_owner,@GetPassword))
+         AND iSpeakerSection = AREA_INSIDE
+         AND NOT pbSecretDoorOpen
+         AND type <> SAY_EMOTE
+      {
+         Send(self,@OpenSecretDoor);
+      }
+
+      return;
    }
 
    ValidEntry(what=$)
@@ -191,7 +279,8 @@ messages:
                       *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
       {
          if iServerID = CHEST_PASSAGE_SECTOR
-            OR iServerID = HALL_SECTORS
+            OR iServerID = HALL_SECTORS_SOUTH
+            OR iServerID = HALL_SECTORS_NORTH
          {
             return AREA_INSIDE;
          }
@@ -342,8 +431,6 @@ messages:
 
       % Chest room
       Send(self,@NewHold,#what=Create(&Brazier),#new_row=16,#new_col=79,
-            #fine_row=16,#fine_col=48);
-      Send(self,@NewHold,#what=Create(&Brazier),#new_row=23,#new_col=79,
             #fine_row=16,#fine_col=48);
       Send(self,@NewHold,#what=Create(&Chest),#new_row=17,#new_col=80,
             #fine_row=61,#fine_col=9,#new_angle=ANGLE_EAST);
