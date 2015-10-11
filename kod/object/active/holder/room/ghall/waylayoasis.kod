@@ -143,6 +143,31 @@ messages:
       propagate;
    }
 
+   RecalcLightAndWeather()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@EndSnow);
+            }
+            break;
+         case DAY_PHASE_DAY:
+            break;
+         case DAY_PHASE_DUSK:
+            break;
+         case DAY_PHASE_NIGHT:
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@StartSnow);
+            }
+            break;
+      }
+
+      propagate;
+   }
+
    SomethingTryGo(what=$, row=$,  col = $)
    {
       local i;
@@ -382,6 +407,32 @@ messages:
             #new_row=nth(i,1),#new_col=nth(i,2),
             #fine_row=nth(i,3),#fine_col=nth(i,4));
       }
+
+      % southeast hermit
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=52,#new_col=114,#fine_row=59,#fine_col=35);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=52,#new_col=115,#fine_row=33, #fine_col=52,
+            #new_angle=ANGLE_WEST);
+
+      % northeast cave
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=31,#new_col=116,#fine_row=59,#fine_col=25);
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=36,#new_col=122,#fine_row=50,#fine_col=5);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=37,#new_col=123,#fine_row=42, #fine_col=49,
+            #new_angle=ANGLE_WEST);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=37,#new_col=119,#fine_row=46, #fine_col=44,
+            #new_angle=ANGLE_WEST);
+      
+      % north cave
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=14,#new_col=106,#fine_row=59,#fine_col=55);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=14,#new_col=107,#fine_row=7, #fine_col=22,
+            #new_angle=ANGLE_WEST);
 
       Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=98,
             #fine_row=15,#fine_col=7);

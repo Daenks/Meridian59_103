@@ -15,11 +15,11 @@ constants:
 
    include blakston.khd
    
-   BLIZZARD_MIN_DAMAGE = 1
-   BLIZZARD_MAX_DAMAGE = 5
+   BLIZZARD_MIN_DAMAGE = 6
+   BLIZZARD_MAX_DAMAGE = 14
    
-   HEAT_MIN_DAMAGE = 3
-   HEAT_MAX_DAMAGE = 8
+   HEAT_MIN_DAMAGE = 8
+   HEAT_MAX_DAMAGE = 17
 
 resources:
 
@@ -38,6 +38,12 @@ resources:
       "Faren's chill banishes the sun's heat."
    DesertCastResistCold_msg = \
       "Faren's magical fire battles away the gnawing desert chill."
+
+   snow_began_msg = \
+      "Snow begins whipping across the sands as the last of the sun's heat "
+      "fades."
+   snow_ended_msg = \
+      "The desert's burgeoning heat melts away the chill night's snow."
 
 classvars:
 
@@ -61,6 +67,83 @@ properties:
    piHeatDamageTime = 5000
 
 messages:
+
+   RecalcLightAndWeather()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@EndSnow);
+            }
+            Send(self,@EndBlizzard);
+            break;
+         case DAY_PHASE_DAY:
+            Send(self,@BeginHeat);
+            break;
+         case DAY_PHASE_DUSK:
+            Send(self,@EndHeat);
+            break;
+         case DAY_PHASE_NIGHT:
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@StartSnow);
+            }
+            Send(self,@BeginBlizzard);
+            break;
+      }
+
+      propagate;
+   }
+   
+   BeginHeat()
+   {
+      if pbUser_in_room
+         AND vbDoHeat
+         AND Send(SYS,@GetDayPhase) = DAY_PHASE_DAY
+         AND ptHeatDamageTimer = $
+      {
+         ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
+                                piHeatDamageTime);
+      }
+      return;
+   }
+   
+   EndHeat()
+   {
+      if ptHeatDamageTimer <> $
+      {
+         DeleteTimer(ptHeatDamageTimer);
+      }
+      ptHeatDamageTimer = $;
+      return;
+   }
+   
+   BeginBlizzard()
+   {
+      if pbUser_in_room
+         AND vbDoBlizzard
+         AND Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+         AND ptBlizzardDamageTimer = $
+      {
+         piBlizzardDamageTime = Bound(piBlizzardDamageTime +
+                                   Random(-100,100),500,6000);
+         ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
+                                    piBlizzardDamageTime);
+      }
+      return;
+   }
+   
+   EndBlizzard()
+   {
+      if ptBlizzardDamageTimer <> $
+      {
+         DeleteTimer(ptBlizzardDamageTimer);
+      }
+      ptBlizzardDamageTimer = $;
+      return;
+   }
 
    DealHeatDamage()
    {
@@ -88,8 +171,7 @@ messages:
          }
       }
 
-      ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
-                                    piHeatDamageTime);
+      Send(self,@BeginHeat);
 
       return;
    }
@@ -120,47 +202,23 @@ messages:
          }
       }
 
-      piBlizzardDamageTime = Bound(piBlizzardDamageTime +
-                                   Random(-100,100),500,6000);
-      ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
-                                    piBlizzardDamageTime);
+      Send(self,@BeginBlizzard);
 
       return;
    }
    
    FirstUserEntered()
    {
-      % If it's snowing, do blizzard. Else, do heat.
-      % The desert is not kind.
-      if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
-      {
-         if vbDoBlizzard
-         {
-            ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
-                                       piBlizzardDamageTime);
-         }
-      }
-      else if vbDoHeat
-      {
-         ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
-                                piHeatDamageTime);
-      }
+      Post(self,@BeginHeat);
+      Post(self,@BeginBlizzard);
 
       propagate;
    }
    
    LastUserLeft()
    {
-      if ptBlizzardDamageTimer <> $
-      {
-         DeleteTimer(ptBlizzardDamageTimer);
-         ptBlizzardDamageTimer = $;
-      }
-      if ptHeatDamageTimer <> $
-      {
-         DeleteTimer(ptHeatDamageTimer);
-         ptHeatDamageTimer = $;
-      }
+      Post(self,@EndHeat);
+      Post(self,@EndBlizzard);
 
       propagate;
    }
@@ -168,18 +226,6 @@ messages:
    StartSnow(bOnGround=TRUE)
    {
       local i;
-
-      % Check if we can have weather effects here.
-      if NOT pbWeatherEffects
-      {
-         return;
-      }
-
-      % If there's a sandstorm effect here, clear it.
-      if Send(self,@CheckRoomFlag,#flag=ROOM_SANDSTORM)
-      {
-         Send(self,@EndSandstorm);
-      }
 
       if bOnGround
       {
@@ -205,22 +251,7 @@ messages:
          if IsClass(First(i),&User)
          {
             Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
-         }
-      }
-      
-      if pbUser_in_room
-      {
-         if vbDoBlizzard
-         {
-            ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
-                                       piBlizzardDamageTime);
-         }
-
-         % Turn heat off if users are present
-         if ptHeatDamageTimer <> $
-         {
-            DeleteTimer(ptHeatDamageTimer);
-            ptHeatDamageTimer = $;
+            Send(First(i),@MsgSendUser,#message_rsc=snow_began_msg);
          }
       }
 
@@ -231,22 +262,6 @@ messages:
    "Use override if rooms have manually placed textures."
    {
       local i;
-      
-      if ptBlizzardDamageTimer <> $
-      {
-         DeleteTimer(ptBlizzardDamageTimer);
-      }
-      ptBlizzardDamageTimer = $;
-      
-      % Turn heat back on if there are users present
-      if pbUser_in_room
-      {
-         if vbDoHeat
-         {
-            ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
-                                   piHeatDamageTime);
-         }
-      }
 
       if pbSnowGroundTexture
          OR override
@@ -266,6 +281,7 @@ messages:
          if IsClass(First(i),&User)
          {
             Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            Send(First(i),@MsgSendUser,#message_rsc=snow_ended_msg);
          }
       }
 
@@ -279,18 +295,8 @@ messages:
    
    Delete()
    {
-      if ptBlizzardDamageTimer <> $
-      {
-         DeleteTimer(ptBlizzardDamageTimer);
-      }
-      ptBlizzardDamageTimer = $;
-
-      if ptHeatDamageTimer <> $
-      {
-         DeleteTimer(ptHeatDamageTimer);
-      }
-      ptHeatDamageTimer = $;
-
+      Send(self,@EndHeat);
+      Send(self,@EndBlizzard);
       propagate;
    }
 
