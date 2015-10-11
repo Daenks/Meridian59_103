@@ -14,21 +14,324 @@ DesertRoom is Room
 constants:
 
    include blakston.khd
+   
+   BLIZZARD_MIN_DAMAGE = 1
+   BLIZZARD_MAX_DAMAGE = 5
+   
+   HEAT_MIN_DAMAGE = 3
+   HEAT_MAX_DAMAGE = 8
 
 resources:
+
+   desert_music = cz08.mp3
+   desert_music_snow = cz04.mp3
+   
+   blizzard_damage_msg = "The biting cold gnaws at your bones."
+   heat_damage_msg = \
+      "The intense heat makes you sweat profusely under your heavy gear."
+
+   DesertUseFireRing_msg = \
+      "And, out here, the sun might just be the most dangerous enemy of all."
+   DesertUseColdRing_msg = \
+      "The icy breezes no longer bother you."
+   DesertCastResistFire_msg = \
+      "Faren's chill banishes the sun's heat."
+   DesertCastResistCold_msg = \
+      "Faren's magical fire battles away the gnawing desert chill."
 
 classvars:
 
    viTerrain_type = TERRAIN_BADLANDS 
+   
+   viBlizzardVigorDrop = 50000
+   vbDoBlizzard = TRUE
+
+   viHeatVigorDrop = 30000
+   vbDoHeat = TRUE
 
 properties:
 
+   pbSnowGroundTexture = TRUE
+   
+   ptBlizzardDamageTimer = $
+   ptHeatDamageTimer = $
+   
+   % Blizzard ebbs and rises
+   piBlizzardDamageTime = 3000
+   piHeatDamageTime = 5000
 
 messages:
+
+   DealHeatDamage()
+   {
+      local i;
+      
+      ptHeatDamageTimer = $;
+
+      % Deals heat damage to players who wear armor and don't have a
+      % resist fire ring or spell.
+      foreach i in plActive
+      {
+         if IsClass(First(i),&Player)
+            AND NOT Send(First(i),@IsInCannotInteractMode)
+         {
+            if Send(First(i),@IsUsingA,#class=&Armor)
+               AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistFire)
+               AND NOT Send(First(i),@IsUsingA,#class=&FireRing)
+            {
+               Send(First(i),@AssessDamage,#what=self,
+                     #damage=Random(HEAT_MIN_DAMAGE,HEAT_MAX_DAMAGE),
+                     #aspell=ATCK_SPELL_FIRE,#report=FALSE);
+               Send(First(i),@AddExertion,#amount=viHeatVigorDrop);
+               Send(First(i),@MsgSendUser,#message_rsc=heat_damage_msg);
+            }
+         }
+      }
+
+      ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
+                                    piHeatDamageTime);
+
+      return;
+   }
+
+   DealBlizzardDamage()
+   {
+      local i;
+      
+      ptBlizzardDamageTimer = $;
+
+      % Robes of any type, cold resist rings, and cold resist buff protects
+      % from blizzard damage.
+      foreach i in plActive
+      {
+         if IsClass(First(i),&Player)
+            AND NOT Send(First(i),@IsInCannotInteractMode)
+         {
+            if NOT Send(First(i),@IsUsingA,#class=&Robe)
+               AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistCold)
+               AND NOT Send(First(i),@IsUsingA,#class=&ColdRing)
+            {
+               Send(First(i),@AssessDamage,#what=self,
+                     #damage=Random(BLIZZARD_MIN_DAMAGE,BLIZZARD_MAX_DAMAGE),
+                     #aspell=ATCK_SPELL_COLD,#report=FALSE);
+               Send(First(i),@AddExertion,#amount=viBlizzardVigorDrop);
+               Send(First(i),@MsgSendUser,#message_rsc=blizzard_damage_msg);
+            }
+         }
+      }
+
+      piBlizzardDamageTime = Bound(piBlizzardDamageTime +
+                                   Random(-100,100),500,6000);
+      ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
+                                    piBlizzardDamageTime);
+
+      return;
+   }
+   
+   FirstUserEntered()
+   {
+      % If it's snowing, do blizzard. Else, do heat.
+      % The desert is not kind.
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+      {
+         if vbDoBlizzard
+         {
+            ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
+                                       piBlizzardDamageTime);
+         }
+      }
+      else if vbDoHeat
+      {
+         ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
+                                piHeatDamageTime);
+      }
+
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      if ptBlizzardDamageTimer <> $
+      {
+         DeleteTimer(ptBlizzardDamageTimer);
+         ptBlizzardDamageTimer = $;
+      }
+      if ptHeatDamageTimer <> $
+      {
+         DeleteTimer(ptHeatDamageTimer);
+         ptHeatDamageTimer = $;
+      }
+
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      local i;
+
+      % Check if we can have weather effects here.
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      % If there's a sandstorm effect here, clear it.
+      if Send(self,@CheckRoomFlag,#flag=ROOM_SANDSTORM)
+      {
+         Send(self,@EndSandstorm);
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Desert doesn't truly freeze over. Sludge water tagged as ID 13.
+            % Sludge water sidedefs tagged as ID 14.
+            Send(self,@ChangeTexture,#id=13,#new_texture=09363,
+                  #flags=CTF_FLOOR);
+            % Change texture.
+            Send(self,@ChangeTexture,#id=14,#new_texture=09363,
+                  #flags=CTF_NORMALWALL);
+            % Stop water scroll effect and remove depth.
+            Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH1,
+                  #scrollSpeed=SCROLL_SLOW);
+         }
+      }
+
+      prMusic = desert_music_snow;
+
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+         }
+      }
+      
+      if pbUser_in_room
+      {
+         if vbDoBlizzard
+         {
+            ptBlizzardDamageTimer = CreateTimer(self,@DealBlizzardDamage,
+                                       piBlizzardDamageTime);
+         }
+
+         % Turn heat off if users are present
+         if ptHeatDamageTimer <> $
+         {
+            DeleteTimer(ptHeatDamageTimer);
+            ptHeatDamageTimer = $;
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   "Use override if rooms have manually placed textures."
+   {
+      local i;
+      
+      if ptBlizzardDamageTimer <> $
+      {
+         DeleteTimer(ptBlizzardDamageTimer);
+      }
+      ptBlizzardDamageTimer = $;
+      
+      % Turn heat back on if there are users present
+      if pbUser_in_room
+      {
+         if vbDoHeat
+         {
+            ptHeatDamageTimer = CreateTimer(self,@DealHeatDamage,
+                                   piHeatDamageTime);
+         }
+      }
+
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove sludge water textures.
+         Send(self,@RemoveTextureChange,#id=13);
+         % Remove sludge water sides.
+         Send(self,@RemoveTextureChange,#id=14);
+         % Reset sector flag changes to sludge water.
+         Send(self,@RemoveSectorFlagChange,#id=13);
+      }
+
+      prMusic = desert_music;
+
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+         }
+      }
+
+      propagate;
+   }
 
    GetRegion()
    {
       return RID_DESERT;
+   }
+   
+   Delete()
+   {
+      if ptBlizzardDamageTimer <> $
+      {
+         DeleteTimer(ptBlizzardDamageTimer);
+      }
+      ptBlizzardDamageTimer = $;
+
+      if ptHeatDamageTimer <> $
+      {
+         DeleteTimer(ptHeatDamageTimer);
+      }
+      ptHeatDamageTimer = $;
+
+      propagate;
+   }
+
+   ReqSomethingUse(what = $, use_item = $)
+   {
+      if IsClass(what,&Player)
+         AND NOT Send(what,@IsUsingA,#class=&RingofLethargy)
+      {
+         if IsClass(use_item,&FireRing)
+            AND ptHeatDamageTimer <> $
+         {
+            Post(what,@MsgSendUser,#message_rsc=DesertUseFireRing_msg);
+         }
+         if (IsClass(use_item,&ColdRing)
+            OR IsClass(use_item,&Robes))
+            AND ptBlizzardDamageTimer <> $
+         {
+            Post(what,@MsgSendUser,#message_rsc=DesertUseColdRing_msg);
+         }
+      }
+
+      propagate;
+   }
+
+   SpellCast(who = $,oSpell = $)
+   {
+      if IsClass(who,&Player)
+      {
+         if IsClass(oSpell,&ResistFire)
+            AND ptHeatDamageTimer <> $
+         {
+            Post(who,@MsgSendUser,#message_rsc=DesertCastResistFire_msg);
+         }
+         if IsClass(oSpell,&ResistCold)
+            AND ptBlizzardDamageTimer <> $
+         {
+            Post(who,@MsgSendUser,#message_rsc=DesertCastResistCold_msg);
+         }
+      }
+
+      propagate;
    }
 
 end

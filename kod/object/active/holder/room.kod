@@ -963,6 +963,11 @@ messages:
       {
          return RID_BRAX;
       }
+      
+      if (piRoom_num >= RID_DESERT) and (piRoom_num <= RID_DESERT_END)
+      {
+         return RID_DESERT;
+      }
 
       return RID_DEFAULT;
    }
