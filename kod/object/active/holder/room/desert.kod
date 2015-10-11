@@ -223,7 +223,7 @@ messages:
 
    DealAcidRainDamage()
    {
-      local i;
+      local i, iDamageResult;
       
       ptAcidRainDamageTimer = $;
 
@@ -238,11 +238,17 @@ messages:
                AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistAcid)
                AND NOT Send(First(i),@IsUsingA,#class=&AcidRing)
             {
-               Send(First(i),@AssessDamage,#what=self,
+               Send(First(i),@AddExertion,#amount=viAcidRainVigorDrop);
+               iDamageResult = Send(First(i),@AssessDamage,#what=self,
                      #damage=Random(ACID_MIN_DAMAGE,ACID_MAX_DAMAGE),
                      #aspell=ATCK_SPELL_ACID,#report=FALSE);
-               Send(First(i),@AddExertion,#amount=viAcidRainVigorDrop);
                Send(First(i),@MsgSendUser,#message_rsc=acid_rain_damage_msg);
+               
+               % Acid Rain killed a player!
+               if iDamageResult = $
+               {
+                  Send(First(i),@Killed,#what=First(i));
+               }
             }
          }
       }
@@ -254,7 +260,7 @@ messages:
 
    DealHeatDamage()
    {
-      local i;
+      local i, iDamageResult;
       
       ptHeatDamageTimer = $;
 
@@ -269,11 +275,17 @@ messages:
                AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistFire)
                AND NOT Send(First(i),@IsUsingA,#class=&FireRing)
             {
-               Send(First(i),@AssessDamage,#what=self,
+               Send(First(i),@AddExertion,#amount=viHeatVigorDrop);
+               iDamageResult = Send(First(i),@AssessDamage,#what=self,
                      #damage=Random(HEAT_MIN_DAMAGE,HEAT_MAX_DAMAGE),
                      #aspell=ATCK_SPELL_FIRE,#report=FALSE);
-               Send(First(i),@AddExertion,#amount=viHeatVigorDrop);
                Send(First(i),@MsgSendUser,#message_rsc=heat_damage_msg);
+               
+               % Heat killed a player!
+               if iDamageResult = $
+               {
+                  Send(First(i),@Killed,#what=First(i));
+               }
             }
          }
       }
@@ -285,7 +297,7 @@ messages:
 
    DealBlizzardDamage()
    {
-      local i;
+      local i, iDamageResult;
       
       ptBlizzardDamageTimer = $;
 
@@ -300,11 +312,17 @@ messages:
                AND NOT Send(First(i),@IsEnchanted,#byClass=&ResistCold)
                AND NOT Send(First(i),@IsUsingA,#class=&ColdRing)
             {
-               Send(First(i),@AssessDamage,#what=self,
+               Send(First(i),@AddExertion,#amount=viBlizzardVigorDrop);
+               iDamageResult = Send(First(i),@AssessDamage,#what=self,
                      #damage=Random(BLIZZARD_MIN_DAMAGE,BLIZZARD_MAX_DAMAGE),
                      #aspell=ATCK_SPELL_COLD,#report=FALSE);
-               Send(First(i),@AddExertion,#amount=viBlizzardVigorDrop);
                Send(First(i),@MsgSendUser,#message_rsc=blizzard_damage_msg);
+               
+               % Blizzard killed a player!
+               if iDamageResult = $
+               {
+                  Send(First(i),@Killed,#what=First(i));
+               }
             }
          }
       }
