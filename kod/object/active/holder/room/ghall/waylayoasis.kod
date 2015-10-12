@@ -500,8 +500,8 @@ messages:
             #fine_row=61,#fine_col=9,#new_angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&Chest),#new_row=20,#new_col=80,
             #fine_row=37,#fine_col=9,#new_angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Chest),#new_row=22,#new_col=82,
-            #fine_row=46,#fine_col=23,#new_angle=ANGLE_NORTH);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=22,#new_col=80,
+            #fine_row=46,#fine_col=9,#new_angle=ANGLE_EAST);
 
       propagate;
    }
