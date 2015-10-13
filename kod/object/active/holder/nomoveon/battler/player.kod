@@ -849,6 +849,12 @@ properties:
    % hours of online time.
    ptReward_timer = $
 
+   % Bonus points for not sitting in an inn or spending all your time in safe
+   % areas, thie amount of points awarded grows based on piRiskBonusScalar
+   % which builds the longer the player stays out of safe ar3eas
+   piRiskBonusScalar = 1
+   ptRiskBonusTimer = $
+
    % Flags for various character attributes.
    piFlags = 0
    piFlags2 = 0
@@ -1700,16 +1706,14 @@ messages:
 
       Send(self,@ResetGainFlags);
 
-      % Are we moving somewhere "safe" or in a frenzy??
       if NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
          AND NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SANCTUARY)
          AND NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFE_DEATH)
+         AND NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_PK)
          AND NOT Send(SYS,@GetChaosNight)
       {
-         % Don't set the "haven't moved" flag if we're in a safe area.
          Send(self,@SetPlayerFlag,#flag=PFLAG_MOVED_SINCE_ENTRY,#value=FALSE);
 
-         % Don't create the revenant if we're in a safe location.
          if (piFlags & PFLAG_HAUNTED)
          {
             Create(&Revenant,#target=self,#location=poOwner,
@@ -1717,6 +1721,35 @@ messages:
                         (5*piKill_Count_decay)),95,215),
                    #diff=bound(piBase_Max_health/10,4,9),
                    #karmic=-piKarma/100);
+         }
+
+         % player can be pked, start risk bonus timer
+         if (Send(self,@AssessPlayerRisk) > 0
+            AND ptRiskBonusTimer = $
+            AND piTraining_points < 2000)
+         {
+            ptRiskBonusTimer = CreateTimer(self,@AwardRiskBonus,
+               Send(SETTINGS_OBJECT,@GetRiskBonusInterval));
+         }
+         % player has become unpkable, end risk bonus timer
+         % (usually triggered by unguilded/unshielded in guild only pvp room)
+         else if (Send(self,@AssessPlayerRisk) = 0
+                     AND ptRiskBonusTimer <> $)
+         {
+            DeleteTimer(ptRiskBonusTimer);
+            ptRiskBonusTimer = $;
+            piRiskBonusScalar = 1;
+         }
+      }
+      else
+      {
+         % in a safe room, stop the risk bonus timer and clear bonus scalar
+         % clear any bonus points gained
+         if (ptRiskBonusTimer <> $)
+         {
+            DeleteTimer(ptRiskBonusTimer);
+            ptRiskBonusTimer = $;
+            piRiskBonusScalar = 1;
          }
       }
 
@@ -2406,6 +2439,13 @@ messages:
       {
          DeleteTimer(ptReward_timer);
          ptReward_timer = $;
+      }
+
+      if (ptRiskBonusTimer <> $)
+      {
+         DeleteTimer(ptRiskBonusTimer);
+         ptRiskBonusTimer = $;
+         piRiskBonusScalar = 1;
       }
 
       Send(self,@CancelRescue);
@@ -9253,6 +9293,91 @@ messages:
 
       return;
       
+   }
+
+   AssessPlayerRisk()
+   {
+      local iRisk;
+
+      if (Send(SYS,@GetChaosNight))
+      {
+         return 0;
+      }
+
+      if (poOwner = $)
+      {
+         return;
+      }
+
+      if (piBase_max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP))
+      {
+         return 0;
+      }
+
+      if (piFlags & PFLAG_TEMPSAFE)
+      {
+         return 0;
+      }
+
+      if (Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFE_DEATH)
+         OR Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+         OR Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_PK))
+      {
+         return 0;
+      }
+
+      if (Send(poOwner,@CheckRoomFlag,#flag=ROOM_GUILD_PK_ONLY)
+         AND poGuild = $
+         AND Send(self,@FindUsing,#class=&SoldierShield))
+      {
+         return 0;
+      }
+
+      % not in guild halls (guilded can let their friends in)!
+      if (IsClass(poOwner,&GuildHall))
+      {
+         return 0;
+      }
+
+      % from this point on the player is taking some amount of risk in their
+      % current location
+      
+      iRisk = Send(SETTINGS_OBJECT,@GetDefaultDeathCost);
+
+      return iRisk;
+   }
+
+   GetRiskTimer()
+   {
+      return ptRiskBonusTimer;
+   }
+
+   AwardRiskBonus()
+   {
+      if (Send(self,@AssessPlayerRisk) = 0)
+      {
+         ptRiskBonusTimer = $;
+         return;
+      }
+
+      if (piTraining_points < 2000)
+      {
+         Send(self,@AddTrainingPoints,
+            #points=piRiskBonusScalar * Send(SETTINGS_OBJECT,
+                                                @GetRiskBonusBaseAmount),
+            #report=FALSE,
+            #bCap=FALSE);
+
+         % restart the timer and increase reward scalar
+         ptRiskBonusTimer = CreateTimer(self,@AwardRiskBonus,
+                  Send(SETTINGS_OBJECT,@GetRiskBonusInterval));
+         if (piRiskBonusScalar < Send(SETTINGS_OBJECT,@GetRiskBonusScalar))
+         {
+            piRiskBonusScalar++;
+         }
+      }
+
+      return;
    }
 
    GetHighMark()
