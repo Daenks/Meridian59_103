@@ -23,14 +23,16 @@ resources:
       "~B~k[Event]~n ~B~v The rivals fall back in failure."
 
    JonasAttack_phase2_msg = \
-      "~B~k[Event]~n ~B~v The rebels have brought mountain beast to assist them!"
+      "~B~k[Event]~n ~B~v The rebels have brought mountain beast to assist "
+      "them!"
 
    JonasAttack_phase3_msg = \
-      "~B~k[Event]~n ~B~v The royal princess has sent her troops to assist in the attack."
+      "~B~k[Event]~n ~B~v The royal princess has sent her troops to assist in "
+      "the attack."
 
    JonasAttack_finalphase_msg = \
-      "~B~k[Event]~n ~B~v The royal guards have brought beast from the mountains to "
-      "assist them in there final attack!"
+      "~B~k[Event]~n ~B~v The royal guards have brought beast from the "
+      "mountains to assist them in there final attack!"
 
 classvars:
 
@@ -42,44 +44,62 @@ classvars:
 properties:
 
    plEventRooms = $
-   piRebelTroop = 15
-   piTroll = 10
-   piPrincessTroop = 15
+   piRebelTroops = 15
+   piTrolls = 10
+   piPrincessTroops = 15
    piGroundWormQueen = 10
-   piActiveRoom = RID_TOS, RID_TOS_EAST, RID_BLACKSTONE
+   piActiveRoom = RID_TOS_EAST
    piPhase = 0
 
 messages:
 
-   Constructor()
+   ChooseRoom()
    {
-      plEventRooms = [ RID_TOS, RID_TOS_EAST, RID_BLACKSTONE ];
-      if piActiveRoom = RID_TOS
+      local iRand;
+
+      if (piPhase = 4)
       {
-         plSpawnRects = [ [[54,5],[61,13]], [[49,11],[62,27]],
-                          [[54,29],[59,40]], [[14,16],[49,21]] ];
+         iRand = Random(1,3);
       }
-      
-      if piActiveRoom = RID_BLACKSTONE
+      else
       {
-         plSpawnRects = [ [[15,21],[15,38]], [[30,39],[30,25]],
-                             [[24,19],[24,37]], [[20,29],[39,29]] ];
-      }
-      
-      if piActiveRoom = RID_TOS_EAST
-      {
-         plSpawnRects = [ [[27,10],[13,5]], [[36,7],[42,16]],
-                          [[45,30],[37,25]], [[45,41],[23,22]] ];
+         iRand = Random(1,piPhase);
       }
 
-      propagate;
+      plEventRooms = [ RID_TOS, RID_TOS_EAST, RID_DUKE1 ];
+
+      switch (iRand)
+
+      {
+         case 1:
+            piActiveRoom = RID_TOS_EAST;
+            plSpawnRects = [ [[22,8],[30,17]], [[36,8],[48,24]],
+                           [[37,25],[45,30]], [[23,22],[45,41]] ];
+            break;
+      
+         case 2:
+            piActiveRoom = RID_TOS;
+            plSpawnRects = [ [[54,5],[61,13]], [[49,11],[62,27]],
+                           [[54,29],[59,40]], [[14,16],[49,21]] ];
+            break;
+
+         case 3:
+            piActiveRoom = RID_DUKE1;
+            plSpawnRects = [ [[14,20],[17,39]], [[33,23],[37,28]],
+                           [[24,19],[28,26]], [[21,31],[25,34]] ];
+            break;
+
+      }
+
+      return;
    }
 
    Update()
    {
       if piPhase = 1
       {
-         if Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         if (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+            #class=&RebelTroop) = 0)
          {
             Send(self,@PhaseTwo);
          }
@@ -87,8 +107,14 @@ messages:
 
       if piPhase = 2
       {
-         if Send(self,@CountMonsters,#type=&Troll) = 0
-            AND Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         if ((Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&Troll) = 0))
          {
             Send(self,@PhaseThree);
          }
@@ -96,9 +122,24 @@ messages:
 
       if piPhase = 3
       {
-         if Send(self,@CountMonsters,#type=&PrincessTroop) = 0
-            AND Send(self,@CountMonsters,#type=&Troll) = 0
-            AND Send(self,@CountMonsters,#type=&RebelTroop) = 0
+         if ((Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&PrincessTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&PrincessTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&PrincessTroop) = 0))
          {
             Send(self,@FinalPhase);
          }
@@ -106,13 +147,32 @@ messages:
 
       if piPhase = 4
       {
-         if Send(self,@CountMonsters,#type=&DarkAngel) = 0
+         if ((Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),@CountMonsters,
+               #class=&DarkAngel) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS_EAST),@CountMonsters,
+               #class=&PrincessTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_TOS),@CountMonsters,
+               #class=&PrincessTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&RebelTroop) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&Troll) = 0)
+            AND (Send(Send(SYS,@FindRoomByNum,#num=RID_DUKE1),
+               @CountMonsters,#class=&PrincessTroop) = 0))
          {
-            % Call EventEnd to handle ending the event properly. This
-            % deletes the event in the GameEventEngine, which also calls
+            % Call NotifyEngineEndEvent to handle ending the event properly.
+            % This deletes the event in the GameEventEngine, which also calls
             % the appropriate code in EndEvent, which handles the end of
-            % the specific event.
-            Send(self,@EventEnd);
+            % this event.
+            Send(self,@NotifyEngineEndEvent);
          }
       }
 
@@ -128,7 +188,7 @@ messages:
 
    PhaseOne()
    {
-      local i,lSpawnPoint;
+      local i,lSpawnPoint,oMonster;
 
       piPhase = 1;
 
@@ -136,10 +196,15 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&RebelTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&RebelTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -148,7 +213,7 @@ messages:
 
    PhaseTwo()
    {
-      local i,lSpawnPoint;
+      local i,lSpawnPoint,oMonster;
 
       piPhase = 2;
 
@@ -162,10 +227,15 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&RebelTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&RebelTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -173,10 +243,15 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&Troll);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&Troll),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -185,7 +260,7 @@ messages:
 
    PhaseThree()
    {
-      local i,lSpawnPoint;
+      local i,lSpawnPoint,oMonster;
 
       piPhase = 3;
 
@@ -199,10 +274,15 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&RebelTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&RebelTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -210,21 +290,31 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&Troll);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&Troll),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
-      i = piPrincessTroop;
+      i = piPrincessTroops;
       
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&PrincessTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&PrincessTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -233,24 +323,29 @@ messages:
 
    FinalPhase()
    {
-      local i,lSpawnPoint;
+      local i,lSpawnPoint,oMonster;
 
-      piPhase = 3;
+      piPhase = 4;
 
       if vbAnnounce
       {
          Send(SYS,@SystemBroadcast,#type=SAY_MESSAGE,
-               #string=JonasAttack_phase3_msg);
+               #string=JonasAttack_finalphase_msg);
       }
 
       i = piRebelTroops;
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&RebelTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&RebelTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
@@ -258,32 +353,48 @@ messages:
 
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&Troll);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&Troll),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
-      i = piPrincessTroop;
+      i = piPrincessTroops;
       
       while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&PrincessTroop);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&PrincessTroop),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
          i = i - 1;
       }
 
       i = piGroundWormQueen;
       
-      while (i-- > 0)
+      while (i > 0)
       {
+         Send(self,@ChooseRoom);
          lSpawnPoint = Send(self,@MakeSpawnPoint);
+         oMonster = Create(&GroundWormQueen);
+         Send(oMonster,@SetDontDispose);
          Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),
-               @NewHold,#what=Create(&GroundWormQueen),
-               #new_row=Nth(lSpawnPoint,1),#new_col=Nth(lSpawnPoint,2));
+               @NewHold,
+               #what=oMonster,
+               #new_row=Nth(lSpawnPoint,1),
+               #new_col=Nth(lSpawnPoint,2));
+         i = i - 1;
       }
 
       return;
@@ -291,6 +402,8 @@ messages:
 
    EndEvent()
    {
+      Send(self,@ClearRooms);
+
       propagate;
    }
 

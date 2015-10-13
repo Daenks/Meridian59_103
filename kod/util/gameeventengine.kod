@@ -759,6 +759,20 @@ messages:
          AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_QORMAS));
    }
 
+   TestEventStart()
+   {
+      Send(self,@EventStart,#parm1=&JonasAttack);
+
+      return;
+   }
+
+   TestEventStop()
+   {
+      Send(self,@EventEnd,
+         #parm1=Send(self,@FindEventOfType,#event_type=&JonasAttack));
+      return;
+   }
+
    TestScheduleEvent(iHour=$,iMinute=$)
    {
       local iYear, iMonth, iDay;
