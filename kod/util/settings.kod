@@ -81,6 +81,20 @@ properties:
    % The training points we grant players each day to reward them for logging on.
    piLogonBonus = 200
 
+   %%% Risk based training points:
+   % the amount given is base amount * scalar and is granted by timer at the
+   % set interval.  Ponts are lost if you phase or enter safety during that
+   % interval.  scalse grows each interval until the Max scalar is reached
+
+   % risk based training point bonus max scalar
+   piRiskBonusMaxScalar = 5
+
+   % risk based training points base amount
+   piRiskBasedBonusBaseAmount = 2
+
+   % risk based training point bonus interval (600000 = 10 minutes)
+   piRiskBonusInterval = 600000
+
    % Multiplier for the amount of %s each mob you kill adds to your levelup chance.
    piHPGainMultiplier = 1
    
@@ -385,6 +399,21 @@ messages:
    GetLogonBonus()
    {
       return piLogonBonus;
+   }
+
+   GetRiskBonusScalar()
+   {
+      return piRiskBonusMaxScalar;
+   }
+
+   GetRiskBonusBaseAmount()
+   {
+      return piRiskBasedBonusBaseAmount;
+   }
+
+   getRiskBonusInterval()
+   {
+      return piRiskBonusInterval;
    }
 
    GetHPGainMultiplier()
