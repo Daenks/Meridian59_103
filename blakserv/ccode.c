@@ -4581,7 +4581,8 @@ int C_MinigameStringToNumber(int object_id,local_var_type *local_vars,
 int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
 				int num_name_parms,parm_node name_parm_array[])
-{	
+{
+#ifdef BLAK_PLATFORM_WINDOWS
 	val_type stat_type, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9, stat10, stat11, stat12, stat13;
 	resource_node *r_who_damaged, *r_who_attacker, *r_weapon, *r_victim, *r_killer, *r_room, *r_attack,
       *r_name, *r_home, *r_bind, *r_leader, *r_ghall;
@@ -4957,6 +4958,8 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 			break;
 	}
 
+#endif
+
 	return NIL;
 }
 
@@ -4991,7 +4994,11 @@ int C_GetSessionIP(int object_id,local_var_type *local_vars,
    // reverse the order, because the address is stored in network order in in6_addr
    for (int i = sizeof(struct in6_addr) - 1; i >= 0; i--)
    {
+#ifdef BLAK_PLATFORM_WINDOWS
       temp.v.data = session->conn.addr.u.Byte[i];
+#else
+      temp.v.data = session->conn.addr.s6_addr[i];
+#endif
       ret_val.v.data = Cons(temp, ret_val);
       ret_val.v.tag = TAG_LIST;
    }

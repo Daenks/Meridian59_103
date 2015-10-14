@@ -38,3 +38,4 @@ clean :
 	@-$(RM) $(BLAKSERVRUNDIR)\rsc\*.rsc >nul 2>&1
 	@-$(RM) $(BLAKSERVRUNDIR)\loadkod\*.bof >nul 2>&1
 	@-$(RM) $(BLAKSERVRUNDIR)\memmap\*.bof >nul 2>&1
+

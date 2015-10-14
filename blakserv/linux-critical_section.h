@@ -23,5 +23,6 @@ void InitializeCriticalSection(CRITICAL_SECTION *m);
 void EnterCriticalSection(CRITICAL_SECTION *m);
 void LeaveCriticalSection(CRITICAL_SECTION *m);
 void DeleteCriticalSection(CRITICAL_SECTION *m);
+bool TryEnterCriticalSection(CRITICAL_SECTION *m);
 
 #endif

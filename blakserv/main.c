@@ -68,14 +68,16 @@ void MainServer()
 	
 	OpenDefaultChannels();
 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (ConfigBool(MYSQL_ENABLED))
 	{
 		lprintf("Starting MySQL writer");
 		MySQLInit(ConfigStr(MYSQL_HOST), ConfigStr(MYSQL_USERNAME), ConfigStr(MYSQL_PASSWORD), ConfigStr(MYSQL_DB));
 	}
+#endif
 
 	lprintf("Starting %s\n",BlakServLongVersionString());
-	
+
 	InitClass();
 	InitMessage();
 	InitObject();
@@ -98,14 +100,11 @@ void MainServer()
 	InitBufferPool();
 	InitTables();
 	AddBuiltInDLlist();
-	
 	LoadMotd();
 	LoadBof();
 	LoadRsc();
 	LoadKodbase();
-	
 	LoadAdminConstants();
-	
 	PauseTimers();
 	
 	if (LoadAll() == True)
@@ -122,15 +121,15 @@ void MainServer()
 	InitParseClient(); 
 	InitProfiling();
 	InitAsyncConnections();
-	
 	UpdateSecurityRedbook();
-	
 	UnpauseTimers();
 
-	
+    FlushDefaultChannels(); // TODO: Delete Me
 
-	ServiceTimers();
-	/* returns if server termiated */
+	ServiceTimers(); /* returns if server termiated */
+
+    lprintf("Entering MainExitServer"); // TODO: Delete Me
+    FlushDefaultChannels(); // TODO: Delete Me
 	
 	MainExitServer();
 }
@@ -165,8 +164,10 @@ void MainExitServer()
 	ResetMessage();
 	ResetClass();
 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (ConfigBool(MYSQL_ENABLED))
 		MySQLEnd();
+#endif
 	
 	ResetConfig();
 	

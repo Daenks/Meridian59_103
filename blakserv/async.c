@@ -162,6 +162,7 @@ void AcceptSocketConnections(int socket_port,int connection_type)
 
 void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 {
+#ifdef BLAK_PLATFORM_WINDOWS
 	SOCKET new_sock;
 	SOCKADDR_IN6 acc_sin;    /* Accept socket address - internet style */
 	int acc_sin_len;        /* Accept socket address length */
@@ -170,6 +171,16 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 	struct in6_addr peer_addr;
 	connection_node conn;
 	session_node *s;
+#else // TODO: These appear to be identical (windows and linux)
+    SOCKET new_sock;
+    SOCKADDR_IN6 acc_sin;    /* Accept socket address - internet style */
+    socklen_t acc_sin_len;        /* Accept socket address length */
+    SOCKADDR_IN6 peer_info;
+    socklen_t peer_len;
+    struct in6_addr peer_addr;
+    connection_node conn;
+    session_node *s;
+#endif
 	
 	if (event != FD_ACCEPT)
 	{
@@ -184,7 +195,7 @@ void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type)
 	}
 	
 	acc_sin_len = sizeof acc_sin; 
-	
+
 	new_sock = accept(sock,(struct sockaddr *) &acc_sin,&acc_sin_len);
 	if (new_sock == SOCKET_ERROR) 
 	{
@@ -285,10 +296,17 @@ Bool CheckMaintenanceMask(SOCKADDR_IN6 *addr,int len_addr)
 		/* for each byte of the mask, if it's non-zero, the client must match it */
 	
 		skip = 0;
+#ifdef BLAK_PLATFORM_WINDOWS
 		for (int k = 0; k < sizeof(mask.u.Byte); k++)
 		{
 			if (mask.u.Byte[k] != 0 && mask.u.Byte[k] != addr->sin6_addr.u.Byte[k])
 			{
+#else
+                for (int k = 0; k < sizeof(mask.s6_addr); k++)
+                {
+                        if (mask.s6_addr[k] != 0 && mask.s6_addr[k] != addr->sin6_addr.s6_addr[k])
+                        {
+#endif
 				// mismatch
 				skip = 1;
 				break;
@@ -405,13 +423,17 @@ void AsyncSocketWrite(SOCKET sock)
 	
 	if (s->hangup)
 		return;
-	
+
+#ifdef BLAK_PLATFORM_WINDOWS	
 	/* dprintf("got async write session %i\n",s->session_id); */
 	if (WaitForSingleObject(s->muxSend,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("AsyncSocketWrite couldn't get session %i muxSend\n",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 	
 	while (s->send_list != NULL)
 	{
@@ -422,9 +444,13 @@ void AsyncSocketWrite(SOCKET sock)
 		{
 			if (GetLastError() != WSAEWOULDBLOCK)
 			{
+#ifdef BLAK_PLATFORM_WINDOWS
 				/* eprintf("AsyncSocketWrite got send error %i\n",GetLastError()); */
 				if (!ReleaseMutex(s->muxSend))
 					eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+                LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 				HangupSession(s);
 				return;
 			}
@@ -443,8 +469,12 @@ void AsyncSocketWrite(SOCKET sock)
 			DeleteBuffer(bn);
 		}
 	}
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (!ReleaseMutex(s->muxSend))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxSend);
+#endif
 }
 
 void AsyncSocketRead(SOCKET sock)
@@ -460,11 +490,15 @@ void AsyncSocketRead(SOCKET sock)
 	if (s->hangup)
 		return;
 	
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
 	{
 		eprintf("AsyncSocketRead couldn't get session %i muxReceive",s->session_id);
 		return;
 	}
+#else
+    EnterCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	
 	if (s->receive_list == NULL)
 	{
@@ -491,14 +525,22 @@ void AsyncSocketRead(SOCKET sock)
 	{
 		if (GetLastError() != WSAEWOULDBLOCK)
 		{
+#ifdef BLAK_PLATFORM_WINDOWS
 			/* eprintf("AsyncSocketRead got read error %i\n",GetLastError()); */
 			if (!ReleaseMutex(s->muxReceive))
 				eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+            LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 			HangupSession(s);
 			return;
 		}
+#ifdef BLAK_PLATFORM_WINDOWS
 		if (!ReleaseMutex(s->muxReceive))
 			eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);
+#else
+        LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	}
 	
 	if (bytes < 0 || bytes > bn->size_buf - bn->len_buf)
@@ -523,8 +565,12 @@ void AsyncSocketRead(SOCKET sock)
 		 dprintf("\n");
 		 }
 	*/ 
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (!ReleaseMutex(s->muxReceive))
 		eprintf("File %s line %i release of non-owned mutex\n",__FILE__,__LINE__);  
+#else
+    LeaveCriticalSection((CRITICAL_SECTION*)s->muxReceive);
+#endif
 	
 	SignalSession(s->session_id);
 }
