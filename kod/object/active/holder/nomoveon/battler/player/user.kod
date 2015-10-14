@@ -9942,7 +9942,7 @@ messages:
    {
       % We're not moving if it's been more than 2 seconds since we moved
       %   OR if we're flagged as unable to move.
-      if (GetTime() - piLastMoveUpdateTime) > 2
+      if (GetTickCount() - piLastMoveUpdateTime) > 2000
          OR (piFlags & PFLAG_NO_MOVE)
       {
          return FALSE;
