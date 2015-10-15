@@ -2675,7 +2675,7 @@ int C_CanMoveInRoomBSP(int object_id, local_var_type *local_vars,
 	e.Y = GRIDCOORDTOROO(row_dest.v.data, finerow_dest.v.data);
 
 	Wall* blockWall;
-	ret_val.v.data = BSPCanMoveInRoom(&r->data, &s, &e, objectid.v.data, (move_outside_bsp.v.data != 0), &blockWall);
+	ret_val.v.data = BSPCanMoveInRoom(&r->data, &s, &e, objectid.v.data, (move_outside_bsp.v.data != 0), &blockWall, false);
 
 #if DEBUGMOVE
 	//dprintf("MOVE:%i R:%i S:(%1.2f/%1.2f) E:(%1.2f/%1.2f)", ret_val.v.data, r->data.roomdata_id, s.X, s.Y, e.X, e.Y);

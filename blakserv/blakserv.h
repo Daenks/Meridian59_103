@@ -241,6 +241,8 @@ char * GetLastErrorStr();
 #include "stringinthash.h"
 #include "intstringhash.h"
 
+#include "geometry.h"
+
 #include "blakres.h"
 #include "channel.h"
 #include "kodbase.h"
@@ -257,6 +259,7 @@ char * GetLastErrorStr();
 #include "system.h"
 #include "loadrsc.h"
 #include "loadgame.h"
+#include "astar.h"
 #include "roofile.h"
 #include "roomdata.h"
 #include "files.h"
