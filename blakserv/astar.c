@@ -286,7 +286,7 @@ __inline bool AStarProcessNode(room_type* Room)
             continue;
 		 
          // cost for diagonal is sqrt(2), otherwise 1
-         float stepcost = ((rowoffset != 0) && (coloffset != 0)) ? (float)M_SQRT2 : 1.0f;
+         float stepcost = ((rowoffset != 0) && (coloffset != 0)) ? COST_DIAG : COST;
 			
          // heuristic (~ estimated distance from node to end)
          // need to do this only once
@@ -297,7 +297,7 @@ __inline bool AStarProcessNode(room_type* Room)
 
             // octile-distance
             candidate->Data->heuristic = 
-               HCOST * (dx + dy) + (HCOST_DIAG - 2.0f * HCOST) * fminf(dx, dy);
+               COST * (dx + dy) + (COST_DIAG - 2.0f * COST) * fminf(dx, dy);
 
             // tie breaker and fixes h(nondiagonal) not lower exact cost
             candidate->Data->heuristic *= 0.999f; 

@@ -20,8 +20,8 @@
 #define RCHILD(x) (2 * x + 2)
 #define PARENT(x) ((x-1) / 2)
 
-#define HCOST       1.0f
-#define HCOST_DIAG  ((float)M_SQRT2)
+#define COST       1.0f
+#define COST_DIAG  ((float)M_SQRT2)
 
 typedef struct room_type room_type;
 typedef struct BspLeaf BspLeaf;
