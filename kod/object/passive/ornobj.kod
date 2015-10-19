@@ -730,7 +730,11 @@ resources:
    oo_vjournal_name = "dusty journal"
    oo_vjournal_icon = book1.bgf
    oo_vjournal_desc = "A dusty journal containing the inventory of the vault."
-   
+
+   oo_angel_name = "angel statue"
+   oo_angel_icon = angelstat.bgf
+   oo_angel_desc = "This angel marks the grave of Kailor, a once great ruler."
+
 classvars:
 
 properties:
@@ -1300,6 +1304,9 @@ messages:
       
       if type = OO_QORMAS_WREATH
       {  vrName = oo_Qormas_wreath_name;  vrIcon = oo_Qormas_wreath_icon;  vrDesc = oo_Qormas_wreath_desc;  }
+
+      if type = OO_ANGEL
+      {  vrName = oo_angel_name;  vrIcon = oo_angel_icon;  vrDesc = oo_angel_desc;  }
 
       if type = OO_SMCRATE
       {
