@@ -115,11 +115,16 @@ typedef struct {
    const_type resource[MAX_LANGUAGE_ID];
 } *resource_type, resource_struct;
 
-enum { E_BINARY_OP, E_UNARY_OP, E_IDENTIFIER, E_CONSTANT, E_CALL, };
+enum { E_BINARY_OP, E_UNARY_OP, E_IDENTIFIER, E_CONSTANT, E_CALL, E_TERNARY_OP };
 typedef struct _expr {
    int type;
    int lineno;   /* line number; used for putting debugging information in output */
    union {
+      struct _terexpr{
+         struct _expr *eval_exp, *left_exp, *right_exp;
+         int op;
+      } ternary_opval;
+
       struct _binexpr{
          struct _expr *left_exp, *right_exp;
          int op;
@@ -317,6 +322,7 @@ expr_type make_expr_from_call(stmt_type);
 expr_type make_expr_from_constant(const_type);
 expr_type make_expr_from_literal(id_type id);
 expr_type make_bin_op(expr_type, int, expr_type);
+expr_type make_ter_op(expr_type, expr_type, expr_type);
 expr_type make_un_op(int, expr_type);
 
 arg_type make_arg_from_expr(expr_type expr);
