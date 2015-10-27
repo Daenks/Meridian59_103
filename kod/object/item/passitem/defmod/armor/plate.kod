@@ -46,8 +46,8 @@ classvars:
    vrIcon_male = platearmor_male_icon_rsc
    vrIcon_female = platearmor_female_icon_rsc
 
-   viDefense_base = -200
-   viDamage_base = 6
+   viDefense_base = -175
+   viDamage_base = 8
 
 properties:
 
@@ -60,14 +60,16 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,-10],
+      return [ [ATCK_WEAP_THRUST,15],
+               [ATCK_WEAP_SLASH,-10],
+               [-ATCK_SPELL_FIRE,-10],
                [-ATCK_SPELL_SHOCK,-15]
              ];
    }
 
    GetHeatDamage()
    {
-      return 4;
+      return 7;
    }
 
 

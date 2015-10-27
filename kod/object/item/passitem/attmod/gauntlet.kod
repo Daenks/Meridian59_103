@@ -350,5 +350,10 @@ messages:
       return piDamage_bonus;
    }
 
+   GetHeatDamage()
+   {
+      return 3;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

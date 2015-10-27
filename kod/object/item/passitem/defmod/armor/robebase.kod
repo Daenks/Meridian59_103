@@ -138,6 +138,13 @@ messages:
       return TRUE;
    }
 
+   GetResistanceModifiers()
+   {
+      return [ [-ATCK_SPELL_FIRE,-10],
+               [-ATCK_SPELL_SHOCK,5]
+             ];
+   }
+
    ItemChangesArms()
    {
       return 2;

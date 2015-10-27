@@ -89,6 +89,8 @@ messages:
    GetResistanceModifiers()
    {
       return [ [ATCK_WEAP_PIERCE,15],
+               [ATCK_WEAP_SLASH,10],
+               [ATCK_WEAP_THRUST,5],
                [-ATCK_SPELL_HOLY,-20]
              ];
    }
@@ -102,8 +104,12 @@ messages:
       }
 
       return;
-   }   
+   }
 
+   GetHeatDamage()
+   {
+      return 3;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
