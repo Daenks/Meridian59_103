@@ -1,0 +1,74 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+XeoHoly is Xeochicatl
+
+constants:
+
+   include blakston.khd
+
+   ANIM_CAST = 2     %% Cast spell animation.
+
+resources:
+
+   include xeoholy.lkod
+
+   XeoHoly_name_rsc = "si'xeochicatl"
+   XeoHoly_koc_name_rsc = "si'xeo'chicatl"
+   XeoHoly_icon_rsc = Xeo.bgf
+   XeoHoly_desc_rsc = \
+      "Before you is a si'xeochicatl, a fearsome monster given life by the "
+      "chaotic magic of the Meridian.  The si'xeochicatl is the embodiment of "
+      "destruction, a violent monster that seems uncontrollable.  These "
+      "monsters feed off of the magic of the lands which makes them very "
+      "powerful.  Rumors abound about the origin of these monsters, but you "
+      "have little time to contemplate these rumors in the presence of "
+      "such destructive power!"
+
+   XeoHoly_sound_aware = xeo3awr.wav
+
+ classvars:
+
+   vrName = XeoHoly_name_rsc
+   vrDesc = XeoHoly_desc_rsc
+   vrKocName = XeoHoly_koc_name_rsc
+
+   viAttack_type = ATCK_WEAP_MAGIC
+   viLevel = 170
+   viDifficulty = 7
+   viSpeed = SPEED_FASTER
+   vrSound_aware = XeoHoly_sound_aware
+
+   viTreasure_type = TID_XEO_HOLY
+
+properties:
+
+   piAnimation = ANIM_NONE
+
+messages:
+
+   Constructed()
+   {
+      plResistances = [ [-ATCK_SPELL_HOLY, 110 ],
+                        [-ATCK_SPELL_UNHOLY, -20 ],
+                        [ATCK_WEAP_MAGIC, -10 ],
+                        [-ATCK_SPELL_QUAKE, 100 ]
+                      ];
+
+      piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=PT_BLBLK_REDWHT);
+
+      plSpellBook = [ [SID_PURGE,2,60], [SID_DAZZLE,10,70],
+                      [SID_MARK_OF_DISHONOR,3,100] ];
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

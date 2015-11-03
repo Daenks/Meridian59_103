@@ -32,6 +32,9 @@ classvars:
 
    viTerrain_type = TERRAIN_CASTLE | TERRAIN_SHOP
 
+   viWeatherZone = WEATHER_ZONE_BARLOQUE
+   viWeatherMask = WEATHER_MASK_DEFAULT_NS
+
 properties:
 
    viPermanent_flags = ROOM_NO_COMBAT

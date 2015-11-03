@@ -122,23 +122,29 @@ messages:
    SetClan(clan = AVARCLAN_PROMAGIC)
    {
       piColor_translation = clan;
-      if clan = AVARCLAN_ANTIMAGIC
+
+      switch(clan)
       {
-         vrName = avar_nomagic_name;
-         vrDesc = avar_nomagic_desc;
-      }
-      else
-      {
-         if clan = AVARCLAN_BONE_FACTION
-         {
+         case AVARCLAN_ANTIMAGIC:
+            vrName = avar_nomagic_name;
+            vrDesc = avar_nomagic_desc;
+            piReputationGroup = REP_KKAVAR;
+            plReputationEnemies = [REP_PSAVAR, REP_CTAVAR];
+            break;
+
+         case AVARCLAN_BONE_FACTION:
             vrName = avar_bone_name;
             vrDesc = avar_bone_desc;
-         }
-         else
-         {
+            piReputationGroup = REP_CTAVAR;
+            plReputationEnemies = [REP_PSAVAR, REP_KKAVAR];
+            break;
+
+         default:
             vrName = avar_name_rsc;
             vrDesc = avar_desc_rsc;
-         }
+            piReputationGroup = REP_PSAVAR;
+            plReputationEnemies = [REP_KKAVAR, REP_CTAVAR];
+            break;
       }
 
       if poOwner <> $

@@ -1,0 +1,75 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+XeoUnholy is Xeochicatl
+
+constants:
+
+   include blakston.khd
+
+   ANIM_CAST = 2     %% Cast spell animation.
+
+resources:
+
+   include xeounholy.lkod
+
+   XeoUnholy_name_rsc = "zi'xeochicatl"
+   XeoUnholy_koc_name_rsc = "zi'xeo'chicatl"
+   XeoUnholy_icon_rsc = Xeo.bgf
+   XeoUnholy_desc_rsc = \
+      "Before you is a zi'xeochicatl, a fearsome monster given life by the "
+      "chaotic magic of the Meridian.  The zi'xeochicatl is the embodiment of "
+      "destruction, a violent monster that seems uncontrollable.  These "
+      "monsters feed off of the magic of the lands which makes them very "
+      "powerful.  Rumors abound about the origin of these monsters, but you "
+      "have little time to contemplate these rumors in the presence of "
+      "such destructive power!"
+
+   XeoUnholy_sound_aware = xeo2awr.wav
+
+ classvars:
+
+   vrName = XeoUnholy_name_rsc
+   vrDesc = XeoUnholy_desc_rsc
+   vrKocName = XeoUnholy_koc_name_rsc
+
+   viAttack_type = ATCK_WEAP_MAGIC
+   viLevel = 200
+   viDifficulty = 9
+   viSpeed = SPEED_FASTER
+   vrSound_aware = XeoUnholy_sound_aware
+
+   viTreasure_type = TID_XEO_UNHOLY
+
+properties:
+
+   piAnimation = ANIM_NONE
+   piMax_Mana = 30
+
+messages:
+
+   Constructed()
+   {
+      plResistances = [ [ATCK_SPELL_HOLY, -70 ],
+                        [ATCK_WEAP_MAGIC, -10 ],
+                        [-ATCK_SPELL_UNHOLY, 110 ],
+                        [-ATCK_SPELL_QUAKE, 110 ]
+                      ];
+
+      piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=PT_REDTODKBLACK1);
+
+      plSpellBook = [ [SID_HOLD,5,10], [SID_ENFEEBLE,10,40],
+                      [SID_BLIND,2,80], [SID_SUMMON_POISON_FOG,10,100] ];
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

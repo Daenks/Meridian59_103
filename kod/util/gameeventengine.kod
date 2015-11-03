@@ -16,17 +16,26 @@ constants:
 
 resources:
 
+   event_success_rsc = "Success."
+   event_failure_rsc = "Failure."
+   event_failure_duplicate_rsc = \
+      "Failure. Event type is unique and an event of"
+      " that type is already active."
+
 classvars:
 
 properties:
 
-   plGameEvents = $
+   plRandomEvents = $
    plActiveEvents = $
+   piActiveEventsFlagHi = 0
+   piActiveEventsFlagLo = 0
    ptMaintenance = $
    piMaintenanceInterval = 1000
 
 messages:
 
+   
    Constructor()
    {
       Send(self,@Recreate);
@@ -53,18 +62,64 @@ messages:
 
    Recreate()
    {
-      plGameEvents = $;
+      plRandomEvents = $;
       plActiveEvents = $;
 
       Debug("Creating Events");
-      plGameEvents = Cons(&RatInvasion,plGameEvents);
-      plGameEvents = Cons(&OrcInvasion,plGameEvents);
+      plRandomEvents = Cons(&RatInvasion,plRandomEvents);
+      plRandomEvents = Cons(&OrcInvasion,plRandomEvents);
 
       return;
    }
 
-   Delete()
+   UserLogon(who=$)
    {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@UserLogon,#who=who);
+      }
+      return;
+   }
+
+   UserLogoff(who=$)
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@UserLogoff,#who=who);
+      }
+      return;
+   }
+
+   MonsterKilled(dead_monster=$,killing_player=$,corpse=$)
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@MonsterKilled,
+            #dead_monster=dead_monster,
+            #killing_player=killing_player,
+            #corpse=corpse);
+      }
+   
+      return;
+   }
+
+   UserKilled(who=$,killer=$)
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@UserKilled,
+            #who=who,
+            #killer=killer);
+      }
+
       return;
    }
 
@@ -129,15 +184,14 @@ messages:
    }
 
    ScheduleEventInMinutes(iClass=$,minutes=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                           parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInMinutes,
+      Send(REALTIME_OBJECT,@RegisterCallbackInMinutes,
                      #oObject=self,
                      #minutes=minutes,
                      #message=sMessage,
@@ -147,21 +201,28 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
       
       return;
    }
 
    ScheduleEventInHours(iClass=$,hours=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                        parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInHours,
+      Send(REALTIME_OBJECT,@RegisterCallbackInHours,
                      #oObject=self,
                      #hours=hours,
                      #message=sMessage,
@@ -171,21 +232,28 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
 
       return;
    }
 
    ScheduleEventInDays(iClass=$,days=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                        parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInDays,
+      Send(REALTIME_OBJECT,@RegisterCallbackInDays,
                      #oObject=self,
                      #days=days,
                      #message=sMessage,
@@ -195,21 +263,28 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
 
       return;
    }
 
    ScheduleEventInWeeks(iClass=$,weeks=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                        parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInDays,
+      Send(REALTIME_OBJECT,@RegisterCallbackInDays,
                      #oObject=self,
                      #days=weeks * 7,
                      #message=sMessage,
@@ -219,21 +294,28 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
 
       return;
    }
 
    ScheduleEventInMonths(iClass=$,months=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                        parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInMonths,
+      Send(REALTIME_OBJECT,@RegisterCallbackInMonths,
                      #oObject=self,
                      #months=months,
                      #message=sMessage,
@@ -243,21 +325,28 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
 
       return;
    }
 
    ScheduleEventInYears(iClass=$,years=$,parm1=$,parm2=$,parm3=$,parm4=$,
-                        parm5=$,parm6=$,parm7=$)
+                          parm5=$,parm6=$,parm7=$,parm8=$,parm9=$,parm10=$,
+                          parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallbackInYears,
+      Send(REALTIME_OBJECT,@RegisterCallbackInYears,
                      #oObject=self,
                      #years=years,
                      #message=sMessage,
@@ -267,99 +356,112 @@ messages:
                      #parm4=parm4,
                      #parm5=parm5,
                      #parm6=parm6,
-                     #parm7=parm7);
+                     #parm7=parm7,
+                     #parm8=parm8,
+                     #parm9=parm9,
+                     #parm10=parm10,
+                     #parm11=parm11,
+                     #parm12=parm12,
+                     #parm13=parm13,
+                     #parm14=parm14,
+                     #parm15=parm15);
 
       return;
    }
 
-   TestScheduleEvent(iHour=$,iMinute=$)
+   ScheduleStartEvent(iClass=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0,
+                      parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+                      parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+                      parm14=$,parm15=$)
    {
-      local iYear, iMonth, iDay;
-
-      iYear = Send(Send(SYS,@GetRealTimeObject),@GetYear);
-      iMonth = Send(Send(SYS,@GetRealTimeObject),@GetMonth);
-      iDay = Send(Send(SYS,@GetRealTimeObject),@GetDay);
-
-      if iHour = $
-      {
-         iHour=Send(Send(SYS,@GetRealTimeObject),@GetHour);
-      }
-
-      if iMinute = $
-      {
-         iMinute = Send(Send(SYS,@GetRealTimeObject),@GetMinute) + 2;
-         if iMinute >= 60
-         {
-            iMinute = iMinute - 60;
-         }
-      }
-
-      Send(self,@ScheduleStartEvent,#iClass=&RatInvasion,
-                                    #iYear=iYear,
-                                    #iMonth=iMonth,
-                                    #iDay=iDay,
-                                    #iHour=iHour,
-                                    #iMinute=iMinute);
-
-      return;
-   }
-
-   ScheduleStartEvent(iClass=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0)
-   {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EventStart);
 
-      Send(oRealTime,@RegisterCallback,#oObject=self,
+      Send(REALTIME_OBJECT,@RegisterCallback,#oObject=self,
             #message=sMessage,#iYear=iYear,#iMonth=iMonth,
-            #iDay=iDay,#iHour=iHour,#iMinute=iMinute,#parm1=iClass);
+            #iDay=iDay,#iHour=iHour,#iMinute=iMinute,#parm1=iClass,#parm2=parm2,
+            #parm3=parm3,#parm4=parm4,#parm5=parm5,#parm6=parm6,#parm7=parm7,
+            #parm8=parm8,#parm9=parm9,#parm10=parm10,#parm11=parm11,
+            #parm12=parm12,#parm13=parm13,#parm14=parm14,#parm15=parm15);
 
       return;
    }
 
-   ScheduleEndEvent(oObject=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0)
+   ScheduleEndEvent(oObject=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0,
+                    parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+                    parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+                    parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@EndEvent);
 
-      Send(oRealTime,@RegisterCallback,#oObject=self,
-            #message=sMessage,#iYear=iYear,#iMonth=iMonth,
-            #iDay=iDay,#iHour=iHour,#iMinute=iMinute,#parm1=oObject);
+      Send(REALTIME_OBJECT,@RegisterCallback,#oObject=self,
+            #message=sMessage,#iYear=iYear,#iMonth=iMonth,#iDay=iDay,
+            #iHour=iHour,#iMinute=iMinute,#parm1=oObject,#parm2=parm2,
+            #parm3=parm3,#parm4=parm4,#parm5=parm5,#parm6=parm6,#parm7=parm7,
+            #parm8=parm8,#parm9=parm9,#parm10=parm10,#parm11=parm11,
+            #parm12=parm12,#parm13=parm13,#parm14=parm14,#parm15=parm15);
 
       return;
    }
 
-   ScheduleAdvanceEvent(oObject=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0)
+   ScheduleAdvanceEvent(oObject=$,iYear=0,iMonth=0,iDay=0,iHour=0,iMinute=0,
+                        parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+                        parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+                        parm14=$,parm15=$)
    {
-      local oRealTime, sMessage;
-
-      oRealTime = Send(SYS,@GetRealTimeObject);
+      local sMessage;
 
       sMessage = SetString($,@AdvanceEvent);
 
-      Send(oRealTime,@RegisterCallback,#oObject=self,
-            #message=sMessage,#iYear=iYear,#iMonth=iMonth,
-            #iDay=iDay,#iHour=iHour,#iMinute=iMinute,#parm1=oObject);
+      Send(REALTIME_OBJECT,@RegisterCallback,#oObject=self,
+            #message=sMessage,#iYear=iYear,#iMonth=iMonth,#iDay=iDay,
+            #iHour=iHour,#iMinute=iMinute,#parm1=oObject,#parm2=parm2,
+            #parm3=parm3,#parm4=parm4,#parm5=parm5,#parm6=parm6,#parm7=parm7,
+            #parm8=parm8,#parm9=parm9,#parm10=parm10,#parm11=parm11,
+            #parm12=parm12,#parm13=parm13,#parm14=parm14,#parm15=parm15);
 
       return;
    }
 
-   EventStart(parm1=$)
+   EventStart(parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+              parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+              parm14=$,parm15=$)
    "parm1 should be the class of an event."
    {
-      local oEvent;
+      local i, oEvent;
 
       oEvent = $;
 
+      % first make sure this would not create a second copy of an event that
+      % is unique
+      foreach i in plActiveEvents
+      {
+         if (IsClass(i,parm1) AND Send(i,@IsUnique))
+         {
+            Debug("Error, unique event type and an event of that type is already active.");
+            return event_failure_duplicate_rsc;
+         }
+      }
+      
+      %%%
+      % This must be called just prior to a ChaosNight object creation
+      %%%
+      if (parm1 = &ChaosNight)
+      {
+         Send(SYS,@SaveGame_K,#IKnowThisIsDangerous=820965);
+      }
       if parm1 <> $
       {
-         oEvent = Create(parm1);
-         Send(oEvent,@StartEvent);
+         oEvent = Create(parm1,#engine=self);
+
+         Send(oEvent,@StartEvent,
+            #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,#parm5=parm5,
+            #parm6=parm6,#parm7=parm7,#parm8=parm8,#parm9=parm9,#parm10=parm10,
+            #parm11=parm11,#parm12=parm12,#parm13=parm13,#parm14=parm14,
+            #parm15=parm15);
       }
 
       if oEvent <> $
@@ -369,37 +471,342 @@ messages:
          {
             CreateTimer(self,@OnTimer,piMaintenanceInterval);
          }
+         
+         switch(parm1)
+         {
+            case &ChaosNight:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_CHAOS;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_CHAOS;
+               break;
+               
+            case &WarEvent:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_WAR;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_WAR;
+               break;
+               
+            case &NodeAttack:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_NODE_ATK;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_NODE_ATK;
+               break;
+               
+            case &EasterEggHunt:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_EASTER_EGG;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_EASTER_EGG;
+               break;
+               
+            case &EasterInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_EASTER_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_EASTER_INVASION;
+               break;
+               
+            case &RatInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_RAT_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_RAT_INVASION;
+               break;
+               
+            case &OrcInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_ORC_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_ORC_INVASION;
+               break;
+
+            case &Qormas:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi | GAMEEVENT_HIBYTE_QORMAS;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo | GAMEEVENT_LOBYTE_QORMAS;
+               break;
+               
+            default:
+               break;
+         }
       }
       else
       {
          Debug("Error Starting Event!",parm1);
+         return event_failure_rsc;
       }
 
-      return;
+      return event_success_rsc;
    }
 
-   EventEnd(parm1=$)
+   EventEnd(parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+            parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+            parm14=$,parm15=$)
    "parm1 should be an active event object."
    {
       if parm1 <> $
       {
-         Send(parm1,@EndEvent);
+         Send(parm1,@EndEvent,
+            #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,#parm5=parm5,
+            #parm6=parm6,#parm7=parm7,#parm8=parm8,#parm9=parm9,#parm10=parm10,
+            #parm11=parm11,#parm12=parm12,#parm13=parm13,#parm14=parm14,
+            #parm15=parm15);
+            
          plActiveEvents = DelListElem(plActiveEvents,parm1);
+      
+         if(GetClass(parm1)=&ChaosNight)
+         {
+         % Don't run if frenzy isn't running.
+            if NOT Send(self,@IsChaosNightActive)
+            {
+               return event_failure_rsc;
+            }
+            
+            Send(SYS,@LoadGame_K,#IKnowThisIsDangerous=730527);
+            % we just loaded a saved game ABORT! ABORT!
+            return;
+         }
+
+         switch(GetClass(parm1))
+         {
+            case &ChaosNight:
+               % Note: This would never get called the server has reloaded
+               % the pre-frenzy savegame by now
+               %piActiveEventsFlagHi = 
+               %   piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_CHAOS;
+               %piActiveEventsFlagLo = 
+               %   piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_CHAOS;
+               break;
+               
+            case &WarEvent:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_WAR;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_WAR;
+               break;
+               
+            case &NodeAttack:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_NODE_ATK;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_NODE_ATK;
+               break;
+            
+            case &EasterEggHunt:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_EASTER_EGG;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_EASTER_EGG;
+               break;
+               
+            case &EasterInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_EASTER_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_EASTER_INVASION;
+               break;
+   
+            case &RatInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_RAT_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_RAT_INVASION;
+               break;
+               
+            case &OrcInvasion:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_ORC_INVASION;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_ORC_INVASION;
+               break;
+
+            case &Qormas:
+               piActiveEventsFlagHi = 
+                  piActiveEventsFlagHi & ~GAMEEVENT_HIBYTE_QORMAS;
+               piActiveEventsFlagLo = 
+                  piActiveEventsFlagLo & ~GAMEEVENT_LOBYTE_QORMAS;
+               break;
+               
+            default:
+               break;
+         }
       }
 
+      Send(parm1,@Delete);
+      
       return;
    }
 
-   AdvanceEvent(parm1=$)
+   AdvanceEvent(parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,
+                parm8=$,parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,
+                parm14=$,parm15=$)
    "parm1 should be an active event object."
    {
       if parm1 <> $
       {
-         Send(parm1,@AdvanceEvent);
+         Send(parm1,@AdvanceEvent,
+            #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,#parm5=parm5,
+            #parm6=parm6,#parm7=parm7,#parm8=parm8,#parm9=parm9,#parm10=parm10,
+            #parm11=parm11,#parm12=parm12,#parm13=parm13,#parm14=parm14,
+            #parm15=parm15);
       }
 
       return;
    }
 
+   FindEventOfType(event_type=$)
+   {
+      local i;
+      
+      if (event_type = $)
+      {
+         return;
+      }
+      
+      % if the event is unique (they are by default) then there should only be
+      % one in this list.  If the event is not unique this will only return the
+      % first match found, consider using FindAllEventsOfType instead.
+      foreach i in plActiveEvents
+      {
+         if (GetClass(i) = event_type)
+         {
+            return i;
+         }
+      }
+      
+      return;
+      
+   }
+   
+   FindAllEventsOfType(event_type=$)
+   {
+      local i, lEvents;
+    
+      lEvents = $;
+    
+      if (event_type=$)
+      {
+         return;
+      }
+      
+      foreach i in plActiveEvents
+      {
+         if (GetClass(i) = event_type)
+         {
+            if lEvents = $
+            {
+               lEvents = [i];
+            }
+            else
+            {
+               lEvents = Cons(lEvents,i);
+            }
+         }
+      }
+      
+      return lEvents;
+   }
+   
+   IsChaosNightActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_CHAOS)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_CHAOS));
+   }
+   
+   IsWarEventActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_WAR)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_WAR));
+   }
+
+   IsNodeAttackActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_NODE_ATK)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_NODE_ATK));
+   }
+   
+   IsEasterEggHuntActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_EASTER_EGG)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_EASTER_EGG));
+   }
+   
+   IsEasterInvasionActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_EASTER_INVASION)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_EASTER_INVASION));
+   }
+   
+   IsRatInvasionActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_RAT_INVASION)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_RAT_INVASION));
+   }
+   
+   IsOrcInvasionActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_ORC_INVASION)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_ORC_INVASION));
+   }
+
+   IsQormasActive()
+   {
+      return ((piActiveEventsFlagHi & GAMEEVENT_HIBYTE_QORMAS)
+         AND (piActiveEventsFlagLo & GAMEEVENT_LOBYTE_QORMAS));
+   }
+
+   TestScheduleEvent(iHour=$,iMinute=$)
+   {
+      local iYear, iMonth, iDay;
+
+      iYear = Send(REALTIME_OBJECT,@GetYear);
+      iMonth = Send(REALTIME_OBJECT,@GetMonth);
+      iDay = Send(REALTIME_OBJECT,@GetDay);
+
+      if iHour = $
+      {
+         iHour=Send(REALTIME_OBJECT,@GetHour);
+      }
+
+      if iMinute = $
+      {
+         iMinute = Send(REALTIME_OBJECT,@GetMinute) + 2;
+         if iMinute >= 60
+         {
+            iMinute = iMinute - 60;
+         }
+      }
+
+      Send(self,@ScheduleStartEvent,#iClass=&ChaosNight,
+                                    #iYear=iYear,
+                                    #iMonth=iMonth,
+                                    #iDay=iDay,
+                                    #iHour=iHour,
+                                    #iMinute=iMinute,
+                                    % parm1 gets the class to be called by
+                                    % the scheduler, don't use it
+                                    % #parm1=parm1,
+                                    #parm2=2,
+                                    #parm3=GAMEEVENT_SCALE_MINUTES,
+                                    #parm4=1,
+                                    #parm5=1,
+                                    #parm6=1,
+                                    #parm7=1,
+                                    #parm8=1,
+                                    #parm9=1,
+                                    #parm10=1,
+                                    #parm11=1,
+                                    #parm12=1,
+                                    #parm13=1,
+                                    #parm14=1,
+                                    #parm15=1);
+
+      return;
+   }
+   
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

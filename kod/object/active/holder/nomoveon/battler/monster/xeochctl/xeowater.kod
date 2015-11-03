@@ -37,13 +37,16 @@ resources:
  classvars:
 
    vrName = XeoWater_name_rsc
+   vrDesc = XeoWater_desc_rsc
    vrKocName = XeoWater_koc_name_rsc
 
    viAttack_type = ATCK_WEAP_MAGIC
    viLevel = 190
    viDifficulty = 8
-   viSpeed = SPEED_FAST
+   viSpeed = SPEED_FASTER
    vrSound_aware = XeoWater_sound_aware
+
+   viTreasure_type = TID_XEO_WATER
 
 properties:
 
@@ -51,9 +54,6 @@ properties:
 
    % percent of victim's max mana it will try to drain, double normal rate.
    piDrainAmount = 10
-
-   % What do we drop on death?
-   pcTreasureItem = &BlueHeartStone
 
 messages:
 
@@ -67,7 +67,7 @@ messages:
 
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_BLUE);
 
-      plSpellBook = [ [SID_ENFEEBLE,5,30], [SID_HOLD,5,60],
+      plSpellBook = [ [SID_ICE_NOVA,5,30], [SID_HOLD,5,60],
                       [SID_BRITTLE,10,100] ];
 
       propagate;

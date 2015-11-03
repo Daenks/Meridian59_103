@@ -80,6 +80,7 @@ static client_message game_msg_table[] = {
 client_message user_msg_table[] = {
 { UC_CHANGE_URL,           { PARAM_ID, PARAM_STRING, PARAM_END, }, },
 { UC_REQ_RESCUE,           { PARAM_END, }, },
+{ UC_REQ_TIME,           { PARAM_END, }, },
 { 0,                       { PARAM_END, }, },    // Must end table this way
 };
 
@@ -107,7 +108,7 @@ void Insert(BYTE **buf, void *data, UINT numbytes)
  */
 WORD InsertString(BYTE **buf, char *str)
 {
-   WORD len = strlen(str);
+   WORD len = (WORD)strlen(str);
 
    Insert(buf, &len, SIZE_STRING_LEN);
    Insert(buf, str, len);

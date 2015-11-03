@@ -15,7 +15,7 @@ inline DWORD F2DW( FLOAT f ) { return *((DWORD*)&f); }
 
 #define DLIGHT_SCALE(_x)		((_x * 14000 / 255) + 4000)
 
-#define D3DRENDER_CLIP(_x, _w)	((_x > -abs(_w)) && (_x < abs(_w)) ? 1 : 0)
+#define D3DRENDER_CLIP(_x, _w)	((_x > -fabs(_w)) && (_x < fabs(_w)) ? 1 : 0)
 
 #define ZBIAS_UNDERUNDER		1
 #define ZBIAS_UNDER				3
@@ -194,10 +194,6 @@ Bool D3DMaterialBlurChunk(d3d_render_chunk_new *pChunk);
 Bool D3DMaterialParticlePool(d3d_render_pool_new *pPool);
 Bool D3DMaterialParticlePacket(d3d_render_packet_new *pPacket, d3d_render_cache_system *pCacheSystem);
 Bool D3DMaterialParticleChunk(d3d_render_chunk_new *pChunk);
-
-void SandstormInit(void);
-void RainInit(void);
-void SnowInit(void);
 
 // Use this function to determine if the bounding box is out of the player's
 //view. Useful for not adding stuff to draw that the player can't see.

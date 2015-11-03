@@ -25,27 +25,66 @@ classvars:
 
    vrStartMessage = event_start_msg
    vrEndMessage = event_end_msg
-
    vbAnnounce = FALSE
+   vbUnique = TRUE
 
 properties:
 
+   poGameEventEngine = $
    plSpawnRects = $
-   piActiveRoom = $
+   poActiveRoom = $
+   plEventRooms = $
+   plRoomSaveState = $
+   pbClearRooms = FALSE
 
 messages:
 
-   Constructor()
+   Constructor(engine=$)
    {
+      if (engine <> $)
+      {
+         poGameEventEngine = engine;
+      }
+
       return;
    }
 
    Delete()
    {
+      plSpawnRects = $;
+      poActiveRoom = $;
+      plEventRooms = $;
+      plRoomSaveState = $;
+
       return;
    }
 
+   IsUnique()
+   {
+      return vbUnique;
+   }
+
    Update()
+   {
+      return;
+   }
+
+   UserLogon(who=$)
+   {
+      return;
+   }
+
+   UserLogoff(who=$)
+   {
+      return;
+   }
+
+   MonsterKilled(dead_monster=$,killing_player=$,corpse=$)
+   {
+      return;
+   }
+
+   UserKilled(who=$,killer=$)
    {
       return;
    }
@@ -85,14 +124,15 @@ messages:
       return;
    }
 
-   EventEnd()
+   NotifyEngineEndEvent()
    {
-      Send(Send(SYS,@GetEventEngine),@EventEnd,#parm1=self);
+      Send(EVENTENGINE_OBJECT,@EventEnd,#parm1=self);
 
       return;
    }
 
-   EndEvent()
+   EndEvent(parm1=$,parm2=$,parm3=$,parm4=$,parm5=$,parm6=$,parm7=$,parm8=$,
+            parm9=$,parm10=$,parm11=$,parm12=$,parm13=$,parm14=$,parm15=$)
    {
       if vbAnnounce
       {
@@ -107,28 +147,88 @@ messages:
       return;
    }
 
-   CountMonsters(type=$)
-   "Returns a count of the given type of monster."
+   PrepareRooms()
    {
-      local i, count, lActive;
-
-      if type = $
+      if pbClearRooms
       {
-         return;
+         Send(self,@ClearRooms);
       }
 
-      count = 0;
-      lActive = Send(Send(SYS,@FindRoomByNum,#num=piActiveRoom),@GetPlActive);
+      return;
+   }
 
-      foreach i in lActive
+   ClearRooms()
+   {
+      local i, j, lActive, oMob;
+
+      lActive = $;
+
+      if (pbClearRooms)
+         AND(plEventRooms <> $)
       {
-         if IsClass(Nth(i,1),type)
+         foreach i in plEventRooms
          {
-            count = count + 1;
+            lActive = Send(i,@GetPlActive);
+            foreach j in lActive
+            {
+               oMob = First(j);
+               if ((IsClass(oMob,&Monster))
+                  AND NOT (Send(oMob,@IsOwnedByPlayer))
+                  AND NOT (Send(oMob,@GetBehavior) & AI_NPC))
+               {
+                  Send(oMob,@Delete);
+               }
+            }
          }
       }
 
-      return count;
+      return;
+   }
+
+   SaveRoomStates()
+   {
+      local i, lRoomProps;
+
+      foreach i in plEventRooms
+      {
+         lRoomProps = $;
+
+         if IsClass(i,&MonsterRoom)
+         {
+            lRoomProps = [i, Send(i,@CanMonsterGenerate), Send(i,@GetGenerators),
+                          Send(i,@GetGenTime), Send(i,@GetGenPercent),
+                          Send(i,@GetPatrolPaths) ];
+         }
+         else
+         {
+            lRoomProps = [i,$,$,$,$];
+         }
+
+         plRoomSaveState = AppendListElem(lRoomProps,plRoomSaveState);
+      }
+
+      return;
+   }
+
+   RestoreRoomStates()
+   {
+      local i, oRoom;
+
+      foreach i in plRoomSaveState
+      {
+         oRoom = First(i);
+
+         if (IsClass(oRoom, &MonsterRoom))
+         {
+            Send(oRoom,@SetMonsterGeneration,#bValue=Nth(i,2));
+            Send(oRoom,@SetGenerators,#generators=Nth(i,3));
+            Send(oRoom,@SetGenTime,#time=Nth(i,4));
+            Send(oRoom,@SetGenPercent,#percent=Nth(i,5));
+            Send(oRoom,@SetPatrolPaths,#patrolPaths=Nth(i,6));
+         }
+      }
+
+      return;
    }
 
    MakeSpawnPoint()
@@ -138,8 +238,8 @@ messages:
 
       spawnRect = Nth(plSpawnRects,Random(1,Length(plSpawnRects)));
 
-      lCoords = [ Random(Nth(Nth(spawnRect,1),1),Nth(Nth(spawnRect,2),1)),
-                  Random(Nth(Nth(spawnRect,1),2),Nth(Nth(spawnRect,2),2)) ];
+      lCoords = [ Random(First(First(spawnRect)),First(Nth(spawnRect,2))),
+                  Random(Nth(First(spawnRect),2),Nth(Nth(spawnRect,2),2)) ];
 
       return lCoords;
    }

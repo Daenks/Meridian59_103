@@ -83,7 +83,7 @@ void MainServer()
 	InitTimer();
 	InitSession();
 	InitResource();
-	InitRoomData();
+	InitRooms();
 	InitString();
 	InitUser();
 	InitAccount();
@@ -96,7 +96,7 @@ void MainServer()
 	InitGameLock();
 	InitBkodInterpret();
 	InitBufferPool();
-	InitTable();
+	InitTables();
 	AddBuiltInDLlist();
 	
 	LoadMotd();
@@ -148,7 +148,7 @@ void MainExitServer()
 	ResetLoadMotd();
 	ResetLoadBof();
 	
-	ResetTable();
+	ResetTables();
 	ResetBufferPool();
 	ResetSysTimer();
 	ResetDLlist();
@@ -156,7 +156,8 @@ void MainExitServer()
 	ResetAccount();
 	ResetUser();
 	ResetString();
-	ResetRoomData();
+	// ExitRooms calls ResetRooms in addition to clearing the array memory.
+	ExitRooms();
 	ResetResource();
 	ResetTimer();
 	ResetList();
@@ -170,6 +171,39 @@ void MainExitServer()
 	ResetConfig();
 	
 	DeleteAllBlocks();
+}
+
+// This function keeps the necessary calls to reset and reinit game data
+// in one place, to reduce the chance of errors if modifying it. Used by
+// the interface and admin reload commands.
+void MainReloadGameData()
+{
+   // Reset data.
+   ResetAdminConstants();
+   ResetUser();
+   ResetString();
+   ResetRooms();
+   ResetLoadMotd();
+   ResetLoadBof();
+   ResetDLlist();
+   ResetNameID();
+   ResetResource();
+   ResetTimer();
+   ResetList();
+   ResetTables();
+   ResetObject();
+   ResetMessage();
+   ResetClass();
+
+   // Reload data.
+   InitNameID();
+   LoadMotd();
+   LoadBof();
+   LoadRsc();
+   LoadKodbase();
+
+   UpdateSecurityRedbook();
+   LoadAdminConstants();
 }
 
 char * GetLastErrorStr()

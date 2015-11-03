@@ -85,11 +85,6 @@ constants:
    PLAYER_TRANSLATION2_ARMS_MASK = 0xff00
    PLAYER_TRANSLATION2_ARMS_MUL = 0x100
 
-   SHIRT_MASK = 0x00ff
-   SHIRT_MUL  = 0x0001
-   PANTS_MASK = 0xff00
-   PANTS_MUL  = 0x0100
-   
    BASE_NEED = 105
 
    % If vigor gets this low, see if second wind skill kicks in.
@@ -238,7 +233,7 @@ resources:
    
    player_training_inform = "You now have ~B%i~B training points!"
    player_reached_maxtraining = \
-      "You now have ~B1000~B training points and can not gain any more!  "
+      "You now have ~B%i~B training points and can not gain any more!  "
       "Cast the Meditate spell and say the name of a spell or skill out loud "
       "to use your points to train it."
    player_gained_training = "You have gained ~B%i~B training points!"
@@ -857,11 +852,10 @@ properties:
    % Flags for various character attributes.
    piFlags = 0
    piFlags2 = 0
-
-   % A generic modifier.  Setting this value can help or hinder a character.
-   % Intended for use to curb overagressive players or to give a boost to
-   % nicer players. Named something unusual to deter experimentation.
    piFlags3 = 0
+
+   % Set of flags with player preferences.
+   piPreferences = CF_DEFAULT_PREF
 
    % player starts unguilded--doesn't do much yet
    poGuild = $
@@ -1104,12 +1098,6 @@ properties:
    piRemainingPhaseTime = 60000 * 8
    ptCanPhaseTimer = $
 
-   % Put new reagents in your bag
-   pbReagentBagAuto = TRUE
-   
-   % Spectator mode?
-   pbSpectatorMode = FALSE
-
 messages:
 
    Constructor()
@@ -1231,7 +1219,7 @@ messages:
          else
          {
             ccond = player_safety_off_mail;
-            if Send(self,@CheckPlayerFlag,#flag=PFLAG_SAFETY)
+            if NOT Send(self,@CheckPlayerPreference,#flag=CF_SAFETY_OFF)
             {
                ccond = player_safety_on_mail;
             }
@@ -1253,23 +1241,33 @@ messages:
       {
          if NOT Value
          {
-            piFlags=piFlags & ~flag ;
+            piFlags = piFlags & ~flag;
          }
          else
          {
-            piFlags=piFlags | flag ;
+            piFlags = piFlags | flag;
          }
       }
-
-      if flagset=2
+      else if flagset = 2
       {
          if NOT Value
          {
-            piFlags2=piFlags2 & ~flag ;
+            piFlags2 = piFlags2 & ~flag;
          }
          else
          {
-            piFlags2=piFlags2 | flag ;
+            piFlags2 = piFlags2 | flag;
+         }
+      }
+      else if flagset = 3
+      {
+         if NOT Value
+         {
+            piFlags3 = piFlags3 & ~flag;
+         }
+         else
+         {
+            piFlags3 = piFlags3 | flag;
          }
       }
 
@@ -1281,15 +1279,15 @@ messages:
          Send(poOwner,@SomethingChanged,#what=self);
       }
 
-      if flag=PFLAG_MORPHED
+      if flag = PFLAG_MORPHED
       {
          Post(self,@DrawOffense);
       }
 
-      if flag=PFLAG_NO_MOVE
-         OR flag=PFLAG_NO_FIGHT
-         OR flag=PFLAG_NO_MAGIC
-         OR flag=PFLAG_MORPHED
+      if flag = PFLAG_NO_MOVE
+         OR flag = PFLAG_NO_FIGHT
+         OR flag = PFLAG_NO_MAGIC
+         OR flag = PFLAG_MORPHED
       {
          Post(self,@DrawDefense);
       }
@@ -1302,14 +1300,7 @@ messages:
    {
       if flagset = 1
       {
-         if (flag = PFLAG_SAFETY) AND NOT Send(SYS,@IsPKAllowed)
-         {
-            return TRUE;
-         }
-         else
-         {
-            return (piFlags & flag);
-         }
+         return (piFlags & flag);
       }
 
       if flagset = 2
@@ -1319,10 +1310,35 @@ messages:
 
       if flagset = 3
       {
-         return piFlags3;
+         return (piFlags3 & flag);
       }
 
       return FALSE;
+   }
+
+   % Player preference flags (e.g. safety, tempsafe etc.)
+   SetPlayerPreference(flag = 0, value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | flag;
+      }
+      else
+      {
+         piPreferences = piPreferences & ~flag;
+      }
+
+      return;
+   }
+
+   CheckPlayerPreference(flag = 0)
+   {
+      if (flag = CF_SAFETY_OFF) AND NOT Send(SYS,@IsPKAllowed)
+      {
+         return FALSE;
+      }
+
+      return (piPreferences & flag);
    }
 
    % Added a nodraw paramater to this function to deal with buggy Jala
@@ -1336,6 +1352,7 @@ messages:
 
       piFlags = (piFlags & PFLAG_MASK);
       piFlags2 = (piFlags2 & PFLAG2_MASK);
+      piFlags3 = (piFlags3 & PFLAG3_MASK);
       if Send(self,@IsResting)
       {
          piFlags = piFlags | PFLAG_NO_MOVE;
@@ -2232,15 +2249,8 @@ messages:
    {
       local i, oGame, oParl, iBonus, iDefaultBonus, iTimespan;
 
-      foreach i in plPassive
-      {
-         Send(i,@UserLogon);
-      }
-
-      foreach i in plActive
-      {
-         Send(i,@UserLogon);
-      }
+      SendList(plPassive, 0, @UserLogon);
+      SendList(plActive, 0, @UserLogon);
 
       % Restart Health and Mana timers
       Send(self,@NewHealth);
@@ -2280,7 +2290,7 @@ messages:
 
       if ptTempSafe <> $
       {
-         Send(self,@SetPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2,#value=TRUE);
+         piFlags = piFlags | PFLAG_TEMPSAFE;
          Send(self,@MsgSendUser,#message_rsc=player_temp_safe);
       }
 
@@ -2328,13 +2338,13 @@ messages:
 
       if iTimespan > 16*60*60
       {
-         if piTraining_points = 1000
+         if piTraining_points >= 1000
          {
             return;
          }
 
          % Retrieve the daily logon bonus from settings.
-         iDefaultBonus = Send(Send(SYS,@GetSettings),@GetLogonBonus);
+         iDefaultBonus = Send(SETTINGS_OBJECT,@GetLogonBonus);
          
          % Scale the logon bonus with the time that has passed since it has last
          % been received for a total bonus of up to 150 percent.
@@ -2358,15 +2368,8 @@ messages:
    {
       local i;
 
-      foreach i in plPassive
-      {
-         Send(i,@UserLogoff);
-      }
-
-      foreach i in plActive
-      {
-         Send(i,@UserLogoff);
-      }
+      SendList(plPassive,0,@UserLogoff);
+      SendList(plActive,0,@UserLogoff);
 
       % If this player has created any evil twins, delete them.
       if plEvilTwins <> $
@@ -2652,7 +2655,7 @@ messages:
       }
       else
       {
-         if not IsClass(self,&Guest)
+         if NOT IsClass(self,&Guest)
          {
             foreach i in lSpells
             {
@@ -2741,6 +2744,13 @@ messages:
       return piBorn_year;
    }
 
+   SetBirthYear(year=0)
+   {
+      piBorn_Year = year;
+
+      return;
+   }
+
    ResetCharacter()
    "Setup default stuff"
    {
@@ -2805,7 +2815,7 @@ messages:
       Send(self,@SetPlayerFlag,#flag=PFLAG_PKILL_ENABLE,#value=FALSE);
       Send(self,@SetPlayerFlag,#flag=PFLAG_PKILL_LOCK,#value=FALSE);
       Send(self,@SetPlayerFlag,#flag=PFLAG_INTRIGUING,#value=FALSE);
-      Send(self,@SetPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_TEMPSAFE,#value=FALSE);
 
       Send(SYS,@SystemRemoveFromChampionLists,#oldchamp=self);
 
@@ -2970,14 +2980,17 @@ messages:
       {
          oItem = droppedItem;
       }
-      else
+      else if index = $
       {
-         if index = $
-         {
-            return FALSE;
-         }
+         return FALSE;
+      }
 
-         oItem = Send(self,@FindItemByIndex,#index=index);
+      oItem = Send(self,@FindItemByIndex,#index=index);
+
+      % Can't drop nothing.
+      if (oItem = $)
+      {
+         return FALSE;
       }
 
       if targetGhost = $
@@ -3042,7 +3055,7 @@ messages:
 
       if index = $
       {
-         return;
+         return $;
       }
 
       if index <= length(plActive)
@@ -3053,6 +3066,11 @@ messages:
       {
          lInv = plPassive;
          index = index - length(plActive);
+      }
+
+      if (lInv = $)
+      {
+         return $;
       }
 
       return Nth(lInv,index);
@@ -3373,7 +3391,7 @@ messages:
    {
       local i, iTime;
 
-      if Send(self,@IsPhasedOut)
+      if (piFlags & PFLAG_PHASED)
       {
          % Rare case where a user can log off while phased, e.g. system restart
          % Phase already froze the enchantments, so we don't need to do it again
@@ -3383,11 +3401,22 @@ messages:
 
       foreach i in plEnchantments
       {
+         % If we have the spectate enchantment, remove it.
+         if IsClass(Nth(i,2),&Spectate)
+         {
+            Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,#report=FALSE);
+            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                  #type=ENCHANTMENT_PLAYER);
+            plEnchantments = DelListElem(plEnchantments,i);
+            Send(self,@ResetPlayerFlagList,#who=self);
+
+            continue;
+         }
+
          if First(i) <> $
          {
-            if IsClass(Nth(i,2),&Boon) = FALSE
+            if NOT IsClass(Nth(i,2),&Boon)
             {
-
                % Convert timer to integer if we have a timer,
                % otherwise log for debugging.
                if IsTimer(First(i))
@@ -3432,6 +3461,7 @@ messages:
       {
          % Phase reactivates enchantments while it is still in plEnchantments
          if IsClass(Nth(i,2),&Phase)
+            OR IsClass(Nth(i,2),&Spectate)
          {
             continue;
          }
@@ -3592,37 +3622,9 @@ messages:
    RemoveEnchantmentClass(class = &Object)
    "If have a current enchantment set by anything in class, end it."
    {
-      local i,state,removedSomething;
+      local i;
 
-      removedSomething = FALSE;
-
-      foreach i in plEnchantments
-      {
-         if IsClass(Nth(i,2),class)
-         {
-            removedSomething = TRUE;
-            if First(i) <> $
-            {
-               DeleteTimer(First(i));
-            }
-
-            if Length(i) >= ENCHANTMENT_LIST_STATE
-               OR IsClass(Nth(i,2),&Boon)
-            {
-               state = Nth(i,3);
-            }
-
-            Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,#state=state);
-
-            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
-                  #type=ENCHANTMENT_PLAYER);
-
-            plEnchantments = DelListElem(plEnchantments,i); 
-            Send(self,@ResetPlayerFlagList,#who=self);
-         }
-      }
-
-      % Also remove from passive improvement list.
+      % Remove from passive improvement list.
       foreach i in plPassiveImprovement
       {
          if IsClass(First(i),class)
@@ -3631,7 +3633,8 @@ messages:
          }
       }
 
-      return removedSomething;
+      % Rest of this now done in Battler.
+      propagate;
    }
 
    GetPassiveImprovementList()
@@ -3798,7 +3801,7 @@ messages:
       if NOT Send(Send(SYS,@GetParliament),@BetaPotionsEnabled)
          AND NOT IsClass(self,&DM)
       {
-         iCost = piMana * Send(Send(SYS,@GetSettings),@GetBroadcastManaCost) / 100;
+         iCost = piMana * Send(SETTINGS_OBJECT,@GetBroadcastManaCost) / 100;
          if piMana < iCost
          {
             Send(self,@MsgSendUser,#message_rsc=player_cant_broadcast);
@@ -4192,6 +4195,18 @@ messages:
          return FALSE;
       }
 
+      % Can always attack Escaped Convict regardless of room
+      if IsClass(victim,&EscapedConvict)
+      {
+         return TRUE;
+      }
+
+      % But Escaped Convict can also fight back!
+      if IsClass(self,&EscapedConvict)
+      {
+         return TRUE;
+      }
+
       % Make sure room allows the attack. Check if room has
       % special combat affects.
       if actual
@@ -4277,8 +4292,8 @@ messages:
 
       % Check for temporary safety flag.
       if IsClass(victim,&Player)
-         AND ((piFlags2 & PFLAG2_TEMPSAFE)
-            OR Send(victim,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2))
+         AND ((piFlags & PFLAG_TEMPSAFE)
+            OR Send(victim,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE))
       {
          if report
          {
@@ -4497,7 +4512,7 @@ messages:
    }
 
    CheckStatusAndSafety(victim=$,report=TRUE,actual=TRUE,minion=FALSE)
-   "PFLAG_SAFETY prevents accidental attacks. You can always successfully "
+   "CF_SAFETY_OFF prevents accidental attacks. You can always successfully "
    "hit a murderer or outlaw, though."
    {
       local oEnemyGuild, oSoldierShield;
@@ -4562,7 +4577,7 @@ messages:
       if NOT Send(victim,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
          AND NOT Send(victim,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
       {
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG_SAFETY)
+         if NOT Send(self,@CheckPlayerPreference,#flag=CF_SAFETY_OFF)
          {
             % If your opponent is not a murderer or outlaw, you must
             % have your 'safety' off to attack anyone.
@@ -4689,7 +4704,7 @@ messages:
       if bBooted
       {
          % Check for safety before booting.
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG_SAFETY)
+         if NOT Send(self,@CheckPlayerPreference,#flag=CF_SAFETY_OFF)
          {
             if report
             {
@@ -5111,9 +5126,6 @@ messages:
          iOffense = iOffense / 2;
       }
 
-      % The universal modifier.
-      iOffense = iOffense + ((iOffense * piFlags3) / 100);
-
       return Bound(iOffense,1,2000);
    }
 
@@ -5172,10 +5184,7 @@ messages:
       iDefense = iDefense + Send(Send(SYS,@GetParliament),
                                  @GetFactionDefenseBonus,#who=self);
 
-      % The universal modifier.
-      iDefense = iDefense + ((iDefense * piFlags3) / 100);
-
-      return bound(iDefense,1,2000);
+      return Bound(iDefense,1,2000);
    }
 
    % The next three messages deal with the three defense skills.  These
@@ -5333,9 +5342,6 @@ messages:
 
       iDamage = iDamage + iDamageBonus;
 
-      % The universal modifier.
-      iDamage = iDamage + ((iDamage * piFlags3) / 100);
-
       return iDamage;
    }
 
@@ -5440,7 +5446,7 @@ messages:
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
             iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
-            bAttackerEmpowered, bShielded, oRod;
+            bAttackerEmpowered, bShielded;
 
       if NOT precision
       {
@@ -5485,7 +5491,7 @@ messages:
 
          foreach i in plRadiusEnchantments
          {
-            iResistance = Send(Nth(i,1),@ModifyResistance,#attacker=what,
+            iResistance = Send(First(i),@ModifyResistance,#attacker=what,
                   #atype=atype,#iPower=Nth(i,2),
                   #caster=Nth(i,3),#resistance=iResistance);
          }
@@ -5555,7 +5561,7 @@ messages:
          if piHealth < (piBase_Max_Health * 200)
             AND ((NOT (piFlags & PFLAG_OUTLAW)
                AND NOT (piFlags & PFLAG_MURDERER))
-               OR Send(Send(SYS,@GetSettings),@DamageCapProtectionMurderersEnabled))
+               OR Send(SETTINGS_OBJECT,@DamageCapProtectionMurderersEnabled))
          {
             % Cap damage to 1/3 of max health (+2 so we "round up")
             iLimit = ((piBase_Max_Health*100) + (MAX_HEALTH_DAMAGE_FRACTION-1))
@@ -5607,10 +5613,10 @@ messages:
       if what <> $
          AND IsClass(what,&Player)
       {
-         foreach oRod in Send(what,@GetHolderPassive)
+         foreach i in Send(what,@GetHolderPassive)
          {
-            if IsClass(oRod,&DamageRod)
-               AND Send(oRod,@IsActive)
+            if IsClass(i,&DamageRod)
+               AND Send(i,@IsActive)
             {
                bAttackerEmpowered = TRUE;
             }
@@ -5624,10 +5630,10 @@ messages:
 
       % Look for active shield rods in inventory, reduce final damage to 1 if any active
       bShielded = FALSE;
-      foreach oRod in plPassive
+      foreach i in plPassive
       {
-         if IsClass(oRod,&ShieldRod)
-            AND Send(oRod,@IsActive)
+         if IsClass(i,&ShieldRod)
+            AND Send(i,@IsActive)
          {
             bShielded = TRUE;
          }
@@ -5694,6 +5700,8 @@ messages:
       {
          Send(shrunken,@DamageTaken,#what=what,#amount=damage/100);
       }
+      
+      Send(self,@AddHurtMeRecently,#who=what,#amount=damage);
 
       return damage;
    }
@@ -5790,7 +5798,7 @@ messages:
       }
 
       piWeaponSwings = piWeaponSwings + times;
-      if (piWeaponSwings MOD Send(Send(SYS,@GetSettings),
+      if (piWeaponSwings MOD Send(SETTINGS_OBJECT,
                                  @GetSwingsPerImproveCheck)) = 0
       {
          % Increase this number. Allows us to advance, and
@@ -5875,7 +5883,7 @@ messages:
                   OR Send(what,@IsIllusion)))
             AND (use_weapon = $
                OR NOT IsClass(use_weapon,&ActiveWallElement))
-            AND (piFlags & PFLAG_GROUPING)
+            AND (piPreferences & CF_GROUPING)
          {
             Send(self,@JoinBuilderGroup);
          }
@@ -6604,12 +6612,9 @@ messages:
          return FALSE;
       }
 
-      foreach i in plUsing
+      if GetListElemByClass(plUsing, class)
       {
-         if IsClass(i,class)
-         {
-            return TRUE;
-         }
+         return TRUE;
       }
 
       return FALSE;
@@ -6626,15 +6631,7 @@ messages:
          return $;
       }
 
-      foreach i in plUsing
-      {
-         if IsClass(i,class)
-         {
-            return i;
-         }
-      }
-
-      return $;
+      return GetListElemByClass(plUsing, class);
    }
 
    ChooseArmorPosition()
@@ -6980,14 +6977,26 @@ messages:
 
    GainBaseMaxHealth(amount = 0)
    {
-      local iPrev_max;
+      local iPrev_max, iApparentStamina;
 
       iPrev_max = piBase_max_health;
 
-      piBase_max_health = Bound(piBase_max_health+amount,20,
-                              (100 + Send(self,@GetStamina)));
+      % To deal with potential valid HP being stripped if the player has
+      % a temporary negative stamina modifier, we need to check if
+      % piStaminaMod is negative and if so, use just the raw stamina itself.
+      if piStaminaMod >= 0
+      {
+         iApparentStamina = Send(self,@GetStamina);
+      }
+      else
+      {
+         iApparentStamina = Send(self,@GetRawStamina);
+      }
+
+      piBase_max_health = Bound(piBase_max_health + amount, 20,
+                              (100 + iApparentStamina));
       % Bound ourselves at the top end to 150.
-      piBase_max_health = bound(piBase_max_health,$,150);
+      piBase_max_health = Bound(piBase_max_health,$,150);
       amount = piBase_max_health - iPrev_max;
 
       % Give them the "further info" gmail if they've advanced to 25.
@@ -7623,11 +7632,11 @@ messages:
       % thus, killing someone with 100 karma is a -100 karma act.
       if bIsMob
       {
-         iSwing = Send(Send(SYS, @GetSettings), @GetKillKarmaSwingMonster);
+         iSwing = Send(SETTINGS_OBJECT, @GetKillKarmaSwingMonster);
       }
       else
       {
-         iSwing = Send(Send(SYS, @GetSettings), @GetKillKarmaSwingPlayer);
+         iSwing = Send(SETTINGS_OBJECT, @GetKillKarmaSwingPlayer);
       }
 
       % Okay, let's give them a break if they are moving towards
@@ -7640,7 +7649,7 @@ messages:
          if (karma_killer > 0) <> (karma_victim > 0)
             AND (abs(karma_killer) > abs(karma_victim))
          {
-            iSwing = Send(Send(SYS, @GetSettings), @GetKillKarmaSwingNeutral);
+            iSwing = Send(SETTINGS_OBJECT, @GetKillKarmaSwingNeutral);
          }
       }
 
@@ -8215,7 +8224,7 @@ messages:
       local i, elemnum, spellnum;
 
       % This system is usually off.
-      if NOT Send(Send(SYS,@GetSettings),@IsAtrophyOn)
+      if NOT Send(SETTINGS_OBJECT,@IsAtrophyOn)
       {
          return;
       }
@@ -8601,7 +8610,7 @@ messages:
       local i, elemnum, Skillnum;
 
       % This system is usually off.
-      if NOT Send(Send(SYS,@GetSettings),@IsAtrophyOn)
+      if NOT Send(SETTINGS_OBJECT,@IsAtrophyOn)
       {
          return;
       }
@@ -8669,7 +8678,7 @@ messages:
       local i, elemnum;
 
       % This system is usually off.
-      if NOT Send(Send(SYS,@GetSettings),@IsAtrophyOn)
+      if NOT Send(SETTINGS_OBJECT,@IsAtrophyOn)
       {
          return;
       }
@@ -8699,7 +8708,7 @@ messages:
 
       if pbLogged_on
       {
-         if Send(Send(SYS, @GetSettings), @IsAtrophyOn)
+         if Send(SETTINGS_OBJECT, @IsAtrophyOn)
          {
             Send(self,@ActivateSpellAtrophy);
             Send(self,@ActivateSkillAtrophy);
@@ -8861,7 +8870,7 @@ messages:
                % or if it was a group member kill and the setting for group
                % member toughers is set to TRUE.
                if NOT group_member_kill
-                  OR Send(Send(SYS,@GetSettings),@GetGroupTougherSetting)
+                  OR Send(SETTINGS_OBJECT,@GetGroupTougherSetting)
                {
                   roll = TRUE;
                }
@@ -8910,7 +8919,7 @@ messages:
          }
 
          % Give newbies a little bonus.
-         if piBase_Max_health < Send(Send(SYS,@GetSettings),@GetPKillEnableHP)
+         if piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
          {
             gain = gain + 1;
          }
@@ -8924,7 +8933,7 @@ messages:
             if (lBuilderGroup = $
                   OR Length(lBuilderGroup) = 1
                   OR (FindListElem(lBuilderGroup,self) = 0
-                     AND (piFlags & ~PFLAG_GROUPING)))
+                     AND (piPreferences & ~CF_GROUPING)))
                AND NOT group_member_kill
                AND killing_blow
                AND (monster_level + 5) > piBase_Max_health
@@ -8951,7 +8960,7 @@ messages:
             roll = FALSE;
          }
 
-         gainmult = Bound(Send(Send(SYS,@GetSettings),
+         gainmult = Bound(Send(SETTINGS_OBJECT,
                      @GetHPGainMultiplier),1,500);
          gain = gain * gainmult;
 
@@ -8962,6 +8971,7 @@ messages:
          % and also got the killing blow (no double points from single mobs).
          if gain > 0
             AND killing_blow
+            AND piTraining_points < 1000
          {
             piTraining_points = piTraining_points + 1
                + (Send(what,@GetBoostedLevel)
@@ -8994,14 +9004,14 @@ messages:
          {
             if piInform
             {
-               Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining);
+               Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining,
+                  #parm1=piTraining_points);
                piInform = FALSE;
             }
-            piTraining_points = 1000;
          }
          else
          {
-            if piTraining_points mod 100 = 0
+            if piTraining_points MOD 100 = 0
                AND piTraining_points <> 0
                AND piInform
             {
@@ -9169,14 +9179,27 @@ messages:
       return piTraining_points;
    }
 
-   AddTrainingPoints(points=0,report=TRUE)
+   AddTrainingPoints(points=0,report=TRUE,bCap=TRUE)
    {
       if points = 0
       {
          return;
       }
 
-      points = bound(points,-piTraining_points,1000 - piTraining_points);
+      if bCap
+      {
+         if piTraining_points <= 1000
+         {
+            points = bound(points,-piTraining_points,1000 - piTraining_points);
+         }
+         else if points > 0
+         {
+               % We're respecting the 1000 point cap, have more than 1000
+               % points and are trying to add more. Don't add the points,
+               % return out.
+               return;
+         }
+      }
 
       if report AND points > 0
       {
@@ -9193,12 +9216,14 @@ messages:
       piTraining_points = piTraining_points + points;
 
       if piTraining_points < 1000
+         OR NOT bCap
       {
          piInform = TRUE;
       }
       else
       {
-         Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining);
+         Send(self,@MsgSendUser,#message_rsc=player_reached_maxtraining,
+               #parm1=piTraining_points);
          piInform = FALSE;
       }
 
@@ -9213,13 +9238,13 @@ messages:
 
       ptReward_timer = CreateTimer(self,@GetDailyTrainingReward,24*60*60*1000);
 
-      if piTraining_points = 1000
+      if piTraining_points >= 1000
       {
          return;
       }
 
       % Retrieve the daily logon bonus from settings.
-      iBonus = Send(Send(SYS,@GetSettings),@GetLogonBonus);
+      iBonus = Send(SETTINGS_OBJECT,@GetLogonBonus);
 
       Send(self,@MsgSendUser,#message_rsc=player_logon_bonus,#parm1=iBonus);
       Send(self,@AddTrainingPoints,#points=iBonus,#report=FALSE);
@@ -9242,7 +9267,7 @@ messages:
 
    %%% Player Killed %
 
-   Killed(what = $)
+   Killed(what = $, stroke_obj = $)
    {
       local lItems,i, j, amount, oBody, oSoldierShield, bNo_drop_death, oItemAtt,
             oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, oItem,
@@ -9288,7 +9313,7 @@ messages:
       % for Portal of Life to reduce penalties.  We get the default value of
       % piDeathCost from SYS, so that we can adjust global death penalties.
       % "Normal" value is 100.
-      piDeathCost = Send(Send(SYS,@GetSettings),@GetDefaultDeathCost);
+      piDeathCost = Send(SETTINGS_OBJECT,@GetDefaultDeathCost);
 
       % A player (probably) cannot die twice in two seconds in any valid way.
       if GetTime() < (piLastDeathTime + 2)
@@ -9392,21 +9417,17 @@ messages:
 
       % Record-keeping. Keep this before the token check,
       % so we can give proper message.
-      Send(SYS,@UserKilled,#what=self,#killer=what);
+      Send(SYS,@UserKilled,#what=self,#killer=what,#oRoom=oRoom,#stroke_obj=stroke_obj);
       Send(Send(SYS,@GetStatistics),@PlayerDiedCounter);
 
       % Token death?
-      foreach i in plUsing
+      i = GetListElemByClass(plUsing,&Token);
+      if i <> $
       {
-         if IsClass(i,&Token)
-         {
-            bNo_drop_death = TRUE;
-            piDeathCost = FALSE;
-            Send(self,@MsgSendUser,#message_rsc=player_token_death);
-            Send(i,@NewUnused,#what=self,#where=oRoom);
-
-            break;
-         }
+         bNo_drop_death = TRUE;
+         piDeathCost = FALSE;
+         Send(self,@MsgSendUser,#message_rsc=player_token_death);
+         Send(i,@NewUnused,#what=self,#where=oRoom);
       }
 
       % Create the corpse.
@@ -9456,21 +9477,26 @@ messages:
          {
             foreach i in lItems
             {
-               if Send(oRoom,@ReqNewHold,#what=i,#new_row=iRow,#new_col=iCol)
-                  AND Send(i,@DropOnDeath)
-               {
-                  if oItemAtt <> $
-                  {
-                     % We know this was a pk.  Only let PKillables pick up the loot.
-                     % Put the appropriate item attribute on it.
-                     Send(oItemAtt,@AddToItem,#oItem=i,
-                           #timer_duration=PKPOINTER_TIME,
-                           #state1=self);
-                  }
+               % Let the item know we died, in case it does something special.
+               Send(i,@OwnerKilled);
 
-                  Send(oRoom,@NewHold,#what=i,#merge=FALSE,
-                        #new_row=iRow,#new_col=iCol,
-                        #fine_row=iFine_row,#fine_col=iFine_col);
+               if Send(i,@DropOnDeath)
+               {
+                  if Send(oRoom,@ReqNewHold,#what=i,#new_row=iRow,#new_col=iCol)
+                  {
+                     if oItemAtt <> $
+                     {
+                        % We know this was a pk.  Only let PKillables pick up the loot.
+                        % Put the appropriate item attribute on it.
+                        Send(oItemAtt,@AddToItem,#oItem=i,
+                              #timer_duration=PKPOINTER_TIME,
+                              #state1=self);
+                     }
+
+                     Send(oRoom,@NewHold,#what=i,#merge=FALSE,
+                           #new_row=iRow,#new_col=iCol,
+                           #fine_row=iFine_row,#fine_col=iFine_col);
+                  }
                }
             }
          }
@@ -9622,7 +9648,7 @@ messages:
       bLostHealth = FALSE;
 
       % Lose your revenant, satisfied if you took a real death.
-      if piDeathCost >= Send(Send(SYS,@GetSettings),@GetDefaultDeathCost)
+      if piDeathCost >= Send(SETTINGS_OBJECT,@GetDefaultDeathCost)
       {
          % As an outlaw, justice was met by dying. But, not if it's a cheap death!
          Send(self,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=FALSE);
@@ -9662,7 +9688,7 @@ messages:
                AND piBase_max_health <= 99
                AND NOT ((piFlags & PFLAG_MURDERER)
                   OR (piFlags & PFLAG_OUTLAW))
-               AND (piFlags & PFLAG_TEMP_SAFETY)
+               AND (piPreferences & CF_TEMPSAFE)
                AND Send(self,@FindUsing,#class=&SoldierShield) = $
                AND ptTempSafe = $
             {
@@ -9690,7 +9716,7 @@ messages:
       }
 
       % Remove from guild if now under min HP
-      if piBase_max_health < Send(Send(SYS,@GetSettings),@GetPKillEnableHP)
+      if piBase_max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
       {
          Send(self, @QuitGuild);
       }
@@ -10351,7 +10377,6 @@ messages:
       return;
    }
 
-
    SetPlayerLegs(what = $,new_legs = $,translation = $)
    "Sets our legs to <new_legs>, and keeps track of <what> to "
    "undo when necessary. Tells everyone we changed."
@@ -10400,7 +10425,7 @@ messages:
    SetDefaultClothes(pants_color=-1,shirt_color=-1,rand=FALSE,increment=TRUE)
    {
       local shirt_color_xlat, pants_color_xlat, skin_color, i,
-            bShirt, bLegs, bArms, oShirt, oRobes;
+            bShirt, bLegs, bArms;
 
       skin_color = Send(self,@GetSkinColor);
       skin_color = Send(self,@ConvertSkinColorToXLAT,#skin_color=skin_color);
@@ -10469,17 +10494,17 @@ messages:
          }
       }
 
-      if not bArms
+      if NOT bArms
       {
          Send(self,@ResetPlayerArms);
       }
 
-      if not bShirt
+      if NOT bShirt
       {
          Send(self,@ResetPlayerIcon);
       }
 
-      if not bLegs
+      if NOT bLegs
       {
          Send(self,@ResetPlayerLegs);
       }
@@ -10496,12 +10521,12 @@ messages:
 
    RefreshPlayerVisualGear()
    {
-      local n, plRefreshItemTypes, i, iHighestLayer, oHighestGear,
+      local n, lRefreshItemTypes, i, iHighestLayer, oHighestGear,
             iLowestLayer, oLowestGear, oSoldierShield, bSoldierShieldSlung;
 
-      plRefreshItemTypes = [ITEM_USE_SHIRT,ITEM_USE_BODY,ITEM_USE_LEGS];
+      lRefreshItemTypes = [ITEM_USE_SHIRT,ITEM_USE_BODY,ITEM_USE_LEGS];
 
-      foreach n in plRefreshItemTypes
+      foreach n in lRefreshItemTypes
       {
          iHighestLayer = 0;
          oHighestGear = $;
@@ -11044,37 +11069,25 @@ messages:
       {
          AddPacket(1,ANIMATE_ONCE, 4,300, 2,8, 2,8, 2,iLeft_group);
       }
+      else if iAnimation = PANM_FIST_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE, 4,600, 2,5, 2,6, 2,iLeft_group);
+      }
+      else if iAnimation = PANM_BOW_FIRE
+      {
+         AddPacket(1,ANIMATE_ONCE, 4,1200, 2,9, 2,9, 2,iLeft_group);
+      }
+      else if iAnimation = PANM_WEAPON_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE, 4,300, 2,4, 2,6, 2,iLeft_group);
+      }
+      else if iAnimation = PANM_DANCE
+      {
+         AddPacket(1,ANIMATE_CYCLE, 4,150, 2,10, 2,26);
+      }
       else
       {
-         if iAnimation = PANM_FIST_ATTACK
-         {
-            AddPacket(1,ANIMATE_ONCE, 4,600, 2,5, 2,6, 2,iLeft_group);
-         }
-         else
-         {
-            if iAnimation = PANM_BOW_FIRE
-            {
-               AddPacket(1,ANIMATE_ONCE, 4,1200, 2,9, 2,9, 2,iLeft_group);
-            }
-            else
-            {
-               if iAnimation = PANM_WEAPON_ATTACK
-               {
-                  AddPacket(1,ANIMATE_ONCE, 4,300, 2,4, 2,6, 2,iLeft_group);
-               }  
-               else
-               {
-                  if iAnimation = PANM_DANCE
-                  {
-                     AddPacket(1,ANIMATE_CYCLE, 4,150, 2,10, 2,26);
-                  }  
-                  else
-                  {
-                     AddPacket(1,ANIMATE_NONE,2,iLeft_group);
-                  }
-               }
-            }
-         }
+         AddPacket(1,ANIMATE_NONE,2,iLeft_group);
       }
 
       AddPacket(4,prRight_arm, 1,HS_RIGHT_HAND);
@@ -11087,38 +11100,31 @@ messages:
       {
          AddPacket(1,ANIMATE_NONE, 2,iRight_group); 
       }
-
-      if iAnimation = PANM_WAVE
+      else if iAnimation = PANM_WAVE
       {
          AddPacket(1,ANIMATE_ONCE, 4,100, 2,7, 2,10, 2,iRight_group);
       }
-
-      if iAnimation = PANM_POINT
+      else if iAnimation = PANM_POINT
       {
          AddPacket(1,ANIMATE_ONCE, 4,700, 2,12, 2,12, 2,iRight_group);
       }
-      
-      if iAnimation = PANM_CAST
+      else if iAnimation = PANM_CAST
       {
          AddPacket(1,ANIMATE_ONCE, 4,300, 2,11, 2,11, 2,iRight_group);
       }
-
-      if iAnimation = PANM_FIST_ATTACK
+      else if iAnimation = PANM_FIST_ATTACK
       {
          AddPacket(1,ANIMATE_ONCE, 4,600, 2,13, 2,14, 2,iRight_group);
       }
-
-      if iAnimation = PANM_BOW_FIRE
+      else if iAnimation = PANM_BOW_FIRE
       {
          AddPacket(1,ANIMATE_ONCE, 4,600, 2,15, 2,16, 2,iRight_group);
       }
-
-      if iAnimation = PANM_WEAPON_ATTACK
+      else if iAnimation = PANM_WEAPON_ATTACK
       {
          AddPacket(1,ANIMATE_ONCE, 4,300, 2,4, 2,6, 2,17);
       }
-
-      if iAnimation = PANM_DANCE
+      else if iAnimation = PANM_DANCE
       {
          AddPacket(1,ANIMATE_CYCLE, 4,150, 2,18, 2,34);
       }
@@ -11133,30 +11139,21 @@ messages:
       {
          AddPacket(1,ANIMATE_ONCE, 4,900, 2,6, 2,6, 2,1);
       }
+      else if iAnimation = PANM_FIST_ATTACK
+      {
+         AddPacket(1,ANIMATE_ONCE, 4,1200, 2,6, 2,6, 2,1);
+      }
+      else if iAnimation = PANM_BOW_FIRE
+      {
+         AddPacket(1,ANIMATE_ONCE, 4,1200, 2,7, 2,7, 2,1);
+      }
+      else if iAnimation = PANM_DANCE
+      {
+         AddPacket(1,ANIMATE_CYCLE, 4,150, 2,8, 2,24);
+      }
       else
       {
-         if iAnimation = PANM_FIST_ATTACK
-         {
-            AddPacket(1,ANIMATE_ONCE, 4,1200, 2,6, 2,6, 2,1);
-         }
-         else
-         {
-            if iAnimation = PANM_BOW_FIRE
-            {
-               AddPacket(1,ANIMATE_ONCE, 4,1200, 2,7, 2,7, 2,1);
-            }
-            else
-            {
-               if iAnimation = PANM_DANCE
-               {
-                  AddPacket(1,ANIMATE_CYCLE, 4,150, 2,8, 2,24);
-               }
-               else
-               {
-                  AddPacket(1,ANIMATE_NONE, 2,1);
-               }
-            }
-         }
+         AddPacket(1,ANIMATE_NONE, 2,1);
       }
 
       iSkin_xlat = Send(self,@GetSkinColor);
@@ -11632,23 +11629,33 @@ messages:
       return;
    }
 
-   ClearFlickerFlag()
-   {
-      piDrawEffectFlag = piDrawEffectFlag & (~OF_FLICKERING);
-
-      return;
-   }
-
    RecalcFlickerFlag()
+   "Called by anything that sets the flag when it wants to unset it. "
+   "Checks if we still have anything that still requires the flag."
    {
       local i;
 
+      % Unset flag.
       piDrawEffectFlag = piDrawEffectFlag & (~OF_FLICKERING);
+
+      % Check torches and glow enchantment.
       foreach i in plUsing
       {
          if IsClass(i,&Torch)
-            OR (IsClass(i,&Weapon) 
+            OR (IsClass(i,&Weapon)
                AND Send(i,@HasAttribute,#ItemAtt=WA_GLOWING))
+         {
+            piDrawEffectFlag = piDrawEffectFlag | OF_FLICKERING;
+
+            return;
+         }
+      }
+
+      % Check radius enchantments.
+      foreach i in plRadiusEnchantments
+      {
+         if Nth(i,3) = self
+            AND NOT Send(First(i),@GetOldAreaEnchStyle)
          {
             piDrawEffectFlag = piDrawEffectFlag | OF_FLICKERING;
 
@@ -12311,7 +12318,7 @@ messages:
       %  Intellect gives you a bonus to learning, currently about 20 points
       %  for 50 Intellect (approximately mastering 2 extra schools)
       iNeed =   (iPoints * POINTS_SLOPE)
-              + (297 - (Send(Send(SYS, @GetSettings), @GetMaxLearnPoints) * POINTS_SLOPE))
+              + (297 - (Send(SETTINGS_OBJECT, @GetMaxLearnPoints) * POINTS_SLOPE))
               - ((Send(self,@GetRawIntellect) * 2 * POINTS_SLOPE) / 5);
 
       % NOTE: if you modify the above equation, also modify GivePlayerAllSkills
@@ -12536,7 +12543,7 @@ messages:
       if (piFlags & PFLAG_PKILL_ENABLE)
       {
          if poGuild = $
-            AND piBase_Max_health < Send(Send(SYS,@GetSettings),@GetPKillEnableHP)
+            AND piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
             AND NOT (piFlags & PFLAG_MURDERER)
             AND NOT (piFlags & PFLAG_OUTLAW)
          {
@@ -12556,7 +12563,7 @@ messages:
       else
       {
          if poGuild <> $
-            OR piBase_Max_health >= Send(Send(SYS,@GetSettings),@GetPKillEnableHP)
+            OR piBase_Max_health >= Send(SETTINGS_OBJECT,@GetPKillEnableHP)
             OR (piFlags & PFLAG_MURDERER)
             OR (piFlags & PFLAG_OUTLAW)
          {
@@ -12641,7 +12648,7 @@ messages:
       }
 
       % This returns minutes, so convert to milliseconds.
-      iTime = Send(Send(SYS,@GetSettings),@GetTempSafeTime);
+      iTime = Send(SETTINGS_OBJECT,@GetTempSafeTime);
       iTime = iTime * 60 * 1000;
 
       if ptTempSafe <> $
@@ -12649,7 +12656,7 @@ messages:
          DeleteTimer(ptTempSafe);
       }
       ptTempSafe = CreateTimer(self,@EndTempSafe,iTime);
-      Send(self,@SetPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2,#value=TRUE);
+      piFlags = piFlags | PFLAG_TEMPSAFE;
       Send(self,@MsgSendUser,#message_rsc=player_temp_safe);
 
       return;
@@ -12657,7 +12664,7 @@ messages:
 
    EndTempSafe()
    {
-      Send(self,@SetPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2,#value=FALSE);
+      piFlags = piFlags & ~PFLAG_TEMPSAFE;
       if poOwner <> $
       {
          Send(self,@MsgSendUser,#message_rsc=player_temp_safe_end);
@@ -12738,19 +12745,13 @@ messages:
       {
          piFactionServiceUpdate = 0;
       }
-      else
+      else if middle
       {
-         if middle
-         {
-            piFactionServiceUpdate = piFactionServiceUpdate / 2;
-         }
-         else
-         {
-            if front
-            {
-               piFactionServiceUpdate = 3* piFactionServiceUpdate / 4;
-            }
-         }
+         piFactionServiceUpdate = piFactionServiceUpdate / 2;
+      }
+      else if front
+      {
+         piFactionServiceUpdate = 3* piFactionServiceUpdate / 4;
       }
 
       return;
@@ -13141,7 +13142,7 @@ messages:
    PlayerIsHPIntrigue()
    "If player has over 40hp base."
    {
-      return (piBase_Max_health >= Send(Send(SYS,@GetSettings),@GetIntrigueEnableHP));
+      return (piBase_Max_health >= Send(SETTINGS_OBJECT,@GetIntrigueEnableHP));
    }
 
    PlayerIsAdept()
@@ -13282,10 +13283,7 @@ messages:
       {
          if IsClass(i,&Instrument)
          {
-            if Send(i,@GetInstrumentLevel) > iPower
-            {
-               iPower = Send(i,@GetInstrumentLevel);
-            }
+            iPower = iPower + Send(i,@GetInstrumentLevel);
          }
       }
 
@@ -13356,7 +13354,7 @@ messages:
 
       if IsClass(oRoom,&GuildHall)
          AND (NOT (piFlags & PFLAG_PKILL_ENABLE)
-            OR (piFlags2 & PFLAG2_TEMPSAFE))
+            OR (piFlags & PFLAG_TEMPSAFE))
       {
          Send(self,@MsgSendUser,#message_rsc=player_no_enter);
 
@@ -13384,7 +13382,7 @@ messages:
       if NOT (IsClass(self,&DM) OR override)
       {
          iMaxLevel = 0;
-         iMaxLearnPoints = Send(Send(SYS, @GetSettings), @GetMaxLearnPoints) +
+         iMaxLearnPoints = Send(SETTINGS_OBJECT, @GetMaxLearnPoints) +
                               (Send(self,@GetRawIntellect) * 2) / 5;
 
          iStartingLearnPoints = Send(self,@GetTotalLearnPoints,#except=school);
@@ -13465,7 +13463,7 @@ messages:
       if NOT (IsClass(self,&DM) OR override)
       {
          iMaxLevel = 0;
-         iMaxLearnPoints = Send(Send(SYS, @GetSettings), @GetMaxLearnPoints) +
+         iMaxLearnPoints = Send(SETTINGS_OBJECT, @GetMaxLearnPoints) +
             (Send(self,@GetRawIntellect) * 2) / 5;
 
          iStartingLearnPoints = Send(self,@GetTotalLearnPoints,#except=school);
@@ -14203,7 +14201,7 @@ messages:
 
    SendLightingInformation()
    {
-      local oLightObject, iColor, iIntensity;
+      local i, oLightObject, iColor, iIntensity;
 
       if poIllusion_set <> $
       {
@@ -14215,41 +14213,58 @@ messages:
 
          return;
       }
-      else
-      {
-         % A bit of a kludge.  Ideally, we should query the objects we are using
-         %  to find out if any want to add lighting information to us.
-         if plRadiusEnchantments <> $
-         {
-            foreach oLightObject in plRadiusEnchantments
-            {
-               if Nth(oLightObject,3) = self
-                  AND NOT Send(Nth(oLightObject,1),@GetOldAreaEnchStyle)
-               {
-                  if (piDrawEffectFlag & OF_FLICKERING)
-                  {
-                      iIntensity = Send(Nth(oLightObject,1),@GetLightIntensity);
-                      iColor = Send(Nth(oLightObject,1),@GetLightColor);
-                      AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
-                      AddPacket(1,iIntensity);
-                      AddPacket(2,iColor);
 
-                      return;
-                  }
-               }
+      % Bitflag check, don't need to check anything if not set.
+      if NOT (piDrawEffectFlag & OF_FLICKERING)
+      {
+         propagate;
+      }
+
+      iIntensity = 0;
+      iColor = 0;
+      % Check each lighting effect, strongest one wins.
+      % TODO: these should be additive, and the client should produce
+      % a combined lighting effect. Also, if more lighting effects are added
+      % this should probably query everything, just in case.
+
+      % Check torches and glow enchantment only here, hardcoded color/intensity.
+      foreach i in plUsing
+      {
+         if IsClass(i,&Torch)
+            OR (IsClass(i,&Weapon)
+               AND Send(i,@HasAttribute,#ItemAtt=WA_GLOWING))
+         {
+            iIntensity = 60;
+            iColor = LIGHT_FIRE;
+
+            break;
+         }
+      }
+
+      foreach i in plRadiusEnchantments
+      {
+         if Nth(i,3) = self
+         {
+            oLightObject = First(i);
+            if Send(oLightObject,@GetOldAreaEnchStyle)
+            {
+               continue;
+            }
+
+            if Send(oLightObject,@GetLightIntensity) >= iIntensity
+            {
+                iIntensity = Send(oLightObject,@GetLightIntensity);
+                iColor = Send(oLightObject,@GetLightColor);
             }
          }
+      }
 
-         if (piDrawEffectFlag & OF_FLICKERING)
-         {
-            AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
-            % 75 out of 255 intensity of light
-            AddPacket(1,60);
-            % Color
-            AddPacket(2,LIGHT_FIRE);
+      if iIntensity > 0
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC),
+                   1,iIntensity, 2,iColor);
 
-            return;
-         }
+         return;
       }
 
       propagate;
@@ -14664,37 +14679,20 @@ messages:
 
    GetReagentBag()
    {
-      local i;
-
-      foreach i in plPassive
-      {
-         if IsClass(i,&ReagentBag)
-         {
-            return i;
-         }
-      }
-
-      return $;
+      return GetListElemByClass(plPassive,&ReagentBag);
    }
 
    GetReagentBagContents()
    {
-      local i;
+      local oBag;
 
-      foreach i in plPassive
+      oBag = GetListElemByClass(plPassive,&ReagentBag);
+      if oBag <> $
       {
-         if IsClass(i,&ReagentBag)
-         {
-            return Send(i,@GetReagentBagContents);
-         }
+         return Send(oBag,@GetReagentBagContents);
       }
 
       return $;
-   }
-
-   IsPhasedOut()
-   {
-      return Send(self,@IsEnchanted,#byClass=&Phase);
    }
 
    StartPhaseTimer()
@@ -14732,7 +14730,7 @@ messages:
       % Add phase time to piTimeAttackedPlayer if it is currently
       % preventing the player from casting escape spells.
       if piTimeAttackedPlayer
-            + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+            + Send(SETTINGS_OBJECT,@TeleportAttackDelaySec)
             > GetTime()
       {
          piTimeAttackedPlayer = piTimeAttackedPlayer
@@ -14762,7 +14760,7 @@ messages:
             @AdjustVisualEffectBasedOnTimeRemaining,#who=self);
 
       if ptPhaseVisualEffectTimer = $
-         AND Send(self,@IsPhasedOut)
+         AND (piFlags & PFLAG_PHASED)
       {
          ptPhaseVisualEffectTimer = CreateTimer(self,@PhaseVisualEffectTimer,2000);
       }
@@ -14788,7 +14786,7 @@ messages:
       % If we added phase time to piTimeAttackedPlayer before,
       % remove what is remaining (restore to original time).
       if piTimeAttackedPlayer
-            + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+            + Send(SETTINGS_OBJECT,@TeleportAttackDelaySec)
             > GetTime()
       {
          piTimeAttackedPlayer = piTimeAttackedPlayer
@@ -14837,11 +14835,11 @@ messages:
       if (piFlags & PFLAG_MURDERER)
          OR (piFlags & PFLAG_OUTLAW)
       {
-         return Send(Send(SYS,@GetSettings),
+         return Send(SETTINGS_OBJECT,
                @GetOutlawMurdererLogoffPenaltyGhostTime);
       }
 
-      return Send(Send(SYS,@GetSettings),@GetLogoffPenaltyGhostTime);
+      return Send(SETTINGS_OBJECT,@GetLogoffPenaltyGhostTime);
    }
 
    RefreshPhaseTimeToBase()
@@ -14863,7 +14861,7 @@ messages:
       % the phase time remaining from piTimeAttackedPlayer here if we
       % added it when the user logged off.
       if piTimeAttackedPlayer
-            + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+            + Send(SETTINGS_OBJECT,@TeleportAttackDelaySec)
             > GetTime()
       {
          piTimeAttackedPlayer = piTimeAttackedPlayer
@@ -14895,18 +14893,6 @@ messages:
       return;
    }
 
-   GetReagentBagAuto()
-   {
-      return pbReagentBagAuto;
-   }
-
-   SetReagentBagAuto(value=TRUE)
-   {
-      pbReagentBagAuto = value;
-
-      return;
-   }
-   
    GetLastPvpWarned()
    {
       return piTimeAttackedByPlayer;
@@ -14931,80 +14917,15 @@ messages:
    % Use this for when either phase or spectator do the same thing
    IsInCannotInteractMode()
    {
-      if Send(self,@IsPhasedOut)
-         OR pbSpectatorMode
+      if (piFlags & PFLAG_PHASED)
+         OR (piFlags & PFLAG_SPECTATOR)
       {
          return TRUE;
       }
 
       return FALSE;
    }
-   
-   IsInSpectatorMode()
-   {
-      return pbSpectatorMode;
-   }
-   
-   DeactivateSpectatorMode()
-   {
-      pbSpectatorMode = FALSE;
 
-      if poOwner <> $
-      {
-         Send(poOwner,@SomethingChanged,#what=self);
-      }
-
-      return;
-   }
-   
-   ActivateSpectatorMode()
-   {
-      local i,j,m;
-      
-      if pbSpectatorMode
-      {
-         return;
-      }
-      
-      foreach m in plControlledMinions
-      {
-         if IsClass(m,&Monster)
-         {
-            Send(m,@Delete);
-         }
-      }
-
-      if poOwner <> $
-      {
-         Send(poOwner,@WentSpectatorMode,#who=self);
-      }
-
-      if Send(self,@IsPhasedOut)
-      {
-         % Check for phase when going from normal to spectator
-         foreach j in plEnchantments
-         {
-            if IsClass(Nth(j,2),&Phase)
-            {
-               Send(self,@FreezePhaseTimer);
-               Send(self,@RemoveEnchantment,#what=Nth(j,2),#report=FALSE);
-
-               break;
-            }
-         }
-      }
-
-      pbSpectatorMode = TRUE;
-
-      if poOwner <> $
-      {
-         Send(self,@LeaveBuilderGroup);
-         Send(poOwner,@SomethingChanged,#what=self);
-      }
-
-      return;
-   }
-   
    IsLikelyVictim()
    {
       if Send(self,@IsInCannotInteractMode)

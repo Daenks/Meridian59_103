@@ -10,5 +10,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TosRoom is Room
 
+constants:
+
+   include blakston.khd
+
+classvars:
+
+   viWeatherZone = WEATHER_ZONE_TOS
+   viWeatherMask = WEATHER_MASK_DEFAULT_NS
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

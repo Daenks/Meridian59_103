@@ -34,6 +34,9 @@ classvars:
 
    viPermanent_Flags = ROOM_GUILD_PK_ONLY
 
+   viWeatherZone = WEATHER_ZONE_CV
+   viWeatherMask = WEATHER_MASK_MOUNTAINS
+
 properties:
 
    prMusic = castle1_music
@@ -54,6 +57,19 @@ messages:
                        [13, 8], [14, 24], [12, 27] ,
                        [13, 30], [12, 37], [19, 40] ,
                        [15, 44], [19,36] ] ;
+                       
+      plPatrolPaths = [ [ [5,23], [ 10,22 ], [11,21], [5,23], [5,18] ],
+                        [ [10,4], [15,6], [13,3] ],
+                        [ [9,17], [14,23], [12,46], [14,7] ],
+                        [ [16,18], [7,14], [12,12] ],
+                        [ [15,2], [13,8] ],
+                        [ [9,14], [14,24] ],
+                        [ [10,42], [12,27] ],
+                        [ [10,26], [12,19], [13,30] ],
+                        [ $ ],
+                        [ [13,45], [19,40] ],
+                        [ [20,36], [15,44] ],
+                        [ $ ]];
 
       propagate;
    }
@@ -100,28 +116,6 @@ messages:
       plExits = Cons([ 8, 32, RID_CASTLE1, 10, 32, ROTATE_NONE ],plExits);
 
       plExits = Cons([ 4, 33, RID_DUNGEON, 24, 2, ROTATE_NONE ],plExits);
-
-      propagate;
-   }
-
-   SomethingMoved(what = $, new_row = $, new_col = $, fine_row = FINENESS/2,
-                  fine_col = FINENESS/2, cause = CAUSE_UNKNOWN, speed = 0,
-                  non_monsters_only = FALSE)
-   {
-      if IsClass(what,&Skeleton)
-      {
-         if new_row = 9
-            OR new_row = 8
-         {
-            if new_col = 4
-               OR new_col = 10
-               OR new_col = 26
-               OR new_col = 32
-            {
-               Post(self,@SomethingTryGo,#what=what,#row=new_row,#col=new_col);
-            }
-         }
-      }
 
       propagate;
    }

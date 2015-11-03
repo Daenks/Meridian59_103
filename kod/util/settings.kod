@@ -51,6 +51,8 @@ properties:
    piKillKarmaSwingMonster = 6
    piKillKarmaSwingPlayer = 10
 
+   pbMonsterFactionEnabled = TRUE
+
    pbAtrophyOn = FALSE
    
    % Stat reset options
@@ -64,7 +66,7 @@ properties:
    piStatResetTokenDropFactor = 500000
 
    % Lore book drop facter, 1 in piLoreBookDropFactor per loot roll
-   piLoreBookDropFactor = 500
+   piLoreBookDropFactor = 2000
 
    % DefaultDeathCost:  Should always be a value between 1 and 100.  Lowering
    %  this will lower the odds of a dead player losing health and skill/spell
@@ -196,6 +198,9 @@ properties:
    % Minimum swings needed for a chance to improve a weaponcraft skill.
    piWeaponcraftImprovementMinimumSwings = 50
    
+   % Riija Sword drops on death? (Used to limit griefing)
+   pbRiijaSwordDropOnDeath = FALSE
+
    % Replaces old constant
    piPKillEnableHP = 50
    
@@ -239,11 +244,21 @@ properties:
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
 
+   % Jasper vault access
+   pbJasperVault = FALSE
+
+   % chance for stormy weather
+   piStormChance = 25
+
 messages:
 
-   Constructor(server_num = $)
+   Constructor()
    "Apply the appropriate settings for a given server number"
    {
+      local server_num;
+
+      server_num = Send(SYS,@GetServerNumber);
+
       % Apparently at some point someone decided this was a better value
       piKillKarmaSwingNeutral = 3;
 
@@ -258,7 +273,7 @@ messages:
             piItemFactor         = 125;
             piMagicItemModifier  = 80;
             piSpawnRate          = 80;
-         } 
+         }
 
          if server_num = 102
          {
@@ -268,11 +283,22 @@ messages:
             piItemFactor         = 175;
             piMagicItemModifier  = 100;
             piSpawnRate          = 85;
-         } 
+         }
       }
       return;
    }
-   
+
+   GetSettingsObject()
+   "If we need to obtain the settings object, use this message."
+   {
+      return self;
+   }
+
+   Recreate()
+   {
+      return;
+   }
+
    GetPKillEnableHP()
    {
       return piPKillEnableHP;
@@ -381,6 +407,11 @@ messages:
       return piKillKarmaSwingPlayer;
    }
 
+   GetMonsterFactionEnabled()
+   {
+      return pbMonsterFactionEnabled;
+   }
+
    IsAtrophyOn()
    {
       return pbAtrophyOn;
@@ -471,6 +502,10 @@ messages:
    %
    % Miscellaneous
    %
+   GetRiijaSwordDropOnDeath()
+   {
+      return pbRiijaSwordDropOnDeath;
+   }
 
    GetInitialRoomID()
    {
@@ -608,6 +643,16 @@ messages:
    GetBroadcastManaCost()
    {
       return piBroadcastManaPercent;
+   }
+
+   JasperVaultOpen()
+   {
+      return pbJasperVault;
+   }
+
+   GetStormChance()
+   {
+      return piStormChance;
    }
 
 end

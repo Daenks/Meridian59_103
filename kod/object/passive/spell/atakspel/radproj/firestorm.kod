@@ -19,7 +19,7 @@ resources:
    include firestorm.lkod
 
    firestorm_name_rsc = "fire storm"
-   firestorm_icon_rsc = ifirebal.bgf
+   firestorm_icon_rsc = ifirestorm.bgf
    firestorm_projectile_rsc = fireball.bgf
    firestorm_desc_rsc = \
       "Call upon the magic of Faren and propel forth a devastating "
@@ -33,7 +33,7 @@ resources:
 
    % These aren't in use at the moment.
    firestorm_killed_someone = \
-      "The ice shards fatally wound %s%s."
+      "The flames consume %s%s."
    firestorm_cast_rsc = \
       "You let out a cry of pain as flames sear your flesh, "
       "causing ~r~B%i~n damage."

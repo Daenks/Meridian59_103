@@ -239,7 +239,7 @@ messages:
          return FALSE;
       }
 
-      if Send(who,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2)
+      if Send(who,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE)
       {
          % Message: temp safe angel prevents flagpole interference.
          Send(who,@MsgSendUser,#message_rsc=flag_failed_temp_safe);
@@ -823,11 +823,25 @@ messages:
 
       if piFaction = FACTION_DUKE
       {
-         oTroop = &DukeTroop;
+         if Random(0,8) = 1
+         {
+            oTroop = &DukeMage;
+         }
+         else
+         {
+            oTroop = &DukeTroop;
+         }
       }
       else if piFaction = FACTION_PRINCESS
       {
-         oTroop = &PrincessTroop;
+         if Random(0,8) = 1
+         {
+            oTroop = &PrincessMage;
+         }
+         else
+         {
+            oTroop = &PrincessTroop;
+         }
       }
       else if piFaction = FACTION_REBEL
       {

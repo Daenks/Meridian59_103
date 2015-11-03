@@ -18,8 +18,12 @@
    % symbolizes positive infinity for quantities that must be non-negative
    INFINITE_COUNT = -1
 
-   % Special way to send message to system.
+   % Special way to send message to system and other objects created by
+   % blakserv.
    SYS = 0
+   SETTINGS_OBJECT = 1
+   REALTIME_OBJECT = 2
+   EVENTENGINE_OBJECT = 3
 
    % Maximum integer value in blakod
    %  Truncated a bit for fudge factor room.  Useful for timer bounds.
@@ -51,7 +55,6 @@
    MOVEON_NOTIFY     = 3
 
    % Object flags for client.
-   OF_GROUPING       = 0x00000002
    OF_PLAYER         = 0x00000004
    OF_ATTACKABLE     = 0x00000008
    OF_GETTABLE       = 0x00000010
@@ -64,13 +67,21 @@
    OF_BUYABLE        = 0x00000400
    OF_ACTIVATABLE    = 0x00000800
    OF_APPLYABLE      = 0x00001000
-   OF_SAFETY         = 0x00002000
-   OF_TEMPSAFE       = 0x00004000
-
    OF_BOUNCING       = 0x00010000
    OF_FLICKERING     = 0x00020000
    OF_FLASHING       = 0x00040000
    OF_PHASING        = 0x00080000
+
+   % Client preference flags (stored in piPreferences in Player)
+   % Default preferences - all on except safety (which is reverse)
+   CF_DEFAULT_PREF   = 0x007E
+   CF_SAFETY_OFF     = 0x0001
+   CF_TEMPSAFE       = 0x0002
+   CF_GROUPING       = 0x0004
+   CF_AUTOLOOT       = 0x0008
+   CF_AUTOCOMBINE    = 0x0010
+   CF_REAGENTBAG     = 0x0020
+   CF_SPELLPOWER     = 0x0040
 
    % Drawing effects flags, separate from the boolean object flags.
    DRAWFX_NONE           = 0
@@ -128,6 +139,25 @@
    OT_MODERATOR    = 6   % Set if object is a "moderator".
    OT_EVENTCHAR    = 7   % Set if object is an event character.
 
+   % query flags for GetLocationInfoBSP
+   LIQ_GET_SECTORINFO    = 0x000001
+   LIQ_CHECK_THINGSBOX   = 0x000002
+   LIQ_CHECK_OBJECTBLOCK = 0x000004
+
+   % return flags for GetLocationInfoBSP
+   LIR_TBOX_OUT_N     = 0x000001
+   LIR_TBOX_OUT_E     = 0x000002
+   LIR_TBOX_OUT_S     = 0x000004
+   LIR_TBOX_OUT_W     = 0x000008
+   LIR_TBOX_OUT_NE    = 0x000003
+   LIR_TBOX_OUT_SE    = 0x000006
+   LIR_TBOX_OUT_NW    = 0x000009
+   LIR_TBOX_OUT_SW    = 0x00000C
+   LIR_SECTOR_INSIDE  = 0x000010
+   LIR_SECTOR_HASFTEX = 0x000020
+   LIR_SECTOR_HASCTEX = 0x000040
+   LIR_BLOCKED_OBJECT = 0x000100
+
    %%% Projectile and Light flags
 
    % Flags for spells/projectiles
@@ -181,6 +211,12 @@
    LIGHT_NEWSGLOBE = 0x3DFF
    % Very dim white, with blue tint, for the Tos Fountain generally.
    LIGHT_FOUNTAIN  = 0x0C6C
+
+   % Used for shirts/pants on players and humans.
+   SHIRT_MASK = 0x00ff
+   SHIRT_MUL  = 0x0001
+   PANTS_MASK = 0xff00
+   PANTS_MUL  = 0x0100
 
    %%% Palette translations
 
@@ -502,6 +538,7 @@
    RID_SEWER_KING = 380
    RID_JASWEST = 382
    RID_JAS_WEST = 382
+   RID_JAS_VAULT = 384
    
    % New areas as extensions of old areas
    RID_THRONE2 = 383
@@ -1097,6 +1134,8 @@
    ROOM_SNOWING       = 0x20000
    % Is there a sandstorm (weather, not spell) happening?
    ROOM_SANDSTORM     = 0x40000
+   % Fireworks active?
+   ROOM_FIREWORKS     = 0x80000
 
    % Terrain constants, used to tell what type of terrain the room is.
    TERRAIN_GUILDHALL = 0x0000001
@@ -1178,14 +1217,75 @@
    ICON_ROOM_TRIPLE_HEAL   = 13
    ICON_ROOM_NO_MOB_COMBAT = 14
 
-   % Weather options
-   WEATHER_DAY = 1
-   WEATHER_NIGHT = 2
-   WEATHER_DAY_STORMY = 3
-   WEATHER_DUSK = 4
-   WEATHER_DUSK_STORMY = 5
-   WEATHER_DAWN = 6
-   WEATHER_DAWN_STORMY = 7
+   %%% Weather and Backgrounds (skyboxen)
+   % Day Phase Constants
+   DAY_PHASE_DAWN    = 0
+   DAY_PHASE_DAY     = 1
+   DAY_PHASE_DUSK    = 2
+   DAY_PHASE_NIGHT   = 3
+
+   % Skybox Constants
+   SKYBOX_DAY = 1
+   SKYBOX_NIGHT = 2
+   SKYBOX_DAY_STORMY = 3
+   SKYBOX_DUSK = 4
+   SKYBOX_DUSK_STORMY = 5
+   SKYBOX_DAWN = 6
+   SKYBOX_DAWN_STORMY = 7
+
+   % Season constants
+   WEATHER_SEASON_SPRING   = 0
+   WEATHER_SEASON_SUMMER   = 1
+   WEATHER_SEASON_FALL     = 2
+   WEATHER_SEASON_WINTER   = 3
+
+   % Weather Zones
+   WEATHER_ZONE_DEFAULT    = 0
+   WEATHER_ZONE_NO_WEATHER = 0
+   WEATHER_ZONE_BARLOQUE   = 1
+   WEATHER_ZONE_CORNOTH    = 2
+   WEATHER_ZONE_JASPER     = 3
+   WEATHER_ZONE_MARION     = 4
+   WEATHER_ZONE_TOS        = 5
+   WEATHER_ZONE_KOC_TOWN   = 6
+   WEATHER_ZONE_KOC_OUTP   = 7
+   WEATHER_ZONE_KOC_CLIFFS = 8
+   WEATHER_ZONE_CV         = 9
+   WEATHER_ZONE_VALE       = 10
+   WEATHER_ZONE_JIXA       = 11
+   WEATHER_ZONE_DESERT     = 12
+   WEATHER_ZONE_RAZA       = 13
+   WEATHER_ZONE_MAX        = 13
+
+   % Weather Conditions
+   WEATHER_PATTERN_CLEAR    = 0x0
+   WEATHER_PATTERN_STORM    = 0x1
+
+   % Room Weather Masks
+   WEATHER_MASK_NONE          = 0x0
+   WEATHER_MASK_SOUND         = 0x1
+   WEATHER_MASK_DEFAULT       = 0x21111
+   WEATHER_MASK_DEFAULT_NS    = 0x21110
+   WEATHER_MASK_DESERT        = 0x44441
+   WEATHER_MASK_DESERT_NS     = 0x44440
+   WEATHER_MASK_TUNDRA        = 0x22221
+   WEATHER_MASK_TUNDRA_NS     = 0x22220
+   WEATHER_MASK_JUNGLE        = 0x11111
+   WEATHER_MASK_JUNGLE_NS     = 0x11110
+   WEATHER_MASK_MOUNTAINS     = 0x22111
+   WEATHER_MASK_MOUNTAINS_NS  = 0x22110
+   WEATHER_MASK_SPRING_RAIN   = 0x10
+   WEATHER_MASK_SPRING_SNOW   = 0x20
+   WEATHER_MASK_SPRING_SAND   = 0x40
+   WEATHER_MASK_SUMMER_RAIN   = 0x100
+   WEATHER_MASK_SUMMER_SNOW   = 0x200
+   WEATHER_MASK_SUMMER_SAND   = 0x400
+   WEATHER_MASK_FALL_RAIN     = 0x1000
+   WEATHER_MASK_FALL_SNOW     = 0x2000
+   WEATHER_MASK_FALL_SAND     = 0x4000
+   WEATHER_MASK_WINTER_RAIN   = 0x10000
+   WEATHER_MASK_WINTER_SNOW   = 0x20000
+   WEATHER_MASK_WINTER_SAND   = 0x40000
 
    % Trees (linked to group numbers in the tree top/bottom .bgf)
    TREE_OAK = 1
@@ -1507,18 +1607,21 @@
    STATE_MOVE        = 0x00010
    STATE_ZERO_MASK   = 0xFF000
 
-   ESTATE_LONG_STEP  = 0x02000
    ESTATE_AVOIDING   = 0x04000
    ESTATE_CLOCKWISE  = 0x08000
 
    ESTATE_ZERO_MASK  = 0xF0FFF
    ESTATE_CCLK_MASK  = 0xF7FFF
    ESTATE_AVOID_MASK = 0xF3FFF
-   ESTATE_LSTEP_MASK = 0xFDFFF
 
    VSTATE_VALID_ATTACK     = 0x10000
    VSTATE_INVALID_ATTACK   = 0x20000
    VSTATE_VALIDITY_MASK    = 0x0FFFF
+
+   % Flag passed to BSP C calls to signify the monster
+   % can move outside the BSP tree. Mobs that can do this
+   % have the AI_MOVE_WALKTHROUGH_WALLS AI flag.
+   MSTATE_MOVE_OUTSIDE_BSP = 0x100000
 
    % brain identification numbers
    BRAIN_ORIGINAL          = 1
@@ -1528,6 +1631,8 @@
    BRAIN_GUARD             = 5
    BRAIN_NONAGGRESSIVE     = 6
    BRAIN_KARMA_AGGRESSIVE  = 7
+   BRAIN_SWARM             = 8
+   BRAIN_MAX_NUM           = 8
 
    % AI Behaviors
    % Mob cannot be attacked.
@@ -1544,6 +1649,11 @@
    % When wounded, monster will seek the closest ally and move to them
    AI_MOVE_REGROUP            = 0x0000040
    AI_MOVE_WALKTHROUGH_WALLS  = 0x0000080
+   % monster will continue moving even if the room has no users
+   AI_MOVE_WHEN_ALONE         = 0x0000100
+   AI_CAN_PATROL              = 0x0000200
+   AI_HAS_TARGET_LOCATION     = 0x0000400
+   AI_LOOPING_PATROL          = 0x0000800
    AI_NOFIGHT                 = 0x0001000
    % monster will fight other monsters
    AI_FIGHT_MONSTERS          = 0x0002000
@@ -1668,6 +1778,16 @@
 
    TID_EASTER_BUNNY  = 63
    TID_KILLER_BUNNY  = 64
+
+   TID_XEO_AIR       = 65
+   TID_XEO_EARTH     = 66
+   TID_XEO_FIRE      = 67
+   TID_XEO_WATER     = 68
+   TID_XEO_ACID      = 69
+   TID_XEO_UNHOLY    = 70
+   TID_XEO_HOLY      = 71
+   TID_XEO_NERU      = 72
+   TID_XEO_ILL       = 73
 
    %%% English articles
 
@@ -1875,6 +1995,7 @@
    STROKE_ZAP = 23
    STROKE_ICY_FINGERS = 24
    STROKE_ACID_TOUCH = 25
+   STROKE_UNHOLY_TOUCH = 26
 
    %%% Unique skill constants
 
@@ -1930,6 +2051,7 @@
    SID_POISON = 15
    SID_FIRE_STORM = 16
    SID_SUPER_STRENGTH = 17
+   SID_SPECTATE = 18
 
    SID_TOUCH_OF_FLAME = 20
    SID_HOLY_TOUCH = 21
@@ -2091,6 +2213,7 @@
    SID_DEATH_RIFT = 185
    SID_PHASE = 186
    SID_MEDITATE = 187
+   SID_UNHOLY_TOUCH = 188
 
    % Depreciated spell IDs
    SID_LIGHTNING = 1                   % use SID_LIGHTNING_BOLT
@@ -2235,11 +2358,11 @@
 
    % First set of flags (in piFlags)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG_MASK              = 0x1C63D7E
+   PFLAG_MASK              = 0x1423D7E
 
    PFLAG_INVISIBLE         = 0x0000001
    PFLAG_MURDERER          = 0x0000002
-   PFLAG_SAFETY            = 0x0000004
+   PFLAG_TEMPSAFE          = 0x0000004
    PFLAG_OUTLAW            = 0x0000008
    PFLAG_DID_DAMAGE        = 0x0000010
    PFLAG_TOOK_DAMAGE       = 0x0000020
@@ -2256,19 +2379,18 @@
    PFLAG_NO_MAGIC          = 0x0008000
    PFLAG_NO_MOVE           = 0x0010000
    PFLAG_LOG               = 0x0020000
-   % Setting for the player's temp safety
-   PFLAG_TEMP_SAFETY       = 0x0040000
+   PFLAG_SPECTATOR         = 0x0040000
    PFLAG_ANONYMOUS         = 0x0080000
    PFLAG_FORGOTTEN         = 0x0100000
    PFLAG_MORPHED           = 0x0200000
    % this player has moved since he's entered the room.
    PFLAG_MOVED_SINCE_ENTRY = 0x0400000
-   PFLAG_GROUPING          = 0x0800000
+   PFLAG_PHASED            = 0x0800000
    PFLAG_KILLED_BY_PLAYER  = 0x1000000
 
    % Second set of player flags (in piFlags2)
    % A mask of flags that are unaffected by ResetPlayerFlagList
-   PFLAG2_MASK             = 0x003E80
+   PFLAG2_MASK             = 0x001E80
 
    PFLAG2_HASTED           = 0x000001
    PFLAG2_DANCING          = 0x000002
@@ -2287,7 +2409,12 @@
    PFLAG2_SQUELCHED_POSTS  = 0x001000
    % Sum of the other squelched flags.
    PFLAG2_SQUELCHED_ALL    = 0x001E00
-   PFLAG2_TEMPSAFE         = 0x002000
+
+   % Third set of player flags (in piFlags3)
+   % piFlags3 can now be used as a proper bitfield, and no longer
+   % modifies player advancement.
+   % A mask of flags that are unaffected by ResetPlayerFlagList
+   PFLAG3_MASK             = 0x0000000
 
    % Set of flags just for DM's
    % DM is completely invisible
@@ -2319,6 +2446,7 @@
    EFFECT_FLASHXLAT = 15
    EFFECT_WHITEOUT = 16
    EFFECT_XLATOVERRIDE = 17
+   EFFECT_FIREWORKS = 18
 
    % Effect flashes
    FLASH_NONE = 0
@@ -2517,6 +2645,37 @@
    COUNCILOR_FOUR  = 4
    COUNCILOR_FIVE  = 5
 
+   %%% Reputation
+   
+   REP_MONSTER_MIN = 0
+   REP_MONSTER_MAX = 13
+   % monster factions
+   REP_NEUTRAL    = 0
+   REP_FAROL      = 1
+   REP_ORC        = 2
+   REP_TROLL      = 3
+   REP_FARNOHL    = 4
+   REP_LICH       = 5
+   REP_PSAVAR     = 6
+   REP_KKAVAR     = 7
+   REP_CTAVAR     = 8
+   REP_FEY_GOOD   = 9
+   REP_FEY_EVIL   = 10
+   REP_FROGMEN    = 11
+   REP_HERETIC    = 12
+   REP_UNDEAD     = 13
+   
+   REP_TOWN_MIN   = 10001
+   REP_TOWN_MAX   = 10007
+   % Town Reputation
+   REP_TOS        = 10001
+   REP_BARLOQUE   = 10002
+   REP_CORNOTH    = 10003
+   REP_JASPER     = 10004
+   REP_MARION     = 10005
+   REP_KOCATAN    = 10006
+   REP_KO_OUTPOST = 10007
+   
    %%% Animation types
 
    ANIMATE_NONE         = 1
@@ -2793,13 +2952,13 @@
    OO_RR_PLANT2 = 153
    OO_RR_TABLE = 154
    OO_RR_BASIN = 155
-
    OO_QORMAS_SNOWMAN = 156
    OO_QORMAS_TREE = 157
    OO_QORMAS_WREATH = 158
    OO_QORMAS_TREE_BIG = 159
-
    OO_JASPERLAMP1 = 160
+   OO_SMCRATE = 161
+   OO_VJOURNAL = 162
 
    %%% Shrines
 
@@ -3401,6 +3560,48 @@
    HUNGER_4 = 8
    HUNGER_5 = 10
 
+   %%% Game Event Bit Field (double wide!!)
+   % This is a double wide bitfield, remember to add both a high byte and low
+   % byte for your event.  When you run out of flag room in the low byte, increment
+   % the high byte value and start over with lowbyte = 0x00000001 (or 0x1, etc.)
+   % for example if the high byte is 0x2 and you run out of lowbytes for that
+   % high byte, put your event at high byte = 0x3 and lowbyte = 0x1.  It is
+   % probably best to keep this list in order to avoid confusion
+   %%% Game Event High Byte
+   GAMEEVENT_HIBYTE_CHAOS            = 0x1
+   GAMEEVENT_HIBYTE_WAR              = 0x1
+   GAMEEVENT_HIBYTE_NODE_ATK         = 0x1
+   GAMEEVENT_HIBYTE_FACT_GAME        = 0x1
+   GAMEEVENT_HIBYTE_TERRITORY        = 0x1
+   GAMEEVENT_HIBYTE_TOKEN            = 0x1
+   GAMEEVENT_HIBYTE_EASTER_EGG       = 0x1
+   GAMEEVENT_HIBYTE_EASTER_INVASION  = 0x1
+   GAMEEVENT_HIBYTE_RAT_INVASION     = 0x1
+   GAMEEVENT_HIBYTE_ORC_INVASION     = 0x1
+   GAMEEVENT_HIBYTE_QORMAS           = 0x1
+   
+   %%% Game Event Low Byte
+   GAMEEVENT_LOBYTE_CHAOS            = 0x1
+   GAMEEVENT_LOBYTE_WAR              = 0x2
+   GAMEEVENT_LOBYTE_NODE_ATK         = 0x4
+   GAMEEVENT_LOBYTE_FACT_GAME        = 0x8
+   GAMEEVENT_LOBYTE_TERRITORY        = 0x10
+   GAMEEVENT_LOBYTE_TOKEN            = 0x20
+   GAMEEVENT_LOBYTE_EASTER_EGG       = 0x40
+   GAMEEVENT_LOBYTE_EASTER_INVASION  = 0x80
+   GAMEEVENT_LOBYTE_RAT_INVASION     = 0x100
+   GAMEEVENT_LOBYTE_ORC_INVASION     = 0x200
+   GAMEEVENT_LOBYTE_QORMAS           = 0x400
+   
+   %%% Game Event Time Scale Constants
+   GAMEEVENT_SCALE_SECONDS          = 0
+   GAMEEVENT_SCALE_MINUTES          = 1
+   GAMEEVENT_SCALE_HOURS            = 2
+   GAMEEVENT_SCALE_DAYS             = 3
+   GAMEEVENT_SCALE_WEEKS            = 4
+   GAMEEVENT_SCALE_MONTHS           = 5
+   GAMEEVENT_SCALE_YEARS            = 6
+   
    %%% War Event
 
    % Included here for use in admin window.
@@ -3434,6 +3635,11 @@
    STAT_MONEYCREATED = 2
    STAT_PLAYERLOGIN = 3
    STAT_ASSESS_DAM = 4
+   STAT_PLAYERDEATH = 5
+   STAT_PLAYER = 6
+   STAT_PLAYERSUICIDE = 7
+   STAT_GUILD = 8
+   STAT_GUILDDISBAND = 9
    
    % Survival options
    OPT_NATURAL = 1    % Rooms with natural monster spawn only

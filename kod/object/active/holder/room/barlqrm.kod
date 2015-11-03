@@ -10,5 +10,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 BarloqueRoom is Room
 
+constants:
+
+   include blakston.khd
+
+classvars:
+
+   viWeatherZone = WEATHER_ZONE_BARLOQUE
+   viWeatherMask = WEATHER_MASK_DEFAULT_NS
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

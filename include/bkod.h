@@ -117,6 +117,13 @@ enum
 
    SENDMESSAGE = 11,
    POSTMESSAGE = 12,
+   SENDLISTMSG = 13,
+   SENDLISTMSGBREAK = 14,
+   SENDLISTMSGBYCLASS = 15,
+   SENDLISTMSGBYCLASSBREAK = 16,
+
+   SAVEGAME = 19,
+   LOADGAME = 20,
 
    GODLOG = 21,
    DEBUG = 22,
@@ -153,17 +160,22 @@ enum
    CREATEROOMDATA = 61,
    FREEROOM = 62,
    ROOMDATA = 63,
-   CANMOVEINROOM = 64,
-   CANMOVEINROOMFINE = 65,
-   CANMOVEINROOMHIGHRES = 66,
-   GETHEIGHT = 67,
-   GETHEIGHTFLOORBSP = 68,
-   GETHEIGHTCEILINGBSP = 69,
+
    LINEOFSIGHTBSP = 70,
 
    MINIGAMENUMBERTOSTRING = 71,
    MINIGAMESTRINGTONUMBER = 72,
+   
+   CANMOVEINROOMBSP = 73,
+   GETLOCATIONINFOBSP = 74,
+   BLOCKERADDBSP = 75,
+   BLOCKERMOVEBSP = 76,
+   BLOCKERREMOVEBSP = 77,
+   BLOCKERCLEARBSP = 78,
+   GETRANDOMPOINTBSP = 79,
+   GETSTEPTOWARDSBSP = 80,
 
+   GETALLLISTNODESBYCLASS = 99,
    APPENDLISTELEM = 100,
    CONS = 101,
    FIRST = 102,
@@ -179,7 +191,11 @@ enum
    SWAPLISTELEM = 112,
    INSERTLISTELEM = 113,
    LAST = 114,
-
+   ISLISTMATCH = 115,
+   GETLISTELEMBYCLASS = 116,
+   GETLISTNODE = 117,
+   LISTCOPY = 118,
+   GETTIMEZONEOFFSET = 119,
    GETTIME = 120,
    GETTICKCOUNT = 121,
 
@@ -192,6 +208,7 @@ enum
    GETTABLEENTRY = 143,
    DELETETABLEENTRY = 144,
    DELETETABLE = 145,
+   ISTABLE = 146,
 
    RECYCLEUSER = 151,
 
@@ -220,15 +237,16 @@ enum
    TAG_CLASS = 10,
    TAG_MESSAGE = 11,
    TAG_DEBUGSTR = 12,
-   TAG_OVERRIDE = 13,     // For overriding a class variable with a property
-   TAG_RESERVED = 14,     // Reserved for future expansion
-   TAG_INVALID = 15,
+   TAG_TABLE = 13,
+   TAG_OVERRIDE = 14,  // For overriding a class variable with a property
+   TAG_EMPTY = 15,     // Empty tag available for use
 };
 
 #define MAX_TAG 12
 #define MAX_KOD_INT ((1<<27)-1)  // 28th bit is sign. 0x07ffffff == kod +134217727
 #define MASK_KOD_INT ((1<<28)-1) // 28th bit is sign. 0x0fffffff == kod -1
 #define MIN_KOD_INT (1<<27)      // 28th bit is sign. 0x08000000 == kod -134217728
+#define KODFINENESS 64           // how many fine rows give a full row
 
 typedef struct
 {

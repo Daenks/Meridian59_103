@@ -14,16 +14,19 @@ constants:
 
    include blakston.khd
 
+   DEFAULT_GEN_TIME = 15000
+   DEFAULT_GEN_PERCENT = 100
+   
 resources:
 
 classvars:
 
    % If true, reduce monster spawn rate when there are few players in the room
    vbScaleSpawnRateWithPlayers = FALSE
-
+   
 properties:
 
-   piGen_Time = 15000
+   piGen_Time = DEFAULT_GEN_TIME
    ptGen = $
 
    ptOkay_To_Load = $
@@ -45,7 +48,7 @@ properties:
    piInit_count_max = 5
 
    % percentage chance that you'll get a new monster when timer expires
-   piGen_percent = 100
+   piGen_percent = DEFAULT_GEN_PERCENT
 
    % maximum number of total monsters a room can hold       
    piMonster_count_max = 10
@@ -101,7 +104,7 @@ messages:
       % GetSpawnRate =  1
       % iWaitTime = (20000 * (300 / 100));
       % iWaitTime = 200
-      iWaitTime = (piGen_Time * Send(Send(SYS,@GetSettings),@GetSpawnRate)) / 100;
+      iWaitTime = (piGen_Time * Send(SETTINGS_OBJECT,@GetSpawnRate)) / 100;
 
       % Reduce spawn time for up to 5 people.
       iNumberOfPlayers = Send(self,@CountHoldingHowMany,#class=&Player);
@@ -137,6 +140,11 @@ messages:
       pbGenerateMonsters = bValue;
 
       return;
+   }
+   
+   CanMonsterGenerate()
+   {
+      return pbGenerateMonsters;
    }
 
    TryCreateMonster(initroom = FALSE,loadfirst = FALSE)
@@ -315,7 +323,7 @@ messages:
       if (ptOkay_To_Load = $) AND (piMonster_count = 0)
       {
          iWaitTime = (piReload_Wait_Time
-                        * Send(Send(SYS,@GetSettings),@GetSpawnRate)) / 100;
+                        * Send(SETTINGS_OBJECT,@GetSpawnRate)) / 100;
          ptOkay_To_Load = CreateTimer(self,@OkaytoLoadTimer,iWaitTime);
          pbOkay_To_Load = FALSE;
       }
@@ -360,8 +368,8 @@ messages:
                               #new_row=iRow,#new_col=iCol);
          bReqSomethingMoved = Send(self,@ReqSomethingMoved,#what=oMonster,
                                     #new_row=iRow,#new_col=iCol);
-         
-         if bReqNewHold and bReqSomethingMoved
+
+         if bReqNewHold AND bReqSomethingMoved
          {
             Send(self,@NewHold,#what=oMonster,#new_row=iRow,#new_col=iCol,
                   #fine_row=FINENESS_HALF,#fine_col=FINENESS_HALF);
@@ -372,10 +380,64 @@ messages:
 
       return iCount - 1;
    }
-   
+
    GetGenerators()
    {
       return plGenerators;
+   }
+
+   SetGenerators(generators = $)
+   {
+      if (generators = $)
+      {
+         return;
+      }
+
+      plGenerators = generators;
+
+      return;
+   
+   }
+
+   GetPatrolPaths()
+   {
+      return plPatrolPaths;
+   }
+
+   SetPatrolPaths(patrolPaths = $)
+   {
+      if (patrolPaths = $)
+      {
+         return;
+      }
+      
+      plPatrolPaths = patrolPaths;
+
+      return;
+   }
+
+   GetGenTime()
+   {
+      return piGen_Time;
+   }
+
+   SetGenTIme(time = DEFAULT_GEN_TIME)
+   {
+      piGen_Time = time;
+
+      return;
+   }
+
+   GetGenPercent()
+   {
+      return piGen_Percent;
+   }
+
+   SetGenPercent(percent = DEFAULT_GEN_PERCENT)
+   {
+      piGen_Percent = percent;
+
+      return;
    }
 
 end

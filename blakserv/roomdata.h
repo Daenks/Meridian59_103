@@ -13,32 +13,28 @@
 #ifndef _ROOMDATA_H
 #define _ROOMDATA_H
 
+#define INIT_ROOMTABLE_SIZE 400
 
-typedef struct roomdata_struct
+typedef struct room_node
 {
+   room_type data;
+   struct room_node *next;
+} room_node;
+
+typedef struct room_rsc_struct
+{
+   int resource_id;
    int roomdata_id;
-   room_type file_info;
-   struct roomdata_struct *next;
-} roomdata_node;
+   struct room_rsc_struct *next;
+} room_rsc_node;
 
-enum
-{
-   ROOM_FLAG_WALKABLE = 0x01
-};
+void        InitRooms(void);
+void        ExitRooms(void);
+void        ResetRooms(void);
+int         LoadRoom(int resource_id);
+void        UnloadRoom(room_node *r);
+room_node*  GetRoomDataByID(int id);
+room_node*  GetRoomDataByResourceID(int id);
+void ForEachRoom(void(*callback_func)(room_node *r));
 
-void InitRoomData(void);
-void ResetRoomData(void);
-Bool CanMoveInRoom(roomdata_node *r,int from_row,int from_col,int to_row,int to_col);
-Bool CanMoveInRoomHighRes(roomdata_node *r,int from_row,int from_col,int from_finerow,int from_finecol,
-						  int to_row,int to_col,int to_finerow,int to_finecol);
-Bool CanMoveInRoomFine(roomdata_node *r,int from_row,int from_col,int to_row,int to_col);
-int LoadRoomData(int resource_id);
-void UnloadRoomData(roomdata_node *r);
-roomdata_node * GetRoomDataByID(int id);
-int GetHeight(roomdata_node *r,int row,int col,int finerow,int finecol);
-
-int GetHeightFloorBSP(roomdata_node *r, int row, int col, int finerow, int finecol);
-int GetHeightCeilingBSP(roomdata_node *r, int row, int col, int finerow, int finecol);
-Bool LineOfSightBSP(roomdata_node *r, int from_row, int from_col, int from_finerow, int from_finecol,
-                                      int to_row, int to_col, int to_finerow, int to_finecol);
 #endif

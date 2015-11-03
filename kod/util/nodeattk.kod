@@ -81,7 +81,7 @@ properties:
    % Base percent chance to actually be severed from the node.
    piSeveredChance = 2
    % Number of users that must be on before a node attack goes on.
-   piNumberOnForAttack = 40
+   piNumIPsOnForAttack = 20
 
    % NOTE: See specific notes in Recreate() for more information.
    % The current node being attacked.
@@ -225,7 +225,9 @@ messages:
 
       % Check the wait time, see if we're up for attacking the node again!
       piWaitTime = piWaitTime - 1;
-      if piWaitTime <= 0 AND poAttackedNode = $
+      if piWaitTime <= 0
+         AND poAttackedNode = $
+         AND ptAttack = $
       {
          % Generate a wait between a minute and 4 hours
          ptAttack = CreateTimer(self,@StartAttackTimer,Random(60,14400)*1000);
@@ -266,14 +268,14 @@ messages:
 
    DoNodeAttack(iNode=$,bOverride=FALSE)
    {
-      local Active, lUsers, iIndex, oRoom, oMonsters, lPosition, lAllItems,
+      local Active, iNum, iIndex, oRoom, oMonsters, lPosition, lAllItems,
             oItem, iNumber, iNumberXeos;
 
       % General fail conditions, not enough users, bad node, attacking an
       %  already dead node.
-      lUsers = Send(SYS,@GetUsersLoggedOn);
+      iNum = Send(SYS,@GetUniqueIPs);
       if poAttackedNode <> $
-         OR (Length(lUsers) < piNumberOnForAttack AND NOT bOverride)
+         OR (iNum < piNumIPsOnForAttack AND NOT bOverride)
       {
          return FALSE;
       }
@@ -366,6 +368,11 @@ messages:
 
       % Set timer for when everyone will be alerted, and send message to node
       %  holders. Convert minutes to milliseconds.
+      if (ptAttack <> $)
+      {
+         DeleteTimer(ptAttack);
+         ptAttack = $;
+      }
       ptAttack = CreateTimer(self,@WarnAllTimer,(piAttackDuration*60000)/3);
       lAllItems = Send(SYS,@GetUsersLoggedOn);
       foreach oItem in lAllItems
@@ -403,9 +410,9 @@ messages:
    {
       local iRandom, oXeo;
 
-      if (iType < 1) or (iType > 4)
+      if (iType < 1) or (iType > 8)
       {
-         iRandom = random(1,4);
+         iRandom = random(1,8);
       }
       else
       {
@@ -430,6 +437,26 @@ messages:
       if iRandom = 4
       {
          oXeo = Create(&XeoAir,#InAttack=TRUE);
+      }
+
+      if iRandom = 5
+      {
+         oXeo = Create(&XeoAcid,#InAttack=TRUE);
+      }
+
+      if iRandom = 6
+      {
+         oXeo = Create(&XeoUnholy,#InAttack=TRUE);
+      }
+
+      if iRandom = 7
+      {
+         oXeo = Create(&XeoHoly,#InAttack=TRUE);
+      }
+
+      if iRandom = 8
+      {
+         oXeo = Create(&XeoIll,#InAttack=TRUE);
       }
 
       return oXeo;

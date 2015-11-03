@@ -20,6 +20,7 @@
 
 #define MAX_IGNORE_LIST 1000  /* Max number of player names that can be ignored */
 
+#define CONFIG_MAX_PARTICLES 150  // Max particle density
 #define CONFIG_MAX_VOLUME 100  // Max value of sound / music volume settings
 
 #ifdef __cplusplus
@@ -67,14 +68,13 @@ typedef struct {
    Bool scroll_lock;             /* Don't scroll main edit box if scrolled back */
    Bool tooltips;                /* Display tooltips? */
    Bool inventory_num;           /* Display amounts for number items in inventory? */
-   Bool aggressive;              /* Allowed to attack other players? */
-   Bool tempsafe;                /* Do we get a temporary angel when we die? */
-   Bool grouping;                /* Do we join building groups? */
+   Bool preferences;             /* Client gameplay preferences. */
    Bool bounce;                  /* Display player "bouncing" animation? */
    Bool toolbar;                 /* Display toolbar? */
 
    Bool pain;                    /* Display pain effect on hits? */
    Bool weather;                 /* Display weather effects? */
+   int particles;                /* How many particles we display in effects */
    Bool technical;               /* Show technical info such as the connected server number? */
    Bool quickstart;              /* Try to answer all questions with defaults until playing. */
    Bool antiprofane;             /* Kill annoying incoming profanity. */

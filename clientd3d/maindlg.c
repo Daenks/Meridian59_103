@@ -178,9 +178,13 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       CheckDlgButton(hDlg, IDC_TOOLTIPS, config.tooltips);
       CheckDlgButton(hDlg, IDC_PAIN, config.pain);
       CheckDlgButton(hDlg, IDC_INVNUM, config.inventory_num);
-      CheckDlgButton(hDlg, IDC_SAFETY, config.aggressive);
-      CheckDlgButton(hDlg, IDC_TEMPSAFE, config.tempsafe);
-      CheckDlgButton(hDlg, IDC_GROUPING, config.grouping);
+      CheckDlgButton(hDlg, IDC_SAFETY, config.preferences & CF_SAFETY_OFF);
+      CheckDlgButton(hDlg, IDC_TEMPSAFE, config.preferences & CF_TEMPSAFE);
+      CheckDlgButton(hDlg, IDC_GROUPING, config.preferences & CF_GROUPING);
+      CheckDlgButton(hDlg, IDC_AUTOLOOT, config.preferences & CF_AUTOLOOT);
+      CheckDlgButton(hDlg, IDC_AUTOCOMBINE, config.preferences & CF_AUTOCOMBINE);
+      CheckDlgButton(hDlg, IDC_REAGENTBAG, config.preferences & CF_REAGENTBAG);
+      CheckDlgButton(hDlg, IDC_SPELLPOWER, config.preferences & CF_SPELLPOWER);
       CheckDlgButton(hDlg, IDC_SHOWFPS, config.showFPS);
       CheckDlgButton(hDlg, IDC_BOUNCE, config.bounce);
       CheckDlgButton(hDlg, IDC_WEATHER, config.weather);
@@ -201,6 +205,9 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       CheckRadioButton(hDlg, IDC_TARGETHALO1, IDC_TARGETHALO3, config.halocolor + IDC_TARGETHALO1);
 
       CheckDlgButton(hDlg, IDC_COLORCODES, config.colorcodes);
+
+      Trackbar_SetRange(GetDlgItem(hDlg, IDC_PARTICLENUM), 25, CONFIG_MAX_PARTICLES, FALSE);
+      Trackbar_SetPos(GetDlgItem(hDlg, IDC_PARTICLENUM), config.particles);
 
       Trackbar_SetRange(GetDlgItem(hDlg, IDC_SOUND_VOLUME), 0, CONFIG_MAX_VOLUME, FALSE);
       Trackbar_SetRange(GetDlgItem(hDlg, IDC_MUSIC_VOLUME), 0, CONFIG_MAX_VOLUME, FALSE);
@@ -264,9 +271,42 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          config.tooltips      = IsDlgButtonChecked(hDlg, IDC_TOOLTIPS);
          config.pain          = IsDlgButtonChecked(hDlg, IDC_PAIN);
          config.inventory_num = IsDlgButtonChecked(hDlg, IDC_INVNUM);
-         config.aggressive    = IsDlgButtonChecked(hDlg, IDC_SAFETY);
-         config.tempsafe      = IsDlgButtonChecked(hDlg, IDC_TEMPSAFE);
-         config.grouping      = IsDlgButtonChecked(hDlg, IDC_GROUPING);
+
+         if (IsDlgButtonChecked(hDlg, IDC_SAFETY))
+            config.preferences |= CF_SAFETY_OFF;
+         else
+            config.preferences &= ~CF_SAFETY_OFF;
+
+         if (IsDlgButtonChecked(hDlg, IDC_TEMPSAFE))
+            config.preferences |= CF_TEMPSAFE;
+         else
+            config.preferences &= ~CF_TEMPSAFE;
+
+         if (IsDlgButtonChecked(hDlg, IDC_GROUPING))
+            config.preferences |= CF_GROUPING;
+         else
+            config.preferences &= ~CF_GROUPING;
+
+         if (IsDlgButtonChecked(hDlg, IDC_AUTOLOOT))
+            config.preferences |= CF_AUTOLOOT;
+         else
+            config.preferences &= ~CF_AUTOLOOT;
+
+         if (IsDlgButtonChecked(hDlg, IDC_AUTOCOMBINE))
+            config.preferences |= CF_AUTOCOMBINE;
+         else
+            config.preferences &= ~CF_AUTOCOMBINE;
+
+         if (IsDlgButtonChecked(hDlg, IDC_REAGENTBAG))
+            config.preferences |= CF_REAGENTBAG;
+         else
+            config.preferences &= ~CF_REAGENTBAG;
+
+         if (IsDlgButtonChecked(hDlg, IDC_SPELLPOWER))
+            config.preferences |= CF_SPELLPOWER;
+         else
+            config.preferences &= ~CF_SPELLPOWER;
+
          config.showFPS       = IsDlgButtonChecked(hDlg, IDC_SHOWFPS);
          config.bounce        = IsDlgButtonChecked(hDlg, IDC_BOUNCE);
          config.weather       = IsDlgButtonChecked(hDlg, IDC_WEATHER);
@@ -283,23 +323,35 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          if (IsDlgButtonChecked(hDlg, IDC_MUSIC) != config.play_music)
             UserToggleMusic(config.play_music);
          config.play_music = IsDlgButtonChecked(hDlg, IDC_MUSIC);
-         
          config.play_sound = IsDlgButtonChecked(hDlg, IDC_SOUNDFX);
          config.play_loop_sounds = IsDlgButtonChecked(hDlg, IDC_LOOPSOUNDS);
          config.play_random_sounds = IsDlgButtonChecked(hDlg, IDC_RANDSOUNDS);
          if (!config.play_sound)
-            SoundAbort();
+            SoundStopAll();
+
+         UserToggleMusic(config.play_music);
 
          new_val = Trackbar_GetPos(GetDlgItem(hDlg, IDC_MUSIC_VOLUME));
          if (new_val != config.music_volume)
          {
             config.music_volume = new_val;
-            ResetMusicVolume();
+            MusicSetVolume();
          }
 
-         // Don't need to dynamically update sound volume, because
-         // looping sounds are updated as player moves around.
-         config.sound_volume = Trackbar_GetPos(GetDlgItem(hDlg, IDC_SOUND_VOLUME));
+         new_val = Trackbar_GetPos(GetDlgItem(hDlg, IDC_SOUND_VOLUME));
+         if (new_val != config.sound_volume)
+         {
+            config.sound_volume = new_val;
+            SoundSetVolume();
+         }
+
+         new_val = Trackbar_GetPos(GetDlgItem(hDlg, IDC_PARTICLENUM));
+         if (new_val != config.particles)
+         {
+            config.particles = new_val;
+            // Reset particle system with new max num.
+            D3DParticlesInit(true);
+         }
 
          if( IsDlgButtonChecked( hDlg, IDC_TARGETHALO1 ) == BST_CHECKED )
             config.halocolor = 0;

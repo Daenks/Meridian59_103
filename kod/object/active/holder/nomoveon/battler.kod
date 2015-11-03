@@ -13,6 +13,7 @@ Battler is NoMoveOn
 constants:
 
    include blakston.khd
+   include protocol.khd
 
    % Raise or lower this number to raise or lower the chance the 'avoids 
    %  your attack' message comes up.
@@ -188,6 +189,16 @@ properties:
 
    % Mana regen timer.
    ptMana = $
+   
+   % Reputation hashtable for monster territory/influence system
+   phReputation = $
+
+   % Keeps track of who damaged this battler recently, and for how much.
+   % Used to determine who logged / killed this monster or player.
+   % Form [damager, amount, timer]
+   plHurtMeRecently = $
+   % 20 seconds default for players, 60 for monsters
+   piHurtMeTime = 20000
 
 messages:
 
@@ -241,6 +252,21 @@ messages:
          plApparitionList = $;
       }
 
+      if plHurtMeRecently <> $
+      {
+         foreach i in plHurtMeRecently
+         {
+            if IsTimer(Nth(i,3))
+            {
+               DeleteTimer(Nth(i,3));
+            }
+            SetFirst(i,$);
+            SetNth(i,2,$);
+            SetNth(i,3,$);
+            plHurtMeRecently = DelListElem(plHurtMeRecently,i);
+         }
+      }
+
       propagate;
    }
 
@@ -277,40 +303,42 @@ messages:
    {
       return $;
    }
-   
+
    GetCurrentResistances()
-   "Object attributes, such as spells and items, can change resistances temporarily."
+   "Spells and items can change resistances temporarily."
    {
-      local oObjectAttribute, plCurrentResistances, oEquipment, oEnchantment;
-      
-      plCurrentResistances = Send(SYS,@ListCopy,#source=Send(self,@GetBaseResistances));
-      
+      local oObjectAttribute, lCurResist, oEquipment, oEnchantment;
+
+      lCurResist = ListCopy(Send(self,@GetBaseResistances));
+
       foreach oObjectAttribute in plObject_attributes
       {
-         plCurrentResistances = Send(oObjectAttribute,@ModifyResistance,#resistance_list=plCurrentResistances);
+         lCurResist = Send(oObjectAttribute,@ModifyResistance,
+                           #resistance_list=lCurResist);
       }
-      
+
       foreach oEquipment in Send(self,@GetEquippedItems)
       {
-         plCurrentResistances = Send(oEquipment,@ModifyResistance,#resistance_list=plCurrentResistances);
+         lCurResist = Send(oEquipment,@ModifyResistance,
+                           #resistance_list=lCurResist);
       }
-      
-      If IsClass(self,&User)
+
+      foreach oEnchantment in Send(self,@GetEnchantmentList)
       {
-         foreach oEnchantment in Send(self,@GetEnchantmentList)
+         if Length(oEnchantment) > ENCHANTMENT_LIST_NO_STATE
          {
-            if Length(oEnchantment) > ENCHANTMENT_LIST_NO_STATE
-            {
-               plCurrentResistances = Send(Nth(oEnchantment,2),@ModifyResistance,#resistance_list=plCurrentResistances,#iState=Nth(oEnchantment,3));
-            }
-            else
-            {
-               plCurrentResistances = Send(Nth(oEnchantment,2),@ModifyResistance,#resistance_list=plCurrentResistances);
-            }
+            lCurResist = Send(Nth(oEnchantment,2),@ModifyResistance,
+                              #resistance_list=lCurResist,
+                              #iState=Nth(oEnchantment,3));
+         }
+         else
+         {
+            lCurResist = Send(Nth(oEnchantment,2),@ModifyResistance,
+                              #resistance_list=lCurResist);
          }
       }
-      
-      return plCurrentResistances;
+
+      return lCurResist;
    }
 
    GetEquippedItems()
@@ -318,7 +346,7 @@ messages:
    {
       return $;
    }
- 
+
    ResistanceCheck(atype = 0, aspell = 0)
    "Given bitvectors of attack type and spell, find the resistance modifier "
    "which applies. Largest resistance plus worst weakness gives the modifier."
@@ -327,13 +355,13 @@ messages:
 
       iMaxRes = NO_RESISTANCE;
       iMinRes = NO_RESISTANCE;
-      
+
       resistance_list = Send(self,@GetCurrentResistances);
 
       foreach j in resistance_list
       {
-         iResType = Nth(j,1);
-         if iResType > 0   
+         iResType = First(j);
+         if iResType > 0
          {
             % It's a resistance to weapon type
 
@@ -377,8 +405,8 @@ messages:
       }
 
       % clip to max/min values
-      iMaxRes = bound(iMaxRes,$,MAX_RESISTANCE);
-      iMinRes = bound(iMinRes,MIN_RESISTANCE,$);
+      iMaxRes = Bound(iMaxRes,$,MAX_RESISTANCE);
+      iMinRes = Bound(iMinRes,MIN_RESISTANCE,$);
 
       return iMaxRes + iMinRes;
    }
@@ -402,6 +430,54 @@ messages:
 
    %%% Spell enchantment functions.
 
+   RemoveEnchantmentClass(class = &Object, report=TRUE)
+   "If have a current enchantment set by anything in class, end it."
+   {
+      local i, state, removedSomething;
+
+      removedSomething = FALSE;
+
+      foreach i in plEnchantments
+      {
+         if IsClass(Nth(i,2),class)
+         {
+            removedSomething = TRUE;
+            if First(i) <> $
+            {
+               DeleteTimer(First(i));
+            }
+
+            if Length(i) >= ENCHANTMENT_LIST_STATE
+               OR IsClass(Nth(i,2),&Boon)
+            {
+               state = Nth(i,3);
+            }
+
+            Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,#state=state,
+                  #report=report);
+
+            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                  #type=ENCHANTMENT_PLAYER);
+
+            plEnchantments = DelListElem(plEnchantments,i);
+            Send(self,@ResetPlayerFlagList,#who=self);
+         }
+      }
+
+      return removedSomething;
+   }
+
+   ShowRemoveEnchantment()
+   "User overrides this to send data to the client."
+   {
+      return;
+   }
+
+   ResetPlayerFlagList()
+   {
+      return;
+   }
+
    IsEnchanted(what=$,byClass=&Spell)
    "Returns whether or not currently enchanted by <what>."
    {
@@ -419,13 +495,7 @@ messages:
       }
       else
       {
-         foreach i in plEnchantments
-         {
-            if Nth(i,2) = what
-            {
-               return TRUE;
-            }
-         }
+         return GetListNode(plEnchantments, 2, what) <> $;
       }
 
       return FALSE;
@@ -498,24 +568,31 @@ messages:
    "cast at. Put in Battler instead of Player as we may use this for monster "
    "buffs one day."
    {
-      local i, iCastPower;
+      local lEnch;
 
-      foreach i in plEnchantments
+      if what = $
       {
-         if Nth(i,2) = what
+         Debug("GetCastPower called with $ spell!");
+
+         return 0;
+      }
+
+      lEnch = GetListNode(plEnchantments, 2, what);
+      if lEnch <> $
+      {
+         if Length(lEnch) > ENCHANTMENT_LIST_NO_STATE
          {
-            if Length(i) > ENCHANTMENT_LIST_NO_STATE
-            {
-               iCastPower = Nth(i,4);
-            }
-            else
-            {
-               iCastPower = Nth(i,3);
-            }
+            return Nth(lEnch,4);
+         }
+         else
+         {
+            return Nth(lEnch,3);
          }
       }
 
-      return iCastPower;
+      Debug("GetCastPower couldn't find enchantment ",what);
+
+      return 0;
    }
 
    %%% Mana related stuff common to players and mobs.
@@ -660,10 +737,10 @@ messages:
       oWeapon = Send(self,@GetWeapon);
 
       iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj) 
-         + Send(Send(SYS,@GetSettings),@GetBaseRating);
+         + Send(SETTINGS_OBJECT,@GetBaseRating);
       iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj) 
-         + Send(Send(SYS,@GetSettings),@GetBaseRating);
-      iChanceToHit = iOffense * Send(Send(SYS,@GetSettings),@GetEqualChanceToHit) / iDefense;
+         + Send(SETTINGS_OBJECT,@GetBaseRating);
+      iChanceToHit = iOffense * Send(SETTINGS_OBJECT,@GetEqualChanceToHit) / iDefense;
       iChanceToHit = bound(iChanceToHit,125,2000);
       if iChanceToHit >= random(1,1000)
       {
@@ -672,7 +749,7 @@ messages:
          iScalefactor = 1000;
          
          % Scale damage with chance to hit beyond 100 percent.
-         if iChanceToHit > 1000 AND Send(Send(SYS,@GetSettings),@GetDamageScaling)
+         if iChanceToHit > 1000 AND Send(SETTINGS_OBJECT,@GetDamageScaling)
          {
             iScalefactor = iChanceToHit;
          }
@@ -1455,24 +1532,22 @@ messages:
    {
       return;
    }
-   
+
    GetResistances()
    {
       return Send(self,@GetCurrentResistances);
    }
-   
+
    GetResistanceValueByType(type=$)
    {
-      local oResist;
-      
-      foreach oResist in Send(self,@GetCurrentResistances)
+      local lResist;
+
+      lResist = GetListNode(Send(self,@GetCurrentResistances), 1, type);
+      if lResist <> $
       {
-         if Nth(oResist,1) = type
-         {
-            return Nth(oResist,2);
-         }
+         return Nth(lResist,2);
       }
-      
+
       return 0;
    }
 
@@ -1502,6 +1577,23 @@ messages:
             plControlledMinions = DelListElem(plControlledMinions,what);
          }
       }
+
+      return;
+   }
+
+   RemoveAllMinions()
+   {
+      local i;
+
+      foreach i in plControlledMinions
+      {
+         if IsClass(i,&Monster)
+         {
+            Send(i,@Delete);
+         }
+      }
+
+      plControlledMinions = $;
 
       return;
    }
@@ -1669,6 +1761,102 @@ messages:
    GetBoostedLevel()
    {
       return 0;
+   }
+
+   CreateReputationHash()
+   {
+      phReputation = CreateTable();
+
+      return phReputation;
+   }
+
+   GetReputationHash()
+   {
+      return phReputation;
+   }
+
+   GetReputation(faction=$)
+   {
+      if (faction <> $)
+      {
+         return GetTableEntry(phReputation,faction);
+      }
+
+      return;
+   }
+
+   SetReputation(faction=$,value=$)
+   {
+      if (faction <> $ AND value <> $)
+      {
+         AddTableEntry(phReputation,faction,value);
+      }
+
+      return;
+   }
+
+   GetHurtMeRecentlyAmount(who=$)
+   {
+      local i;
+
+      foreach i in plHurtMeRecently
+      {
+         if First(i) = who
+         {
+            return Nth(i,2);
+         }
+      }
+
+      return 0;
+   }
+
+   AddHurtMeRecently(who=$,amount=0)
+   {
+      local i;
+
+      foreach i in plHurtMeRecently
+      {
+         if First(i) = who
+         {
+            if Nth(i,2) + amount > 100000
+            {
+               % Somebody is doing something stupid. Let's return this.
+               % Catch for players botting attacks on alts, shenanigans.
+               return;
+            }
+            SetNth(i,2,Nth(i,2)+amount);
+            DeleteTimer(Nth(i,3));
+            SetNth(i,3,CreateTimer(self,@RemoveHurtMeRecently,piHurtMeTime));
+
+            return;
+         }
+      }
+
+      plHurtMeRecently = Cons([who,amount,CreateTimer(self,
+                               @RemoveHurtMeRecently,piHurtMeTime)],
+                               plHurtMeRecently);
+
+      return;
+   }
+
+   RemoveHurtMeRecently(timer=$)
+   {
+      local i;
+
+      foreach i in plHurtMeRecently
+      {
+         if Nth(i,3) = timer
+         {
+            SetFirst(i,$);
+            SetNth(i,2,$);
+            SetNth(i,3,$);
+            plHurtMeRecently = DelListElem(plHurtMeRecently,i);
+
+            return;
+         }
+      }
+
+      return;
    }
 
 end

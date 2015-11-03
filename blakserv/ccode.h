@@ -17,6 +17,14 @@ int C_Invalid(int object_id,local_var_type *local_vars,
 	      int num_normal_parms,parm_node normal_parm_array[],
 	      int num_name_parms,parm_node name_parm_array[]);
 
+int C_SaveGame(int object_id,local_var_type *local_vars,
+      int num_normal_parms,parm_node normal_parm_array[],
+      int num_name_parms,parm_node name_parm_array[]);
+
+int C_LoadGame(int object_id, local_var_type *local_vars,
+      int num_normal_parms, parm_node normal_parm_array[],
+      int num_name_parms, parm_node name_parm_array[]);
+
 int C_AddPacket(int object_id,local_var_type *local_vars,
 		int num_normal_parms,parm_node normal_parm_array[],
 		int num_name_parms,parm_node name_parm_array[]);
@@ -56,6 +64,22 @@ int C_SendMessage(int object_id,local_var_type *local_vars,
 int C_PostMessage(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
 		  int num_name_parms,parm_node name_parm_array[]);
+
+int C_SendListMessage(int object_id,local_var_type *local_vars,
+            int num_normal_parms,parm_node normal_parm_array[],
+            int num_name_parms,parm_node name_parm_array[]);
+
+int C_SendListMessageBreak(int object_id, local_var_type *local_vars,
+            int num_normal_parms, parm_node normal_parm_array[],
+            int num_name_parms, parm_node name_parm_array[]);
+
+int C_SendListMessageByClass(int object_id, local_var_type *local_vars,
+            int num_normal_parms, parm_node normal_parm_array[],
+            int num_name_parms, parm_node name_parm_array[]);
+
+int C_SendListMessageByClassBreak(int object_id, local_var_type *local_vars,
+            int num_normal_parms, parm_node normal_parm_array[],
+            int num_name_parms, parm_node name_parm_array[]);
 
 int C_CreateObject(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
@@ -149,23 +173,11 @@ int C_RoomData(int object_id,local_var_type *local_vars,
 	       int num_normal_parms,parm_node normal_parm_array[],
 	       int num_name_parms,parm_node name_parm_array[]);
 
-int C_CanMoveInRoom(int object_id,local_var_type *local_vars,
-		    int num_normal_parms,parm_node normal_parm_array[],
-		    int num_name_parms,parm_node name_parm_array[]);
-
-int C_CanMoveInRoomHighRes(int object_id,local_var_type *local_vars,
-		    int num_normal_parms,parm_node normal_parm_array[],
-		    int num_name_parms,parm_node name_parm_array[]);
-
-int C_GetHeight(int object_id,local_var_type *local_vars,
-		    int num_normal_parms,parm_node normal_parm_array[],
-		    int num_name_parms,parm_node name_parm_array[]);
-
-int C_GetHeightFloorBSP(int object_id, local_var_type *local_vars,
+int C_GetLocationInfoBSP(int object_id, local_var_type *local_vars,
 	int num_normal_parms, parm_node normal_parm_array[],
 	int num_name_parms, parm_node name_parm_array[]);
 
-int C_GetHeightCeilingBSP(int object_id, local_var_type *local_vars,
+int C_CanMoveInRoomBSP(int object_id, local_var_type *local_vars,
 	int num_normal_parms, parm_node normal_parm_array[],
 	int num_name_parms, parm_node name_parm_array[]);
 
@@ -173,15 +185,35 @@ int C_LineOfSightBSP(int object_id, local_var_type *local_vars,
 		int num_normal_parms, parm_node normal_parm_array[],
 		int num_name_parms, parm_node name_parm_array[]);
 
-int C_CanMoveInRoomFine(int object_id,local_var_type *local_vars,
-		    int num_normal_parms,parm_node normal_parm_array[],
-		    int num_name_parms,parm_node name_parm_array[]);
-
 int C_ChangeTextureBSP(int object_id, local_var_type *local_vars,
 	int num_normal_parms, parm_node normal_parm_array[],
 	int num_name_parms, parm_node name_parm_array[]);
 
 int C_MoveSectorBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_BlockerAddBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_BlockerMoveBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_BlockerRemoveBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_BlockerClearBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_GetRandomPointBSP(int object_id, local_var_type *local_vars,
+	int num_normal_parms, parm_node normal_parm_array[],
+	int num_name_parms, parm_node name_parm_array[]);
+
+int C_GetStepTowardsBSP(int object_id, local_var_type *local_vars,
 	int num_normal_parms, parm_node normal_parm_array[],
 	int num_name_parms, parm_node name_parm_array[]);
 
@@ -213,6 +245,10 @@ int C_Nth(int object_id,local_var_type *local_vars,
 	  int num_normal_parms,parm_node normal_parm_array[],
 	  int num_name_parms,parm_node name_parm_array[]);
 
+int C_IsListMatch(int object_id,local_var_type *local_vars,
+		int num_normal_parms,parm_node normal_parm_array[],
+		int num_name_parms,parm_node name_parm_array[]);
+
 int C_List(int object_id,local_var_type *local_vars,
 	   int num_normal_parms,parm_node normal_parm_array[],
 	   int num_name_parms,parm_node name_parm_array[]);
@@ -237,6 +273,22 @@ int C_FindListElem(int object_id,local_var_type *local_vars,
 		   int num_normal_parms,parm_node normal_parm_array[],
 		   int num_name_parms,parm_node name_parm_array[]);
 
+int C_GetAllListNodesByClass(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
+
+int C_GetListNode(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
+
+int C_GetListElemByClass(int object_id,local_var_type *local_vars,
+         int num_normal_parms,parm_node normal_parm_array[],
+         int num_name_parms,parm_node name_parm_array[]);
+
+int C_ListCopy(int object_id, local_var_type *local_vars,
+         int num_normal_parms, parm_node normal_parm_array[],
+         int num_name_parms, parm_node name_parm_array[]);
+
 int C_InsertListElem(int object_id,local_var_type *local_vars,
          int num_normal_parms,parm_node normal_parm_array[],
          int num_name_parms,parm_node name_parm_array[]);
@@ -244,6 +296,10 @@ int C_InsertListElem(int object_id,local_var_type *local_vars,
 int C_DelListElem(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
 		  int num_name_parms,parm_node name_parm_array[]);
+
+int C_GetTimeZoneOffset(int object_id, local_var_type *local_vars,
+         int num_normal_parms, parm_node normal_parm_array[],
+         int num_name_parms, parm_node name_parm_array[]);
 
 int C_GetTime(int object_id,local_var_type *local_vars,
 	      int num_normal_parms,parm_node normal_parm_array[],
@@ -286,6 +342,10 @@ int C_DeleteTableEntry(int object_id,local_var_type *local_vars,
 		       int num_name_parms,parm_node name_parm_array[]);
 
 int C_DeleteTable(int object_id,local_var_type *local_vars,
+		  int num_normal_parms,parm_node normal_parm_array[],
+		  int num_name_parms,parm_node name_parm_array[]);
+
+int C_IsTable(int object_id,local_var_type *local_vars,
 		  int num_normal_parms,parm_node normal_parm_array[],
 		  int num_name_parms,parm_node name_parm_array[]);
 

@@ -15,6 +15,7 @@ constants:
    include blakston.khd
 
    DOOR_DELAY = 6000
+   LIFT_DELAY = 60000
 
 resources:
 
@@ -61,6 +62,9 @@ classvars:
    viTerrain_type = TERRAIN_CITY | TERRAIN_GUILDHALL | TERRAIN_FOUNTAIN
    viSeconds_til_close = 11
 
+   viWeatherZone = WEATHER_ZONE_TOS
+   viWeatherMask = WEATHER_MASK_DEFAULT_NS
+
 properties:
 
    prRoom = room_guildhall5
@@ -71,6 +75,7 @@ properties:
 
    pbPrivate = TRUE
    pbChestAvailable = FALSE
+   ptSecret = $
 
    ptSouthDoor = $
    ptEastDoor = $
@@ -95,6 +100,35 @@ messages:
       plLooping_sounds = [[ water_soundguildhall5, 29, 18, 20, 30 ]];
 
       propagate;
+   }
+
+   InFoyer(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
+   {
+      if who <> $
+      {
+         if Send(who,@GetOwner) <> self
+         {
+            return FALSE;
+         }
+
+         iRow = Send(who,@GetRow);
+         iCol = Send(who,@GetCol);
+         iFineCol = Send(who,@GetFineCol);
+
+         if iRow >= viFoyer_north AND iRow <= viFoyer_South
+            AND iCol <= viFoyer_east AND iCol >= viFoyer_west
+         {
+            if (iCol = viFoyer_east
+               AND iFineCol > 32)
+            {
+               return FALSE;
+            }
+
+            return TRUE;
+         }
+      }
+
+      return FALSE;
    }
 
    CreateStandardExits()
@@ -295,19 +329,33 @@ messages:
               #height=125,#speed=16);
          Send(self,@SetSector,#sector=2,#animation=ANIMATE_CEILING_LIFT,
               #height=157,#speed=16);
+         ptSecret = CreateTimer(self,@CloseSecretDoor,LIFT_DELAY);
          Send(self,@OpenSecretDoorSound);
          pbChestAvailable = TRUE;
       }
       else
       {
-         Send(self,@SomethingWaveRoom,#wave_rsc=guildhall5_sound);
-         Send(self,@SetSector,#sector=1,#animation=ANIMATE_CEILING_LIFT,
-              #height=93,#speed=16);
-         Send(self,@SetSector,#sector=2,#animation=ANIMATE_CEILING_LIFT,
-              #height=125,#speed=16);
-         Send(self,@CloseSecretDoorSound);
-         pbChestAvailable = FALSE;
+         if ptSecret <> $
+         {
+            DeleteTimer(ptSecret);
+         }
+         Send(self,@CloseSecretDoor);
       }
+
+      return;
+   }
+
+   CloseSecretDoor()
+   {
+      ptSecret = $;
+
+      Send(self,@SomethingWaveRoom,#wave_rsc=guildhall5_sound);
+      Send(self,@SetSector,#sector=1,#animation=ANIMATE_CEILING_LIFT,
+            #height=93,#speed=16);
+      Send(self,@SetSector,#sector=2,#animation=ANIMATE_CEILING_LIFT,
+            #height=125,#speed=16);
+      Send(self,@CloseSecretDoorSound);
+      pbChestAvailable = FALSE;
 
       return;
    }

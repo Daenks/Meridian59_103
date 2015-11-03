@@ -551,8 +551,7 @@ void CommandActivate(char *args)
  */
 void CommandSafetyOn(char *args)
 {
-   cinfo->config->aggressive = False;
-   SendSafety(1);
+   SendPreferences(cinfo->config->preferences &= ~CF_SAFETY_OFF);
 }
 /************************************************************************/
 /*
@@ -560,8 +559,7 @@ void CommandSafetyOn(char *args)
  */
 void CommandSafetyOff(char *args)
 {
-   cinfo->config->aggressive = True;
-   SendSafety(0);
+   SendPreferences(cinfo->config->preferences |= CF_SAFETY_OFF);
 }
 /************************************************************************/
 /*
@@ -569,8 +567,7 @@ void CommandSafetyOff(char *args)
  */
 void CommandTempSafeOn(char *args)
 {
-   cinfo->config->tempsafe = True;
-   SendTempSafe(1);
+   SendPreferences(cinfo->config->preferences |= CF_TEMPSAFE);
 }
 /************************************************************************/
 /*
@@ -578,8 +575,7 @@ void CommandTempSafeOn(char *args)
  */
 void CommandTempSafeOff(char *args)
 {
-   cinfo->config->tempsafe = False;
-   SendTempSafe(0);
+   SendPreferences(cinfo->config->preferences &= ~CF_TEMPSAFE);
 }
 /************************************************************************/
 /*
@@ -587,8 +583,7 @@ void CommandTempSafeOff(char *args)
  */
 void CommandGroupingOn(char *args)
 {
-   cinfo->config->grouping = True;
-   SendGrouping(1);
+   SendPreferences(cinfo->config->preferences |= CF_GROUPING);
 }
 /************************************************************************/
 /*
@@ -596,8 +591,71 @@ void CommandGroupingOn(char *args)
  */
 void CommandGroupingOff(char *args)
 {
-   cinfo->config->grouping = False;
-   SendGrouping(0);
+   SendPreferences(cinfo->config->preferences &= ~CF_GROUPING);
+}
+/************************************************************************/
+/*
+ * SendAutoLootOn: "autoloot on" command
+ */
+void CommandAutoLootOn(char *args)
+{
+   SendPreferences(cinfo->config->preferences |= CF_AUTOLOOT);
+}
+/************************************************************************/
+/*
+ * SendAutoLootOff: "autoloot off" command
+ */
+void CommandAutoLootOff(char *args)
+{
+   SendPreferences(cinfo->config->preferences &= ~CF_AUTOLOOT);
+}
+/************************************************************************/
+/*
+ * SendAutoCombineOn: "autocombine on" command
+ */
+void CommandAutoCombineOn(char *args)
+{
+   SendPreferences(cinfo->config->preferences |= CF_AUTOCOMBINE);
+}
+/************************************************************************/
+/*
+ * SendAutoCombineOff: "autocombine off" command
+ */
+void CommandAutoCombineOff(char *args)
+{
+   SendPreferences(cinfo->config->preferences &= ~CF_AUTOCOMBINE);
+}
+/************************************************************************/
+/*
+ * SendReagentBagOn: "reagentbag on" command
+ */
+void CommandReagentBagOn(char *args)
+{
+   SendPreferences(cinfo->config->preferences |= CF_REAGENTBAG);
+}
+/************************************************************************/
+/*
+ * SendReagentBagOff: "reagentbag off" command
+ */
+void CommandReagentBagOff(char *args)
+{
+   SendPreferences(cinfo->config->preferences &= ~CF_REAGENTBAG);
+}
+/************************************************************************/
+/*
+ * SendReagentBagOn: "spellpower on" command
+ */
+void CommandSpellPowerOn(char *args)
+{
+   SendPreferences(cinfo->config->preferences |= CF_SPELLPOWER);
+}
+/************************************************************************/
+/*
+ * SendReagentBagOff: "spellpower off" command
+ */
+void CommandSpellPowerOff(char *args)
+{
+   SendPreferences(cinfo->config->preferences &= ~CF_SPELLPOWER);
 }
 /************************************************************************/
 /*
@@ -690,3 +748,13 @@ void CommandTellGuild(char *args)
       return;
    SendSay(SAY_GUILD, args);
 }
+
+/************************************************************************/
+/*
+ * CommandTime: "time" command
+ */
+void CommandTime(char *args)
+{
+   RequestTime();
+}
+/************************************************************************/

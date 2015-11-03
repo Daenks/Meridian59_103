@@ -62,13 +62,12 @@ static char INIDrawMap[]     = "DrawMap";
 static char INIScrollLock[]  = "ScrollLock";
 static char INITooltips[]    = "Tooltips";
 static char INIInventory[]   = "InventoryNum";
-static char INIAggressive[]  = "Aggressive";
-static char INITempSafe[]    = "TempSafe";
-static char INIGrouping[]    = "Grouping";
+static char INIPreferences[] = "Preferences";
 static char INIBounce[]      = "Bounce";
 static char INIToolbar[]     = "Toolbar";
 static char INIPainFX[]      = "Pain";
 static char INIWeatherFX[]   = "Weather";
+static char INIParticleNum[] = "Particles";
 static char INIOldProfane[]  = "AntiProfane";
 static char INIIgnoreProfane[]= "IgnoreProfane";
 static char INIAntiProfane[] = "ProfanityFilter";
@@ -229,13 +228,12 @@ void ConfigLoad(void)
    config.drawmap      = GetConfigInt(interface_section, INIDrawMap, True, ini_file);
    config.tooltips     = GetConfigInt(interface_section, INITooltips, True, ini_file);
    config.inventory_num= GetConfigInt(interface_section, INIInventory, True, ini_file);
-   config.aggressive   = GetConfigInt(interface_section, INIAggressive, False, ini_file);
-   config.tempsafe     = GetConfigInt(interface_section, INITempSafe, True, ini_file);
-   config.grouping     = GetConfigInt(interface_section, INIGrouping, True, ini_file);
+   config.preferences  = GetConfigInt(interface_section, INIInventory, 0, ini_file);
    config.bounce       = GetConfigInt(interface_section, INIBounce, True, ini_file);
    config.toolbar      = GetConfigInt(interface_section, INIToolbar, True, ini_file);
    config.pain         = GetConfigInt(interface_section, INIPainFX, True, ini_file);
    config.weather      = GetConfigInt(interface_section, INIWeatherFX, True, ini_file);
+   config.particles    = GetConfigInt(interface_section, INIParticleNum, 100, ini_file);
    config.antiprofane  = GetConfigInt(interface_section, INIAntiProfane, True, ini_file);
    config.ignoreprofane = GetConfigInt(interface_section, INIIgnoreProfane, False, ini_file);
    config.extraprofane = GetConfigInt(interface_section, INIExtraProfane, False, ini_file);
@@ -276,7 +274,7 @@ void ConfigLoad(void)
    config.maxFPS = FALSE;
    config.clearCache = FALSE;
 #else
-   config.debug				= GetConfigInt(special_section, INIDebug, False, ini_file);
+   config.debug				= GetConfigInt(special_section, INIDebug, True, ini_file);
    config.security			= GetConfigInt(special_section, INISecurity, True, ini_file);
    config.showMapBlocking	= GetConfigInt(special_section, INIShowMapBlocking, 0, ini_file);
    config.showUnseenWalls	= GetConfigInt(special_section, INIShowUnseenWalls, 0, ini_file);
@@ -335,15 +333,14 @@ void ConfigSave(void)
    WriteConfigInt(interface_section, INIScrollLock, config.scroll_lock, ini_file);
    WriteConfigInt(interface_section, INITooltips, config.tooltips, ini_file);
    WriteConfigInt(interface_section, INIInventory, config.inventory_num, ini_file);
-   WriteConfigInt(interface_section, INIAggressive, config.aggressive, ini_file);
-   WriteConfigInt(interface_section, INITempSafe, config.tempsafe, ini_file);
-   WriteConfigInt(interface_section, INIGrouping, config.grouping, ini_file);
+   WriteConfigInt(interface_section, INIPreferences, config.preferences, ini_file);
    WriteConfigInt(interface_section, INIBounce, config.bounce, ini_file);
    WriteConfigInt(interface_section, INIToolbar, config.toolbar, ini_file);
    WriteConfigInt(interface_section, INIDrawMap, config.drawmap, ini_file);
 
    WriteConfigInt(interface_section, INIPainFX, config.pain, ini_file);
    WriteConfigInt(interface_section, INIWeatherFX, config.weather, ini_file);
+   WriteConfigInt(interface_section, INIParticleNum, config.particles, ini_file);
    WriteConfigInt(interface_section, INIAntiProfane, config.antiprofane, ini_file);
    WriteConfigInt(interface_section, INIIgnoreProfane, config.ignoreprofane, ini_file);
    WriteConfigInt(interface_section, INIExtraProfane, config.extraprofane, ini_file);

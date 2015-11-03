@@ -251,7 +251,6 @@ resources:
    user_safety_off = \
       "~B~U~k[###]~n ~B~vYour safety is now ~B~rOFF~n~B:  Be careful, you are "
       "now able to hurt those around you."
-
    user_temp_safe_on = \
       "~B~U~k[###]~n ~B~vYou will receive a temporary guardian angel on death."
    user_temp_safe_off = \
@@ -259,12 +258,16 @@ resources:
       "angel on death."
    user_temp_safe_invalid = \
       "~B~U~k[###]~n ~B~vYour guardian angel can no longer protect you."
-
    user_grouping_on = \
       "~B~U~k[###]~n ~B~vYou will now join builder groups."
-
    user_grouping_off = \
       "~B~U~k[###]~n ~B~vYou will no longer join builder groups."
+   user_autocombine_on = \
+      "You decide to combine spell items as you get them."
+   user_autocombine_off = \
+      "You decide to stop combining spell items as you get them."
+   user_autoloot_on = "You decide to pick up treasure as it drops."
+   user_autoloot_off = "You stop picking up treasure as it drops."
 
    user_cant_go = "You are unable to go anywhere."
    user_cant_go_wav_rsc = cant_go_anywhere_louder.wav
@@ -380,29 +383,6 @@ resources:
    guild_motd_command = "set motd "
    guild_clear_motd_command = "clear motd"
 
-   % Autocombine user say commands.
-   user_say_autocombine = "autocombine"
-   user_say_autocombine_on = "autocombine on"
-   user_say_autocombine_off = "autocombine off"
-
-   autocombine_on_msg = \
-      "You decide to combine spell items as you get them."
-   autocombine_off_msg = \
-      "You decide to stop combining spell items as you get them."
-
-   % Autoloot user say commands.
-   user_say_autoloot = "autoloot"
-   user_say_autoloot_on = "autoloot on"
-   user_say_autoloot_off = "autoloot off"
-
-   autoloot_on_msg = "You decide to pick up treasure as it drops."
-   autoloot_off_msg = "You stop picking up treasure as it drops."
-
-   % Reagent bag user say commands.
-   user_say_reagentbag = "reagentbag"
-   user_say_reagentbag_on = "reagentbag on"
-   user_say_reagentbag_off = "reagentbag off"
-
    % Inventory sorting user say commands.
    user_say_inventory = "inventory"
    user_say_inv_sort_clear = "inventory sort clear"
@@ -446,8 +426,12 @@ resources:
 
    phased_out_cant_drop = "You can't drop items while phased out of existence."
                                
-   reagentbag_auto_on = "You start putting new reagents in your bag."
-   reagentbag_auto_off = "You stop putting new reagents in your bag."
+   user_reagentbag_on = "You start putting new reagents in your bag."
+   user_reagentbag_off = "You stop putting new reagents in your bag."
+   user_spellpower_on = \
+      "You will now see the power at which your spells are cast."
+   user_spellpower_off = \
+      "You will no longer see the power at which your spells are cast."
 
    user_logon_delay = \
       "You take a moment to recollect your senses."
@@ -471,13 +455,17 @@ resources:
    inventory_sort_report = \
       "%s"
    inventory_already_in_list = \
-      "That is already in your list."  
+      "That is already in your list."
+
+   user_time_string =  \
+   "The time in Meridian is %i:00.  It is the %q day of the year %i."
+
+   user_tell_wav = imp.wav
 
 classvars:
 
    viIndefinite = ARTICLE_NONE
    viDefinite = ARTICLE_NONE
-   
    viDM = FALSE
 
 properties:
@@ -528,16 +516,16 @@ properties:
    % This is a token-bucket to limit speedhacking.
    % Moves are accepted unless there is not enough tokens in the bucket left.
    piMovementBucket = 0
-   
+
    piCheaterLogs = 0
 
-   pbAutoCombine = TRUE
-   pbAutoloot = TRUE
-
    ptLogonDelayTimer = $
-   
+
    % What order do you want your inventory sorted in?
    plClassOrderPreferences = $
+
+   % keep track of how much this player triggers flood protection
+   piFloodCount = 0
 
 messages:
 
@@ -561,7 +549,7 @@ messages:
 
       propagate;
    }
-         
+
    Delete()
    {
       Send(SYS,@SystemUserDelete,#what=self);
@@ -596,7 +584,7 @@ messages:
       if (piFlags & PFLAG_ANONYMOUS)
          OR vrIcon = admin_icon_blank
          OR (IsClass(self,&DM) AND Send(self,@IsHidden))
-      {         
+      {
          return Send(self,@GetBlankName);
       }
 
@@ -605,7 +593,7 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetName,#who=self);
       }
-      
+
       propagate;
    }
 
@@ -616,10 +604,10 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetDef,#who=self);
       }
-      
+
       propagate;
    }
-   
+
    GetCapDef()
    {
       if (piFlags & PFLAG_MORPHED)
@@ -627,7 +615,7 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetCapDef,#who=self);
       }
-      
+
       propagate;
    }
 
@@ -638,7 +626,7 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetIndef,#who=self);
       }
-      
+
       propagate;
    }
 
@@ -649,7 +637,7 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetHisHer,#who=self);
       }
-      
+
       propagate;
    }
 
@@ -660,14 +648,14 @@ messages:
       {
          return Send(poIllusion_set,@IllusionGetCapIndef,#who=self);
       }
-      
+
       propagate;
    }
 
    GetName(cap=FALSE)
    {
       local rName;
-      
+
       if (piFlags & PFLAG_MORPHED)
          AND poIllusion_set <> $
       {
@@ -687,7 +675,7 @@ messages:
 
          return rName;
       }
-      
+
       propagate;
    }
 
@@ -711,10 +699,10 @@ messages:
          AND action <= UA_WRY
       {
          piAction = action;
-         
+
          if poOwner <> $
          {
-		    Send(poOwner,@SomethingDidAction,#what=self,#action=action);
+            Send(poOwner,@SomethingDidAction,#what=self,#action=action);
          }
       }
 
@@ -766,7 +754,7 @@ messages:
    SendFirstTimeAppeal()
    {
       Send(self,@UserAppeal,#first_time=TRUE);
-      
+
       return;
    }
 
@@ -787,8 +775,8 @@ messages:
 
    UserLogon(session_id = $)
    {
-      local i;
-      
+      local i, sGuild, oBRoom, oHRoom;
+
       poSession = session_id;
       pbLogged_on = TRUE;
 
@@ -799,6 +787,16 @@ messages:
       Send(self,@MsgSendUser,#message_rsc=user_logon);
 
       Send(SYS,@SystemUserLogon,#what=self);
+
+      % Let the user know whether safety is on or off.
+      if piPreferences & CF_SAFETY_OFF
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_safety_off);
+      }
+      else
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_safety_on);
+      }
 
       if NOT (IsClass(self,&DM) AND Send(self,@IsHidden))
       {
@@ -849,6 +847,42 @@ messages:
       % Update vigor drain time as 'now' so we drain vigor correctly
       piLastVigorDrainTime = GetTickCount();
 
+      oHRoom = $;
+      if piHomeroom <> $
+      {
+         oHRoom = Send(SYS,@FindRoomByNum,#num=abs(piHomeroom));
+      }
+
+       if piBound_Room <> $
+      {
+         oBRoom = Send(SYS,@FindRoomByNum,#num=abs(piBound_Room));
+      }
+      else
+      {
+         oBRoom = oHRoom;
+      }
+
+      sGuild = $;
+
+      if poGuild <> $
+      {  
+         sGuild = Send(poGuild,@GetName);
+
+         if Send(poGuild,@GetGuildHall) <> $
+         {
+            RecordStat(STAT_GUILD, sGuild, Send(Send(poGuild,@GetGuildMaster),@GetName), Send(Send(poGuild,@GetGuildHall),@GetName) );
+         }
+         else
+         {
+            RecordStat(STAT_GUILD, sGuild, Send(Send(poGuild,@GetGuildMaster),@GetName), system_blank_resource );
+         }
+      }
+
+      RecordStat(STAT_PLAYER, poSession, Send(self,@GetTrueName), Send(oHRoom,@GetName), Send(oBRoom,@GetName), 
+                  sGuild, Send(self,@GetBaseMaxHealth), piMax_mana, Send(self,@GetRawMight), 
+                  Send(self,@GetRawIntellect), Send(self,@GetRawMysticism), Send(self,@GetRawStamina), Send(self,@GetRawAgility), 
+                  Send(self,@GetRawAim));
+
       return;
    }
 
@@ -868,7 +902,7 @@ messages:
          }
          Send(self,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
          Send(self,@SysMsgSendUser,#message_rsc=user_logon_delay);
-         iLogonDelay = Send(Send(SYS,@GetSettings),@GetLogonDelay);
+         iLogonDelay = Send(SETTINGS_OBJECT,@GetLogonDelay);
          ptLogonDelayTimer = CreateTimer(self,@LogonHoldOff,iLogonDelay);
       }
 
@@ -886,7 +920,7 @@ messages:
    UserLogoff()
    {
       local theTime, iPenaltyTime, i, j;
-      
+
       piTimeLoggedIn = Send(self,@GetTimeLoggedIn);
       Send(self,@BreakTrance);
       pbLogged_on = FALSE;
@@ -895,7 +929,7 @@ messages:
       Send(self,@UserLogoffHook);
 
       % If player logs off somewhere other than an inn or inside a guildhall
-      %  they can normally enter (but not just in the foyer), create a ghost.
+      % they can normally enter (but not just in the foyer), create a ghost.
       if (NOT Send(poOwner,@CheckDefaultRoomFlag,#flag=ROOM_SAFELOGOFF))
          AND NOT IsClass(self,&DM)
          AND Send(SYS,@GetLogoffPenaltyEnable)
@@ -907,11 +941,11 @@ messages:
       {
          Create(&LogoffGhost,#GhostedPlayer=self,
                #iPenaltyTime=Send(self,@GetRemainingPhaseTime));
-         
+
          % Add phase time remaining to piTimeAttackedPlayer if it is currently
          % preventing the player from casting escape spells.
          if Send(self,@GetLastPlayerAttackTime)
-               + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+               + Send(SETTINGS_OBJECT,@TeleportAttackDelaySec)
                > GetTime()
          {
             piTimeAttackedPlayer = piTimeAttackedPlayer
@@ -922,16 +956,18 @@ messages:
       {
          % Reset our logoff penalty time since we're logging safely.
          Send(self,@RefreshPhaseTimeToBase);
-         
-         % If enabled and and a player logs off in a safe zone he will lose half his mana and all buffs
-         if Send(Send(SYS, @GetSettings), @LogSafePenaltyEnable)
-            AND Send(SYS, @GetLogoffPenaltyEnable)
+
+         % If enabled and and a player logs off in a safe zone he will lose
+         % half his mana and all buffs
+         if Send(SETTINGS_OBJECT,@LogSafePenaltyEnable)
+            AND Send(SYS,@GetLogoffPenaltyEnable)
          {
             Send(self,@LoseMana,#amount=(piMana/2));
-            Send(Send(SYS,@FindSpellByNum,#num=SID_PURGE),@DoPurge,#who=self,#iChance=100);
+            Send(Send(SYS,@FindSpellByNum,#num=SID_PURGE),@DoPurge,
+                  #who=self,#iChance=100);
          }
       }
-      
+
       if piLogoffPenaltyCount < 0
       {
          piLogoffPenaltyCount = 0;
@@ -943,7 +979,7 @@ messages:
       piSave_angle = Send(self,@GetAngle);
       piSave_fine_row = piFine_row;
       piSave_fine_col = piFine_col;
-      
+
       Send(poOwner,@LeaveHold,#what=self);
       if poOwner <> $
          AND Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
@@ -996,14 +1032,14 @@ messages:
       }
 
       poSession = $;
-      
+
       return;
    }
 
    DecayLogoffPenaltyCount()
    {
-      piLogoffPenaltyCount = bound(piLogoffPenaltyCount - 1,0,$);
-      
+      piLogoffPenaltyCount = Bound(piLogoffPenaltyCount - 1,0,$);
+
       return;
    }
 
@@ -1019,12 +1055,12 @@ messages:
       iAmount = 1;
 
       % This tracks to see if the player has attacked anyone recently.
-      %  If they have, then increase the penalty.
+      % If they have, then increase the penalty.
       if NOT Send(self,@CanHelpPlayer)
       {
-         iAmount = iAmount + 1;
+         ++iAmount;
       }
-   
+
       piLogoffPenaltyCount = piLogoffPenaltyCount + iAmount;
 
       return;
@@ -1033,7 +1069,7 @@ messages:
    ResetLogoffPenaltyTime()
    {
       Send(self,@RefreshPhaseTimeToBase);
-      
+
       return;
    }
 
@@ -1047,6 +1083,13 @@ messages:
    SomeoneLogon(what = $)
    {
       local rName;
+
+      % don't inform non-DM clients of Escaped Convict
+      if (NOT IsClass(self,&DM) AND IsClass(what,&EscapedConvict)
+         AND NOT IsClass(self,&EscapedConvict) AND IsClass(what,&EscapedConvict))
+      {
+         return;
+      }
 
       rName = Send(what,@GetTrueName);
 
@@ -1139,6 +1182,8 @@ messages:
          if piPacketsPerSecond > INCOMING_PACKET_THROTTLE
             AND NOT Send(self,@PlayerIsImmortal)
          {
+            piFloodCount++;
+
             % Don't go on if marked as spammer
             return;
          }
@@ -1153,7 +1198,7 @@ messages:
       }
 
       liClient_cmd = First(client_msg);
-      
+
       % NOTE: Should arrange in decreasing order of frequency
 
       if liClient_cmd = BP_REQ_MOVE
@@ -1174,52 +1219,52 @@ messages:
          Send(self,@UserMove,#new_row=iRow/FINENESS,#new_col=iCol/FINENESS,
               #fine_row=(iRow mod FINENESS),#fine_col=(iCol mod FINENESS),
               #speed=iSpeed);
-              
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_TURN
       {
          oWhat = Nth(client_msg,2);
          iAngle = Nth(client_msg,3);
          Send(self,@UserTurn,#what=oWhat,#new_angle=iAngle);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_PLAYER
       {
          Send(self,@ToCliPlayer);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_PLAYERS
       {
          Send(self,@ToCliPlayers);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_ROOM_CONTENTS
       {
          Send(self,@ToCliRoomContents);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_INVENTORY
       {
          Send(self,@ToCliInventory);
          Send(self,@ToCliUseList);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_QUIT
       {
          Send(self,@UserLogoff);
-         
+
          return;
       }
 
@@ -1260,75 +1305,75 @@ messages:
          oWhat = Nth(client_msg,2);
          oWhere = Nth(client_msg,3);
          Send(self,@UserPut,#what=oWhat,#where=oWhere,#number=number_stuff);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_OBJECT_CONTENTS
       {
          oWhat = Nth(client_msg,2);
          Send(self,@UserObjectContents,#what=oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SAY_TO
       {
          iSay_type = Nth(client_msg,2);
          sStr_said = Nth(client_msg,3);
          Send(self,@UserSay,#type=iSay_type,#string=sStr_said);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SAY_GROUP
       {
          lUsers  = Nth(client_msg,2);
          sStr_said = Nth(client_msg,3);
          Send(self,@UserSayGroup,#users=lUsers,#string=sStr_said);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_LOOK
       {
          oWhat = Nth(client_msg,2);
          Send(self,@UserLook,#what=oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_MAIL
       {
          lDest_mail = Nth(client_msg,2);
          sStr_mailed = Nth(client_msg,3);
          Send(self,@UserMail,#dest_list=lDest_mail,#string=sStr_mailed);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_GET_MAIL
       {
          Send(self,@UserGetNewMail);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_DELETE_MAIL
       {
          Send(self,@UserDeleteMail,#index=Nth(client_msg,2));
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_USE
       {
-         oWhat = Nth(client_msg,2);     
+         oWhat = Nth(client_msg,2);
          Send(self,@UserUseItem,#what=oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_UNUSE
       {
          oWhat = Nth(client_msg,2);
@@ -1336,61 +1381,61 @@ messages:
 
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_ATTACK
       {
          iAttack_type = Nth(client_msg,2);
          oWhat = Nth(client_msg,3);
          Send(self,@UserAttack,#type=iAttack_type,#what=oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_STATS
       {
          iGroup = Nth(client_msg,2);
          Send(self,@ToCliStats,#group=iGroup);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_OFFER
       {
          oWhat = Nth(client_msg,2);
          lItems = Nth(client_msg,3);
          Send(self,@UserOffer,#what=oWhat,#item_list=lItems,
               #number_list=number_stuff);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_CANCEL_OFFER
       {
          Send(self,@UserCancelOffer);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_COUNTEROFFER
       {
          lItems = Nth(client_msg,2);
          Send(self,@UserCounterOffer,#item_list=lItems,
               #number_list=number_stuff);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_ACCEPT_OFFER
       {
          Send(self,@UserAcceptOffer);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_GO
-      {        
+      {
          Send(self,@UserGo);
-         
+
          return;
       }
 
@@ -1460,72 +1505,72 @@ messages:
          oWhat = Nth(client_msg,2);
          oApply_on = Nth(client_msg,3);
          Send(self,@UserApply,#what=oWhat,#apply_on=oApply_on);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_SPELLS
       {
          Send(self,@ToCliSpells);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_SKILLS
       {
          Send(self,@ToCliSkills);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_CAST
       {
          oWhat = Nth(client_msg,2);  % Spell type
          lTargets = Nth(client_msg,3); % Targets of spell (if any)
          Send(self,@UserCast,#oSpell=oWhat,#lTargets=lTargets);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_POST_ARTICLE
       {
          iNid = Nth(client_msg,2);
          sTitle = Nth(client_msg,3);
          sBody = Nth(client_msg,4);
          Send(self,@UserPost,#nid=iNid,#title=sTitle,#body=sBody);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_ARTICLES
       {
          iNid = Nth(client_msg,2);
          Send(self,@UserGetNewsTitles,#nid=iNid);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_ARTICLE
       {
          iNid = Nth(client_msg,2);
          iNum = Nth(client_msg,3);
          Send(self,@UserGetNewsArticle,#nid=iNid,#num=iNum);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_ACTION
       {
          iNum = Nth(client_msg, 2);
          Send(self,@UserAction,#action=iNum);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_STAT_GROUPS
       {
          Send(self,@ToCliStatGroups);
-         
+
          return;
       }
 
@@ -1533,7 +1578,7 @@ messages:
       {
          oWhat = Nth(client_msg,2);
          Send(self,@UserBlockedSend,#what=oWhat);
-         
+
          return;
       }
 
@@ -1541,20 +1586,20 @@ messages:
       {
          Send(self,@UserLookupNames,#amount=Nth(client_msg,2),
               #string=Nth(client_msg,3));
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_CHANGE_DESCRIPTION
       {
          % oWhat = who's editing.
          oWhat = Nth(client_msg,2);
          sBody = Nth(client_msg,3);
-         
+
          if oWhat = $
          {
             Debug("Tried setting description of nil object.");
-            
+
             return;
          }
 
@@ -1565,33 +1610,33 @@ messages:
          {
             sBody = Send(SYS,@CleanseString,#string=sBody);
             Send(oWhat,@UserChangeDescription,#string=sBody);
-            
+
             return;
          }
-         
+
          oWhere = Send(oWhat,@GetOwner);
          if Send(oWhat,@CanEditInscription)
             AND ((oWhere = self) or (oWhere = poOwner))
          {
             sBody = Send(SYS,@CleanseString,#string=sBody);
             Send(oWhat,@SetInscription,#string=sBody);
-            
+
             return;
          }
-         
+
          Debug("Tried setting description of ",oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_REQ_ACTIVATE
       {
          oWhat = Nth(client_msg,2);
          Send(self,@UserTryActivate,#what=oWhat);
-         
+
          return;
       }
-      
+
       if liClient_cmd = BP_SEND_ENCHANTMENTS
       {
          if Nth(client_msg,2) <> ENCHANTMENT_PLAYER
@@ -1611,7 +1656,7 @@ messages:
          {
             return;
          }
-      
+
          foreach i in client_msg
          {
             if i = $
@@ -1619,7 +1664,7 @@ messages:
                return;
             }
          }
-      
+
          Send(self,@UserChangedStats, #might=Nth(client_msg,2),
                                        #intellect=Nth(client_msg,3),
                                        #stamina=Nth(client_msg,4),
@@ -1635,10 +1680,10 @@ messages:
                                        #weaponcraft_lvl=Nth(client_msg,14));
          return;
       }
-     
+
       Debug(Send(self,@GetTrueName),
             self,"sent unknown command from client",liClient_cmd);
-            
+
       return;
    }
 
@@ -1688,6 +1733,8 @@ messages:
          SendPacket(poSession);
       }
 
+      RecordStat(STAT_PLAYERSUICIDE, poSession, Send(self,@GetTrueName));
+
       % Change the name to a unique placeholder one.
       ClearTempString();
       AppendTempString("Suicide");
@@ -1702,515 +1749,567 @@ messages:
       return Send(SYS,@GetSuccessRsc);
    }
 
+   UserCommandSuicide()
+   {
+      if poGuild <> $
+         AND Send(poGuild,@GetRank,#who=self) = RANK_MASTER
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_cant_suicide);
+
+         return;
+      }
+
+      if IsClass(poOwner,&OutOfGrace)
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_OOG);
+
+         return;
+      }
+
+      if GetTime() < piLast_restart_time + SUICIDE_REPEAT_TIME
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_yet);
+
+         return;
+      }
+
+      if Send(self,@FindHolding,#class=&Token)
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_token);
+
+         return;
+      }
+
+      if Send(SETTINGS_OBJECT,@GetMaxSuicideHP) <= piBase_Max_health
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_hp);
+
+         return;
+      }
+
+      % Successful SUICIDE.
+      Send(self,@PerformSuicide);
+
+      return;
+   }
+
+   UserCommandSetSafety(value = 0)
+   {
+      Send(self,@SetPlayerPreference,#flag=CF_SAFETY_OFF,#value=value);
+      if value
+      {
+         if Send(SYS,@IsPKAllowed)
+         {
+            Send(self,@MsgSendUser,#message_rsc=user_safety_off);
+            Send(self,@WaveSendUser,#what=self,
+                  #wave_rsc=user_safety_off_wav_rsc);
+         }
+      }
+      else
+      {
+         if Send(SYS,@IsPKAllowed)
+         {
+            Send(self,@MsgSendUser,#message_rsc=user_safety_on);
+            Send(self,@WaveSendUser,#what=self,
+                  #wave_rsc=user_safety_on_wav_rsc);
+         }
+
+      }
+
+      return;
+   }
+
+   UserCommandSetTempSafe(value = 0)
+   {
+      if piBase_max_health > 99
+         OR (piFlags & PFLAG_MURDERER)
+         OR (piFlags & PFLAG_OUTLAW)
+         OR Send(self,@FindUsing,#class=&SoldierShield) <> $
+      {
+         if value
+         {
+            piPreferences = piPreferences | CF_TEMPSAFE;
+         }
+         else
+         {
+            piPreferences = piPreferences & ~CF_TEMPSAFE;
+         }
+         Send(self,@MsgSendUser,#message_rsc=user_temp_safe_invalid);
+
+         return;
+      }
+
+      if value
+      {
+         piPreferences = piPreferences | CF_TEMPSAFE;
+         Send(self,@MsgSendUser,#message_rsc=user_temp_safe_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_TEMPSAFE;
+         Send(self,@MsgSendUser,#message_rsc=user_temp_safe_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetGrouping(value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | CF_GROUPING;
+         Send(self,@MsgSendUser,#message_rsc=user_grouping_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_GROUPING;
+         Send(self,@MsgSendUser,#message_rsc=user_grouping_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetAutoLoot(value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | CF_AUTOLOOT;
+         Send(self,@MsgSendUser,#message_rsc=user_autoloot_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_AUTOLOOT;
+         Send(self,@MsgSendUser,#message_rsc=user_autoloot_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetAutoCombine(value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | CF_AUTOCOMBINE;
+         Send(self,@MsgSendUser,#message_rsc=user_autocombine_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_AUTOCOMBINE;
+         Send(self,@MsgSendUser,#message_rsc=user_autocombine_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetReagentBag(value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | CF_REAGENTBAG;
+         Send(self,@MsgSendUser,#message_rsc=user_reagentbag_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_REAGENTBAG;
+         Send(self,@MsgSendUser,#message_rsc=user_reagentbag_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetSpellpowerDisplay(value = 0)
+   {
+      if value
+      {
+         piPreferences = piPreferences | CF_SPELLPOWER;
+         Send(self,@MsgSendUser,#message_rsc=user_spellpower_on);
+      }
+      else
+      {
+         piPreferences = piPreferences & ~CF_SPELLPOWER;
+         Send(self,@MsgSendUser,#message_rsc=user_spellpower_off);
+      }
+
+      return;
+   }
+
+   UserCommandSetPreferences(value = 0)
+   {
+      % Check each possible preference, improvement over sending 7 messages
+      % from client to server with each preference.
+      if (value & CF_SAFETY_OFF) <> (piPreferences & CF_SAFETY_OFF)
+      {
+         Send(self,@UserCommandSetSafety,#value=value & CF_SAFETY_OFF);
+      }
+
+      if (value & CF_TEMPSAFE) <> (piPreferences & CF_TEMPSAFE)
+      {
+         Send(self,@UserCommandSetTempSafe,#value=value & CF_TEMPSAFE);
+      }
+
+      if (value & CF_GROUPING) <> (piPreferences & CF_GROUPING)
+      {
+         Send(self,@UserCommandSetGrouping,#value=value & CF_GROUPING);
+      }
+
+      if (value & CF_AUTOLOOT) <> (piPreferences & CF_AUTOLOOT)
+      {
+         Send(self,@UserCommandSetAutoLoot,#value=value & CF_AUTOLOOT);
+      }
+
+      if (value & CF_REAGENTBAG) <> (piPreferences & CF_REAGENTBAG)
+      {
+         Send(self,@UserCommandSetReagentBag,#value=value & CF_REAGENTBAG);
+      }
+
+      if (value & CF_AUTOCOMBINE) <> (piPreferences & CF_AUTOCOMBINE)
+      {
+         Send(self,@UserCommandSetAutoCombine,#value=value & CF_AUTOCOMBINE);
+      }
+
+      if (value & CF_SPELLPOWER) <> (piPreferences & CF_SPELLPOWER)
+      {
+         Send(self,@UserCommandSetSpellpowerDisplay,#value=value & CF_SPELLPOWER);
+      }
+
+      % Send the preferences back to client, in case a flag couldn't be set.
+      Send(self,@UserSendPreferences);
+
+      return;
+   }
+
+   UserSendPreferences()
+   "Sends the player's stored preferences to the client."
+   {
+      AddPacket(1,BP_USERCOMMAND, 1,UC_RECEIVE_PREFERENCES, 4,piPreferences);
+      SendPacket(poSession);
+
+      return;
+   }
+
    UserCommand(client_msg=$, number_stuff=$)
    {
-      local iClient_cmd, i, oMoney, cost, oGuild, oWhat;
+      local iClient_cmd, oWhat;
 
       iClient_cmd = First(client_msg);
-      
-      % TODO: Should arrange in decreasing order of frequency
 
-      if iClient_cmd = UC_REST
+      % Arranged in decreasing order of frequency.
+      switch(iClient_cmd)
       {
-         Send(self,@StartResting);
-         
-         return;
-      }
-      
-      if iClient_cmd = UC_STAND
-      {
-         Send(self,@StopResting);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_SUICIDE
-      {
-         if poGuild <> $ and Send(poGuild,@GetRank,#who=self) = RANK_MASTER
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide);
-            
+         case UC_REST:
+            Send(self,@StartResting);
             return;
-         }
-         
-         if IsClass(poOwner,&OutOfGrace)
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_OOG);
-            
+         case UC_STAND:
+            Send(self,@StopResting);
             return;
-         }
-         
-         if GetTime() < piLast_restart_time + SUICIDE_REPEAT_TIME
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_yet);
-            
+         case UC_SEND_PREFERENCES:
+            Send(self,@UserCommandSetPreferences,#value=Nth(client_msg,2));
             return;
-         }
-
-         if Send(self,@FindHolding,#class=&Token)
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_token);
-            
+         case UC_REQ_PREFERENCES:
+            Send(self,@UserSendPreferences);
             return;
-         }
-
-         if Send(Send(SYS,@GetSettings),@GetMaxSuicideHP) <= piBase_Max_health
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_suicide_hp);
-
+         case UC_REQ_GUILDINFO:
+            Send(self,@UserGuildSendInfo);
             return;
-         }
-
-         % Successful SUICIDE.
-
-         Send(self,@PerformSuicide);
-
-         return;
-      }
-
-      if iClient_cmd = UC_SAFETY
-      {
-         if Nth(client_msg,2) <> 0
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_SAFETY,#value=TRUE);
-            if Send(SYS,@IsPKAllowed)
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_safety_on);
-               Send(self,@WaveSendUser,#what=self,
-                     #wave_rsc=user_safety_on_wav_rsc);
-            }
-         }
-         else
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_SAFETY,#value=FALSE);
-            if Send(SYS,@IsPKAllowed)
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_safety_off);
-               Send(self,@WaveSendUser,#what=self,
-                     #wave_rsc=user_safety_off_wav_rsc);
-            }
-         }
-
-         return;
-      }
-
-      if iClient_cmd = UC_TEMPSAFE
-      {
-         if Nth(client_msg,2) <> 0
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_TEMP_SAFETY,#value=TRUE);
-
-            if piBase_max_health > 99
-               OR (piFlags & PFLAG_MURDERER)
-               OR (piFlags & PFLAG_OUTLAW)
-               OR Send(self,@FindUsing,#class=&SoldierShield) <> $
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_temp_safe_invalid);
-            }
-            else
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_temp_safe_on);
-            }
-         }
-         else
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_TEMP_SAFETY,#value=FALSE);
-
-            if piBase_max_health > 99
-               OR (piFlags & PFLAG_MURDERER)
-               OR (piFlags & PFLAG_OUTLAW)
-               OR Send(self,@FindUsing,#class=&SoldierShield) <> $
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_temp_safe_invalid);
-            }
-            else
-            {
-               Send(self,@MsgSendUser,#message_rsc=user_temp_safe_off);
-            }
-         }
-
-         return;
-      }
-
-      if iClient_cmd = UC_GROUPING
-      {
-         if Nth(client_msg,2) <> 0
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_GROUPING,#value=TRUE);
-            Send(self,@MsgSendUser,#message_rsc=user_grouping_on);
-         }
-         else
-         {
-            Send(self,@SetPlayerFlag,#flag=PFLAG_GROUPING,#value=FALSE);
-            Send(self,@MsgSendUser,#message_rsc=user_grouping_off);
-         }
-
-         return;
-      }
-
-      if iClient_cmd = UC_REQ_GUILDINFO
-      {
-         Send(self,@UserGuildSendInfo);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_INVITE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_INVITE,
-              #oTarget=Nth(client_msg,2));
-         
-         return;
-      }
-
-      if iClient_cmd = UC_RENOUNCE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_RENOUNCE);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_EXILE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_EXILE,
-              #oTarget=Nth(client_msg,2));
-         
-         return;
-      }
-
-      if iClient_cmd = UC_ABDICATE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_ABDICATE,
-              #oTarget=Nth(client_msg,2));
-         
-         return;
-      }
-
-      if iClient_cmd = UC_VOTE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_VOTE,
-              #oTarget=Nth(client_msg,2));
-         
-         return;
-      }
-
-      if iClient_cmd = UC_SET_RANK
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_SET_RANK,
-              #oTarget=Nth(client_msg,2),#data=Nth(client_msg,3));
-              
-         return;
-      }
-      
-      if iClient_cmd = UC_GUILD_CREATE
-      {
-         oMoney=Send(self,@GetMoneyObject);
-
-         % Secret guild?
-         if Nth(client_msg,13) 
-         {
-            cost = Send(SYS,@GetGuildSecretPrice);
-         }
-         else
-         {
-            cost = Send(SYS,@GetGuildPrice);
-         }
-
-         if oMoney = $ or Send(oMoney,@GetNumber) < cost
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_no_guild_broke);
-            
-            return FALSE;
-         }
-
-         if Send(SYS,@FindGuildByString,#string=Nth(client_msg,2)) <> $
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_duplicate_guildname);
-               
-            return FALSE;
-         }
-
-         % Check if equal to a user name.
-         if Send(SYS,@FindUserByString,#string=Nth(client_msg,2)) <> $
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_duplicate_guild_username);
-            
-            return FALSE;
-         }
-
-         % Validate string lengths
-         if StringLength(Nth(client_msg, 2)) < 1
-         {
-            Debug(self, "had guild name too short");
-            return FALSE;
-         }
-         if StringLength(Nth(client_msg, 2)) > MAX_GUILD_NAME_LEN
-         {
-            Debug(self, "had guild name too long");
-            return FALSE;
-         }
-         i = 3;
-         while (i <= 12)
-         {
-            if StringLength(Nth(client_msg, i)) > MAX_GUILD_RANK_LEN
-            {
-               Debug(self, "had guild rank too long");
-               return FALSE;
-            }
-            i = i + 1;
-         }
-         oGuild = Create(&Guild,#master=self,#guildname=Nth(client_msg,2),
-                         #secret=Nth(client_msg,13),
-                         #rApprentice_male=Nth(client_msg,3),
-                         #rApprentice_female=Nth(client_msg,4),
-                         #rSir=Nth(client_msg,5),#rMadame=Nth(client_msg,6),
-                         #rLord=Nth(client_msg,7),#rLady=Nth(client_msg,8),
-                         #rLieutenant_male=Nth(client_msg,9),
-                         #rLieutenant_female=Nth(client_msg,10),
-                         #rMaster=Nth(client_msg,11),
-                         #rMistress=Nth(client_msg,12));
-
-         Send(oMoney,@SubtractNumber,#number=cost);
-
-         return;
-      }
-      
-      if iClient_cmd = UC_DISBAND
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_DISBAND);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_MAKE_ALLIANCE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_FORGE_ALLIANCE,
-              #oTarget=Nth(client_msg,2));
-              
-         return;
-      }
-
-      if iClient_cmd = UC_END_ALLIANCE
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_END_ALLIANCE,
-              #oTarget=Nth(client_msg,2));
-              
-         return;
-      }
-
-      if iClient_cmd = UC_MAKE_ENEMY
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_DECLARE_ENEMY,
-              #oTarget=Nth(client_msg,2));
-              
-         return;
-      }
-
-      if iClient_cmd = UC_END_ENEMY
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_PEACE,
-              #oTarget=Nth(client_msg,2));
-              
-         return;
-      }
-
-      if iClient_cmd = UC_REQ_GUILD_LIST
-      {
-         if poGuild <> $
-         {
+         case UC_SUICIDE:
+            Send(self,@UserCommandSuicide);
+            return;
+         case UC_INVITE:
+            Send(self,@UserGuildCommand,#command_num=GCID_INVITE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_RENOUNCE:
+            Send(self,@UserGuildCommand,#command_num=GCID_RENOUNCE);
+            return;
+         case UC_EXILE:
+            Send(self,@UserGuildCommand,#command_num=GCID_EXILE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_ABDICATE:
+            Send(self,@UserGuildCommand,#command_num=GCID_ABDICATE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_VOTE:
+            Send(self,@UserGuildCommand,#command_num=GCID_VOTE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_SET_RANK:
+            Send(self,@UserGuildCommand,#command_num=GCID_SET_RANK,
+                  #oTarget=Nth(client_msg,2),#data=Nth(client_msg,3));
+            return;
+         case UC_GUILD_CREATE:
+            Send(self,@UserCommandCreateGuild,#client_msg=client_msg);
+            return;
+         case UC_DISBAND:
+            Send(self,@UserGuildCommand,#command_num=GCID_DISBAND);
+            return;
+         case UC_MAKE_ALLIANCE:
+            Send(self,@UserGuildCommand,#command_num=GCID_FORGE_ALLIANCE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_END_ALLIANCE:
+            Send(self,@UserGuildCommand,#command_num=GCID_END_ALLIANCE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_MAKE_ENEMY:
+            Send(self,@UserGuildCommand,#command_num=GCID_DECLARE_ENEMY,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_END_ENEMY:
+            Send(self,@UserGuildCommand,#command_num=GCID_PEACE,
+                  #oTarget=Nth(client_msg,2));
+            return;
+         case UC_REQ_GUILD_LIST:
             Send(self,@UserGuildSendList);
-         }
-
-         return;
-      }
-
-      if iClient_cmd = UC_GUILD_SHIELDS
-      {
-         Send(self,@UserGuildSendShieldSamples);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_GUILD_SHIELD
-      {
-         Send(self,@UserGuildSendShieldInfo,#oguild=poGuild);
-         
-         return;
-      }
-
-      if iClient_cmd = UC_CLAIM_SHIELD
-      {
-         % Check if they have a guild.
-         if poGuild = $
-         {
             return;
-         }
-
-         % Find the guild from the color info.
-         oGuild = Send(SYS,@FindGuildByShield,
-                        #color1=Nth(client_msg,2),
-                        #color2=Nth(client_msg,3),
-                        #shape=Nth(client_msg,4));
-
-         if oGuild = $
-            AND Nth(client_msg,5) <> FALSE
-            AND Send(poGuild,@GetRank,#who=self) = RANK_MASTER
-         {
-            Send(poGuild,@SetGuildColors,
-                  #color1=Nth(client_msg,2),
-                  #color2=Nth(client_msg,3),
-                  #shape=Nth(client_msg,4));
-         }
-
-         Send(self,@UserGuildSendShieldInfo,#oguild=oGuild,
-               #color1=Nth(client_msg,2),
-               #color2=Nth(client_msg,3),
-               #shape=Nth(client_msg,4));
-
-         return;
-      }
-
-      if iClient_cmd = UC_GUILD_RENT
-      {
-         cost = Send(nth(client_msg,2),@GetPurchaseValue,#who=self);
-         oMoney = Send(self,@GetMoneyObject);
-
-         if oMoney = $ OR Send(oMoney,@GetNumber) < cost
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_no_guildhall_broke);
-            
-            return FALSE;              
-         }
-
-         if Send(nth(client_msg,2),@ClaimGuildHall,#oGuild=poGuild,#rep=self,
-                 #password=Nth(client_msg,3))
-         {
-             Send(oMoney,@SubtractNumber,#number=cost);
-         }
-         
-         return;
-      }
-
-      if iClient_cmd = UC_ABANDON_GUILD_HALL
-      {
-         Send(self,@UserGuildCommand,#command_num=GCID_ABANDON_HALL);
-         
-         return;
-      }
-      
-      if iClient_cmd = UC_GUILD_SET_PASSWORD
-      {
-         % Validate string length
-         if StringLength(Nth(client_msg, 2)) > MAX_GUILD_NAME_LEN
-         {
-            Debug(self, "had guild password too long");
+         case UC_GUILD_SHIELDS:
+            Send(self,@UserGuildSendShieldSamples);
             return;
-         }
-         Send(self,@UserGuildCommand,#command_num=GCID_SET_PASSWORD,
-              #data=Nth(client_msg,2));
-              
-         return;
-      }
-
-      if iClient_cmd = UC_CHANGE_URL
-      {
-         oWhat = Nth(client_msg,2);
-
-         if oWhat <> self
-            AND NOT IsClass(oWhat,&Admin)
-         {
-            Debug(self,"tried to change url of",Nth(client_msg,2));
-            
+         case UC_GUILD_SHIELD:
+            Send(self,@UserGuildSendShieldInfo,#oGuild=poGuild);
             return;
-         }
-
-         if StringLength(Nth(client_msg, 3)) > MAX_URL_LEN
-         {
-            Debug(self, "had URL too long");
+         case UC_CLAIM_SHIELD:
+            Send(self,@UserCommandClaimShield,#client_msg=client_msg);
             return;
-         }
-         
-         Send(self,@UserChangeURL,#string=Nth(client_msg,3));
-         
-         return;
-      }
-	  
-      if iClient_cmd = UC_DEPOSIT
-      {
-         if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
-                     #command=UC_DEPOSIT,#data=Nth(client_msg,2))
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_deposit);
-         }
-         
-         return;
-      }
-
-      if iClient_cmd = UC_WITHDRAW
-      {
-         if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
-                     #command=UC_WITHDRAW,#data=Nth(client_msg,2))
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_withdraw);
-         }
-         
-         return;
-      }
-
-      if iClient_cmd = UC_BALANCE
-      {
-         if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
-                     #command=UC_BALANCE)
-         {
-            Send(self,@MsgSendUser,#message_rsc=user_cant_balance);
-         }
-         
-         return;
-      }
-
-      if iClient_cmd = UC_APPEAL
-      {
-         Send(self,@UserAppeal,#string=Nth(client_msg,2));
-         
-         return;
-      }
-
-      if iClient_cmd = UC_REQ_RESCUE
-      {
-         if poOwner <> $
-            AND Send(poOwner,@GetRoomNum) = Send(self,@GetHomeroom)
-         {
-            AddPacket(1,BP_USERCOMMAND,1,UC_SEND_QUIT);
-            SendPacket(poSession);
-            
+         case UC_GUILD_RENT:
+            Send(self,@UserCommandGuildRent,#oHall=Nth(client_msg,2),
+                  #sPassword=Nth(client_msg,3));
             return;
+         case UC_ABANDON_GUILD_HALL:
+            Send(self,@UserGuildCommand,#command_num=GCID_ABANDON_HALL);
+            return;
+         case UC_GUILD_SET_PASSWORD:
+            Send(self,@UserGuildCommand,#command_num=GCID_SET_PASSWORD,
+                  #data=Nth(client_msg,2));
+            return;
+         case UC_CHANGE_URL:
+            oWhat = Nth(client_msg,2);
+
+            if oWhat <> self
+               AND NOT IsClass(oWhat,&Admin)
+            {
+               Debug(self,"tried to change url of",Nth(client_msg,2));
+
+               return;
+            }
+            Send(self,@UserChangeURL,#string=Nth(client_msg,3));
+
+            return;
+         case UC_DEPOSIT:
+            if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
+                        #command=UC_DEPOSIT,#data=Nth(client_msg,2))
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_cant_deposit);
+            }
+
+            return;
+         case UC_WITHDRAW:
+            if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
+                        #command=UC_WITHDRAW,#data=Nth(client_msg,2))
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_cant_withdraw);
+            }
+
+            return;
+         case UC_BALANCE:
+            if NOT Send(poOwner,@SomeoneTryUserCommand,#who=self,
+                        #command=UC_BALANCE)
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_cant_balance);
+            }
+
+            return;
+         case UC_APPEAL:
+            Send(self,@UserAppeal,#string=Nth(client_msg,2));
+            return;
+         case UC_REQ_RESCUE:
+            if poOwner <> $
+               AND Send(poOwner,@GetRoomNum) = Send(self,@GetHomeroom)
+            {
+               AddPacket(1,BP_USERCOMMAND,1,UC_SEND_QUIT);
+               SendPacket(poSession);
+
+               return;
+            }
+
+            Send(self,@AdminGotoSafety);
+            Debug(self,"was just sent to safety because their client had a "
+                  "broken room",poOwner);
+
+            return;
+         case UC_MINIGAME_STATE:
+            Send(Nth(client_msg,2),@GotNewState,#who=self,
+                 #state=Nth(client_msg,3));
+            return;
+         case UC_MINIGAME_RESET_PLAYERS:
+            Send(Nth(client_msg,2),@ResetPlayers,#who=self);
+            return;
+         case UC_REQ_TIME:
+               ClearTempString();
+               Send(SYS,@AppendOrdinalToTempString,#number=Send(SYS,@GetDay));
+               Send(self,@MsgSendUser,
+                  #message_rsc=user_time_string,
+                  #parm1=Send(SYS,@GetHour),
+                  #parm2=GetTempString(),
+                  #parm3=Send(SYS,@GetYear)
+                  );
+         return;
+
+         default:
+            Debug("User.kod got unknown UserCommand command from client",
+               iClient_cmd);
+            return;
+      }
+
+      return;
+   }
+
+   UserCommandGuildRent(oHall = $, sPassword = $)
+   {
+      local iCost, oMoney;
+
+      if poGuild = $
+         OR oHall = $
+         OR sPassword = $
+      {
+         return;
+      }
+
+      iCost = Send(oHall,@GetPurchaseValue,#who=self);
+      oMoney = Send(self,@GetMoneyObject);
+
+      if oMoney = $ OR Send(oMoney,@GetNumber) < iCost
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_no_guildhall_broke);
+         
+         return FALSE;
+      }
+
+      if Send(oHall,@ClaimGuildHall,#oGuild=poGuild,#rep=self,
+               #password=sPassword)
+      {
+          Send(oMoney,@SubtractNumber,#number=iCost);
+      }
+
+      return;
+   }
+
+   UserCommandClaimShield(client_msg = $)
+   {
+      local oGuild;
+
+      if client_msg = $
+      {
+         return;
+      }
+
+      % Check if they have a guild.
+      if poGuild = $
+      {
+         return;
+      }
+
+      % Find the guild from the color info.
+      oGuild = Send(SYS,@FindGuildByShield,#color1=Nth(client_msg,2),
+                     #color2=Nth(client_msg,3),#shape=Nth(client_msg,4));
+
+      if oGuild = $
+         AND Nth(client_msg,5) <> FALSE
+         AND Send(poGuild,@GetRank,#who=self) = RANK_MASTER
+      {
+         Send(poGuild,@SetGuildColors,#color1=Nth(client_msg,2),
+               #color2=Nth(client_msg,3),#shape=Nth(client_msg,4));
+      }
+
+      Send(self,@UserGuildSendShieldInfo,#oguild=oGuild,
+            #color1=Nth(client_msg,2),#color2=Nth(client_msg,3),
+            #shape=Nth(client_msg,4));
+
+      return;
+   }
+
+   UserCommandCreateGuild(client_msg = $)
+   {
+      local i, oMoney, iCost;
+
+      if client_msg = $
+      {
+         return;
+      }
+
+      oMoney = Send(self,@GetMoneyObject);
+
+      % Secret guild?
+      if Nth(client_msg,13)
+      {
+         iCost = Send(SYS,@GetGuildSecretPrice);
+      }
+      else
+      {
+         iCost = Send(SYS,@GetGuildPrice);
+      }
+
+      if oMoney = $
+         OR Send(oMoney,@GetNumber) < iCost
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_no_guild_broke);
+
+         return FALSE;
+      }
+
+      if Send(SYS,@FindGuildByString,#string=Nth(client_msg,2)) <> $
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_duplicate_guildname);
+
+         return FALSE;
+      }
+
+      % Check if equal to a user name.
+      if Send(SYS,@FindUserByString,#string=Nth(client_msg,2)) <> $
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_duplicate_guild_username);
+
+         return FALSE;
+      }
+
+      % Validate string lengths
+      if StringLength(Nth(client_msg, 2)) < 1
+      {
+         Debug(self, "had guild name too short");
+
+         return FALSE;
+      }
+      if StringLength(Nth(client_msg, 2)) > MAX_GUILD_NAME_LEN
+      {
+         Debug(self, "had guild name too long");
+
+         return FALSE;
+      }
+      i = 3;
+      while (i <= 12)
+      {
+         if StringLength(Nth(client_msg, i)) > MAX_GUILD_RANK_LEN
+         {
+            Debug(self, "had guild rank too long");
+
+            return FALSE;
          }
-
-         Send(self,@AdminGotoSafety);
-         Debug(self,"was just sent to safety because their client had a "
-               "broken room",poOwner);
-
-         return;
+         ++i;
       }
 
-      if iClient_cmd = UC_MINIGAME_STATE
-      {
-         Send(Nth(client_msg,2),@GotNewState,#who=self,
-              #state=Nth(client_msg,3));
-         
-         return;
-      }
+      Create(&Guild,#master=self,#guildname=Nth(client_msg,2),
+                    #secret=Nth(client_msg,13),
+                    #rApprentice_male=Nth(client_msg,3),
+                    #rApprentice_female=Nth(client_msg,4),
+                    #rSir=Nth(client_msg,5),#rMadame=Nth(client_msg,6),
+                    #rLord=Nth(client_msg,7),#rLady=Nth(client_msg,8),
+                    #rLieutenant_male=Nth(client_msg,9),
+                    #rLieutenant_female=Nth(client_msg,10),
+                    #rMaster=Nth(client_msg,11),
+                    #rMistress=Nth(client_msg,12));
 
-      if iClient_cmd = UC_MINIGAME_RESET_PLAYERS
-      {
-         Send(Nth(client_msg,2),@ResetPlayers,#who=self);
-         
-         return;
-      }
+      Send(oMoney,@SubtractNumber,#number=iCost);
 
-      Debug("User.kod got unknown UserCommand command from client",
-            iClient_cmd);
-      
       return;
    }
 
@@ -2223,7 +2322,7 @@ messages:
          Send(self,@MsgSendUser,#message_rsc=user_no_guild);
          return;
       }
-      
+
       AddPacket(1,BP_USERCOMMAND,1,UC_GUILDINFO);
       AddPacket(6,Send(poGuild,@GetName));
       lHall = Send(poGuild,@GetGuildHall);
@@ -2274,7 +2373,7 @@ messages:
          AddPacket(1,Nth(i,2));
          AddPacket(1,Send(First(i),@GetGender));
       }
-      
+
       SendPacket(poSession);
 
       return;
@@ -2282,33 +2381,39 @@ messages:
 
    UserGuildSendList()
    {
-      local lGuilds,i;
+      local lGuilds, i;
+
+      % Must be guilded to receive guild list.
+      if poGuild = $
+      {
+         return;
+      }
 
       if pbLogged_on
       {
          AddPacket(1,BP_USERCOMMAND,1,UC_GUILD_LIST);
-         
+
          lGuilds = Send(SYS,@GetGuilds);
          AddPacket(2,Length(lGuilds));
          foreach i in lGuilds
          {
             AddPacket(4,i,6,Send(i,@GetName));
          }
-         
+
          lGuilds = Send(poGuild,@GetAllyList);
          AddPacket(2,Length(lGuilds));
          foreach i in lGuilds
          {
             AddPacket(4,i);
          }
-         
+
          lGuilds = Send(poGuild,@GetEnemyList);
          AddPacket(2,Length(lGuilds));
          foreach i in lGuilds
          {
             AddPacket(4,i);
          }
-         
+
          lGuilds = Send(poGuild,@GetDeclaredAllyList);
          AddPacket(2,Length(lGuilds));
          foreach i in lGuilds
@@ -2436,6 +2541,16 @@ messages:
 
       Send(self,@SysMsgSendUser,#message_rsc=user_garbage_collecting_done);
 
+      % Let the user know whether safety is on or off.
+      if piPreferences & CF_SAFETY_OFF
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_safety_off);
+      }
+      else
+      {
+         Send(self,@MsgSendUser,#message_rsc=user_safety_on);
+      }
+
       AddPacket(1,BP_UNWAIT);
       SendPacket(poSession);
 
@@ -2454,11 +2569,11 @@ messages:
          if oNew_room <> $
          {
             Send(oNew_room,@NewHold,#what=self,
-                 #new_row=piSave_row,#new_col=piSave_col,
-                 #fine_row=piSave_fine_row,
-                 #fine_col=piSave_fine_col,
-                 #new_angle=piSave_angle);
-                 
+                  #new_row=piSave_row,#new_col=piSave_col,
+                  #fine_row=piSave_fine_row,
+                  #fine_col=piSave_fine_col,
+                  #new_angle=piSave_angle);
+
             return;
          }
       }
@@ -2467,7 +2582,7 @@ messages:
       {
          Send(self,@MsgSendUser,#message_rsc=user_couldnt_replace);
       }
-  
+
       Send(self,@AdminGoToSafety);
 
       return;
@@ -2476,7 +2591,7 @@ messages:
    UserLogonHook()
    {
       local i;
-      
+
       foreach i in Send(SYS,@GetBackgroundObjects)
       {
          Send(i,@AddBackgroundObject,#who=self);
@@ -2486,14 +2601,14 @@ messages:
 
       % Count right now as the last time we moved.
       piLastMoveUpdateTime = GetTickCount();
-      
+
       propagate;
    }
 
    LoadMailNews()
    {
       Send(self,@UserLoadModule,#module=user_mailnews_module);
-      
+
       return;
    }
 
@@ -2501,18 +2616,20 @@ messages:
    {
       AddPacket(1,BP_LOAD_MODULE,4,module);
       SendPacket(poSession);
-      
+
       return;
    }
 
    UserUnloadModule(module = $)
    {
       if NOT pbLogged_on
-      { return; }
+      {
+         return;
+      }
 
       AddPacket(1,BP_UNLOAD_MODULE,4,module);
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -2521,7 +2638,7 @@ messages:
       AddPacket(1,BP_USERCOMMAND,1,UC_MINIGAME_START);
       AddPacket(4,game,1,player_num);
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -2533,7 +2650,7 @@ messages:
       {
          iRoom = Send(poOwner,@GetRoomNum);
       
-         if iRoom >= RID_NEWB_BASE and iRoom <= RID_NEWB_MAX
+         if iRoom >= RID_NEWB_BASE AND iRoom <= RID_NEWB_MAX
          {
             Send(self,@TeleportTo,#RID=RID_NEWB1,#bAdminPort=FALSE);
          }
@@ -2550,26 +2667,23 @@ messages:
             }
          }
       }
+      else if piSave_Room >= RID_NEWB_BASE AND piSave_Room <= RID_NEWB_MAX
+      {
+         Debug("Player died while offline, but in newbie area!  (how did "
+                "a necromancer get there?):",Send(self,@GetName));
+         piSave_Room = RID_NEWB1;
+         oRoom = Send(SYS,@FindRoomByNum,#num=RID_NEWB1);
+         piSave_Row = Send(oRoom,@GetTeleportRow);
+         piSave_Col = Send(oRoom,@GetTeleportCol);
+      }
       else
       {
-         if piSave_Room >= RID_NEWB_BASE and piSave_Room <= RID_NEWB_MAX
-         {
-            Debug("Player died while offline, but in newbie area!  (how did "
-                   "a necromancer get there?):",Send(self,@GetName));
-            piSave_Room = RID_NEWB1;
-            oRoom = Send(SYS,@FindRoomByNum,#num=RID_NEWB1);
-            piSave_Row = Send(oRoom,@GetTeleportRow);
-            piSave_Col = Send(oRoom,@GetTeleportCol);
-         }
-         else
-         {
-            piSave_Room = RID_UNDERWORLD;
-            piSave_Row = 24;
-            piSave_Col = 10;
-            piSave_Fine_Row = 38;
-            piSave_Fine_Col = 54;
-            piSave_Angle = 3072;
-         }
+         piSave_Room = RID_UNDERWORLD;
+         piSave_Row = 24;
+         piSave_Col = 10;
+         piSave_Fine_Row = 38;
+         piSave_Fine_Col = 54;
+         piSave_Angle = 3072;
       }
 
       return Send(SYS,@GetSuccessRsc);
@@ -2666,20 +2780,17 @@ messages:
          Send(what,@SendLookAnimation);
          Send(what,@SendLookOverlays);
       }
-
-      if show_type = SHOW_INVENTORY
+      else if show_type = SHOW_INVENTORY
       {
          Send(what,@SendInventoryAnimation);
          Send(what,@SendInventoryOverlays);
       }
-
-      if show_type = SHOW_NORMAL
+      else if show_type = SHOW_NORMAL
       {
          Send(what,@SendAnimation);
          Send(what,@SendOverlays);
       }
-
-      if show_type = SHOW_ENCHANTMENT
+      else if show_type = SHOW_ENCHANTMENT
       {
          Send(what,@SendEnchantmentAnimation);
          Send(what,@SendEnchantmentOverlays);
@@ -2738,7 +2849,7 @@ messages:
             }
 
             % Standard player blue dot.
-            if Send(what,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2)
+            if Send(what,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE)
             {
                iFlags = iFlags | MM_TEMPSAFE;
             }
@@ -2774,10 +2885,15 @@ messages:
             {
                iFlags = (iFlags | MM_PLAYER_IS_ENEMY);
             }
+
+            % Add builder group halo.
+            if Send(poOwner,@AreGroupedHere,#who=self,#what=what)
+            {
+               iFlags = (iFlags | MM_BUILDER_GROUP);
+            }
          }
          else
          {
-
             iFlags = (iFlags | MM_MONSTER);
          }
       }
@@ -2797,34 +2913,25 @@ messages:
                return MM_MINION_OTHER;
             }
          }
-         else
+         if Send(what,@GetBehavior) & AI_NPC
          {
             % Draw dots for NPCs.
-            if Send(what,@GetBehavior) & AI_NPC
+            return MM_NPC;
+         }
+         if IsClass(poOwner,&SurvivalRoom)
+         {
+            % Survival room specific dots.
+            if Send(poOwner,@IsMiniBoss,#what=what)
             {
-               return MM_NPC;
+               return MM_MINIBOSS;
             }
-            else
+            if Send(poOwner,@IsBoss,#what=what)
             {
-               % Survival room specific dots.
-               if IsClass(poOwner,&SurvivalRoom)
-               {
-                  if Send(poOwner,@IsMiniBoss,#what=what)
-                  {
-                     return MM_MINIBOSS;
-                  }
-                  else
-                  {
-                     if Send(poOwner,@IsBoss,#what=what)
-                     {
-                        return MM_BOSS;
-                     }
-                  }
-               }
-
-               return MM_MONSTER;
+               return MM_BOSS;
             }
          }
+
+         return MM_MONSTER;
       }
 
       % Give masks a black dot.
@@ -2832,15 +2939,6 @@ messages:
          AND IsClass(poOwner,&SurvivalRoom)
       {
          return MM_NPC;
-      }
-
-      if poOwner <> $
-         AND IsClass(what,&Player)
-      {
-         if Send(poOwner,@AreGroupedHere,#who=self,#what=what)
-         {
-            iFlags = (iFlags | MM_BUILDER_GROUP);
-         }
       }
 
       return iFlags;
@@ -2866,7 +2964,7 @@ messages:
       {
          AddPacket(4,0);
       }
-      
+
       Send(poOwner,@SendExtraRoomInfo);
 
       SendPacket(poSession);
@@ -2896,7 +2994,7 @@ messages:
          AddPacket(2,Bound(Send(poOwner,@GetDirectionalLightHeight),0,$));
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -2904,15 +3002,40 @@ messages:
    "Sends client a list of all users logged on, including object id, "
    "resource id, and actual string of the resource (since it's a dynarsc)."
    {
-      local i, lUsers, rName;
+      local i, lUsers, rName, bVisible;
 
       lUsers = $;
 
       foreach i in Send(SYS,@GetUsersLoggedOn)
       {
-         if IsClass(self,&Admin)
-            OR NOT (IsClass(i,&DM)
-                    AND Send(i,@IsHidden))
+         bVisible = FALSE;
+
+         % admins see everyone
+         if (IsClass(self,&Admin))
+         {
+            bVisible = TRUE;
+         }
+         % escaped convict can see self and fellow convicts
+         else if (IsClass(self,&EscapedConvict) AND IsClass(i,&EscapedConvict))
+         {
+            bVisible = TRUE;
+         }
+         else
+         {
+            % self is a regular user, here is where to start hiding special
+            % players like escaped convict and hidden DMs
+            if (IsClass(i,&EscapedConvict)
+               OR (IsClass(i,&DM) AND Send(i,@IsHidden)))
+            {
+               bVisible = FALSE;
+            }
+            else
+            {
+               bVisible = TRUE;
+            }
+         }
+            
+         if (bVisible)
          {
             lUsers = Cons(i,lUsers);
          }
@@ -2931,9 +3054,9 @@ messages:
          AddPacket(1,Send(i,@GetClientObjectType));
          AddPacket(1,0); % MoveOn type, don't need it here.
       }
-      
+
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -2961,11 +3084,11 @@ messages:
             continue;
          }
 
-         objs = objs + 1;
+         ++objs;
       }
 
       AddPacket(1,BP_ROOM_CONTENTS, 4,poOwner, 2,objs);
-      
+
       foreach i in Send(poOwner,@GetHolderActive)
       {
          oThing = Send(poOwner,@HolderExtractObject,#data=i);
@@ -2984,7 +3107,7 @@ messages:
          Send(oThing,@SendMoveAnimation);
          Send(oThing,@SendMoveOverlays);
       }
-      
+
       foreach i in Send(poOwner,@GetHolderPassive)
       {
          oThing = Send(poOwner,@HolderExtractObject,#data=i);
@@ -3015,17 +3138,17 @@ messages:
       {
         Send(self,@ToCliObject,#what=i,#show_type=SHOW_INVENTORY);
       }
-      
+
       i = Length(plPassive);
       while i > 0
       {
          each_obj = Nth(plPassive,i);
          Send(self,@ToCliObject,#what=each_obj,#show_type=SHOW_INVENTORY);
-         i = i - 1;
+         --i;
       }
 
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -3039,9 +3162,9 @@ messages:
       {
          AddPacket(4,i);
       }
-      
+
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -3083,18 +3206,19 @@ messages:
          Send(self,@SendStatOffense);
          Send(self,@SendStatDefense);
          Send(self,@SendStatArmor);
-         
+
          i = 1;
          lCurrentResistances = Send(self,@GetCurrentResistances);
-         
+
          while i < 14
          {
-            Send(self,@SendStatResistances,#num=i,#lCurrentResistances=lCurrentResistances);
-            i = i + 1;
+            Send(self,@SendStatResistances,#num=i,
+                  #lCurrentResistances=lCurrentResistances);
+            ++i;
          }
 
          SendPacket(poSession);
-         
+
          return;
       }
 
@@ -3107,9 +3231,9 @@ messages:
             Send(self,@SendStatSpell,#index=iCount);
             iCount = iCount + 1;
          }
-         
+
          SendPacket(poSession);
-         
+
          return;
       }
 
@@ -3122,9 +3246,9 @@ messages:
             Send(self,@SendStatSkill,#index=iCount);
             iCount = iCount + 1;
          }
-         
+
          SendPacket(poSession);
-         
+
          return;
       }
 
@@ -3309,7 +3433,7 @@ messages:
       {
          num_schools = num_schools + 1;
       }
-      
+
       AddPacket(1,num_schools);
       AddPacket(4,user_school_shallile);
       AddPacket(4,user_school_qor);
@@ -3322,7 +3446,7 @@ messages:
       {
          AddPacket(4,user_school_dm);
       }
-      
+
       SendPacket(poSession);
 
       return;
@@ -3342,10 +3466,10 @@ messages:
          AddPacket(1,Send(oSpell,@GetNumSpellTargets));
          AddPacket(1,Send(oSpell,@GetSchool));
       }
-      
+
       SendPacket(poSession);
       Send(self,@ToCliStats,#group=3);
-      
+
       return;
    }
 
@@ -3360,10 +3484,10 @@ messages:
                                                      #compound=i));
          Send(self,@ToCliObject,#what=oSkill);
       }
-      
+
       SendPacket(poSession);
       Send(self,@ToCliStats,#group=4);
-      
+
       return;
    }
 
@@ -3380,9 +3504,9 @@ messages:
 
          Send(self,@ToCliStats,#group=3);
       }
-      
+
       return;
-      
+
    }
 
    ToCliRemoveSpell(oSpell = $)
@@ -3393,7 +3517,7 @@ messages:
          AddPacket(4, oSpell);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -3403,7 +3527,7 @@ messages:
       {
          Send(self,@ToCliStats,#group=4);
       }
-      
+
       return;
    }
 
@@ -3413,14 +3537,14 @@ messages:
       {
          Send(self,@ToCliStats,#group=4);
       }
-      
+
       return;
    }
 
    ToCliAddBackgroundOverlay(what = $)
    {
       if pbLogged_on
-      {  
+      {
          AddPacket(1,BP_ADD_BG_OVERLAY);
          Send(self,@ToCliBackgroundOverlay,#what=what);
       }
@@ -3431,11 +3555,11 @@ messages:
    ToCliChangeBackgroundOverlay(what = $)
    {
       if pbLogged_on
-      {  
+      {
          AddPacket(1,BP_CHANGE_BG_OVERLAY);
          Send(self,@ToCliBackgroundOverlay,#what=what);
       }
-      
+
       return;
    }
 
@@ -3457,10 +3581,11 @@ messages:
    {
       local iCurrentTime, iDelta, iDeltaVigor, iExertion, iHasteLevel,
          iAngle, iRow, iCol, iFineRow, iFineCol, iRoomNum,
-         iDx, iDy, iMoveLength, iMaxMoveRun;
+         iDx, iDy, iMoveLength, iMaxMoveRun, 
+         iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID;
 
       %
-      % 1. Get current position values
+      % 1.1 Get current position values
       %
 
       iRow = piRow;
@@ -3469,12 +3594,25 @@ messages:
       iFineCol = piFine_col;
       iAngle = Send(self,@GetAngle);
 
+      % 
+      % 1.2 Get sectorinfo of destination
       %
+      iQflags = LIQ_GET_SECTORINFO;
+			
+      if NOT GetLocationInfoBSP(
+                      Send(poOwner,@GetRoomData), iQflags, 
+                      new_row, new_col, fine_row, fine_col,
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+      {
+         debug("Failed to get location info in ", Send(poOwner,@GetRoomData));
+         iRflags = 0;
+      }
+
+	  %
       % 2. Do not allow any moves if player is marked as not allowed to move or 
-      %    if destination is outside of the map. (return of MIN_KOD_INT = outside) 
+      %    if destination is outside of the map.
       %
-      if (piFlags & PFLAG_NO_MOVE) OR
-          MIN_KOD_INT = GetHeightFloorBSP(Send(poOwner,@GetRoomData),new_row,new_col,fine_row,fine_col)
+      if (piFlags & PFLAG_NO_MOVE) OR NOT (iRflags & LIR_SECTOR_INSIDE)
       {
          % Reset position
          Send(SYS,@UtilGoNearSquare,#what=self,#where=poOwner,
@@ -3522,7 +3660,7 @@ messages:
       %
       % 4.3 Bound the maximum bucketsize
       %
-      piMovementBucket = Bound(piMovementBucket, 0, Send(Send(SYS,@GetSettings),@GetMovementBucketMax));
+      piMovementBucket = Bound(piMovementBucket, 0, Send(SETTINGS_OBJECT,@GetMovementBucketMax));
       %Debug("Bucket before move:",piMovementBucket);
 
       %
@@ -3768,18 +3906,18 @@ messages:
       if new_angle < 0 or new_angle > MAX_ANGLE 
       {
          Debug("Invalid turn angle: ",new_angle);
-         
+
          return;
       }
-      
+
       Send(poOwner,@SomethingTurned,#what=self,#new_angle=new_angle,
            #cause=CAUSE_USER_INPUT);
 
       % bitflag check instead of function for speed.
-      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)  
+      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       {
          Send(self,@NotifyMonstersOfPresence);
-      }   
+      }
 
       return;
    }
@@ -3805,7 +3943,7 @@ messages:
             }
          }
       }
-      
+
       if IsClass(self,&DM) OR first_time
       {
          % Don't tell DMs and Admins that the appeal was heard,
@@ -3814,7 +3952,7 @@ messages:
       }
 
       Send(self,@MsgSendUser,#message_rsc=user_did_appeal,#parm1=string);
-      
+
       return;
    }
 
@@ -3860,42 +3998,35 @@ messages:
          AND report
       {
          AddPacket(1,BP_MESSAGE,4,message_rsc);
-         
+
          if parm1 <> $
          {
             AddPacket(type1,parm1);
          }
-
          if parm2 <> $
          {
             AddPacket(type2,parm2);
          }
-
          if parm3 <> $
          {
             AddPacket(type3,parm3);
          }
-
          if parm4 <> $
          {
             AddPacket(type4,parm4);
          }
-
          if parm5 <> $
          {
             AddPacket(type5,parm5);
          }
-
          if parm6 <> $
          {
             AddPacket(type6,parm6);
          }
-
          if parm7 <> $
          {
             AddPacket(type7,parm7);
          }
-
          if parm8 <> $
          {
             AddPacket(type8,parm8);
@@ -3903,9 +4034,9 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
-   }      
+   }
 
    SysMsgSendUser(message_rsc = $,parm1 = $,parm2 = $,parm3 = $,parm4 = $,
                   parm5 = $,parm6 = $,parm7 = $,parm8 = $)
@@ -3917,37 +4048,30 @@ messages:
          {
             AddPacket(4,parm1);
          }
-
          if parm2 <> $
          {
             AddPacket(4,parm2);
          }
-
          if parm3 <> $
          {
             AddPacket(4,parm3);
          }
-
          if parm4 <> $
          {
             AddPacket(4,parm4);
          }
-
          if parm5 <> $
          {
             AddPacket(4,parm4);
          }
-
          if parm6 <> $
          {
             AddPacket(4,parm4);
          }
-
          if parm7 <> $
          {
             AddPacket(4,parm4);
          }
-
          if parm8 <> $
          {
             AddPacket(4,parm4);
@@ -3955,7 +4079,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -3978,7 +4102,19 @@ messages:
       }
 
       return;
-   }      
+   }
+
+   WaveSendUserStop(wave_rsc = $, source_obj = 0)
+   % Sends a message to the client to stop playing a wav using the resource ID.
+   {
+      if (wave_rsc <> $) and (pbLogged_on)
+      {
+         AddPacket(1,BP_STOP_WAVE, 4,wave_rsc, 4,source_obj);
+         SendPacket(poSession);
+      }
+
+      return;
+   }
 
    SendRoomMusic(music_rsc = $)
    {
@@ -3993,10 +4129,10 @@ messages:
          {
             AddPacket(4,music_rsc);
          }
-         
+
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4013,59 +4149,67 @@ messages:
          {
             AddPacket(4,midi_rsc);
          }
-         
+
          SendPacket(poSession);
       }
-      
+
       return;
-   }      
-   
+   }
+
    GoodSpellFlashEffect()
    {
       Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
-           #duration=100,#xlat=GOOD_COLOR);
-      
+            #duration=100,#xlat=GOOD_COLOR);
+
       return;
    }
 
    BadSpellFlashEffect()
    {
       Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
-           #duration=100,#xlat=BAD_COLOR);
-      
+            #duration=100,#xlat=BAD_COLOR);
+
       return;
    }
-   
+
    DamageTypeFlashEffect(aspell=0, duration=800)
    {
       if aspell & ATCK_SPELL_QUAKE
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=65);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=65);
       }
-      if aspell & ATCK_SPELL_HOLY
+      else if aspell & ATCK_SPELL_HOLY
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=116);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=116);
       }
-      if aspell & ATCK_SPELL_UNHOLY
+      else if aspell & ATCK_SPELL_UNHOLY
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=112);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=112);
       }
-      if aspell & ATCK_SPELL_ACID
+      else if aspell & ATCK_SPELL_ACID
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=86);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=86);
       }
-      if aspell & ATCK_SPELL_COLD
+      else if aspell & ATCK_SPELL_COLD
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=85);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=85);
       }
-      if aspell & ATCK_SPELL_SHOCK
+      else if aspell & ATCK_SPELL_SHOCK
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=82);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=82);
       }
-      if aspell & ATCK_SPELL_FIRE
+      else if aspell & ATCK_SPELL_FIRE
       {
-         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,#duration=duration,#xlat=81);
+         Send(self,@EffectSendUserDurationAndXlat,#effect=EFFECT_FLASHXLAT,
+               #duration=duration,#xlat=81);
       }
+
       return;
    }
 
@@ -4083,7 +4227,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4096,7 +4240,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4108,7 +4252,7 @@ messages:
          AddPacket(4,duration);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4120,7 +4264,7 @@ messages:
          AddPacket(1,BP_EFFECT, 2,effect, 4,duration, 4,xlat);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4132,7 +4276,7 @@ messages:
          AddPacket(1,BP_SECTOR_MOVE,1,animation,2,sector,2,height,1,speed);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4144,7 +4288,7 @@ messages:
          AddPacket(1,BP_SECTOR_LIGHT,2,sector,1,light_effect);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4162,36 +4306,31 @@ messages:
          {
             AddPacket(2,first_group);
          }
-         
-         if animation = ANIMATE_ONCE
+         else if animation = ANIMATE_ONCE
          {
             AddPacket(4,speed, 2,first_group, 2,second_group, 2,end_group);
          }
-         
-         if animation = ANIMATE_CYCLE
+         else if animation = ANIMATE_CYCLE
          {
             AddPacket(4,speed, 2,first_group, 2,second_group);
          }
-         
+
          if passable = $
          {
             AddPacket(1,0);
          }
+         else if passable
+         {
+            AddPacket(1,1);
+         }
          else
          {
-            if passable
-            {
-               AddPacket(1,1);
-            }
-            else
-            {
-               AddPacket(1,2);
-            }
+            AddPacket(1,2);
          }
-         
+
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4204,7 +4343,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4236,14 +4375,14 @@ messages:
          {
             AddPacket(STRING_RESOURCE,Send(game,@GetDefaultState));
          }
-         else 
+         else
          {
             AddPacket(0, state);
          }
-      
+
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4254,10 +4393,10 @@ messages:
       {
          AddPacket(1,BP_USERCOMMAND, 1,UC_MINIGAME_PLAYER, 1,num,
                    STRING_RESOURCE,Send(who,@GetTrueName));
-         
+
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -4269,15 +4408,16 @@ messages:
       if Send(self,@IsInCannotInteractMode)
       {
          Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
-              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
-              
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+         Send(self,@WaveSendUser,#what=self,
+               #wave_rsc=user_cant_pickup_item_wav_rsc);
+
          return 0;
       }
 
       % User took an action!  Wake any AIs in the room to the user's presence!
       % bitflag check instead of function for speed.
-      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)  
+      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       {
          Send(self,@NotifyMonstersOfPresence);
       }
@@ -4289,7 +4429,7 @@ messages:
       {
          return 0;
       }
-      
+
       if oOldOwner <> $
          AND IsClass(oOldOwner,&ReagentBag)
       {
@@ -4305,48 +4445,48 @@ messages:
          OR IsClass(Send(what,@GetOwner),&User)
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_get_unk,#report=report,
-              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
-              
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+         Send(self,@WaveSendUser,#what=self,#wave_rsc=user_cant_pickup_item_wav_rsc);
+
          return 0;
-      }	  
-	  
+      }
+
       lItem_pos = Send(what,@GetPos);
       if lItem_pos = $
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_get_unk,#report=report,
-              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
-              
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+         Send(self,@WaveSendUser,#what=self,#wave_rsc=user_cant_pickup_item_wav_rsc);
+
          return 0;
       }
 
       iRow = First(lItem_pos);
       iCol = Nth(lItem_pos,2);
-      
+
       iRow_dist = piRow - iRow;
       if iRow_dist < 0
       {
          iRow_dist = -1 * iRow_dist;
       }
-      
+
       iCol_dist = piCol - iCol;
       if iCol_dist < 0
       {
          iCol_dist = -1 * iCol_dist;
       }
 
-      if (iRow_dist + iCol_dist) > 7 
+      if (iRow_dist + iCol_dist) > 7
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_get_dist,#report=report,
-              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+         Send(self,@WaveSendUser,#what=self,#wave_rsc=user_cant_pickup_item_wav_rsc);
 
          return 2;
       }
-        
+
       % This includes the corpse pointer, which prevents people
-      %  from looting each other's kills.
+      % from looting each other's kills.
       if NOT Send(what,@ReqNewOwnerAttributes,#who=self)
       {
          return 0;
@@ -4357,8 +4497,8 @@ messages:
       {
          Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
-              
+         Send(self,@WaveSendUser,#what=self,#wave_rsc=user_cant_pickup_item_wav_rsc);
+
          return 0;
       }
 
@@ -4366,12 +4506,12 @@ messages:
       {
          Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-         Send(self, @WaveSendUser, #what=self, #wave_rsc = user_cant_pickup_item_wav_rsc);
-              
+         Send(self,@WaveSendUser,#what=self,#wave_rsc=user_cant_pickup_item_wav_rsc);
+
          return 0;
       }
-        
-      if NOT Send(self,@ReqNewHold,#what=what) 
+
+      if NOT Send(self,@ReqNewHold,#what=what)
       {
          if IsClass(what,&NumberItem)
          {
@@ -4384,7 +4524,7 @@ messages:
                   Send(self,@MsgSendUser,#message_rsc=user_got_some,#report=report,
                        #parm1=Send(what,@GetName));
                   Send(self,@NewHold,#what=oSplit,#bFromReagentBag=bFromReagentBag);
-                  
+
                   return 3;
                }
                else
@@ -4392,9 +4532,9 @@ messages:
                   Send(what,@AddNumber,#number=iCan_hold);
                   Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
                        #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-                  Send(self, @WaveSendUser, #what=self, 
-                       #wave_rsc = user_cant_pickup_item_wav_rsc);
-                       
+                  Send(self,@WaveSendUser,#what=self,
+                       #wave_rsc=user_cant_pickup_item_wav_rsc);
+
                   return 4;
                }
             }
@@ -4402,35 +4542,35 @@ messages:
             {
                Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
                     #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-               Send(self, @WaveSendUser, #what=self, 
-                    #wave_rsc = user_cant_pickup_item_wav_rsc);
-                    
+               Send(self,@WaveSendUser,#what=self,
+                    #wave_rsc=user_cant_pickup_item_wav_rsc);
+
                return 4;
             }
          }
          else
          {
             %  KLUDGE!!  -Asif
-            if not IsClass(what,&HunterSword)
+            if NOT IsClass(what,&HunterSword)
             {
                Send(self,@MsgSendUser,#message_rsc=user_disallow_get,#report=report,
-                    #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-               Send(self, @WaveSendUser, #what=self, 
-                    #wave_rsc = user_cant_pickup_item_wav_rsc);
+                     #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
+               Send(self,@WaveSendUser,#what=self,
+                     #wave_rsc=user_cant_pickup_item_wav_rsc);
             }
-            
-            return 4;                      
-         }        
-      }	  
-	  		 
-	  % shrunken head picked up
-	  if isClass(what, &ShrunkenHead)
-	  {
-		 Send(what,@PickedUp,#by=self);
-	  }
+
+            return 4;
+         }
+      }
+
+      % shrunken head picked up
+      if isClass(what,&ShrunkenHead)
+      {
+         Send(what,@PickedUp,#by=self);
+      }
 
       Send(self,@NewHold,#what=what,#bFromReagentBag=bFromReagentBag);
-      
+
       return 1;
    }
 
@@ -4438,7 +4578,6 @@ messages:
    "Sent by client when they're blocking messages from a user, and that "
    "user Sends a message."
    {
-
       return;
    }
 
@@ -4448,7 +4587,7 @@ messages:
 
       % User took an action!  Wake any AIs in the room to the user's presence!
       % bitflag check instead of function for speed.
-      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)  
+      if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       {
          Send(self,@NotifyMonstersOfPresence);
       }
@@ -4487,7 +4626,7 @@ messages:
 
          if Send(oNumber,@ReqNewOwner,#what=poOwner)
             AND Send(poOwner,@ReqNewHold,#what=oNumber,
-                      #new_row=piRow,#new_col=piCol)
+                     #new_row=piRow,#new_col=piCol)
          {
             Send(poOwner,@NewHold,#what=oNumber,#new_row=piRow,#new_col=piCol,
                  #fine_row=piFine_row,#fine_col=piFine_col);
@@ -4495,7 +4634,7 @@ messages:
          else
          {
             Send(what,@Join,#what=oNumber);
-            
+
             Send(self,@MsgSendUser,#message_rsc=user_disallow_drop, 
                  #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
          }
@@ -4604,10 +4743,10 @@ messages:
          AND NOT IsClass(where,&ReagentBag)
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_put,
-              #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
-              #parm3=Send(where,@GetDef),#parm4=Send(where,@GetName),
-              #parm5=Send(where,@GetDef),#parm6=Send(where,@GetName));
-              
+               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
+               #parm3=Send(where,@GetDef),#parm4=Send(where,@GetName),
+               #parm5=Send(where,@GetDef),#parm6=Send(where,@GetName));
+
          return;
       }
 
@@ -4632,7 +4771,7 @@ messages:
          {
             Send(self,@MsgSendUser,#message_rsc=user_cant_deal_number, 
                  #parm1=Send(what,@GetName));
-                 
+
             return;
          }
 
@@ -4641,7 +4780,7 @@ messages:
          {
             Send(self,@MsgSendUser,#message_rsc=user_not_have_number, 
                  #parm1=Send(what,@GetName));
-                 
+
             return;
          }
 
@@ -4653,11 +4792,11 @@ messages:
          else
          {
             Send(self,@NewHold,#what=oNumber); % rejoin, usually
-            
+
             Send(self,@MsgSendUser,#message_rsc=user_disallow_drop, 
                  #parm1=Send(oNumber,@GetDef),#parm2=Send(oNumber,@GetName));
          }
-         
+
          return;
       }
 
@@ -4672,10 +4811,10 @@ messages:
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName),
               #parm3=Send(where,@GetDef),#parm4=Send(where,@GetName));
       }
-      
+
       return;
    }
-   
+
    UserObjectContents(what = $)
    {
       local i,iObjs,oThing,rName,rIcon,lHolding1,lHolding2;
@@ -4687,14 +4826,21 @@ messages:
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_get_contents,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-              
+
          return;
       }
-	  
-	  % Make sure object is in the same room as player
+
+      % Make sure object is in the same room as player
       if NOT Send(self, @IsInSameRoom, #what = what)
       {
          Debug("User ", self, vrName, "tried to look at object in another room");
+         return;
+      }
+
+      if IsClass(what,&StorageBox)
+         AND NOT Send(poOwner,@LineOfSight,#obj1=what,#obj2=self)
+      {
+         Debug("User ", self, vrName, "tried to look at storebox item they could not see!");
          return;
       }
 
@@ -4703,18 +4849,15 @@ messages:
          lHolding1 = Send(what,@GetPlayerUsing);
          lHolding2 = $;
       }
+      else if IsClass(what,&ReagentBag)
+      {
+         lHolding1 = Send(what,@GetReagentBagContents);
+         lHolding2 = $;
+      }
       else
       {
-         if IsClass(what,&ReagentBag)
-         {
-            lHolding1 = Send(what,@GetReagentBagContents);
-            lHolding2 = $;
-         }
-         else
-         {
-            lHolding1 = Send(what,@GetHolderActive);
-            lHolding2 = Send(what,@GetHolderPassive);
-         }
+         lHolding1 = Send(what,@GetHolderActive);
+         lHolding2 = Send(what,@GetHolderPassive);
       }
 
       iObjs = Length(lHolding1) + Length(lHolding2);
@@ -4725,16 +4868,16 @@ messages:
          oThing = Send(what,@HolderExtractObject,#data=i);
          Send(self,@ToCliObject,#what=oThing);
       }
-      
+
       % passive are in lholding2
       foreach i in lHolding2
       {
          oThing = Send(what,@HolderExtractObject,#data=i);
          Send(self,@ToCliObject,#what=oThing);
       }
-      
+
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -4769,33 +4912,6 @@ messages:
          {
             % If UserSayInventory handles the string, don't keep checking.
             if Send(self,@UserSayInventory,#string=string)
-            {
-               return;
-            }
-         }
-
-         if StringContain(string,user_say_autocombine)
-         {
-            % If UserSayAutocombine handles the string, don't keep checking.
-            if Send(self,@UserSayAutocombine,#string=string)
-            {
-               return;
-            }
-         }
-
-         if StringContain(string,user_say_autoloot)
-         {
-            % If UserSayAutoloot handles the string, don't keep checking.
-            if Send(self,@UserSayAutoloot,#string=string)
-            {
-               return;
-            }
-         }
-
-         if StringContain(string,user_say_reagentbag)
-         {
-            % If UserSayReagentBag handles the string, don't keep checking.
-            if Send(self,@UserSayReagentBag,#string=string)
             {
                return;
             }
@@ -5033,7 +5149,7 @@ messages:
                        AppendListElem(Nth(i,2),plClassOrderPreferences);
 
                Send(self,@MsgSendUser,#message_rsc=inventory_class_added,
-                     #parm1=Nth(i,1));
+                     #parm1=First(i));
 
                return TRUE;
             }
@@ -5097,7 +5213,8 @@ messages:
             return TRUE;
          }
 
-         Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,#who=self);
+         Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
+               #who=self,#sString=string);
 
          return TRUE;
       }
@@ -5168,14 +5285,6 @@ messages:
          {
             Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
                   #who=self,#iPublic=TRUE,#sString=string,
-                  #lSurvivalOptions=lSurvivalOptions,
-                  #oForceBaseRoom=oForceBaseRoom);
-         }
-         
-         if Send(Send(SYS,@GetSurvivalRoomMaintenance),@FindPublicRoom) = $
-         {
-            Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
-                  #who=self,#iPublic=TRUE,
                   #lSurvivalOptions=lSurvivalOptions,
                   #oForceBaseRoom=oForceBaseRoom);
          }
@@ -5250,81 +5359,12 @@ messages:
                   #oGuild=poGuild) = $
          {
             Send(Send(SYS,@GetSurvivalRoomMaintenance),@CreateRoom,
-                  #who=self,#guild_survival=TRUE);
+                  #who=self,#sString=string,#guild_survival=TRUE);
          }
          else
          {
             Send(self,@MsgSendUser,#message_rsc=survival_err_already_guild);
          }
-
-         return TRUE;
-      }
-
-      return FALSE;
-   }
-
-   UserSayReagentBag(string = $)
-   {
-      if StringContain(string,user_say_reagentbag_on)
-         AND NOT Send(self,@GetReagentBagAuto)
-      {
-         Send(self,@SetReagentBagAuto,#value=TRUE);
-         Send(self,@MsgSendUser,#message_rsc=reagentbag_auto_on);
-
-         return TRUE;
-      }
-
-      if StringContain(string,user_say_reagentbag_off)
-         AND Send(self,@GetReagentBagAuto)
-      {
-         Send(self,@SetReagentBagAuto,#value=FALSE);
-         Send(self,@MsgSendUser,#message_rsc=reagentbag_auto_off);
-
-         return TRUE;
-      }
-
-      return FALSE;
-   }
-
-   UserSayAutocombine(string = $)
-   {
-      if StringContain(string,user_say_autocombine_on)
-         AND NOT Send(self,@IsAutoCombining)
-      {
-         Send(self,@SetAutoCombine,#value=TRUE);
-         Send(self,@MsgSendUser,#message_rsc=autocombine_on_msg);
-
-         return TRUE;
-      }
-
-      if StringContain(string,user_say_autocombine_off)
-         AND Send(self,@IsAutoCombining)
-      {
-         Send(self,@SetAutoCombine,#value=FALSE);
-         Send(self,@MsgSendUser,#message_rsc=autocombine_off_msg);
-
-         return TRUE;
-      }
-
-      return FALSE;
-   }
-
-   UserSayAutoloot(string = $)
-   {
-      if StringContain(string,user_say_autoloot_on)
-         AND NOT Send(self,@IsAutolooting)
-      {
-         Send(self,@SetAutoloot,#value=TRUE);
-         Send(self,@MsgSendUser,#message_rsc=autoloot_on_msg);
-
-         return TRUE;
-      }
-
-      if StringContain(string,user_say_autoloot_off)
-         AND Send(self,@IsAutolooting)
-      {
-         Send(self,@SetAutoloot,#value=FALSE);
-         Send(self,@MsgSendUser,#message_rsc=autoloot_off_msg);
 
          return TRUE;
       }
@@ -5419,7 +5459,7 @@ messages:
             Send(i,@SomeoneSaid,#what=self,#type=type,#string=string);
          }
       }
-      
+
       return;
    }
 
@@ -5480,7 +5520,7 @@ messages:
          {
             byInscription = byInscription | 0x01;
          }
-         
+
          AddPacket(1, byInscription);
 
          Send(what,@ShowDesc,#bShowAll = bShow_All,#who=self);
@@ -5492,7 +5532,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -5510,7 +5550,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -5526,7 +5566,7 @@ messages:
          {
             return;
          }
-         
+
          oIllusion = Nth(Send(SYS,@GetMonsterTemplates),iIllusion_type);
       }
 
@@ -5539,9 +5579,9 @@ messages:
             oIllusion = first(Send(what,@GetEnchantedState,#what=oSpell));
          }
       }
-      
+
       Send(self,@SendLook,#what=oIllusion);
-      
+
       return;
    }
 
@@ -5571,7 +5611,7 @@ messages:
          else
          {
             AddPacket(1,0);
-         }          
+         }
 
          Send(what,@ShowDesc);
          Send(what,@ShowExtraInfo);
@@ -5587,7 +5627,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -5607,7 +5647,7 @@ messages:
       }
 
       Send(what,@SendLookPlayer,#what=self);
-      
+
       return;
    }
 
@@ -5619,7 +5659,7 @@ messages:
 
       ParseString(string,",",@UserLookupEachName);
       SendPacket(poSession);
-      
+
       return;
    }
 
@@ -5635,7 +5675,7 @@ messages:
       }
       else
       {
-	% don't enable mailing lists yet
+         % don't enable mailing lists yet
          if FALSE AND StringEqual(string,user_guildofficer_rsc)
             AND poGuild <> $
          {
@@ -5657,19 +5697,19 @@ messages:
             }
          }
       }
-      
+
       return;
    }
 
    UserChangeDescription(string = $)
    {
       local iCount;
-      
+
       if string = $
       {
          string = psPlayerDescription;
       }
-      
+
       if StringContain(psPlayerDescription,"¶")
       {
          iCount = 0;
@@ -5683,14 +5723,14 @@ messages:
                Debug("ALERT! ",Send(self,@GetTrueName)," is trying to crash "
                      "the server via bad bio characters.");
                string = CreateString();
-               
+
                break;
             }
          }
       }
-      
+
       psPlayerDescription = string;
-      
+
       return;
    }
 
@@ -5701,7 +5741,16 @@ messages:
 
    UserChangeURL(string = $)
    {
+      if StringLength(string) > MAX_URL_LEN
+      {
+         Debug(self,Send(self,@GetTrueName),
+               "tried to set URL larger than MAX_URL_LEN");
+
+         return;
+      }
+
       psURL = string;
+
       return;
    }
 
@@ -5719,7 +5768,7 @@ messages:
          % No message for background overlays.
          return;
       }
-      
+
       if Send(what,@GetOwner) <> poOwner
       {
          Send(self,@MsgSendUser,#message_rsc=user_err_activate_unk,
@@ -5728,11 +5777,11 @@ messages:
          return;
       }
 
-      if not Send(what,@TryActivate,#who=self)
+      if NOT Send(what,@TryActivate,#who=self)
       {
          Send(self,@MsgSendUser,#message_rsc=user_activate_failed,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-              
+
          return;
       }
 
@@ -5743,20 +5792,21 @@ messages:
    {
       local i;
 
-      %  11/21/2014 Keen - why is this even here?  commented out for now.
+      % 11/21/2014 Keen - why is this even here?  commented out for now.
       % User took an action!  Wake any AIs in the room to the user's presence!
       % bitflag check instead of function for speed.
       %if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       %{
       %   Send(self,@NotifyMonstersOfPresence);
-      %}   
+      %}
 
       if StringLength(string) > MAIL_MESSAGE_MAX_LENGTH
       {
          Send(self,@MsgSendUser,#message_rsc=user_mail_toobig);
+
          return;
       }
-      
+
       Send(self,@MsgSendUser,#message_rsc=user_mail_to);
 
       foreach i in dest_list
@@ -5764,7 +5814,7 @@ messages:
          Send(i,@ReceiveMail,#from=Send(self,@GetTrueName),
               #dest_list=dest_list,#perm_string=string);
       }
-      
+
       return;
    }
 
@@ -5776,6 +5826,7 @@ messages:
       {
          AddPacket(1,BP_MAIL,4,0,4,0,2,0,4,0);
          SendPacket(poSession);
+
          return;
       }
 
@@ -5843,14 +5894,14 @@ messages:
          if Length(plNew_mail) < index
          {
             Debug(self,"Delete mail got invalid index",index);
-            
+
             return;
          }
-         
+
          lNew_mail = Nth(plNew_mail, index);
          plNew_mail = DelListElem(plNew_mail, lNew_mail);
       }
-      
+
       return;
    }
 
@@ -5869,14 +5920,14 @@ messages:
       {
          Send(self,@BreakTrance,#event=EVENT_USE);
       }
-      
-      if NOT IsClass(what,&Item) 
+
+      if NOT IsClass(what,&Item)
       {
          return;
       }
 
       Send(self,@TryUseItem,#what=what);
-      
+
       return;
    }
 
@@ -5894,12 +5945,12 @@ messages:
          Send(self,@BreakTrance,#event=EVENT_USE);
       }
 
-      if not IsClass(what,&Item)
+      if NOT IsClass(what,&Item)
       {
          return;
       }
 
-      if not Send(self,@IsHolding,#what=what)
+      if NOT Send(self,@IsHolding,#what=what)
       {
          return;
       }
@@ -5934,7 +5985,7 @@ messages:
 
       % Get use_weapon
       use_weapon = Send(self,@GetWeapon);
-      
+
       % Convert type over to a stroke here.
       if type = STROKE_NORMAL
       {
@@ -5967,7 +6018,7 @@ messages:
             stroke_obj = Send(SYS,@FindSkillByNum,#num=stroke_ID);
             Send(self,@MsgSendUser,#message_rsc=user_doesnt_know_stroke,
                  #parm1=Send(stroke_obj,@GetName));
-                 
+
             return FALSE;
          }
       }
@@ -5978,7 +6029,7 @@ messages:
          % tell 'em
          Send(self,@MsgSendUser,#message_rsc=user_cant_attack_non_battler,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
-               
+
          return FALSE;
       }
 
@@ -6029,7 +6080,7 @@ messages:
       if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
       {
          Send(self,@NotifyMonstersOfPresence);
-      }   
+      }
 
       if piFlags & PFLAG_TRANCE
       {
@@ -6039,6 +6090,7 @@ messages:
       if ((piFlags & PFLAG_NO_MAGIC)
          OR Send(self,@IsInCannotInteractMode))
          AND NOT IsClass(oSpell,&Phase)
+         AND NOT IsClass(oSpell,&Spectate)
       {
          Send(self,@MsgSendUser,#message_rsc=user_no_cast);
 
@@ -6059,7 +6111,7 @@ messages:
          }
       }
 
-      if not bFound
+      if NOT bFound
       {
          % We don't know the spell.  Bail out.
          return;
@@ -6134,11 +6186,11 @@ messages:
       if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)  
       {
          Send(self,@NotifyMonstersOfPresence);
-      }   
+      }
 
       % Make this count as an attack.  This prevents action spamming.
       % IsOkayAttackTime defaults to 1 second
-      if NOT Send(self,@IsOkayAttackTime) 
+      if NOT Send(self,@IsOkayAttackTime)
       {
          return;
       }
@@ -6146,21 +6198,21 @@ messages:
       if action = UA_WAVE
       {
          Send(self,@DoWave);
-         
+
          return;
       }
 
       if action = UA_POINT
       {
          Send(self,@DoPoint);
-         
+
          return;
       }
 
       if action = UA_DANCE
       {
          Send(self,@DoDance);
-         
+
          return;
       }
 
@@ -6171,12 +6223,12 @@ messages:
       }
 
       piAction = action;
-      
+
       if piAction < 1
       {
          piAction = 1;
       }
-      
+
       Send(poOwner,@SomethingDidAction,#what=self,#action=action);
 
       return;
@@ -6185,7 +6237,7 @@ messages:
    UserOffer(what = $,item_list = $,number_list = $)
    {
       local i, lObjects, lNumbers, oOffer_num;
-      
+
       if Send(self,@IsInCannotInteractMode)
       {
          return FALSE;
@@ -6215,11 +6267,12 @@ messages:
       % Check quantities; must be positive
       foreach i in number_list
       {
-        if i < 1
-        {
-           Debug("Bad offer quantity", i, "from user", self);
-           return FALSE;
-        }
+         if i < 1
+         {
+            Debug("Bad offer quantity", i, "from user", self);
+
+            return FALSE;
+         }
       }
 
       if poOffer_who <> $
@@ -6259,7 +6312,7 @@ messages:
       if not Send(what,@ReqOffer,#what=self,#item_list=plOffer_items)
       {
          Send(self,@CleanupCancelOffer);
-         
+
          return;
       }
 
@@ -6268,7 +6321,7 @@ messages:
       {
          Send(self,@ToCliObject,#what=i);
       }
-      
+
       SendPacket(poSession);
 
       Send(what,@Offer,#what=self,#item_list=plOffer_items);
@@ -6289,11 +6342,12 @@ messages:
       % Check quantities; must be positive
       foreach i in number_list
       {
-        if i < 1
-        {
-           Debug("Bad deposit quantity", i, "from user", self);
-           return FALSE;
-        }
+         if i < 1
+         {
+            Debug("Bad deposit quantity", i, "from user", self);
+
+            return FALSE;
+         }
       }
 
       % must be holding things you're offering
@@ -6312,10 +6366,10 @@ messages:
                      AND IsClass(First(item_list),&Money)) )
       {
          Send(self,@MsgSendUser,#message_rsc=user_cant_deposit_items);
-         
+
          return FALSE;
       }
-      
+
       poOffer_who = what;
       plOffer_items = $;
 
@@ -6335,10 +6389,10 @@ messages:
          }
       }
 
-      if not Send(what,@ReqOffer,#what=self,#item_list=plOffer_items)
+      if NOT Send(what,@ReqOffer,#what=self,#item_list=plOffer_items)
       {
          Send(self,@CleanupCancelOffer);
-         
+
          return;
       }
 
@@ -6347,7 +6401,7 @@ messages:
       {
          Send(self,@ToCliObject,#what=i);
       }
-      
+
       SendPacket(poSession);
 
       Send(what,@Offer,#what=self,#item_list=plOffer_items);
@@ -6380,9 +6434,9 @@ messages:
             }
          }
       }
-      
+
       Debug("player has none of this class!");
-      
+
       return FALSE;
     }
 
@@ -6393,7 +6447,7 @@ messages:
       {
          Send(who,@MsgSendUser,#message_rsc=user_offer_busy,
               #parm1=Send(self,@GetCapDef),#parm1=Send(self,@GetName));
-              
+
          return FALSE;
       }
 
@@ -6485,7 +6539,7 @@ messages:
       {
          Send(self,@ToCliObject,#what=i);
       }
-      
+
       SendPacket(poSession);
 
       return;
@@ -6535,7 +6589,7 @@ messages:
       }
 
       Send(self,@CleanupCancelOffer);
-      
+
       if pbLogged_on
       {
          AddPacket(1,BP_OFFER_CANCELED);
@@ -6574,11 +6628,12 @@ messages:
       % Check quantities; must be positive
       foreach i in number_list
       {
-        if i < 1
-        {
-           Debug("Bad counteroffer quantity", i, "from user", self);
-           return FALSE;
-        }
+         if i < 1
+         {
+            Debug("Bad counteroffer quantity", i, "from user", self);
+
+            return FALSE;
+         }
       }
 
       plOffer_items = $;
@@ -6609,7 +6664,7 @@ messages:
                Send(self,@MsgSendUser,#message_rsc=user_cant_deal_number, 
                     #parm1=First(lNumbers));
                Send(self,@CancelIfOffer);
-               
+
                return;
             }
 
@@ -6635,13 +6690,13 @@ messages:
       if NOT Send(poOffer_who,@CounterOffer,#item_list=plOffer_items)
       {
          Send(self,@CleanupCancelOffer);
-         
+
          AddPacket(1,BP_OFFER_CANCELED);
          SendPacket(poSession);
-         
+
          % Send something here?
       }
-      
+
       return;
    }
 
@@ -6659,11 +6714,11 @@ messages:
       {
          Send(self,@ToCliObject,#what=i);
       }
-      
+
       SendPacket(poSession);
 
       pbOffer_OtherAccepted = TRUE;
-      
+
       return TRUE;
    }
 
@@ -6684,16 +6739,16 @@ messages:
                  #parm1=Send(self,@GetDef),#parm2=Send(self,@GetName),
                  #parm3=Send(i,@GetIndef),#parm4=Send(i,@GetName));
             Send(self,@CancelIfOffer);
-            
+
             return FALSE;
-         }          
+         }
 
          if NOT Send(i,@ReqNewOwnerAttributes,#who=poOffer_who,#type=1)
          {
             Send(self,@CancelIfOffer);
-            
+
             return FALSE;
-         }          
+         }
 
          if IsClass(i,&NumberItem)
          {
@@ -6711,11 +6766,12 @@ messages:
                           #parm1=Send(self,@GetDef),
                           #parm2=Send(self,@GetName));
                      Send(self,@CancelIfOffer);
+
                      return FALSE;
                   }
-                  
+
                   bFound = TRUE;
-                  
+
                   break;
                }
             }
@@ -6727,7 +6783,7 @@ messages:
                     #message_rsc=user_didnt_have_offer, 
                     #parm1=vrName);
                Send(self,@CancelIfOffer);
-               
+
                return FALSE;
             }
          }
@@ -6762,7 +6818,7 @@ messages:
 
          return FALSE;
       }
-       
+
       return TRUE;
    }
 
@@ -6783,7 +6839,7 @@ messages:
             }
          }
       }
-      
+
       return;
    }
 
@@ -6824,20 +6880,19 @@ messages:
 
       Send(self,@OfferSubtractNumberItems);
       Send(poOffer_who,@OfferSubtractNumberItems);
-      
+
       oHolder = Send(SYS,@GetSystemHolder1);
       foreach i in plOffer_items
       {
          Send(oHolder,@NewHold,#what=i);
       }
-      
+
       Send(poOffer_who,@AcceptOffer);
 
       % take his stuff
-     
       oHolder = Send(SYS,@GetSystemHolder2);
       iLists = 1;
-      while iLists <= 2 
+      while iLists <= 2
       {
          if iLists = 1
          {
@@ -6865,10 +6920,10 @@ messages:
                }
             }
          }
-         
+
          iLists = iLists + 1;
       }
-      
+
       poOffer_who = $;
       plOffer_items = $;
 
@@ -6891,7 +6946,7 @@ messages:
 
       oHolder = Send(SYS,@GetSystemHolder1);
       iLists = 1;
-      while iLists <= 2 
+      while iLists <= 2
       {
          if iLists = 1
          {
@@ -6922,7 +6977,7 @@ messages:
                }
             }
          }
-         
+
          iLists = iLists + 1;
       }
 
@@ -7007,7 +7062,7 @@ messages:
 
       return;
    }
-   
+
    UserWithdrawal(what = $)
    {
       local i,lSaleItems;
@@ -7036,7 +7091,7 @@ messages:
 
       return;
    }
-   
+
    SendBuyGuildHall()
    {
       local i,lHalls,iAvailable;
@@ -7087,14 +7142,15 @@ messages:
    UserBuyItems(what = $,item_list = $,number_list = $)
    {
       local i;
+
       % Check quantities; must be positive
       foreach i in number_list
       {
-        if i < 1
-        {
-           Debug("Bad buy quantity", i, "from user", self);
-           return;
-        }
+         if i < 1
+         {
+            Debug("Bad buy quantity", i, "from user", self);
+            return;
+         }
       }
 
       Send(what,@Buy,#what=self,#item_list=item_list,#number_list=number_list);
@@ -7105,6 +7161,7 @@ messages:
    UserWithdrawalItems(what = $, item_list = $, number_list = $)
    {
       local i;
+
       % Check quantities; must be positive
       foreach i in number_list
       {
@@ -7116,7 +7173,7 @@ messages:
       }
 
       Send(what,@Buy,#what=self,#item_list=item_list,#number_list=number_list);
-      
+
       return;
    }
 
@@ -7133,7 +7190,7 @@ messages:
       }
 
       Send(self,@TryApplyItem,#what=what,#apply_on=apply_on);
-      
+
       return;
    }
 
@@ -7169,7 +7226,7 @@ messages:
       if oNews = $
       {
          Debug("Can't find newsgroup id",nid);
-         
+
          return;
       }
 
@@ -7242,7 +7299,7 @@ messages:
          {
             max = len - (parts - 1) * MAX_ARTICLES_PER_PART;
          }
-         
+
          AddPacket(1,BP_ARTICLES, 2,nid, 1,part, 1,parts, 2,max);
          count = 0;
 
@@ -7256,11 +7313,11 @@ messages:
             count = count + 1;
             message = Rest(message);
          }
-         
+
          SendPacket(poSession);
          part = part + 1;
       }
-      
+
       return;
    }
 
@@ -7272,7 +7329,7 @@ messages:
       if oNews = $
       {
          Debug("Can't find newsgroup id",nid);
-         
+
          return;
       }
 
@@ -7292,7 +7349,7 @@ messages:
          
          return;
       }
-      
+
       AddPacket(1,BP_ARTICLE, 0,sBody);
       SendPacket(poSession);
 
@@ -7317,14 +7374,16 @@ messages:
          AND NOT IsClass(what,&Money)
          AND NOT bFromReagentBag
          AND Send(self,@GetReagentBag) <> $
-         AND Send(self,@GetReagentBagAuto)
+         AND (piPreferences & CF_REAGENTBAG)
       {
-         Post(Send(self,@GetReagentBag),@NewHold,#what=what,#where=Send(self,@GetReagentBag));
+         Post(Send(self,@GetReagentBag),@NewHold,#what=what,
+               #where=Send(self,@GetReagentBag));
+
          return;
       }
-      
-      If IsClass(what,&SpellItem)
-         AND Send(self,@IsAutoCombining)
+
+      if IsClass(what,&SpellItem)
+         AND (piPreferences & CF_AUTOCOMBINE)
          AND check_combine
       {
          oLastSpellItem = $;
@@ -7400,7 +7459,7 @@ messages:
          {
             Send(self,@MsgSendUser,#message_rsc=user_kill_zone);
          }
-         
+
          if NOT Send(what,@CheckRoomFlag,#flag=ROOM_KILL_ZONE)
             AND (poOwner <> $
                  AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_KILL_ZONE))
@@ -7419,13 +7478,13 @@ messages:
          % Usually it's because they logged off in the Underworld while Death Rifting
          Post(self,@AdminGoToSafety);
       }
-      
+
       if poOwner <> $
       {
         old = poOwner;
         Send(poOwner,@LeaveHold,#what=self);
       }
-      
+
       poOwner = what;
 
       if poOwner <> $
@@ -7435,8 +7494,9 @@ messages:
             Send(self,@CheckLeavingNewbieOrGuest,#leaving=old);
             Send(self,@CheckTokenInNewRoom,#what=old);
          }
-         
-         % If room is no combat and safe logoff, record it as the player's last safe location
+
+         % If room is no combat and safe logoff, record it as the
+         % player's last safe location
          if Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
             AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
          {
@@ -7446,16 +7506,17 @@ messages:
 
          piRow = First(Send(poOwner,@GetRoomPos,#what=self));
          piCol = Nth(Send(poOwner,@GetRoomPos,#what=self),2);
-         
+
          if pbLogged_on
          {
             Send(self,@ToCliPlayer);
             Send(self,@ToCliRoomContents);
          }
       }
-      
-      % This is intended to protect players from wall spells stacked on entrances. It will clear
-      % out a small space when they enter the zone, so that they don't appear in the middle of a wall spell.
+
+      % This is intended to protect players from wall spells stacked on
+      % entrances. It will clear out a small space when they enter the zone,
+      % so that they don't appear in the middle of a wall spell.
       if old <> $
          AND (piFlags & PFLAG_PKILL_ENABLE)
          AND Send(poOwner,@AllowGuildAttack,#what=self)
@@ -7463,14 +7524,15 @@ messages:
       {
          Send(poOwner,@DeleteWallsAroundBattler,#who=self);
       }
-      
-      % This removes Death Rift's protection when the user enters any non-Underworld room
+
+      % This removes Death Rift's protection when the user enters any
+      % non-Underworld room
       if Send(poOwner,@GetRoomNum) <> RID_UNDERWORLD
          AND Send(self,@GetDeathRiftProtection) = TRUE
       {
          Send(self,@SetDeathRiftProtection,#value=FALSE);
       }
-      
+
       propagate;
    }
 
@@ -7498,12 +7560,12 @@ messages:
          Send(what,@SendMoveOverlays);
          SendPacket(poSession);
       }
-      
+
       propagate;
    }
-   
+
    SomethingLeft(what = $)
-   {      
+   {
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
          AND what <> self
@@ -7516,7 +7578,7 @@ messages:
          AddPacket(1,BP_REMOVE,4,what);
          SendPacket(poSession);
       }
-      
+
       propagate;
    }
 
@@ -7544,7 +7606,7 @@ messages:
             propagate;
          }
       }
-      
+
       propagate;
    }
 
@@ -7554,7 +7616,7 @@ messages:
       AddPacket(1,BP_MOVE, 4,what,
                 2,new_row*FINENESS+fine_row, 2,new_col*FINENESS+fine_col,
                 1,speed);
-      
+
       return;
    }
 
@@ -7562,7 +7624,7 @@ messages:
    {
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
-         AND what <> self         
+         AND what <> self
       {
          return;
       }
@@ -7576,14 +7638,14 @@ messages:
             SendPacket(poSession);
          }
       }
-      
+
       propagate;
    }
 
    BuildPacketSomethingTurned(what = $,new_angle = 0)
    {
       AddPacket(1,BP_TURN,4,what,2,new_angle);
-      
+
       return;
    }
 
@@ -7631,9 +7693,9 @@ messages:
          % No lighting info
          AddPacket(2,0);
       }
-     
+
       SendPacket(poSession);
-      
+
       propagate;
    }
 
@@ -7671,6 +7733,7 @@ messages:
          % No lighting info
          AddPacket(2,0);
       }
+
       SendPacket(poSession);
 
       propagate;
@@ -7680,7 +7743,7 @@ messages:
    {
       % Someone changed facial expression--Send changed bitmap
       Send(self,@SomethingChanged,#what=what);
-      
+
       return;
    }
 
@@ -7706,56 +7769,49 @@ messages:
          {
             rName = Send(what,@GetName,#cap=TRUE);
          }
-         
+
          if type = SAY_RESOURCE
          {
             AddPacket(1,BP_SAID, 4,what, 4,rName, 1,type,
                       4,user_said_resource_str,
                       4,Send(what,@GetCapDef), 4,rName, 4,string);
-            
+
             % allow SAY_RESOURCE says to have parameters
             if parm1 <> $
             {
                AddPacket(4,parm1);
             }
-            
             if parm2 <> $
             {
                AddPacket(4,parm2);
             }
-            
             if parm3 <> $
             {
                AddPacket(4,parm3);
             }
-            
             if parm4 <> $
             {
                AddPacket(4,parm4);
             }
-            
             if parm5 <> $
             {
                AddPacket(4,parm5);
             }
-
             if parm6 <> $
             {
                AddPacket(4,parm6);
             }
-
             if parm7 <> $
             {
                AddPacket(4,parm7);
             }
-            
             if parm8 <> $
             {
                AddPacket(4,parm8);
             }
-            
+
             SendPacket(poSession);
-            
+
             propagate;
          }
 
@@ -7766,44 +7822,37 @@ messages:
             {
                AddPacket(4,parm1);
             }
-            
             if parm2 <> $
             {
                AddPacket(4,parm2);
             }
-            
             if parm3 <> $
             {
                AddPacket(4,parm3);
             }
-            
             if parm4 <> $
             {
                AddPacket(4,parm4);
             }
-            
             if parm5 <> $
             {
                AddPacket(4,parm5);
             }
-
             if parm6 <> $
             {
                AddPacket(4,parm6);
             }
-   
             if parm7 <> $
             {
                AddPacket(4,parm7);
             }
-            
             if parm8 <> $
             {
                AddPacket(4,parm8);
             }
-            
+
             SendPacket(poSession);
-            
+
             propagate;
          }
 
@@ -7820,14 +7869,13 @@ messages:
             {
                rSay_format = user_yelled_nearby_str;
             }
-                
+
             if what = self
             {
                rSay_format = user_yelled_echo_str;
             }
          }
-         
-         if type = SAY_EVERYONE
+         else if type = SAY_EVERYONE
          {
             % If a hidden admin is talking to us, use the GetName() above.
             %  This will give us a valid resource; we won't have the proper
@@ -7848,8 +7896,7 @@ messages:
                rSay_format = user_broadcast_echo_str;
             }
          }
-         
-         if type = SAY_GROUP
+         else if type = SAY_GROUP
          {
             % If a hidden admin is talking to us, use the GetName() above.
             %  This will give us a valid resource; we won't have the proper
@@ -7862,9 +7909,11 @@ messages:
             }
 
             rSay_format = user_send_str;
-         }
 
-         if type = SAY_GROUP_ONE
+            % Play a "tell sound" to the recipient
+            Send(self,@WaveSendUser,#what=what,#wave_rsc=user_tell_wav);
+         }
+         else if type = SAY_GROUP_ONE
          {
             if (IsClass(what,&DM)
                 AND NOT Send(what,@IsHidden))
@@ -7875,11 +7924,13 @@ messages:
 
             rSay_format = user_send_one_str;
 
+            % Play a "tell sound" to the recipient
+            Send(self,@WaveSendUser,#what=what,#wave_rsc=user_tell_wav);
+
             % this is what the client is expecting to hear
-            type = SAY_GROUP; 
+            type = SAY_GROUP;
          }
-         
-         if type = SAY_EMOTE
+         else if type = SAY_EMOTE
          {
             rSay_format = user_emote_str;
          }
@@ -7893,23 +7944,23 @@ messages:
             {
                rSay_format = user_said_str_morphed;
             }
-
-            if rSay_format = user_yelled_str
+            else if rSay_format = user_yelled_str
             {
                rSay_format = user_yelled_str_morphed;
             }
-
-            if rSay_format = user_emote_str
+            else if rSay_format = user_emote_str
             {
                rSay_format = user_emote_str_morphed;
             }
+
             
+
             AddPacket(1,BP_SAID, 4,what, 4,rName, 1,type, 4,rSay_format,
                       4,Send(what,@GetCapIndef), 4,rName, 0,string);
-            
+
             SendPacket(poSession);
-            
-            propagate; 
+
+            propagate;
          }
 
          if what = self AND type <> SAY_EMOTE
@@ -7926,7 +7977,7 @@ messages:
 
          SendPacket(poSession);
       }
-      
+
       propagate;
    }
 
@@ -7962,13 +8013,13 @@ messages:
             % in the room
             Send(self,@ToCliObject,#what=what);
          }
-         
+
          Send(what,@SendMoveAnimation);
          Send(what,@SendMoveOverlays);
 
          SendPacket(poSession);
       }
-      
+
       propagate;
    }
 
@@ -8013,9 +8064,9 @@ messages:
       {
          dest_list = [self];
       }
-      
+
       plNew_mail = Cons([from,GetTime(),dest_list,[perm_string]],plNew_mail);
-      
+
       Send(self,@MsgSendUser,#message_rsc=user_new_mail,#parm1=from);
 
       return;
@@ -8030,7 +8081,7 @@ messages:
       }
 
       plNew_mail = Cons([from,GetTime(),dest_list,nest_list],plNew_mail);
-      
+
       Send(self,@MsgSendUser,#message_rsc=user_new_nested_mail);
 
       return;
@@ -8052,7 +8103,7 @@ messages:
    {
       AddPacket(1,1, 4,user_stat_health, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetHealth), 4,0, 4,100, 4,piMax_health);
-      
+
       return;
    }
 
@@ -8064,15 +8115,15 @@ messages:
          Send(self,@SendStatMana);
          SendPacket(poSession);
       }
-      
+
       return;
    }
-   
+
    SendStatMana()
    {
       AddPacket(1,2, 4,user_stat_mana, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,piMana, 4,0, 4,100, 4,piMax_mana);
-      
+
       return;
    }
 
@@ -8084,7 +8135,7 @@ messages:
          Send(self,@SendStatMight);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8092,7 +8143,7 @@ messages:
    {
       AddPacket(1,1, 4,user_stat_might, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetMight), 4,0, 4,50, 4,Send(self,@GetMight));
-      
+
       return;
    }
 
@@ -8104,7 +8155,7 @@ messages:
          Send(self,@SendStatIntellect);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8113,10 +8164,10 @@ messages:
       AddPacket(1,2, 4,user_stat_intellect, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetIntellect), 4,0, 4,50,
                 4,Send(self,@GetIntellect));
-      
+
       return;
    }
-   
+
    DrawAgility()
    {
       if pbLogged_on
@@ -8125,7 +8176,7 @@ messages:
          Send(self,@SendStatAgility);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8133,7 +8184,7 @@ messages:
    {
       AddPacket(1,4, 4,user_stat_Agility, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetAgility), 4,0, 4,50, 4,Send(self,@GetAgility));
-      
+
       return;
    }
 
@@ -8145,7 +8196,7 @@ messages:
          Send(self,@SendStatStamina);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8153,7 +8204,7 @@ messages:
    {
       AddPacket(1,3,4,user_stat_Stamina,1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetStamina), 4,0, 4,50, 4,Send(self,@GetStamina));
-      
+
       return;
    }
 
@@ -8165,7 +8216,7 @@ messages:
          Send(self,@SendStatMysticism);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8174,10 +8225,10 @@ messages:
       AddPacket(1,5,4,user_stat_Mysticism,1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetMysticism), 4,0, 4,50,
                 4,Send(self,@GetMysticism));
-      
+
       return;
    }
-   
+
    DrawAim()
    {
       if pbLogged_on
@@ -8186,7 +8237,7 @@ messages:
          Send(self,@SendStatAim);
          SendPacket(poSession);
       }
-      
+
       return;
    }
 
@@ -8194,10 +8245,10 @@ messages:
    {
       AddPacket(1,6, 4,user_stat_Aim, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,Send(self,@GetAim), 4,0, 4,50, 4,Send(self,@GetAim));
-      
+
       return;
    }
-   
+
    DrawKarma()
    {
       if pbLogged_on
@@ -8209,7 +8260,7 @@ messages:
 
       return;
    }
-   
+
    SendStatKarma()
    {
       local iKarma_send;
@@ -8217,13 +8268,13 @@ messages:
       % internally we have karma in 1/100's of a point, -10000 to 10000.
       % scale to -100 to 100
       iKarma_send = piKarma/100;
-      
+
       AddPacket(1,7, 4,user_stat_karma, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iKarma_Send, 4,-100, 4,100, 4,iKarma_Send);
 
       return;
    }
-   
+
    DrawTraining()
    {
       if pbLogged_on
@@ -8235,19 +8286,19 @@ messages:
 
       return;
    }
-   
+
    SendStatTraining()
    {
       local iTraining_send;
-      
+
       iTraining_send = Send(self,@GetTrainingPoints);
-      
+
       AddPacket(1,8, 4,user_stat_training, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iTraining_send, 4,0, 4,1000, 4,iTraining_send);
 
       return;
    }
-   
+
    DrawCapacity()
    {
       if pbLogged_on
@@ -8259,13 +8310,13 @@ messages:
 
       return;
    }
-   
+
    SendStatCapacity()
    {
       local iCapacity_send, iMaxCapacity_send;
-      
+
       iCapacity_send = Send(self,@GetWeightHold);
-      
+
       % GetWeightMax returns NIL in dm.kod, 3100 is capacity at 70 might
       if IsClass(self,&DM)
       {
@@ -8275,7 +8326,7 @@ messages:
       {
          iMaxCapacity_send = Send(self,@GetWeightMax);
       }
-	  
+
       AddPacket(1,9, 4,user_stat_capacity, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iCapacity_send, 4,0, 4,iMaxCapacity_send, 4,iCapacity_send);
 
@@ -8297,9 +8348,9 @@ messages:
    SendStatBulk()
    {
       local iBulk, iBulkMax;
-      
+
       iBulk = Send(self,@GetBulkHold);
-      
+
       % GetBulkMax returns NIL in dm.kod, 3100 is capacity at 70 might
       if IsClass(self,&DM)
       {
@@ -8309,13 +8360,13 @@ messages:
       {
          iBulkMax = Send(self,@GetBulkMax);
       }
-      
+
       AddPacket(1,10, 4,user_stat_bulk, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iBulk, 4,0, 4,iBulkMax, 4,iBulk);
-      
+
       return;
    }
-   
+
    DrawOffense()
    {
       if pbLogged_on
@@ -8327,19 +8378,19 @@ messages:
 
       return;
    }
-   
+
    SendStatOffense()
    {
       local iOffense_send;
-      
+
       iOffense_send = Send(self,@GetOffense);
-      
+
       AddPacket(1,11, 4,user_stat_offense, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iOffense_send, 4,0, 4,1000, 4,iOffense_send);
 
       return;
    }
-   
+
    DrawDefense()
    {
       if pbLogged_on
@@ -8351,13 +8402,13 @@ messages:
 
       return;
    }
-   
+
    SendStatDefense()
    {
       local iDefense_send;
-      
+
       iDefense_send = Send(self,@GetDefense);
-      
+
       AddPacket(1,12, 4,user_stat_defense, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iDefense_send, 4,0, 4,1000, 4,iDefense_send);
 
@@ -8375,13 +8426,13 @@ messages:
 
       return;
    }
-   
+
    SendStatArmor()
    {
       local iArmor_send;
-      
+
       iArmor_send = Send(self,@SumDamageReduction);
-      
+
       AddPacket(1,13, 4,user_stat_armor, 1,STAT_VALUE, 1,STAT_INTEGER,
                 4,iArmor_send, 4,0, 4,15, 4,iArmor_send);
 
@@ -8390,9 +8441,10 @@ messages:
 
    SendStatResistances(num=1,lCurrentResistances=$)
    {
-      local i, bWeaponAll,bWeaponThrust,bWeaponBludgeon,bWeaponSlash,bWeaponPierce,
-                                    bSpellAll,bSpellFire,bSpellShock,bSpellCold,bSpellAcid,bSpellHoly,bSpellUnholy,bSpellQuake;
-      
+      local i, bWeaponAll, bWeaponThrust, bWeaponBludgeon, bWeaponSlash,
+               bWeaponPierce, bSpellAll, bSpellFire, bSpellShock, bSpellCold,
+               bSpellAcid, bSpellHoly, bSpellUnholy, bSpellQuake;
+
       bWeaponAll = FALSE;
       bWeaponThrust = FALSE;
       bWeaponBludgeon = FALSE;
@@ -8406,12 +8458,12 @@ messages:
       bSpellHoly = FALSE;
       bSpellUnholy = FALSE;
       bSpellQuake = FALSE;
-      
+
       if num = 1
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = ATCK_WEAP_ALL
+            if First(i) = ATCK_WEAP_ALL
             {
                AddPacket(1,14, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponAll = TRUE;
@@ -8422,11 +8474,11 @@ messages:
             AddPacket(1,14, 4,user_resist_weapons, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 2
+      else if num = 2
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = ATCK_WEAP_THRUST
+            if First(i) = ATCK_WEAP_THRUST
             {
                AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponThrust = TRUE;
@@ -8437,11 +8489,11 @@ messages:
             AddPacket(1,15, 4,user_resist_thrust, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 3
+      else if num = 3
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = ATCK_WEAP_BLUDGEON
+            if First(i) = ATCK_WEAP_BLUDGEON
             {
                AddPacket(1,16, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponBludgeon = TRUE;
@@ -8452,11 +8504,11 @@ messages:
             AddPacket(1,16, 4,user_resist_bludgeon, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 4
+      else if num = 4
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = ATCK_WEAP_SLASH
+            if First(i) = ATCK_WEAP_SLASH
             {
                AddPacket(1,17, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponSlash = TRUE;
@@ -8467,11 +8519,11 @@ messages:
             AddPacket(1,17, 4,user_resist_slash, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 5
+      else if num = 5
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = ATCK_WEAP_PIERCE
+            if First(i) = ATCK_WEAP_PIERCE
             {
                AddPacket(1,18, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bWeaponPierce = TRUE;
@@ -8482,11 +8534,11 @@ messages:
             AddPacket(1,18, 4,user_resist_pierce, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 6
+      else if num = 6
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_ALL
+            if First(i) = -ATCK_SPELL_ALL
             {
                AddPacket(1,19, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellAll = TRUE;
@@ -8497,11 +8549,11 @@ messages:
             AddPacket(1,19, 4,user_resist_magic, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 7
+      else if num = 7
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_FIRE
+            if First(i) = -ATCK_SPELL_FIRE
             {
                AddPacket(1,20, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellFire = TRUE;
@@ -8512,11 +8564,11 @@ messages:
             AddPacket(1,20, 4,user_resist_fire, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 8
+      else if num = 8
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_SHOCK
+            if First(i) = -ATCK_SPELL_SHOCK
             {
                AddPacket(1,21, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellShock = TRUE;
@@ -8527,11 +8579,11 @@ messages:
             AddPacket(1,21, 4,user_resist_shock, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 9
+      else if num = 9
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_COLD
+            if First(i) = -ATCK_SPELL_COLD
             {
                AddPacket(1,22, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellCold = TRUE;
@@ -8542,11 +8594,11 @@ messages:
             AddPacket(1,22, 4,user_resist_cold, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 10
+      else if num = 10
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_ACID
+            if First(i) = -ATCK_SPELL_ACID
             {
                AddPacket(1,23, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellAcid = TRUE;
@@ -8557,11 +8609,11 @@ messages:
             AddPacket(1,23, 4,user_resist_acid, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 11
+      else if num = 11
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_HOLY
+            if First(i) = -ATCK_SPELL_HOLY
             {
                AddPacket(1,24, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellHoly = TRUE;
@@ -8572,11 +8624,11 @@ messages:
             AddPacket(1,24, 4,user_resist_holy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 12
+      else if num = 12
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_UNHOLY
+            if First(i) = -ATCK_SPELL_UNHOLY
             {
                AddPacket(1,25, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellUnholy = TRUE;
@@ -8587,11 +8639,11 @@ messages:
             AddPacket(1,25, 4,user_resist_unholy, 1,STAT_VALUE, 1,STAT_INTEGER,4,0, 4,-30, 4,100, 4,0);
          }
       }
-      if num = 13
+      else if num = 13
       {
          foreach i in lCurrentResistances
          {
-            if Nth(i,1) = -ATCK_SPELL_QUAKE
+            if First(i) = -ATCK_SPELL_QUAKE
             {
                AddPacket(1,26, 4,user_resist_quake, 1,STAT_VALUE, 1,STAT_INTEGER,4,Nth(i,2), 4,-30, 4,100, 4,0);
                bSpellQuake = TRUE;
@@ -8867,7 +8919,7 @@ messages:
    SetInitialHomeroom()
    {
       % Get initial Homeroom from system settings.
-      piHomeroom = Send(Send(SYS,@GetSettings),@GetInitialRoomID);
+      piHomeroom = Send(SETTINGS_OBJECT,@GetInitialRoomID);
 
       return;
    }
@@ -9095,7 +9147,7 @@ messages:
    {
       local iInitialRoomID, oRoom;
 
-      iInitialRoomID = Send(Send(SYS,@GetSettings),@GetInitialRoomID);
+      iInitialRoomID = Send(SETTINGS_OBJECT,@GetInitialRoomID);
       oRoom = Send(SYS,@FindRoomByNum,#num=iInitialRoomID);
 
       if oRoom = $
@@ -9277,13 +9329,13 @@ messages:
          iFlags = iFlags | DRAWFX_INVISIBLE;
       }
 
-      if Send(self,@IsPhasedOut)
+      if (piFlags & PFLAG_PHASED)
       {
          iFlags = iFlags & ~DRAWFX_MASK;
          iFlags = iFlags | DRAWFX_DITHERINVIS;
       }
 
-      if pbSpectatorMode
+      if (piFlags & PFLAG_SPECTATOR)
       {
          iFlags = iFlags & ~DRAWFX_MASK;
          iFlags = iFlags | DRAWFX_DITHERGREY;
@@ -9297,22 +9349,6 @@ messages:
       local iFlags, oIllusion;
 
       iFlags = OF_ATTACKABLE | OF_PLAYER | OF_OFFERABLE;
-
-
-      if (piFlags & PFLAG_SAFETY)
-      {
-         iFlags = iFlags | OF_SAFETY;
-      }
-
-      if (piFlags & PFLAG_TEMP_SAFETY)
-      {
-         iFlags = iFlags | OF_TEMPSAFE;
-      }
-
-      if (piFlags & PFLAG_GROUPING)
-      {
-         iFlags = iFlags | OF_GROUPING;
-      }
 
       oIllusion = Send(self,@GetIllusionForm);
 
@@ -9423,7 +9459,7 @@ messages:
 
    SetSafety()
    {
-      Send(self,@SetPlayerFlag,#flag=PFLAG_SAFETY,#value=TRUE);
+      Send(self,@SetPlayerPreference,#flag=CF_SAFETY_OFF,#value=FALSE);
       
       return;
    }
@@ -9507,7 +9543,7 @@ messages:
    LeaveNewbieOrGuestRegion()
    {
       % Delete their inventory?
-      if Send(Send(SYS, @GetSettings), @CleanNewbieInventoryOnEnteringRealWorld)
+      if Send(SETTINGS_OBJECT, @CleanNewbieInventoryOnEnteringRealWorld)
       {
          Send(self,@StripInventory);
       }
@@ -10091,28 +10127,6 @@ messages:
       return 0;
    }
 
-   SetAutoloot(value=TRUE)
-   {
-      pbAutoloot = value;
-      return;
-   }
-   
-   IsAutolooting()
-   {
-      return pbAutoloot;
-   }
-
-   IsAutoCombining()
-   {
-      return pbAutoCombine;
-   }
-   
-   SetAutoCombine(value=TRUE)
-   {
-      pbAutoCombine = value;
-      return;
-   }
-   
    GetIP()
    "Returns the user's ip in a list which contains the 4 octets"
    "use this message for comparisons and the string message sparingly"
@@ -10128,19 +10142,47 @@ messages:
       local sReturn, lIP;
       
       lIP = GetSessionIP(poSession);
-      
+      if (lIP = $)
+      {
+         return;
+      }
+
       sReturn = CreateString();
       
       ClearTempString();
       
       AppendTempString(Nth(lIP,1));
-      AppendTempString(".");
+      AppendTempString(":");
       AppendTempString(Nth(lIP,2));
-      AppendTempString(".");
+      AppendTempString(":");
       AppendTempString(Nth(lIP,3));
-      AppendTempString(".");
+      AppendTempString(":");
       AppendTempString(Nth(lIP,4));
-      
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,5));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,6));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,7));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,8));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,9));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,10));
+      AppendTempString(":");      
+      AppendTempString(Nth(lIP,11));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,12));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,13));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,14));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,15));
+      AppendTempString(":");
+      AppendTempString(Nth(lIP,16));
+
       SetString(sReturn,GetTempString());
       
       return sReturn;
@@ -10153,14 +10195,14 @@ messages:
       local lSpellLevels, lSkillLevels;
 
       % if stats reset is turned off, ignore the request
-      if NOT Send(Send(Sys,@GetSettings),@GetStatsResetEnabled)
+      if NOT Send(SETTINGS_OBJECT,@GetStatsResetEnabled)
       {
          return;
       }
       
       % must have a token if over the free stat reset cap
       if Send(self,@FindHolding,#class=&StatsResetToken) = $
-         AND (piBase_Max_Health > Send(Send(Sys,@GetSettings),@GetFreeStatsResetCap))
+         AND (piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
       {
          return;
       }
@@ -10201,13 +10243,13 @@ messages:
             oSkill,iSkillAbility,iSkillNum;
 
       % if stats reset is turned off, ignore the request
-      if NOT Send(Send(SYS,@GetSettings),@GetStatsResetEnabled)
+      if NOT Send(SETTINGS_OBJECT,@GetStatsResetEnabled)
       {
          return;
       }
       
       if Send(self,@FindHolding,#class=&StatsResetToken) = $
-         AND (piBase_Max_Health > Send(Send(SYS,@GetSettings),@GetFreeStatsResetCap))
+         AND (piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
       {
          return;
       }
@@ -10318,7 +10360,7 @@ messages:
       % everything looks good, start adjusting stats
       
       % Consume token
-      if piBase_Max_Health > Send(Send(SYS,@GetSettings),@GetFreeStatsResetCap)
+      if piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap)
       {
          Send(Send(self,@FindHolding,#class=&StatsResetToken),@Delete);
       }
@@ -10372,31 +10414,27 @@ messages:
             {
                Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
                      #amount=((piStamina - stamina)
-                     * Send(Send(SYS,@GetSettings),@GetStatsResetPenalty)));
+                     * Send(SETTINGS_OBJECT,@GetStatsResetPenalty)));
             }
          }
-         else
+         else if (iPrimaryStat = STAT_ID_INTELLECT)
          {
-            if (iPrimaryStat = STAT_ID_INTELLECT)
+            if (iSpellAbility > (intellect * 2)) AND (intellect < piIntellect)
+               OR (iSpellAbility = 99 AND piIntellect = 50 AND intellect < 50)
             {
-               if (iSpellAbility > (intellect * 2)) AND (intellect < piIntellect)
-                  OR (iSpellAbility = 99 AND piIntellect = 50 AND intellect < 50)
-               {
-                  Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
-                        #amount=((piIntellect - intellect)
-                        * Send(Send(SYS,@GetSettings),@GetStatsResetPenalty)));
-               }
+               Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
+                     #amount=((piIntellect - intellect)
+                     * Send(SETTINGS_OBJECT,@GetStatsResetPenalty)));
             }
-            % must be STAT_ID_MYSTICISM
-            else
+         }
+         else if (iPrimaryStat = STAT_ID_MYSTICISM)
+         {
+            if (iSpellAbility > (piMysticism * 2)) AND (mysticism < piMysticism)
+               OR (iSpellAbility = 99 AND piMysticism = 50 AND mysticism < 50)
             {
-               if (iSpellAbility > (piMysticism * 2)) AND (mysticism < piMysticism)
-                  OR (iSpellAbility = 99 AND piMysticism = 50 AND mysticism < 50)
-               {
-                  Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
-                        #amount=((piMysticism - mysticism)
-                        * Send(Send(SYS,@GetSettings),@GetStatsResetPenalty)));
-               }
+               Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
+                     #amount=((piMysticism - mysticism)
+                     * Send(SETTINGS_OBJECT,@GetStatsResetPenalty)));
             }
          }
       }
@@ -10418,53 +10456,36 @@ messages:
                      #amount=((piAgility - agility) * -2));
             }
          }
-         else
+         else if (iPrimaryStat = STAT_ID_AIM)
          {
-            if (iPrimaryStat = STAT_ID_AIM)
+            if (iSkillAbility > (aim * 2)) AND (aim < piAim)
+               OR (iSkillAbility = 99 AND piAim = 50 AND aim < 50)
             {
-               if (iSkillAbility > (aim * 2)) AND (aim < piAim)
-                  OR (iSkillAbility = 99 AND piAim = 50 AND aim < 50)
-               {
-                  Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
-                        #amount=((piAim - aim) * -2));
-               }
+               Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
+                     #amount=((piAim - aim) * -2));
             }
-            else
+         }
+         else if (iPrimaryStat = STAT_ID_MIGHT)
+         {
+            if (iSkillAbility > (might * 2)) AND (might < piMight)
+               OR (iSkillAbility = 99 AND piMight = 50 AND might < 50)
             {
-               if (iPrimaryStat = STAT_ID_MIGHT)
-               {
-                  if (iSkillAbility > (might * 2)) AND (might < piMight)
-                     OR (iSkillAbility = 99 AND piMight = 50 AND might < 50)
-                  {
-                     Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
-                           #amount=((piMight - might) * -2));
-                  }
-               }
-               else
-               {
-                  if (iPrimaryStat = STAT_ID_STAMINA)
-                  {
-                     if (iSkillAbility > (stamina * 2)) AND (stamina < piStamina)
-                        OR (iSkillAbility = 99 AND piStamina = 50 AND stamina < 50)
-                     {
-                        Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
-                              #amount=((piStamina - stamina) * -2));
-                     }
-                  }
-               }
+               Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
+                     #amount=((piMight - might) * -2));
+            }
+         }
+         else if (iPrimaryStat = STAT_ID_STAMINA)
+         {
+            if (iSkillAbility > (stamina * 2)) AND (stamina < piStamina)
+               OR (iSkillAbility = 99 AND piStamina = 50 AND stamina < 50)
+            {
+               Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
+                     #amount=((piStamina - stamina) * -2));
             }
          }
       }
       Debug("Skill % Recalculated");
-      
-      % A change in stamina results in a reduction in hitpoints if the
-      %   player's hitpoints will be > 100 + new Stamina
-      if (piBase_Max_Health > 100 + stamina)
-      {
-         Send(self,@GainBaseMaxHealth,#amount=((100 + stamina) - piBase_Max_health));
-         Debug("HitPoints Adjusted");   
-      }
-      
+
       Debug(Send(self,@GetTrueName), " changed stats from ",
          piMight, piIntellect, piStamina, piAgility, piMysticism, piAim,
          " to ", might, intellect, stamina, agility, mysticism, aim);
@@ -10475,7 +10496,16 @@ messages:
       piAgility = agility;
       piMysticism = mysticism;
       piAim = aim;
-      
+
+      % A change in stamina results in a reduction in hitpoints if the
+      % player's hitpoints will be > 100 + new Stamina
+      if (piBase_Max_Health > 100 + Send(self,@GetStamina))
+      {
+         % If called with no amount, will verify current max HP is valid.
+         Send(self,@GainBaseMaxHealth);
+         Debug("HitPoints Adjusted");
+      }
+
       % recalculate mana pool based on nodes and mysticism
       Send(self,@ComputeMaxMana);
       Debug("Mana Recalculated");

@@ -232,6 +232,10 @@ properties:
    piBlueHeartstone = 4
    piBrownHeartstone = 4
    piSkyHeartstone = 4
+   piGreenHeartstone = 4
+   piBlackHeartstone = 4
+   piWhiteHeartstone = 4
+   piPurpleHeartstone = 4
 
 messages:
 
@@ -277,12 +281,11 @@ messages:
                   ];
 
       Send(self,@RecalcLightAndWeather);
-      Post(self,@InitializeDecor);
 
       propagate;
    }
 
-   InitializeDecor()
+   Constructed()
    {
       Send(self,@SetBedSector);
       Send(self,@SetBedSpread,#num=piBedSpread);
@@ -297,7 +300,7 @@ messages:
             #fine_col=Nth(Nth(Nth(plBedCoords,piBedSector),3),2),
             #new_angle= Nth(Nth(plBedCoords,piBedSector),5) );
 
-      return;
+      propagate;
    }
 
    GetRenter()
@@ -1253,7 +1256,11 @@ messages:
             AND (piRedHeartStone >= ITEMS_FROM_HEARTSTONES)
             AND (piBlueHeartStone >= ITEMS_FROM_HEARTSTONES)
             AND (piSkyHeartStone >= ITEMS_FROM_HEARTSTONES)
-            AND (piBrownHeartStone >= ITEMS_FROM_HEARTSTONES))
+            AND (piBrownHeartStone >= ITEMS_FROM_HEARTSTONES)
+            AND (piGreenHeartStone >= ITEMS_FROM_HEARTSTONES)
+            AND (piWhiteHeartStone >= ITEMS_FROM_HEARTSTONES)
+            AND (piBlackHeartStone >= ITEMS_FROM_HEARTSTONES)
+            AND (piPurpleHeartStone >= ITEMS_FROM_HEARTSTONES))
       {
          return TRUE;
       }
@@ -1266,7 +1273,9 @@ messages:
       local bGotAll;
 
       bGotAll = (piRedHeartStone AND piBlueHeartStone
-                 AND piSkyHeartStone AND piBrownHeartStone);
+                 AND piSkyHeartStone AND piBrownHeartStone
+                 AND piGreenHeartStone AND piWhiteHeartStone
+                 AND piBlackHeartStone AND piPurpleHeartStone);
 
       % Increment appropriate type of heartstone.
       if IsClass(oStone,&RedHeartStone)
@@ -1297,9 +1306,31 @@ messages:
                #string=RentableRoom_heartstone_sky);
       }
 
+      if IsClass(oStone,&GreenHeartStone)
+      {
+         piGreenHeartStone = piGreenHeartStone + ITEMS_FROM_HEARTSTONES;
+      }
+
+      if IsClass(oStone,&WhiteHeartStone)
+      {
+         piWhiteHeartStone = piWhiteHeartStone + ITEMS_FROM_HEARTSTONES;
+      }
+
+      if IsClass(oStone,&BlackHeartStone)
+      {
+         piBlackHeartStone = piBlackHeartStone + ITEMS_FROM_HEARTSTONES;
+      }
+
+      if IsClass(oStone,&PurpleHeartStone)
+      {
+         piPurpleHeartStone = piPurpleHeartStone + ITEMS_FROM_HEARTSTONES;
+      }
+
       if (NOT bGotAll)
          AND (piRedHeartStone AND piBlueHeartStone
-            AND piSkyHeartStone AND piBrownHeartStone)
+                 AND piSkyHeartStone AND piBrownHeartStone
+                 AND piGreenHeartStone AND piWhiteHeartStone
+                 AND piBlackHeartStone AND piPurpleHeartStone)
       {
          Post(self,@SomeoneSaid,#type=SAY_RESOURCE,#what=oDecorator,
                #string=RentableRoom_heartstone_all);
@@ -1347,6 +1378,10 @@ messages:
          piRedHeartStone = piRedHeartStone - ITEMS_FROM_HEARTSTONES;
          piSkyHeartStone = piSkyHeartStone - ITEMS_FROM_HEARTSTONES;
          piBlueHeartStone = piBlueHeartStone - ITEMS_FROM_HEARTSTONES;
+         piGreenHeartstone = piGreenHeartstone - ITEMS_FROM_HEARTSTONES;
+         piBlackHeartstone = piBlackHeartstone - ITEMS_FROM_HEARTSTONES;
+         piWhiteHeartstone = piWhiteHeartstone - ITEMS_FROM_HEARTSTONES;
+         piPurpleHeartstone = piPurpleHeartstone - ITEMS_FROM_HEARTSTONES;
       }
 
       return;

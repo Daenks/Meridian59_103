@@ -67,11 +67,15 @@ properties:
 
    piAnimation = ANIM_NONE
 
+   piReputationGroup = REP_UNDEAD
+
 messages:
 
    Constructed()
    {
       Send(self,@SetResistances);
+
+      plReputationEnemies = [REP_FAROL];
 
       propagate;
    }

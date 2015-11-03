@@ -345,7 +345,7 @@ messages:
                #parm2=piCol,
                #parm3=piFine_Row,
                #parm4=piFine_Col,
-               #parm5=GetHeight(Send(poOwner,@GetRoomData),piRow,piCol,piFine_row,piFine_col));
+               #parm5=Send(self, @GetHeightFloorAtObjectBSP));
 
          return;
       }
@@ -387,6 +387,30 @@ messages:
       }
 
       propagate;
+   }
+
+   SpawnTestMobs(class = &OrcWizard, num = 1)
+   {
+      local i, oMob;
+
+      if poOwner = $
+      {
+         return;
+      }
+
+      i = 0;
+
+      % Don't make too many at once.
+      num = Bound(num,1,200);
+
+      while i++ < num
+      {
+         oMob = Create(class);
+         Send(poOwner,@NewHold,#what=oMob,#new_row=piRow,#new_col=piCol,
+               #fine_row=piFine_row,#fine_col=piFine_col);
+      }
+
+      return;
    }
 
    %%% Room tours

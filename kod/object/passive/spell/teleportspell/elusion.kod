@@ -88,7 +88,7 @@ messages:
 
       % Can't cast just after attacking someone
       if Send(who,@GetLastPlayerAttackTime)
-         + Send(Send(SYS,@GetSettings),@TeleportAttackDelaySec)
+         + Send(SETTINGS_OBJECT,@TeleportAttackDelaySec)
          > GetTime()
       {
          Send(who,@MsgSendUser,#message_rsc=spell_too_soon_since_attacking);
@@ -183,7 +183,7 @@ messages:
          oGuildHall = Send(who,@GetGuildHall);
 
          if oGuildHall <> $
-            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG2_TEMPSAFE,#flagset=2)
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE)
          {
             lAllTargets = Cons(oGuildHall,lAllTargets);
          }

@@ -34,6 +34,11 @@
 
 #define MAX_DEPTH 2000
 
+#define BOF_VERSION 6
+
+// enable constants such as M_PI from math.h
+#define _USE_MATH_DEFINES
+
 enum
 {
    USER_CLASS = 1,
@@ -69,14 +74,28 @@ enum
    DM_CLASS = 32,
    FIND_USER_BY_STRING_MSG = 33,
    CREATOR_CLASS = 34,
-   RECYCLED_MSG = 35,
-   OLD_PARM = 36
+   SETTINGS_CLASS = 35,
+   REALTIME_CLASS = 36,
+   EVENTENGINE_CLASS = 37,
+   ESCAPED_CONVICT_CLASS = 38,
+   MAX_BUILTIN_CLASS = 38
 
    // To add other C-accessible KOD identifiers,
    // see the BLAKCOMP's table of BuiltinIds[].
    //
    // The compiler assumes those builtins before
    // it reads any KODBASE.TXT.
+};
+
+// Enum for object constants blakod can use to call built-in objects.
+enum
+{
+   SYSTEM_OBJECT = 0,
+   SETTINGS_OBJECT = 1,
+   REALTIME_OBJECT = 2,
+   EVENTENGINE_OBJECT = 3,
+   MAX_BUILTIN_OBJECT = 3,
+   NUM_BUILTIN_OBJECTS = 4
 };
 
 #define MAX_PROC_TIME 5000
@@ -112,6 +131,7 @@ enum
 #define ERROR_FILE "error.txt"
 #define LOG_FILE "log.txt"
 #define GOD_FILE "god.txt"
+#define ADMIN_FILE "admin.txt"
 
 #define KODBASE_FILE "kodbase.txt"
 
@@ -123,6 +143,7 @@ enum
 #define NOMINMAX
 #include <windows.h>
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 #include "resource.h"
 #include <crtdbg.h>
 #include <io.h>
@@ -179,7 +200,6 @@ typedef unsigned long long UINT64;
 
 #include "bool.h"
 #include "rscload.h"
-#include "roomtype.h"
 #include "bkod.h"
 #include "crc.h"
 #include "md5.h"
@@ -207,11 +227,13 @@ typedef struct
 
 /* in main.c */
 extern DWORD main_thread_id;
+void MainReloadGameData();
 char * GetLastErrorStr();
 #define WM_BLAK_MAIN_READ           (WM_APP + 4000)
 #define WM_BLAK_MAIN_RECALIBRATE    (WM_APP + 4001)
 #define WM_BLAK_MAIN_DELETE_ACCOUNT (WM_APP + 4002)
 #define WM_BLAK_MAIN_VERIFIED_LOGIN (WM_APP + 4003)
+#define WM_BLAK_MAIN_LOAD_GAME      (WM_APP + 4004)
 
 #include "bof.h"
 
@@ -236,8 +258,8 @@ char * GetLastErrorStr();
 #include "system.h"
 #include "loadrsc.h"
 #include "loadgame.h"
-#include "roomdata.h"
 #include "roofile.h"
+#include "roomdata.h"
 #include "files.h"
 
 #include "bufpool.h"
@@ -296,6 +318,8 @@ char * GetLastErrorStr();
 #include "maintenance.h"
 #include "block.h"
 #include "database.h"
+
+#include "jansson.h"
 
 #endif
 

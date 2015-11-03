@@ -32,6 +32,9 @@ classvars:
 
    viTerrain_Type = TERRAIN_CASTLE | TERRAIN_FOUNTAIN
 
+   viWeatherZone = WEATHER_ZONE_BARLOQUE
+   viWeatherMask = WEATHER_MASK_DEFAULT_NS
+
 properties:
 
    prMusic = castle2a_music

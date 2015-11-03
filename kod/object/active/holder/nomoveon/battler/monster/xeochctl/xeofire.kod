@@ -37,20 +37,20 @@ resources:
  classvars:
 
    vrName = XeoFire_name_rsc
+   vrDesc = XeoFire_desc_rsc
    vrKocName = XeoFire_koc_name_rsc
 
    viAttack_type = ATCK_WEAP_MAGIC
    viLevel = 170
    viDifficulty = 7
-   viSpeed = SPEED_FAST
+   viSpeed = SPEED_FASTER
    vrSound_aware = XeoFire_sound_aware
+
+   viTreasure_type = TID_XEO_FIRE
 
 properties:
 
    piAnimation = ANIM_NONE
-
-   % What do we drop on death?
-   pcTreasureItem = &RedHeartStone
 
 messages:
 
@@ -64,8 +64,8 @@ messages:
 
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_RED);
 
-      plSpellBook = [ [SID_FIREBALL,2,60], [SID_FIREWALL,10,70],
-                      [SID_DEMENT,3,100] ];
+      plSpellBook = [ [SID_FIREBALL,2,30], [SID_FIREWALL,10,50],
+                      [SID_HEAT,10,70], [SID_DEMENT,3,100] ];
 
       propagate;
    }

@@ -108,21 +108,6 @@ int AllocateObject(int class_id)
    objects[num_objects].p = (prop_type *)AllocateMemory(MALLOC_ID_OBJECT_PROPERTIES,
 							sizeof(prop_type)*(1+c->num_properties));
 
-   if (ConfigBool(DEBUG_INITPROPERTIES))
-   {
-      int i;
-      prop_type p;
-
-      p.id = 0;
-      p.val.v.tag = TAG_INVALID;
-      p.val.v.data = 0;
-
-      for (i = 0; i < (1+c->num_properties); i++)
-      {
-	 objects[num_objects].p[i] = p;
-      }
-   }
-
    return num_objects++;
 }
 
@@ -215,15 +200,6 @@ int CreateObject(int class_id,int num_parms,parm_node parms[])
    else
       SendTopLevelBlakodMessage(new_object_id,CONSTRUCTOR_MSG,num_parms,parms);
 
-   if (ConfigBool(DEBUG_UNINITIALIZED))
-   {
-      int i;
-      for (i = 0; i < (1+c->num_properties); i++)
-	 if (objects[new_object_id].p[i].val.v.tag == TAG_INVALID)
-	    eprintf("Uninitialized properties after constructor, class %s\n",
-	       c->class_name);
-   }
-
    return new_object_id;
 }
 
@@ -248,6 +224,11 @@ Bool LoadObject(int object_id,char *class_name)
    objects[object_id].p[0].id = 0;
    objects[object_id].p[0].val.v.tag = TAG_OBJECT; 
    objects[object_id].p[0].val.v.data = object_id;
+
+   // Set any built-in object ID here, in case we're loading an old
+   // save game with a blakod object that needs to be saved as a built-in.
+   if (c->class_id <= MAX_BUILTIN_CLASS)
+      SetBuiltInObjectIDByClass(c->class_id, object_id);
 
    /* if no kod changed, then setting the properties shouldn't be
     * necessary.  however, who knows.
@@ -392,8 +373,9 @@ void MoveObject(int dest_id,int source_id)
    dest->num_props = source->num_props;
    dest->p = source->p;
 
-   if (source->class_id == SYSTEM_CLASS)
-      SetSystemObjectID(dest_id);
+   // If this is a built-in object, set the new object ID.
+   if (source->class_id <= MAX_BUILTIN_CLASS)
+      SetBuiltInObjectIDByClass(source->class_id, dest_id);
 }
 
 void SetNumObjects(int new_num_objects)

@@ -403,6 +403,11 @@
 #define IDC_TEMPSAFE                    1209
 #define IDC_GROUPING                    1210
 #define IDC_SHOWFPS                     1211
+#define IDC_AUTOLOOT                    1212
+#define IDC_AUTOCOMBINE                 1213
+#define IDC_REAGENTBAG                  1214
+#define IDC_SPELLPOWER                  1215
+#define IDC_PARTICLENUM                 1216
 #define ID_GAME_EXIT                    3002
 #define ID_FONT_MAIL                    3014
 #define ID_FONT_LIST                    3015
@@ -467,7 +472,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        191
 #define _APS_NEXT_COMMAND_VALUE         3518
-#define _APS_NEXT_CONTROL_VALUE         1212
+#define _APS_NEXT_CONTROL_VALUE         1217
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif

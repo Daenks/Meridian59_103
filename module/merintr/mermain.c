@@ -27,15 +27,6 @@ static int num_default_buttons = (sizeof(default_buttons) / sizeof(AddButton));
 // Player/game data that's known only in module
 PInfo pinfo;
 
-// True when we've told server to change safety flag; prevents multiple requests
-static Bool safety_flipped;
-
-// True when we've told server to change temp safe flag; prevents multiple requests
-static Bool temp_safe_flipped;
-
-// True when we've told server to change player's grouping flag; prevents multiple requests
-static Bool grouping_flipped;
-
 /****************************************************************************/
 /*
  * InterfaceInit:  Called on startup.  Initialize interface.
@@ -72,26 +63,8 @@ void InterfaceInit(void)
    CopyCurrentView(&area);
    InterfaceResizeModule(r.right, r.bottom, &area);
 
-   pinfo.resting = False;
-   safety_flipped = False;
-   temp_safe_flipped = False;
-
-   if (pinfo.resting)
-      RequestRest();
-   else
-      RequestStand();
-   if (cinfo->config->aggressive)
-      SendSafety(0);
-   else
-      SendSafety(1);
-   if (cinfo->config->tempsafe)
-      SendTempSafe(1);
-   else
-      SendTempSafe(0);
-   if (cinfo->config->grouping)
-      SendGrouping(1);
-   else
-      SendGrouping(0);
+   // Request player preferences from the server.
+   RequestPreferences();
 }
 /****************************************************************************/
 /*
@@ -181,19 +154,7 @@ Bool InterfaceDrawItem(HWND hwnd, const DRAWITEMSTRUCT *lpdis)
 /****************************************************************************/
 void InterfaceResetData(void)
 {
-   if (pinfo.resting)
-      RequestRest();
-   else
-      RequestStand();
-   if (cinfo->config->aggressive)
-      SendSafety(0);
-   else
-      SendSafety(1);
-   if (cinfo->config->tempsafe)
-      SendTempSafe(1);
-   else
-      SendTempSafe(0);
-
+   RequestPreferences();
    RequestStatGroups();
    RequestSpells();
    RequestSkills();
@@ -433,156 +394,28 @@ Bool CheckForAlwaysActiveSpells(spelltemp *sp)
  */
 void InterfaceUserChanged(void)
 {
-   room_contents_node *r;
-   Bool new_safety;
-   Bool new_temp_safe;
-   Bool new_grouping;
-
    UserAreaRedraw();
    AliasInit();
-
-   r = GetRoomObjectById(cinfo->player->id);
-
-   if (r == NULL)
-      return;
-
-   new_safety = ((r->obj.flags & OF_SAFETY) != 0);
-   
-   if (new_safety)
-   {
-      if (cinfo->config->aggressive)
-      {
-         if (!safety_flipped)
-            SendSafety(0);
-         safety_flipped = True;
-      }
-      else 
-      {
-         pinfo.aggressive = cinfo->config->aggressive = False;
-         safety_flipped = False;
-      }
-   }
-   else 
-   {
-      if (!cinfo->config->aggressive)
-      {
-         if (!safety_flipped)
-            SendSafety(1);
-         safety_flipped = True;
-      }
-      else 
-      {
-         pinfo.aggressive = cinfo->config->aggressive = True;
-         safety_flipped = False;
-      }
-
-   }
-
-   new_temp_safe = ((r->obj.flags & OF_TEMPSAFE) != 0);
-   
-   if (new_temp_safe)
-   {
-      if (cinfo->config->tempsafe)
-      {
-         // Flag on, setting on, don't change.
-         pinfo.tempsafe = cinfo->config->tempsafe = True;
-         temp_safe_flipped = False;
-      }
-      else
-      {
-         // Flag on, setting off, turn flag off.
-         if (!temp_safe_flipped)
-            SendTempSafe(0);
-         temp_safe_flipped = True;
-      }
-   }
-   else
-   {
-      if (!cinfo->config->tempsafe)
-      {
-         // Flag off, setting off, don't change.
-         pinfo.tempsafe = cinfo->config->tempsafe = False;
-         temp_safe_flipped = False;
-      }
-      else
-      {
-         // Flag off, setting on, turn flag on.
-         if (!temp_safe_flipped)
-            SendTempSafe(1);
-         temp_safe_flipped = True;
-      }
-   }
-
-   new_grouping = ((r->obj.flags & OF_GROUPING) != 0);
-   
-   if (new_grouping)
-   {
-      if (cinfo->config->grouping)
-      {
-         // Flag on, setting on, don't change.
-         pinfo.grouping = cinfo->config->grouping = True;
-         grouping_flipped = False;
-      }
-      else
-      {
-         // Flag on, setting off, turn flag off.
-         if (!temp_safe_flipped)
-            SendGrouping(0);
-         grouping_flipped = True;
-      }
-   }
-   else
-   {
-      if (!cinfo->config->grouping)
-      {
-         // Flag off, setting off, don't change.
-         pinfo.grouping = cinfo->config->grouping = False;
-         grouping_flipped = False;
-      }
-      else
-      {
-         // Flag off, setting on, turn flag on.
-         if (!grouping_flipped)
-            SendGrouping(1);
-         grouping_flipped = True;
-      }
-   }
+   RequestPreferences();
 }
 /****************************************************************************/
 void InterfaceConfigChanged(void)
 {
-   // See if user changed safety flag
-   if (pinfo.aggressive != cinfo->config->aggressive)
-   {
-      pinfo.aggressive = cinfo->config->aggressive;
-      if (pinfo.aggressive)
-         SendSafety(0);
-      else SendSafety(1);
-   }
-   
-   // See if user changed temp safe flag
-   if (pinfo.tempsafe != cinfo->config->tempsafe)
-   {
-      pinfo.tempsafe = cinfo->config->tempsafe;
-      if (pinfo.tempsafe)
-         SendTempSafe(1);
-      else SendTempSafe(0);
-   }
-
-   // See if user changed grouping flag
-   if (pinfo.grouping != cinfo->config->grouping)
-   {
-      pinfo.grouping = cinfo->config->grouping;
-      if (pinfo.grouping)
-         SendGrouping(1);
-      else SendGrouping(0);
-   }
+   // Send preferences to server.
+   SendPreferences(cinfo->config->preferences);
 }
 
 /* Utility functions */
 /****************************************************************************/
 
-
+/****************************************************************************/
+/*
+ * SetPlayerPreferences:  Sets the player's config preferences.
+ */
+void SetPlayerPreferences(int preferences)
+{
+   cinfo->config->preferences = preferences;
+}
 /************************************************************************/
 /*
  * GetPlayerName:  Parse str, and return a pointer to the start of the first
