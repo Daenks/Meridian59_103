@@ -4846,7 +4846,7 @@ messages:
       % when we can't get our target. Instead, we use that time
       % walking to the target.
 
-      if Send(self,@IsMage)
+      if Send(self,@IsMage) OR iDistance > (piAttackRange * piAttackRange)
          AND iDistance <= piSpellRange * piSpellRange
          AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
          AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
@@ -4901,62 +4901,6 @@ messages:
 
          return TRUE;
       }
-      else iDistance > (piAttackRange * piAttackRange)
-         AND iDistance <= piSpellRange * piSpellRange
-         AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
-         AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
-                  #use_weapon=self)
-      {
-         % We go through the monster's spellbook and pick the spell
-         % that corresponds to the random number picked. This is used
-         % to give a % chance for each spell to be picked.
-         iRandom = Random(1,100);
-         foreach i in plSpellBook
-         {
-            if iRandom <= Nth(i,3)
-            {
-               iSpellNum = Nth(i,1);
-               iManaCost = Nth(i,2);
-
-               break;
-            }
-         }
-
-         % If no spell returned or cannot pay mana costs, spell fails.
-         if iSpellNum = $
-            OR piMana < iManaCost
-         {
-            return FALSE;
-         }
-
-         % Take mana from monster.
-         piMana = piMana - iManaCost;
-         Send(self,@NewMana);
-
-         % Get the spell object.
-         oSpell = Send(SYS,@FindSpellByNum,#num=iSpellNum);
-         
-         % Find the valid targets, defaulting to poTarget.
-         lTargets = [poTarget];
-         lTargets = Send(oSpell,@GetTargets,#who=self,#lTargets=lTargets);
-
-         % See if we can cast the spell here.
-         if Send(oSpell,@CanPayMonsterCosts,#who=self,#lTargets=lTargets,
-                  #iSpellPower=piSpellPower)
-            AND Send(poOwner,@ReqSpellCast,#who=self,#oSpell=oSpell,
-                     #lItems=lTargets)
-         {
-            % Do any special cast animations; send spell for specific ones.
-            Send(self,@MonsterCastAnimation,#iSpellNum=iSpellNum);
-
-            % Cast the spell.
-            Send(oSpell,@CastSpell,#who=self,#lTargets=lTargets,
-                  #iSpellPower=piSpellPower);
-         }
-
-         return TRUE;
-      }
-
       return FALSE;
    }
 
