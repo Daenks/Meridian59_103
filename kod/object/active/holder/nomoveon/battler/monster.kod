@@ -4830,7 +4830,7 @@ messages:
       % Get the adjusted chance to cast, based on whether we're demented
       % or if AmA is up. Multiply this by 6 because we've decreased the
       % time between chase behavior checks by a factor of 4-7x.
-      iRandom = Send(self,@AdjustedChanceBase,#base=(piSpellChance*6));
+      iRandom = Send(self,@AdjustedChanceBase,#base=(piSpellChance*1));
 
       % Do the random check now, so we don't go any further
       % if we don't have to.
@@ -4846,7 +4846,7 @@ messages:
       % when we can't get our target. Instead, we use that time
       % walking to the target.
 
-      if iDistance > (piAttackRange * piAttackRange)
+      if Send(self,@IsMage) OR iDistance > (piAttackRange * piAttackRange)
          AND iDistance <= piSpellRange * piSpellRange
          AND Send(poOwner,@LineOfSight,#obj1=self,#obj2=poTarget)
          AND Send(poOwner,@ReqSomethingAttack,#what=self,#victim=poTarget,
@@ -4901,7 +4901,6 @@ messages:
 
          return TRUE;
       }
-
       return FALSE;
    }
 
@@ -7163,6 +7162,11 @@ messages:
    LoseLight()
    {
       return 0;
+   }
+
+   IsMage()
+   {
+      return FALSE;
    }
 
 end

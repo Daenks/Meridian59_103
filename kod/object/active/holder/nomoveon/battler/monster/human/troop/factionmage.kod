@@ -23,6 +23,8 @@ properties:
    piMana = 100
    piMax_Mana = 100
 
+   piSpellChance = 1
+
 messages:
 
    SetEquipment()
@@ -65,6 +67,11 @@ messages:
       viLevel = piBaseLevel + iBonusModifier;
 
       return;
+   }
+
+   IsMage()
+   {
+      return TRUE;
    }
 
 end
