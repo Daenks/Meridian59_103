@@ -4830,7 +4830,7 @@ messages:
       % Get the adjusted chance to cast, based on whether we're demented
       % or if AmA is up. Multiply this by 6 because we've decreased the
       % time between chase behavior checks by a factor of 4-7x.
-      iRandom = Send(self,@AdjustedChanceBase,#base=(piSpellChance*6));
+      iRandom = Send(self,@AdjustedChanceBase,#base=(piSpellChance*1));
 
       % Do the random check now, so we don't go any further
       % if we don't have to.
