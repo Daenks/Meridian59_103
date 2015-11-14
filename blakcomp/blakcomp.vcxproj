@@ -34,6 +34,12 @@
     <ClCompile Include="table.c" />
     <ClCompile Include="util.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="blakcomp.l">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <None Include="blakcomp.y" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{29B8E041-0856-4A4C-9494-BA3D0CE0F63C}</ProjectGuid>
   </PropertyGroup>

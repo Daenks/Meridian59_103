@@ -320,6 +320,39 @@ int codegen_if(if_stmt_type s, int numlocals)
    sourceval = set_source_id(&opcode, SOURCE1, s->condition);
    OutputOpcode(outfile, opcode);
 
+   if (s->condition->type == E_CONSTANT)
+   {
+      if (s->condition->value.constval->type == C_NIL)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to $!");
+      }
+      else if (s->condition->value.constval->type == C_NUMBER)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to %i!",
+            s->condition->value.constval->value.numval);
+      }
+      else if (s->condition->value.constval->type == C_CLASS)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to class %i!",
+            s->condition->value.constval->value.numval);
+      }
+      else if (s->condition->value.constval->type == C_MESSAGE)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to message %i!",
+            s->condition->value.constval->value.numval);
+      }
+      else if (s->condition->value.constval->type == C_RESOURCE)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to resource %i!",
+            s->condition->value.constval->value.numval);
+      }
+      else if (s->condition->value.constval->type == C_OVERRIDE)
+      {
+         write_optimize_log(s->condition->lineno, "If clause evaluated to override %i!",
+            s->condition->value.constval->value.numval);
+      }
+   }
+
    /* Leave space for destination address */
    gotopos = FileCurPos(outfile);
    OutputInt(outfile, 0);
@@ -949,6 +982,9 @@ int codegen_statement(stmt_type s, int numlocals)
       our_maxtemp = flatten_expr(stmt->rhs, stmt->lhs, numlocals);
       break;
    }
+   case S_NOOP:
+      // No-op - throw away the statement.
+      break;
 
    case S_CALL:
       our_maxtemp = codegen_call(s->value.call_stmt_val, NULL, numlocals);

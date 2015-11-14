@@ -25,6 +25,8 @@ list_type file_list;       /* List of files to compile */
 char *current_fname;
 char *bof_fname;           /* Object code filename */
 int debug_bof;             /* Should we put debugging info in .bof file? */
+char *optimize_log_file;
+int optimize_bof;      /* Should we perform optimizations during compilation? */
 int add_eol = 0;           /* Hack to deal with EOL being significant in INITIAL */
 int comment_depth = 0;     /* Allow nested comments */
 
@@ -282,7 +284,6 @@ void simple_error(const char *fmt, ...)
 /* simple_warning should be used for all warnings. */
 void simple_warning(const char *fmt, ...)
 {
-
    va_list marker;
 
    printf("  warning: ");
@@ -290,6 +291,54 @@ void simple_warning(const char *fmt, ...)
    vprintf(fmt, marker);
    va_end(marker);
    printf("\n");
+}
+/************************************************************************/
+/* inform_user should be used for all non-warning/error messages. */
+void inform_user(const char *fmt, ...)
+{
+   va_list marker;
+
+   fprintf(stdout, "%s(%d): ", current_fname, lineno);
+   va_start(marker, fmt);
+   vprintf(fmt, marker);
+   va_end(marker);
+   printf("\n");
+}
+/************************************************************************/
+/* write_optimize_log should be used for all optimization logging. */
+void write_optimize_log(int line, const char *fmt, ...)
+{
+   va_list marker;
+
+   FILE *fp;
+   char buf[1024];
+   char *bufptr = buf;
+   int numchars;
+
+   fprintf(stdout, "%s(%d): ", current_fname, line);
+   numchars = sprintf(bufptr, "%s(%d): ", current_fname, line);
+   bufptr += (numchars - 1);
+
+   va_start(marker, fmt);
+   vprintf(fmt, marker);
+   vsprintf(bufptr, fmt, marker);
+   va_end(marker);
+   printf("\n");
+   fp = fopen(optimize_log_file, "a");
+
+   if (fp)
+   {
+      if (buf[strlen(buf) - 1] != '\n')
+         strcat(buf, "\n");
+      fwrite(buf, strlen(buf), 1, fp);
+      fclose(fp);
+   }
+}
+/************************************************************************/
+/* set_optimize_filename sets the filename and also clears the file contents */
+void set_optimize_filename(char *filename)
+{
+   optimize_log_file = filename;
 }
 /************************************************************************/
 /*
@@ -536,6 +585,7 @@ int main(int argc, char **argv)
 
    file_list = NULL;
    debug_bof = False;
+   optimize_bof = False;
 
    num_include_dirs = 0;
 
@@ -550,7 +600,17 @@ int main(int argc, char **argv)
 	 case 'D':               /* Debugging on */
 	    debug_bof = True;
 	    break;
-	    
+	 case 'O':               /* Optimizing on */
+		 if (i == argc - 1)
+	       printf("Switch -%c needs a filename (ignoring)\n",*(arg+1));
+	    else
+	    {
+	       i++;
+	       arg = argv[i];
+	       set_optimize_filename(arg);
+          optimize_bof = True;
+	    }
+	    break;
 	 case 'K' :              /* Specify kodbase filename */
 	    if (i == argc - 1)
 	       printf("Switch -%c needs a filename (ignoring)\n",*(arg+1));

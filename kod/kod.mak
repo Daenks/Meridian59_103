@@ -5,7 +5,7 @@
 
 .SUFFIXES : .kod .lkod
 
-BCFLAGS = -d -I $(KODINCLUDEDIR) -K $(KODDIR)\kodbase.txt
+BCFLAGS = -d -I $(KODINCLUDEDIR) -O $(KODDIR)\optimize.txt -K $(KODDIR)\kodbase.txt
 
 .lkod.kod::
 .kod.bof::

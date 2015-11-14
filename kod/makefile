@@ -13,7 +13,7 @@ BOFS = util.bof object.bof
 
 .SUFFIXES : .kod
 
-BCFLAGS = -d -I $(KODINCLUDEDIR) -K $(KODDIR)\kodbase.txt
+BCFLAGS = -d -I $(KODINCLUDEDIR) -O $(KODDIR)\optimize.txt -K $(KODDIR)\kodbase.txt
 
 .kod.bof::
 	@$(BC) $(BCFLAGS) $<
