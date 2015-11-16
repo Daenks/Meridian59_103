@@ -14,7 +14,7 @@
 
 // Optimization functions.
 void SimplifyExpression(expr_type e);
-list_type optimize_message_statements(list_type stmts);
+list_type optimize_message_stmts(list_type stmts);
 int optimize_call(id_type id, list_type *args);
 
 // Comparison functions.

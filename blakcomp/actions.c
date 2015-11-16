@@ -1547,7 +1547,7 @@ message_handler_type make_message_handler(message_header_type header, char *comm
    
    h->header  = header;
    h->locals  = locals;
-   h->body = optimize_message_statements(stmts);
+   h->body = optimize_message_stmts(stmts);
    if (comment == NULL)
       h->comment = NULL;
    else h->comment = make_string_constant(comment);

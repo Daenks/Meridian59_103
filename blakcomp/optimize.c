@@ -12,6 +12,9 @@
 #include "blakcomp.h"
 #include "bkod.h"
 
+#define ID_UNUSED 0
+#define ID_USED 1
+
 extern int optimize_bof;  /* Should we perform optimizations during compilation? */
 extern function_type Functions[]; /* Built-in C calls */
 extern int numfuncs; /* Number of C calls */
@@ -19,9 +22,11 @@ extern id_struct BuiltinIds[]; /* Built-in class/message/parameters (identifiers
 extern int numbuiltins; /* Number of built-in identifiers */
 extern int lineno; /* Current line number being parsed */
 
-// Local prototypes, should only call from optimize_call
+// Local prototypes, should only call from this file
 int optimize_call_nth(int index, list_type *args);
 int optimize_call_setnth(int index, list_type *args);
+void optimize_message_stmts_sendmessage(list_type it, assign_stmt_type assign);
+void optimize_mark_id(Table id_table, id_type check_id, id_type add_id, int used);
 
 /************************************************************************/
 /*
@@ -165,11 +170,9 @@ void SimplifyExpression(expr_type e)
  *   is to remove any $ assignments to local vars that are already $. This
  *   is done to any local vars not yet modified (as all locals are initiated
  *   to $ by blakserv) and any instances where the local is set to $ again
- *   more than once after being used. This function also suggests potential
- *   optimizations for Send() calls, where a message contains an identical
- *   call (same object, message ID and arguments), but does not modify them.
+ *   more than once after being used.
  */
-list_type optimize_message_statements(list_type stmts)
+list_type optimize_message_stmts(list_type stmts)
 {
    if (!optimize_bof)
       return stmts;
@@ -184,78 +187,95 @@ list_type optimize_message_statements(list_type stmts)
 
       assign_stmt_type assign = st->value.assign_stmt_val;
 
-      if (assign->rhs->type == E_CALL)
+      if (assign->lhs->type == I_LOCAL)
       {
-         stmt_type call_st1 = (stmt_type)assign->rhs->value.callval;
-         call_stmt_type call1 = call_st1->value.call_stmt_val;
+         id_type id = (id_type)table_lookup(id_table, assign->lhs, id_hash, id_compare);
 
-         if (call1->function != SENDMESSAGE)
-            continue;
-
-         for (list_type it2 = it->next; it2 != NULL; it2 = it2->next)
+         if (assign->rhs->type == E_CONSTANT)
          {
-            stmt_type st2 = (stmt_type)it2->data;
-            if (st2->type != S_ASSIGN)
-               continue;
-            assign_stmt_type assign2 = st2->value.assign_stmt_val;
-            if (assign2->rhs->type != E_CALL)
-               continue;
-            stmt_type call_st2 = (stmt_type)assign2->rhs->value.callval;
-            call_stmt_type call2 = call_st2->value.call_stmt_val;
-
-            if (call2->function != SENDMESSAGE)
-               continue;
-            if (compare_call(call1, call2))
+            // If this is the first time we've seen this local and it's getting
+            // assigned NIL, discard it. If it isn't getting assigned NIL, then
+            // mark it as used. Also need to check inside control structures for
+            // this to be valid.
+            if (assign->rhs->value.constval->type == C_NIL)
             {
-               // Same at this point
-               const char *call_name = get_message_name(call2);
-               write_optimize_log(st2->lineno, "Potential optimization: Duplicate Send call to message %s",
-                  call_name);
-               // Can't remove the duplicate calls yet until there's a way to
-               // determine any differences the subsequent calls will have.
-               // Until then, this still serves as a way to identify accidentlly
-               // duplicated message calls.
-               //assign2->rhs->type = E_IDENTIFIER;
-               //assign2->rhs = make_expr_from_id(duplicate_id(assign->lhs));
+               if (!id || !id->used)
+               {
+                  write_optimize_log(st->lineno, "Optimization: Throwing out $ assignment to $ var %s",
+                     assign->lhs->name);
+                  st->type = S_NOOP;
+               }
+               else if (id->used)
+               {
+                  optimize_mark_id(id_table, id, assign->lhs, ID_UNUSED);
+               }
             }
-         }
-      }
-      // Also need to check inside control structures for this to be valid.
-      else if (assign->rhs->type == E_CONSTANT && assign->lhs->type == I_LOCAL)
-      {
-         // If this is the first time we've seen this local and it's getting
-         // assigned NIL, discard it. If it isn't getting assigned NIL, then
-         // mark it as used.
-         id_type id;
-         id = (id_type)table_lookup(id_table, assign->lhs, id_hash, id_compare);
-         if (assign->rhs->value.constval->type == C_NIL)
-         {
-            if (!id || !id->used)
+            else
             {
-               write_optimize_log(st->lineno, "Optimization: Throwing out $ assignment to $ var %s",
-                  assign->lhs->name);
-               st->type = S_NOOP;
-            }
-            else if (id->used)
-            {
-               table_delete_item(id_table, id, id_hash, id_compare);
-               assign->lhs->used = false;
-               table_insert(id_table, assign->lhs, id_hash, id_compare);
+               optimize_mark_id(id_table, id, assign->lhs, ID_USED);
             }
          }
          else
          {
-            if (id)
-               table_delete_item(id_table, id, id_hash, id_compare);
-            assign->lhs->used = true;
-            table_insert(id_table, assign->lhs, id_hash, id_compare);
+            optimize_mark_id(id_table, id, assign->lhs, ID_USED);
          }
+      }
+
+      if (assign->rhs->type == E_CALL)
+      {
+         // Use the current statements list element (it) and the current
+         // assignment (assign) to check for optimization on Send() call.
+         optimize_message_stmts_sendmessage(it, assign);
       }
    }
 
    table_delete(id_table);
 
    return stmts;
+}
+/************************************************************************/
+/*
+ * optimize_message_statements_sendmessage:  Takes a list_type of message
+ *   statements (which may not be the start of the list) and an assignment
+ *   statement (the one currently being checked). Ssuggests potential
+ *   optimizations for Send() calls, where a message contains an identical
+ *   call (same object, message ID and arguments), but does not modify them.
+ */
+void optimize_message_stmts_sendmessage(list_type it, assign_stmt_type assign)
+{
+   stmt_type call_st1 = (stmt_type)assign->rhs->value.callval;
+   call_stmt_type call1 = call_st1->value.call_stmt_val;
+
+   if (call1->function != SENDMESSAGE)
+      return;
+
+   for (list_type it2 = it->next; it2 != NULL; it2 = it2->next)
+   {
+      stmt_type st2 = (stmt_type)it2->data;
+      if (st2->type != S_ASSIGN)
+         continue;
+      assign_stmt_type assign2 = st2->value.assign_stmt_val;
+      if (assign2->rhs->type != E_CALL)
+         continue;
+      stmt_type call_st2 = (stmt_type)assign2->rhs->value.callval;
+      call_stmt_type call2 = call_st2->value.call_stmt_val;
+
+      if (call2->function != SENDMESSAGE)
+         continue;
+      if (compare_call(call1, call2))
+      {
+         // Same at this point
+         const char *call_name = get_message_name(call2);
+         write_optimize_log(st2->lineno, "Potential optimization: Duplicate Send call to message %s",
+            call_name);
+         // Can't remove the duplicate calls yet until there's a way to
+         // determine any differences the subsequent calls will have.
+         // Until then, this still serves as a way to identify accidentlly
+         // duplicated message calls.
+         //assign2->rhs->type = E_IDENTIFIER;
+         //assign2->rhs = make_expr_from_id(duplicate_id(assign->lhs));
+      }
+   }
 }
 /************************************************************************/
 /*
@@ -548,4 +568,17 @@ int get_message_idnum(call_stmt_type call)
    }
 
    return -1;
+}
+/************************************************************************/
+/*
+* optimize_mark_id:  Takes Table (for storing IDs), two ID types (check_id
+*   which is used for the table lookup and add_id which is added to the table)
+*   and an integer to denote whether add_id is being marked used or unused.
+*/
+void optimize_mark_id(Table id_table, id_type check_id, id_type add_id, int used)
+{
+   if (check_id)
+      table_delete_item(id_table, check_id, id_hash, id_compare);
+   add_id->used = used;
+   table_insert(id_table, add_id, id_hash, id_compare);
 }
