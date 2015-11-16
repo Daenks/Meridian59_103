@@ -27,6 +27,8 @@ library.kod(2120):Optimization: Throwing out $ assignment to $ var ktriggered
 library.kod(2269):Optimization: Nth(i,1) call changed to First(i)
 library.kod(2243):Optimization: Throwing out $ assignment to $ var lActionList
 library.kod(2244):Optimization: Throwing out $ assignment to $ var ktriggered
+library.kod(2469):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+library.kod(2601):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 library.kod(2783):Optimization: Throwing out $ assignment to $ var lAction
 library.kod(2886):Optimization: Nth(i,1) call changed to First(i)
 library.kod(3020):Optimization: Nth(i,1) call changed to First(i)
@@ -54,9 +56,13 @@ questengine.kod(906):Optimization: Throwing out $ assignment to $ var retVal
 questengine.kod(1748):Optimization: Nth(i,1) call changed to First(i)
 questengine.kod(1909):Optimization: Nth(i,1) call changed to First(i)
 questengine.kod(1977):Optimization: Nth(i,1) call changed to First(i)
+lore.kod(369):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 lore.kod(417):Optimization: Nth(i,1) call changed to First(i)
 lore.kod(419):Optimization: Nth(i,1) call changed to First(i)
+lore.kod(419):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+lore.kod(421):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 lore.kod(571):Optimization: Throwing out $ assignment to $ var oChosen
+lore.kod(607):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 necbal.kod(343):Optimization: Nth(i,1) call changed to First(i)
 necbal.kod(436):Optimization: Nth(i,1) call changed to First(i)
 necbal.kod(785):Optimization: Throwing out $ assignment to $ var oTreasure
@@ -131,6 +137,7 @@ ratinvasion.kod(246):Optimization: Nth(i,1) call changed to First(i)
 orcinvasion.kod(453):Optimization: Nth(i,Length(i)) call changed to Last(i)
 orcinvasion.kod(454):Optimization: Nth(i,Length(i)) call changed to Last(i)
 item.kod(536):Optimization: Nth(i,1) call changed to First(i)
+item.kod(1840):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 item.kod(2014):Optimization: Throwing out $ assignment to $ var oHigh_obj
 item.kod(2450):Optimization: Nth(i,1) call changed to First(i)
 item.kod(2462):Optimization: Nth(i,1) call changed to First(i)
@@ -228,6 +235,9 @@ g9.kod(895):Optimization: Nth(i,1) call changed to First(i)
 g9.kod(1042):Optimization: Nth(i,1) call changed to First(i)
 uworld.kod(352):Optimization: Throwing out $ assignment to $ var oRoom
 orcpitb.kod(149):Optimization: Nth(i,1) call changed to First(i)
+bossroom.kod(395):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+bossroom.kod(401):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+bossroom.kod(407):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 lichmaze.kod(78):Optimization: Nth(i,1) call changed to First(i)
 marcryp2.kod(178):Optimization: Nth(i,1) call changed to First(i)
 marcry3a.kod(599):Optimization: Throwing out $ assignment to $ var lTrapList
@@ -241,19 +251,24 @@ survivalroom.kod(1390):Optimization: Nth(i,1) call changed to First(i)
 survivalroom.kod(1395):Optimization: Nth(i,1) call changed to First(i)
 survivalroom.kod(1400):Optimization: Nth(i,1) call changed to First(i)
 survivalroom.kod(1504):Optimization: Nth(i,1) call changed to First(i)
+survivalroom.kod(1506):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 survivalroom.kod(1523):Optimization: Nth(i,1) call changed to First(i)
 survivalroom.kod(1541):Optimization: Nth(i,1) call changed to First(i)
 survivalroom.kod(1602):Optimization: Nth(i,1) call changed to First(i)
+survivalroom.kod(1603):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 duke5.kod(169):Optimization: Throwing out $ assignment to $ var rMusic
 k5.kod(161):Optimization: Nth(i,1) call changed to First(i)
 battler.kod(548):Optimization: Throwing out $ assignment to $ var returnList
 monster.kod(897):Optimization: Nth(i,1) call changed to First(i)
+monster.kod(923):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 monster.kod(910):Optimization: Throwing out $ assignment to $ var state
 monster.kod(1622):Optimization: Throwing out $ assignment to $ var lBehavior
 monster.kod(3199):Optimization: Throwing out $ assignment to $ var lActionList
 monster.kod(3295):Optimization: Throwing out $ assignment to $ var lAvailable
 monster.kod(3613):Optimization: Throwing out $ assignment to $ var oIllusionCaster
 monster.kod(3652):Optimization: Throwing out $ assignment to $ var oBody
+monster.kod(4642):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+monster.kod(4655):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 monster.kod(4863):Optimization: Nth(i,1) call changed to First(i)
 monster.kod(5644):Optimization: Throwing out $ assignment to $ var lSchools
 monster.kod(5924):Optimization: Throwing out $ assignment to $ var lForSale
@@ -268,6 +283,10 @@ player.kod(2552):Optimization: Nth(i,1) call changed to First(i)
 player.kod(2552):Optimization: Nth(i,1) call changed to First(i)
 player.kod(2570):Optimization: Nth(i,1) call changed to First(i)
 player.kod(3351):Optimization: Nth(i,1) call changed to First(i)
+player.kod(3447):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+player.kod(3500):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+player.kod(3504):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+player.kod(3581):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 player.kod(3565):Optimization: Throwing out $ assignment to $ var state
 player.kod(4897):Optimization: Nth(i,1) call changed to First(i)
 player.kod(4904):Optimization: Nth(i,1) call changed to First(i)
@@ -296,11 +315,20 @@ decoratr.kod(719):Optimization: Throwing out $ assignment to $ var l2
 decoratr.kod(1049):Optimization: Throwing out $ assignment to $ var oPlayerObj
 mrbart.kod(98):Optimization: Throwing out $ assignment to $ var TargetObj
 tswatch.kod(1142):Optimization: Throwing out $ assignment to $ var oGuild
+tswatch.kod(2352):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+tswatch.kod(2371):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+tswatch.kod(2395):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 tswatch.kod(2425):Optimization: Nth(i,1) call changed to First(i)
+tswatch.kod(2427):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+tswatch.kod(2429):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 basicinn.kod(96):Optimization: Throwing out $ assignment to $ var CostObj
+kcshopk.kod(185):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 kcshopk.kod(198):Optimization: Throwing out $ assignment to $ var lForSale
+kcshopk.kod(315):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 kcbonepr.kod(223):Optimization: Throwing out $ assignment to $ var lDialogue
 kcbonepr.kod(224):Optimization: Throwing out $ assignment to $ var lTriggers
+izzio.kod(151):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+izzio.kod(367):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 user.kod(850):Optimization: Throwing out $ assignment to $ var oHRoom
 user.kod(865):Optimization: Throwing out $ assignment to $ var sGuild
 user.kod(3007):Optimization: Throwing out $ assignment to $ var lUsers
@@ -312,6 +340,8 @@ user.kod(7032):Optimization: Throwing out $ assignment to $ var lSaleItems
 user.kod(7070):Optimization: Throwing out $ assignment to $ var lSaleItems
 user.kod(7442):Optimization: Throwing out $ assignment to $ var old
 user.kod(9075):Optimization: Throwing out $ assignment to $ var oRoom
+user.kod(9797):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+user.kod(9802):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 user.kod(10073):Optimization: Throwing out $ assignment to $ var lRecent_mail
 user.kod(10154):Optimization: Nth(i,1) call changed to First(i)
 user.kod(10224):Optimization: Nth(i,1) call changed to First(i)
@@ -347,6 +377,9 @@ questnode.kod(372):Optimization: Nth(i,1) call changed to First(i)
 questnode.kod(376):Optimization: Nth(i,1) call changed to First(i)
 questnode.kod(385):Optimization: Nth(i,1) call changed to First(i)
 questnode.kod(394):Optimization: Nth(i,1) call changed to First(i)
+questnode.kod(600):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+questnode.kod(601):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
+questnode.kod(602):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 questnode.kod(1012):Optimization: Throwing out $ assignment to $ var iPrizeRestrictParm1
 questnode.kod(1013):Optimization: Throwing out $ assignment to $ var iPrizeRestrictParm2
 storage.kod(138):Optimization: Throwing out $ assignment to $ var oPlayerBox
@@ -356,7 +389,9 @@ boon.kod(271):Optimization: Nth(i,1) call changed to First(i)
 boon.kod(273):Optimization: Nth(i,1) call changed to First(i)
 boon.kod(278):Optimization: Nth(i,1) call changed to First(i)
 cdisease.kod(95):Optimization: Nth(i,1) call changed to First(i)
+cdisease.kod(102):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 cdisease.kod(115):Optimization: Nth(i,1) call changed to First(i)
+cdisease.kod(122):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 debuff.kod(143):Optimization: Nth(i,1) call changed to First(i)
 discord.kod(123):Optimization: Nth(i,1) call changed to First(i)
 distill.kod(343):Optimization: Nth(i,1) call changed to First(i)
@@ -381,6 +416,7 @@ radiusench.kod(169):Optimization: Nth(i,1) call changed to First(i)
 radiusench.kod(286):Optimization: Nth(i,1) call changed to First(i)
 radiusench.kod(685):Optimization: Nth(i,1) call changed to First(i)
 radiusench.kod(687):Optimization: Nth(i,1) call changed to First(i)
+radiusench.kod(733):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 shatter.kod(135):Optimization: Throwing out $ assignment to $ var oChosen
 sweep.kod(99):Optimization: Throwing out $ assignment to $ var lGoodItems
 earthqua.kod(118):Optimization: Throwing out $ assignment to $ var lFinalTargets
@@ -416,6 +452,7 @@ waspell.kod(174):Optimization: Throwing out $ assignment to $ var lData
 necroam.kod(440):Optimization: Nth(i,1) call changed to First(i)
 necroam.kod(442):Optimization: Nth(i,1) call changed to First(i)
 necroam.kod(443):Optimization: Nth(i,1) call changed to First(i)
+necroam.kod(444):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 necroam.kod(510):Optimization: Nth(i,1) call changed to First(i)
 necroam.kod(1237):Optimization: Throwing out $ assignment to $ var oAmulet
 prism.kod(278):Potential optimization: Duplicate Send call to message GetChargeLevel
@@ -434,4 +471,5 @@ gemresist.kod(99):Optimization: Nth(i,1) call changed to First(i)
 huntsw.kod(364):Optimization: Nth(i,1) call changed to First(i)
 huntsw.kod(366):Optimization: Nth(i,1) call changed to First(i)
 huntsw.kod(367):Optimization: Nth(i,1) call changed to First(i)
+huntsw.kod(368):Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)
 huntsw.kod(440):Optimization: Nth(i,1) call changed to First(i)

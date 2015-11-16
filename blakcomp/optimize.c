@@ -19,6 +19,10 @@ extern id_struct BuiltinIds[]; /* Built-in class/message/parameters (identifiers
 extern int numbuiltins; /* Number of built-in identifiers */
 extern int lineno; /* Current line number being parsed */
 
+// Local prototypes, should only call from optimize_call
+int optimize_call_nth(int index, list_type *args);
+int optimize_call_setnth(int index, list_type *args);
+
 /************************************************************************/
 /*
  * SimplifyExpression:  Attempt to simplify given expression.  Modifies e.
@@ -216,6 +220,7 @@ list_type optimize_message_statements(list_type stmts)
             }
          }
       }
+      // Also need to check inside control structures for this to be valid.
       else if (assign->rhs->type == E_CONSTANT && assign->lhs->type == I_LOCAL)
       {
          // If this is the first time we've seen this local and it's getting
@@ -255,10 +260,8 @@ list_type optimize_message_statements(list_type stmts)
 /************************************************************************/
 /*
  * optimize_call:  Takes an id_type (function ID) and arguments (list_type).
- *   Currently just attempts to optimize Nth calls, by converting instances
- *   of Nth(i,1) to First(i) and instances of Nth(i,Length(i)) to Last(i).
- *   Returns the index (to the built-in Functions array) of the required
- *   function (Nth, First or Nth) and modifies the args list appropriately.
+ *   Attempts to optimize the call (currently only SetNth and Nth calls).
+ *   Calls the appropriate function to perform the optimization.
  */
 int optimize_call(id_type id, list_type *args)
 {
@@ -268,9 +271,23 @@ int optimize_call(id_type id, list_type *args)
       return index;
 
    const char *fname = Functions[index].name;
-   if (stricmp(fname, "nth") != 0)
-      return index;
+   if (stricmp(fname, "setnth") == 0)
+      return optimize_call_setnth(index, args);
+   if (stricmp(fname, "nth") == 0)
+      return optimize_call_nth(index, args);
 
+   return index;
+}
+/************************************************************************/
+/*
+ * optimize_call_nth:  Takes an built-in function index (integer) and the
+ *   arguments to that function (list_type). Optimizes Nth calls from
+ *   Nth(i,1) to First(i) and Nth(i,Length(i)) to Last(i). Returns the index
+ *   of the required function (Nth, First or Last) and modifies the args
+ *   list appropriately.
+ */
+int optimize_call_nth(int index, list_type *args)
+{
    list_type arg = *args;
    arg_type arg2 = (arg_type)arg->next->data;
    if (arg2->type != ARG_EXPR)
@@ -281,15 +298,17 @@ int optimize_call(id_type id, list_type *args)
       && arg2->value.expr_val->value.constval->value.numval == 1)
    {
       // First(i) is faster than Nth(i,1), so change the call.
-      fname = "First";
       for (int i = 0; i < numfuncs; ++i)
-         if (stricmp(Functions[i].name, fname) == 0)
+      {
+         if (stricmp(Functions[i].name, "first") == 0)
          {
             index = i;
-            break;
+            *args = list_create(arg->data);
+            write_optimize_log(lineno, "Optimization: Nth(i,1) call changed to First(i)");
+            return index;
          }
-      *args = list_create(arg->data);
-      write_optimize_log(lineno, "Optimization: Nth(i,1) call changed to First(i)");
+      }
+      action_error("Couldn't find function First during optimize_call_nth!");
    }
    else if (arg2->value.expr_val->type == E_CALL)
    {
@@ -302,17 +321,55 @@ int optimize_call(id_type id, list_type *args)
             && compare_expression(arg1->value.expr_val, len_arg->value.expr_val))
          {
             // Last(i) is faster than Nth(i,Length(i)), so change the call.
-            fname = "Last";
             for (int i = 0; i < numfuncs; ++i)
-               if (stricmp(Functions[i].name, fname) == 0)
+            {
+               if (stricmp(Functions[i].name, "last") == 0)
                {
                   index = i;
-                  break;
+                  *args = list_create(arg->data);
+                  write_optimize_log(lineno, "Optimization: Nth(i,Length(i)) call changed to Last(i)");
+                  return index;
                }
-            *args = list_create(arg->data);
-            write_optimize_log(lineno, "Optimization: Nth(i,Length(i)) call changed to Last(i)");
+            }
+            action_error("Couldn't find function Last during optimize_call_nth!");
          }
       }
+   }
+
+   return index;
+}
+/************************************************************************/
+/*
+ * optimize_call_setnth:  Takes an built-in function index (integer) and the
+ *   arguments to that function (list_type). Optimizes SetNth calls from
+ *   SetNth(list,1,val) to SetFirst(list, val). Returns the index of the
+ *   required function (SetNth or SetFirst) and modifies the args list
+ *   appropriately.
+ */
+int optimize_call_setnth(int index, list_type *args)
+{
+   list_type arg = *args;
+   arg_type arg2 = (arg_type)arg->next->data;
+   if (arg2->type != ARG_EXPR)
+      return index;
+
+   if (arg2->value.expr_val->type == E_CONSTANT
+      && arg2->value.expr_val->value.constval->type == C_NUMBER
+      && arg2->value.expr_val->value.constval->value.numval == 1)
+   {
+      // SetFirst(list, val) is faster than SetNth(list,1,val), so change the call.
+      for (int i = 0; i < numfuncs; ++i)
+      {
+         if (stricmp(Functions[i].name, "setfirst") == 0)
+         {
+            index = i;
+            *args = list_create(arg->data);
+            list_add_item(*args, arg->next->next->data);
+            write_optimize_log(lineno, "Optimization: SetNth(list,1,val) call changed to SetFirst(list,val)");
+            return index;
+         }
+      }
+      action_error("Couldn't find function SetFirst during optimize_call_setnth!");
    }
 
    return index;
