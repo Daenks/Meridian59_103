@@ -445,15 +445,13 @@ int compare_expression(expr_type e1, expr_type e2)
  */
 int compare_id(id_type i1, id_type i2)
 {
-   if (i1->type != i2->type)
-      return false;
-   if (i1->idnum != i2->idnum)
-      return false;
-   if (stricmp(i1->name, i2->name) != 0)
-      return false;
-   if (i1->ownernum != i2->ownernum)
-      return false;
-   return true;
+   if (i1->type == i2->type
+      && i1->idnum == i2->idnum
+      && i1->ownernum == i2->ownernum
+      && stricmp(i1->name, i2->name) == 0)
+      return true;
+
+   return false;
 }
 /************************************************************************/
 /*
@@ -474,9 +472,11 @@ int compare_call(call_stmt_type c1, call_stmt_type c2)
       if (arg1->type != arg2->type)
          return false;
       if (arg1->type == ARG_EXPR)
+      {
          if (!compare_expression(arg1->value.expr_val, arg2->value.expr_val))
             return false;
-      if (arg1->type == ARG_SETTING)
+      }
+      else if (arg1->type == ARG_SETTING)
       {
          if (!compare_id(arg1->value.setting_val->id, arg2->value.setting_val->id))
             return false;
@@ -545,6 +545,7 @@ const char* get_message_name(call_stmt_type call)
       if (id->type == I_MISSING && id->idnum == call_num)
          return id->name;
    }
+
    return NULL;
 }
 /************************************************************************/
