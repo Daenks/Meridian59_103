@@ -80,6 +80,11 @@ messages:
       return FALSE;
    }
 
+      GetHeatDamage()
+   {
+      return 1;
+   }
+
    % these 3 called by player, for normal 3rd-person overlays on user.
 
    GetOverlay(animation = $)

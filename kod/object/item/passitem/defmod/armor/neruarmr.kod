@@ -48,8 +48,8 @@ classvars:
    vrIcon_male = neruditearmor_male_icon_rsc
    vrIcon_female = neruditearmor_female_icon_rsc
 
-   viDefense_base = -150
-   viDamage_base = 5
+   viDefense_base = -125
+   viDamage_base = 4
 
 properties:
 
@@ -62,17 +62,18 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,20],
-               [-ATCK_SPELL_SHOCK,20],
-               [-ATCK_SPELL_COLD,20],
-               [-ATCK_SPELL_ACID,20],
-               [-ATCK_SPELL_QUAKE,-20]
+      return [ [ATCK_WEAP_ALL,-10],
+               [-ATCK_SPELL_FIRE,15],
+               [-ATCK_SPELL_SHOCK,15],
+               [-ATCK_SPELL_COLD,15],
+               [-ATCK_SPELL_ACID,15],
+               [-ATCK_SPELL_QUAKE,-15]
              ];
    }
 
    GetHeatDamage()
    {
-      return 2;
+      return 5;
    }
 
    DefendingHit(who = $,what = $)
