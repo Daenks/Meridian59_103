@@ -260,24 +260,45 @@ Bool IsInterpreting(void)
 }
 
 void TraceInfo(int session_id,char *class_name,int message_id,int num_parms,
-			   parm_node parms[])
+               parm_node parms[])
 {
-	int i;
-	val_type val;
-	
-	SendSessionAdminText(session_id,"%-15s%-20s ",class_name,GetNameByID(message_id));
-	
-	for (i=0;i<num_parms;i++)
-	{
-		SendSessionAdminText(session_id,"%s = ",GetNameByID(parms[i].name_id));
-		val.int_val = parms[i].value;
-		SendSessionAdminText(session_id,"%s ",GetTagName(val));
-		SendSessionAdminText(session_id,"%s",GetDataName(val));
-		
-		if (i != num_parms-1)
-			SendSessionAdminText(session_id,", ");
-	}
-	SendSessionAdminText(session_id,"\n");
+   int i;
+   val_type val;
+   char trace_buf[BUFFER_SIZE];
+   char *buf_ptr = trace_buf;
+   int num_chars;
+   int buf_len = 0;
+
+   if (num_parms == 0)
+      num_chars = sprintf(buf_ptr, "%-15s%-20s\n", class_name, GetNameByID(message_id));
+   else
+      num_chars = sprintf(buf_ptr, "%-15s%-20s ", class_name, GetNameByID(message_id));
+   buf_len += num_chars;
+   buf_ptr += num_chars;
+
+   for (i = 0; i < num_parms; ++i)
+   {
+      val.int_val = parms[i].value;
+
+      if (i == num_parms - 1)
+         num_chars = sprintf(buf_ptr, "%s = %s %s\n", GetNameByID(parms[i].name_id),
+                        GetTagName(val), GetDataName(val));
+      else
+         num_chars = sprintf(buf_ptr, "%s = %s %s, ", GetNameByID(parms[i].name_id),
+                        GetTagName(val), GetDataName(val));
+      buf_len += num_chars;
+      buf_ptr += num_chars;
+
+      // Flushing shouldn't be necessary here, but just in case.
+      if (buf_len > BUFFER_SIZE * 0.9)
+      {
+         buf_ptr -= buf_len;
+         SendSessionAdminText(session_id, buf_ptr);
+         buf_len = 0;
+      }
+   }
+   buf_ptr -= buf_len;
+   SendSessionAdminText(session_id, buf_ptr);
 }
 
 void PostBlakodMessage(int object_id,int message_id,int num_parms,parm_node parms[])
@@ -748,7 +769,6 @@ in sendmsg.h now */
 __inline void StoreValue(int object_id,local_var_type *local_vars,int data_type,int data,
 						 val_type new_data)
 {
-	class_node *class_data;
 	object_node *o;
 	
 	switch (data_type)
@@ -771,18 +791,11 @@ __inline void StoreValue(int object_id,local_var_type *local_vars,int data_type,
 				BlakodDebugInfo(),object_id);
 			return;
 		}
-		class_data = GetClassByID(o->class_id);
-		if (class_data == NULL)
-		{
-			eprintf("[%s] StoreValue can't find class id %i\n",
-				BlakodDebugInfo(),o->class_id);
-			return;
-		}
-		/* equal to num_properties is ok, because self = prop 0 */
-		if (data < 0 || data > class_data->num_properties) 
+		// num_props includes self, so the max property is stored at [num_props - 1]
+		if (data < 0 || data >= o->num_props)
 		{
 			eprintf("[%s] StoreValue can't write to illegal property %i (max %i)\n",
-				BlakodDebugInfo(),data,class_data->num_properties);
+				BlakodDebugInfo(), data, o->num_props - 1);
 			return;
 		}
 		o->p[data].val.int_val = new_data.int_val; 
