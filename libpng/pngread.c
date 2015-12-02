@@ -15,6 +15,7 @@
  */
 
 #include "pngpriv.h"
+#include <stdbool.h>
 
 #ifdef PNG_READ_SUPPORTED
 
@@ -79,11 +80,13 @@ png_create_read_struct_2,(png_const_charp user_png_ver, png_voidp error_ptr,
  * encounter a png_error() will longjmp here.  Since the jmpbuf is
  * then meaningless we abort instead of returning.
  */
+   bool test;
 #ifdef USE_FAR_KEYWORD
-   if (setjmp(tmp_jmpbuf))
+   test = setjmp(tmp_jmpbuf);
 #else
-   if (setjmp(png_jmpbuf(png_ptr))) /* Sets longjmp to match setjmp */
+   test = setjmp(png_jmpbuf(png_ptr)); /* Sets longjmp to match setjmp */
 #endif
+   if (test)
       PNG_ABORT();
 #ifdef USE_FAR_KEYWORD
    png_memcpy(png_jmpbuf(png_ptr), tmp_jmpbuf, png_sizeof(jmp_buf));

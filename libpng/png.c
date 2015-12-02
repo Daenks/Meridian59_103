@@ -12,6 +12,7 @@
  */
 
 #include "pngpriv.h"
+#include <stdbool.h>
 
 /* Generate a compiler error if there is an old png.h in the search path. */
 typedef png_libpng_version_1_5_13 Your_png_h_is_not_version_1_5_13;
@@ -1172,6 +1173,7 @@ png_check_IHDR(png_structp png_ptr,
    int filter_type)
 {
    int error = 0;
+   bool test;
 
    /* Check for width and height valid values */
    if (width == 0)
@@ -1187,21 +1189,22 @@ png_check_IHDR(png_structp png_ptr,
    }
 
 #  ifdef PNG_SET_USER_LIMITS_SUPPORTED
-   if (width > png_ptr->user_width_max)
-
+   test = width > png_ptr->user_width_max;
 #  else
-   if (width > PNG_USER_WIDTH_MAX)
+   test = width > PNG_USER_WIDTH_MAX;
 #  endif
+   if (test)
    {
       png_warning(png_ptr, "Image width exceeds user limit in IHDR");
       error = 1;
    }
 
 #  ifdef PNG_SET_USER_LIMITS_SUPPORTED
-   if (height > png_ptr->user_height_max)
+   test = height > png_ptr->user_height_max;
 #  else
-   if (height > PNG_USER_HEIGHT_MAX)
+   test = height > PNG_USER_HEIGHT_MAX;
 #  endif
+   if (test)
    {
       png_warning(png_ptr, "Image height exceeds user limit in IHDR");
       error = 1;
