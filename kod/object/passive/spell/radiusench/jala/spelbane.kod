@@ -22,7 +22,10 @@ resources:
    Spellbane_icon_rsc = ispebane.bgf
    Spellbane_desc_rsc = \
       "The words of this song form an enchantment which disallows the casting "
-      "of any spells weaker than the song.  "
+      "of any spells by listeners. This powerful song requires perfect "
+      "perception, so only those very close to the singer will be truly "
+      "hindered. Those that are, however, will have their spells blocked "
+      "through direct absorption by the singer's mana.  "
       "Requires one perfect polished seraphym."
 
    Spellbane_no_towns = "You are prevented from singing this song currently."
@@ -54,6 +57,7 @@ classvars:
    viSpell_num = SID_SPELLBANE
    viSchool = SS_JALA
    viSpell_level = 5
+   viBaseRange = 6
 
    viMana = 12          % Mana is amount used upon inititiation
    viManaDrain = 8      % Drain is amount used every viDrainTime milliseconds
@@ -77,6 +81,15 @@ messages:
       plReagents = Cons([&PolishedSeraphym,1],plReagents);
 
       return;
+   }
+
+   CalculateRange(who=$, iSpellPower=25)
+   {
+      % Spellbane range varies widely with spellpower.
+      % Zero to base range. Exceedingly difficult to
+      % combine with AMA (can't cast AMA if spellbane
+      % is up, spellbane has low range if it is).
+      return ((viBaseRange*iSpellPower)/99);
    }
 
 end

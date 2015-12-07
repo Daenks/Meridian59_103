@@ -74,6 +74,12 @@ resources:
    spell_spellbane_stopped = \
       "The notes of %s's song tangle with the words of your spell, unraveling "
       "it faster than your tongue can weave it."
+   spell_spellbane_not_stop = \
+      "The notes of %s's song fail to stop your spell!"
+   spell_spellbane_absorbed = \
+      "The notes of your spellbane song absorb the %s spell cast by %s!"
+   spell_spellbane_not_absorbed = \
+      "You don't have enough mana to absorb the %s spell cast by %s!"
 
    spell_advanced = "You advanced in %s!  Your ability is now at %s."
    spell_guardian = \
@@ -553,7 +559,8 @@ messages:
    CanCastHere(who=$,where=$,lTargets=$,iSpellPower=0,bItemCast=FALSE,
                report=TRUE)
    {
-      local oSpell, lState, lRadiusState, oTarget;
+      local oSpell, lState, lRadiusState, oTarget, iCrystalizeManaAbility,
+            oCrystalizeMana, oSpellbaner;
 
       if IsClass(who,&DM)
       {
@@ -573,13 +580,50 @@ messages:
          {
             lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
                                  #byClass=&Spellbane);
-            if report
+            oSpellbaner = Nth(lRadiusState,3);
+
+            if Send(oSpellbaner,@GetMana) < viMana
             {
-               Send(who,@MsgSendUser,#message_rsc=spell_spellbane_stopped,
-                     #parm1=Send(Nth(lRadiusState,3),@GetName));
+               iCrystalizeManaAbility = Send(oSpellbaner,@GetSpellAbility,
+                                             #spell_num=SID_CRYSTALIZE_MANA);
+               if iCrystalizeManaAbility > 0
+                  AND NOT Send(oSpellbaner,@IsCrystalizeManaSurging)
+                  AND NOT IsClass(self,&CrystalizeMana)
+               {
+                  oCrystalizeMana = Send(SYS,@FindSpellByNum,
+                                          #num=SID_CRYSTALIZE_MANA);
+                  Send(oCrystalizeMana,@DoManaSurge,#who=oSpellbaner,
+                        #triggered=TRUE);
+               }
             }
 
-            return FALSE;
+            if Send(oSpellbaner,@GetMana) >= viMana
+            {
+               Send(oSpellbaner,@LoseMana,#amount=viMana);
+               if report
+               {
+                  Send(who,@MsgSendUser,#message_rsc=spell_spellbane_stopped,
+                       #parm1=Send(oSpellbaner,@GetName));
+                  Send(oSpellbaner,@MsgSendUser,
+                        #message_rsc=spell_spellbane_absorbed,
+                        #parm1=Send(self,@GetName),
+                        #parm2=Send(who,@GetName));
+               }
+
+               return FALSE;
+            }
+            else
+            {
+               if report
+               {
+                  Send(who,@MsgSendUser,#message_rsc=spell_spellbane_not_stop,
+                       #parm1=Send(Nth(lRadiusState,3),@GetName));
+                  Send(Nth(lRadiusState,3),@MsgSendUser,
+                        #message_rsc=spell_spellbane_not_absorbed,
+                        #parm1=Send(self,@GetName),
+                        #parm2=Send(who,@GetName));
+               }
+            }
          }
 
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_SILENCE);
