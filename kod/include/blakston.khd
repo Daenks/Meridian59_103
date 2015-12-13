@@ -158,6 +158,13 @@
    LIR_SECTOR_HASCTEX = 0x000040
    LIR_BLOCKED_OBJECT = 0x000100
 
+   % Types used in MoveCallback (must match roofile.h)
+   MC_UNREACHABLE   = 0
+   MC_STRAIGHTLINE  = 1
+   MC_PATHFROMCACHE = 2
+   MC_NEWPATH       = 3
+   MC_HEURISTIC     = 4
+   
    %%% Projectile and Light flags
 
    % Flags for spells/projectiles
@@ -1607,6 +1614,7 @@
    STATE_MOVE        = 0x00010
    STATE_ZERO_MASK   = 0xFF000
 
+   ESTATE_LONG_STEP  = 0x02000
    ESTATE_AVOIDING   = 0x04000
    ESTATE_CLOCKWISE  = 0x08000
 
@@ -1618,11 +1626,13 @@
    VSTATE_INVALID_ATTACK   = 0x20000
    VSTATE_VALIDITY_MASK    = 0x0FFFF
 
-   % Flag passed to BSP C calls to signify the monster
-   % can move outside the BSP tree. Mobs that can do this
-   % have the AI_MOVE_WALKTHROUGH_WALLS AI flag.
-   MSTATE_MOVE_OUTSIDE_BSP = 0x100000
-
+   % Flags passed to BSP GetStepTowards calls
+   % These are based on others
+   MF_MOVE_OUTSIDE_BSP = 0x100000
+   MF_LONG_STEP        = 0x200000
+   MF_AVOIDING         = 0x400000
+   MF_CLOCKWISE        = 0x800000
+   
    % brain identification numbers
    BRAIN_ORIGINAL          = 1
    BRAIN_REVENANT          = 2
@@ -1676,7 +1686,9 @@
    AI_FIGHT_SWITCHALOT        = 0x0800000
    % monster may strike through walls (revenants)
    AI_FIGHT_THROUGH_WALLS     = 0x1000000
-
+   % sometimes monsters need to wait a bit for next move available
+   AI_MOVE_WAITING_FOR_STEP   = 0x2000000
+   
    % Monster movement speeds
    SPEED_NONE          = 0
    SPEED_VERY_SLOW     = 4

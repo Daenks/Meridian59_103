@@ -78,7 +78,14 @@ enum
    REALTIME_CLASS = 36,
    EVENTENGINE_CLASS = 37,
    ESCAPED_CONVICT_CLASS = 38,
-   MAX_BUILTIN_CLASS = 38
+   MOVECALLBACK_MSG = 39,
+   IROW_PARM = 40,
+   ICOL_PARM = 41,
+   IFINEROW_PARM = 42,
+   IFINECOL_PARM = 43,
+   ITYPE_PARM = 44,
+   IFLAGS_PARM = 45,
+   MAX_BUILTIN_CLASS = 45
 
    // To add other C-accessible KOD identifiers,
    // see the BLAKCOMP's table of BuiltinIds[].
@@ -234,6 +241,7 @@ char * GetLastErrorStr();
 #define WM_BLAK_MAIN_DELETE_ACCOUNT (WM_APP + 4002)
 #define WM_BLAK_MAIN_VERIFIED_LOGIN (WM_APP + 4003)
 #define WM_BLAK_MAIN_LOAD_GAME      (WM_APP + 4004)
+#define WM_BLAK_MAIN_PATH_READY     (WM_APP + 4005)
 
 #include "bof.h"
 
@@ -241,6 +249,9 @@ char * GetLastErrorStr();
 
 #include "stringinthash.h"
 #include "intstringhash.h"
+
+#include "queue.h"
+#include "geometry.h"
 
 #include "blakres.h"
 #include "channel.h"
@@ -258,6 +269,8 @@ char * GetLastErrorStr();
 #include "system.h"
 #include "loadrsc.h"
 #include "loadgame.h"
+#include "astar_classes.h"
+#include "astar.h"
 #include "roofile.h"
 #include "roomdata.h"
 #include "files.h"

@@ -494,6 +494,11 @@ properties:
    % 20 seconds default for players, 60 for monsters
    piHurtMeTime = 60000
 
+   pbNextMoveFaceTarget = FALSE
+   pbNextMoveFaceAway = FALSE
+   pbNextMoveToMaster = FALSE
+   poMoveStartedRoom = $
+   
 messages:
 
    Constructor(template=FALSE, color=0, piSurvivalLevel=0, iBrain = 0)
@@ -1621,7 +1626,7 @@ messages:
       {
          lBehavior = Cons(AI_LOOPING_PATROL,lBehavior);
       }
-
+	  
       piBehavior = viDefault_behavior;
 
       foreach i in lBehavior
@@ -2513,17 +2518,19 @@ messages:
       if oTarget = $ 
       { 
          Debug("Bad info passed to MoveTowards!");
-         return FALSE; 
+         return; 
       }
 
-      return Send(self, @MoveTowardsCoords,
-                   #iRow=Send(oTarget,@GetRow),
-                   #iCol=Send(oTarget,@GetCol),
-                   #iFineRow=Send(oTarget,@GetFineRow),
-                   #iFineCol=Send(oTarget,@GetFineCol),
-                   #face_target=face_target,
-                   #face_away=face_away,
-                   #to_master=to_master);
+      Send(self, @MoveTowardsCoords,
+             #iRow=Send(oTarget,@GetRow),
+             #iCol=Send(oTarget,@GetCol),
+             #iFineRow=Send(oTarget,@GetFineRow),
+             #iFineCol=Send(oTarget,@GetFineCol),
+             #face_target=face_target,
+             #face_away=face_away,
+             #to_master=to_master);
+				   
+      return;
    }
 
    MoveAway(oTarget = $, face_target=FALSE, face_away=FALSE)
@@ -2533,12 +2540,12 @@ messages:
       if oTarget = $
       {
          Debug("Bad info passed to MoveAway!");
-         return FALSE;
+         return;
       }
 
       if poOwner <> Send(oTarget,@GetOwner)
       {
-         return FALSE;
+         return;
       }
 
       % calculate square delta in fineness
@@ -2549,13 +2556,15 @@ messages:
       dcol = dcol - ((Send(oTarget,@GetCol) * FINENESS) + Send(oTarget,@GetFineCol));
 
       % add vector from oTarget to self on our position and try move there
-      return Send(self, @MoveTowardsCoords,
-                   #iRow=(piRow + (drow / FINENESS)),
-                   #iCol=(piCol + (dcol / FINENESS)),
-                   #iFineRow=(piFine_row + (drow MOD FINENESS)),
-                   #iFineCol=(piFine_col + (dcol MOD FINENESS)),
-                   #face_target=face_target,
-                   #face_away=face_away);
+      Send(self, @MoveTowardsCoords,
+             #iRow=(piRow + (drow / FINENESS)),
+             #iCol=(piCol + (dcol / FINENESS)),
+             #iFineRow=(piFine_row + (drow MOD FINENESS)),
+             #iFineCol=(piFine_col + (dcol MOD FINENESS)),
+             #face_target=face_target,
+             #face_away=face_away);
+			 
+      return;
    }
 
    ReqMonsterMove(new_row = $,new_col = $,new_finerow = FINENESS_HALF,
@@ -2629,44 +2638,115 @@ messages:
    MoveTowardsCoords(iRow=$, iCol=$, iFineRow=FINENESS_HALF, iFineCol=FINENESS_HALF,
                      face_target=FALSE, face_away=FALSE, to_master=FALSE)
    {
-      local iState, iMoveFlags;
+      local iMoveFlags;
 
       if (iRow = $ or iCol = $)
       {
          return;
       }
 
-      % Mobs that can move outside the BSP tree set this field which is then
-      % combined with the state flags and sent to GetStepTowardsBSP. These
-      % moves aren't checked against room geometry.
-      iMoveFlags = 0;
+      % build flags for query here from different flag fields
+      iMoveFlags = 0;     
       if (piBehavior & AI_MOVE_WALKTHROUGH_WALLS)
       {
-         iMoveFlags = iMoveFlags | MSTATE_MOVE_OUTSIDE_BSP;
+         iMoveFlags = iMoveFlags | MF_MOVE_OUTSIDE_BSP;
       }
-
+	  if (piState & ESTATE_AVOIDING)
+      {
+         iMoveFlags = iMoveFlags | MF_AVOIDING;
+      }
+      if (piState & ESTATE_CLOCKWISE)
+      {
+         iMoveFlags = iMoveFlags | MF_CLOCKWISE;
+      }
+	  
+      % save some parameters of this move for the callback
+      pbNextMoveFaceTarget = face_target;
+      pbNextMoveFaceAway = face_away;
+      pbNextMoveToMaster = to_master;
+      poMoveStartedRoom = poOwner;
+	  
+      % set flag on behaviour, unset in callback
+      piBehavior = piBehavior | AI_MOVE_WAITING_FOR_STEP;
+	  
       % query where to step next
       % note: these need some persistent info across
       % calls which are stored in piState (flags from old KOD code)
-      iState = GetStepTowardsBSP(
+      GetStepTowardsBSP(
                 Send(poOwner, @GetRoomData),
                 piRow, piCol, piFine_row, piFine_col,
-                *iRow, *iCol, *iFineRow, *iFineCol,
-                piState | iMoveFlags, self);
+                iRow, iCol, iFineRow, iFineCol,
+                iMoveFlags, self);
 
-      if iState <> $
-      {
-         piState = iState;
+      % may have no an answer here ready yet, or already processed, see MoveCallback
+      return;
+   }
 
-         % debug("step",iRow,iCol,iFineRow,iFineCol);
+   MoveCallback(iType=0, iFlags=0, iRow=0, iCol=0, iFineRow=0, iFineCol=0)
+   "Called from C when the next-step is available."
+   "This may happen during GetStepTowardsBSP() and therefore BEFORE"
+   "MoveTowardsCoords() ends, or at any later time if path needs to be calculated."   
+   {
+      %debug("movecallback",iType,iFlags,iRow,iCol,iFineRow,iFineCol);
 	  
+      % not waiting for a response anymore, e.g. serversave occured or others like
+      % we lost aggro on that target while path was calculated..
+      if NOT (piBehavior & AI_MOVE_WAITING_FOR_STEP)
+      {
+         debug("Monster ", self, " received MoveCallback without waiting for it.");
+         return;
+      }
+
+      % unset waiting flag on behaviour
+      piBehavior = piBehavior & ~AI_MOVE_WAITING_FOR_STEP;
+
+      % move return is invalid by now, because we changed rooms
+      if (poMoveStartedRoom <> poOwner OR poOwner = $)
+      {
+         % unset some flags
+         piState = piState & ~ESTATE_LONG_STEP;
+         piState = piState & ~ESTATE_AVOIDING;
+         piState = piState & ~ESTATE_CLOCKWISE;
+         return;
+      }
+
+      % apply some returned move-flags on their original flag fields	  
+      if (iFlags & MF_LONG_STEP)
+      {
+         piState = piState | ESTATE_LONG_STEP;
+      }
+      else
+      {
+         piState = piState & ~ESTATE_LONG_STEP;
+      }
+      if (iFlags & MF_AVOIDING)
+      {
+         piState = piState | ESTATE_AVOIDING;
+      }
+      else
+      {
+         piState = piState & ~ESTATE_AVOIDING;
+      }
+      if (iFlags & MF_CLOCKWISE)
+      {
+         piState = piState | ESTATE_CLOCKWISE;
+      }
+      else
+      {
+         piState = piState & ~ESTATE_CLOCKWISE;
+      }
+	  
+      % all reachable types with valid position are bigger MC_UNREACHABLE
+      % right now we don't care what specifc kind
+      if iType > MC_UNREACHABLE
+      {
          if (NOT (piBehavior & AI_MOVE_WALKTHROUGH_WALLS))
              OR Send(self,@ReqMonsterMove,#new_row=iRow,#new_col=iCol,
                      #new_finerow=iFineRow,#new_finecol=iFineCol)
          {
             Send(self,@MonsterOrient,#new_row=iRow,#new_col=iCol,
                  #new_finerow=iFineRow,#new_finecol=iFineCol,
-                 #face_target=face_target,#face_away=face_away);
+                 #face_target=pbNextMoveFaceTarget,#face_away=pbNextMoveFaceAway);
 		
             Send(poOwner,@SomethingMoved,#what=self,#speed=viSpeed,
                  #new_row=iRow,#new_col=iCol,
@@ -2676,15 +2756,28 @@ messages:
             % Turn to face target
             Send(self,@MonsterOrient,#new_row=iRow,#new_col=iCol,
                  #new_finerow=iFineRow,#new_finecol=iFineCol,
-                 #face_target=face_target,#face_away=face_away);
-
-         return TRUE;		
+                 #face_target=pbNextMoveFaceTarget,#face_away=pbNextMoveFaceAway);		
          }
       }
+      else
+      {
+         % fully blocked: this is unlikely to happen
+         % because if no path -> move heuristc was used
+      }
 
-      return FALSE;
+      return;
    }
+   
+   GarbageCollecting()
+   "Unsets flags of pending moves across GC, because there"
+   "won't be any response."
+   {
+      % unset waiting flag on behaviour
+      piBehavior = piBehavior & ~AI_MOVE_WAITING_FOR_STEP;
 
+      return;
+   }
+   
    GotoCoords(iRow=$,iCol=$,iFineRow=FINENESS_HALF,iFineCol=FINENESS_HALF)
    "Move to a specific row and column. warning! fineness really"
    "isn't accurate as the monster will stop when it reaches the destination"
@@ -5338,6 +5431,13 @@ messages:
       {
          % see formula above  
          iTime = 10000 / (viSpeed * 4);
+
+         % diagonal move: scale-up the time according to the increased distance
+         if piState & ESTATE_LONG_STEP
+         {
+            % sqrt(2) = 1.41421356
+            iTime = (14142 * iTime) / 10000;			
+         }
 
          % finally we reduce the timer a bit (right now it's exact at ms)
          % why? the client should get a new position before the last destination

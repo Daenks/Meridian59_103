@@ -1409,10 +1409,10 @@ void AdminShowMemory(int session_id,admin_parm_type parms[],
 	aprintf("%s\n",TimeStr(GetTime()));
 	for (i=0;i<GetNumMemoryStats();i++)
 	{
-		aprintf("%-20s %8lu\n",GetMemoryStatName(i),mstat->allocated[i]);
+		aprintf("%-20s %9lu\n",GetMemoryStatName(i),mstat->allocated[i]);
 		total += mstat->allocated[i];
 	}
-	aprintf("%-20s %4lu MB\n","-- Total",total/1024/1024);
+	aprintf("%-20s %6lu MB\n","-- Total",total/1024/1024);
 	
 	aprintf("-------------------------------------------\n");
 }

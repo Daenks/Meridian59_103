@@ -2693,7 +2693,7 @@ int C_CanMoveInRoomBSP(int object_id, local_var_type *local_vars,
 	e.Y = GRIDCOORDTOROO(row_dest.v.data, finerow_dest.v.data);
 
 	Wall* blockWall;
-	ret_val.v.data = BSPCanMoveInRoom(&r->data, &s, &e, objectid.v.data, (move_outside_bsp.v.data != 0), &blockWall);
+	ret_val.v.data = BSPCanMoveInRoom(&r->data, &s, &e, objectid.v.data, (move_outside_bsp.v.data != 0), &blockWall, false);
 
 #if DEBUGMOVE
 	//dprintf("MOVE:%i R:%i S:(%1.2f/%1.2f) E:(%1.2f/%1.2f)", ret_val.v.data, r->data.roomdata_id, s.X, s.Y, e.X, e.Y);
@@ -2889,8 +2889,12 @@ int C_ChangeTextureBSP(int object_id, local_var_type *local_vars,
 		return ret_val.int_val;
 	}
 
-	BSPChangeTexture(&r->data, (unsigned short)server_id.v.data, 
+	BSPChangeTexture(&r->data, (unsigned int)server_id.v.data, 
 		(unsigned short)new_texnum.v.data, flags.v.data);
+
+	// also change texture in astar workers
+	AStarEnqueueCommand(
+		new astar_command_changetexture(r->data.roomdata_id, (unsigned int)server_id.v.data, (unsigned short)new_texnum.v.data, (unsigned int)flags.v.data));
 
 	return ret_val.int_val;
 }
@@ -2963,6 +2967,10 @@ int C_MoveSectorBSP(int object_id, local_var_type *local_vars,
 	float fspeed = 0.0f; // todo, but always instant anyways atm
 
 	BSPMoveSector(&r->data, (unsigned int)server_id.v.data, is_floor, fheight, fspeed);
+
+	// also move sector in astar workers
+	AStarEnqueueCommand(
+		new astar_command_movesector(r->data.roomdata_id, (unsigned int)server_id.v.data, is_floor, fheight, fspeed));
 
 	return ret_val.int_val;
 }
@@ -3047,6 +3055,9 @@ int C_BlockerAddBSP(int object_id, local_var_type *local_vars,
 	// query
 	ret_val.v.data = BSPBlockerAdd(&r->data, obj_val.v.data, &p);
 
+	// also add to astar workers
+	AStarEnqueueCommand(new astar_command_blockeradd(r->data.roomdata_id, obj_val.v.data, p));
+
 	return ret_val.int_val;
 }
 
@@ -3130,6 +3141,9 @@ int C_BlockerMoveBSP(int object_id, local_var_type *local_vars,
 	// query
 	ret_val.v.data = BSPBlockerMove(&r->data, obj_val.v.data, &p);
 
+	// also move in astar workers
+	AStarEnqueueCommand(new astar_command_blockermove(r->data.roomdata_id, obj_val.v.data, p));
+
 	return ret_val.int_val;
 }
 
@@ -3172,6 +3186,9 @@ int C_BlockerRemoveBSP(int object_id, local_var_type *local_vars,
 	// query
 	ret_val.v.data = BSPBlockerRemove(&r->data, obj_val.v.data);
 
+	// also remove in astar workers
+	AStarEnqueueCommand(new astar_command_blockerremove(r->data.roomdata_id, obj_val.v.data));
+
 	return ret_val.int_val;
 }
 
@@ -3204,6 +3221,9 @@ int C_BlockerClearBSP(int object_id, local_var_type *local_vars,
 
 	// query
 	BSPBlockerClear(&r->data);
+
+	// also clear in astar workers
+	AStarEnqueueCommand(new astar_command_blockerclear(r->data.roomdata_id));
 
 	return ret_val.int_val;
 }
@@ -3436,31 +3456,14 @@ int C_GetStepTowardsBSP(int object_id, local_var_type *local_vars,
 	s.Y = GRIDCOORDTOROO(row_source.v.data, finerow_source.v.data);
 
 	V2 e;
-   e.X = GRIDCOORDTOROO(local_vars->locals[col_dest.v.data].v.data, local_vars->locals[finecol_dest.v.data].v.data);
-   e.Y = GRIDCOORDTOROO(local_vars->locals[row_dest.v.data].v.data, local_vars->locals[finerow_dest.v.data].v.data);
+	e.X = GRIDCOORDTOROO(col_dest.v.data, finecol_dest.v.data);
+	e.Y = GRIDCOORDTOROO(row_dest.v.data, finerow_dest.v.data);
 
-	V2 p;
 	unsigned int flags = (unsigned int)state_flags.v.data;
-	bool ok = BSPGetStepTowards(&r->data, &s, &e, &p, &flags, objectid.v.data);
+	BSPGetStepTowards(&r->data, &s, &e, flags, objectid.v.data);
 
-	if (ok)
-	{
-		ret_val.v.tag = TAG_INT;
-		ret_val.v.data = flags;
-
-		local_vars->locals[finecol_dest.v.data].v.tag = TAG_INT;
-		local_vars->locals[finecol_dest.v.data].v.data = ROOCOORDTOGRIDFINE(p.X);
-
-		local_vars->locals[finerow_dest.v.data].v.tag = TAG_INT;
-		local_vars->locals[finerow_dest.v.data].v.data = ROOCOORDTOGRIDFINE(p.Y);
-
-		local_vars->locals[col_dest.v.data].v.tag = TAG_INT;
-		local_vars->locals[col_dest.v.data].v.data = ROOCOORDTOGRIDBIG(p.X);
-
-		local_vars->locals[row_dest.v.data].v.tag = TAG_INT;
-		local_vars->locals[row_dest.v.data].v.data = ROOCOORDTOGRIDBIG(p.Y);
-	}
-
+	ret_val.v.tag = TAG_INT;
+	ret_val.v.data = 1;
 	return ret_val.int_val;
 }
 

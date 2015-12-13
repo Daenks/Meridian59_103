@@ -348,7 +348,7 @@ void ServiceTimers(void)
 			if (ms > 500)
 				ms = 500;
       }	 
-      
+
       if (MsgWaitForMultipleObjects(0,NULL,0,(DWORD)ms,QS_ALLINPUT) == WAIT_OBJECT_0)
       {
 	 while (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
@@ -389,6 +389,11 @@ void ServiceTimers(void)
           LoadFromKod(msg.lParam);
           LeaveServerLock();
           break;
+	   case WM_BLAK_MAIN_PATH_READY:
+		   EnterServerLock();
+		   AStarDeliverNextResponse();
+		   LeaveServerLock();
+		   break;
 
 	    default :
 	       dprintf("ServiceTimers got unknown message %i\n",msg.message);

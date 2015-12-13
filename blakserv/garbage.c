@@ -96,10 +96,14 @@ int next_table_renumber;
 
 void GarbageCollect()
 {
+
    /* anyone in game mode w/o a user can have stale data, so knock 'em out */
    ForEachSession(GarbageKickoffGamePick);
 
    ForEachSession(GarbageWarnAdminSession);
+   
+   // wait for astar workers to pause
+   AStarInitGC();
 
    UpdateSecurityRedbook();
 
@@ -112,6 +116,8 @@ void GarbageCollect()
 
    // Tables now get GC'd, so don't reset them.
    //ResetTables();
+
+
 
    /* First, garbage collect the list nodes and tables */
 
@@ -205,6 +211,8 @@ void GarbageCollect()
    ForEachObject(RenumberObject);
    // Renumber object IDs in each room's blocker data.
    ForEachRoom(RenumberBlockerObjects);
+   // Renumber object IDs in astar
+   AStarPerformGC();
    ForEachObject(RenumberObjectReferences); // Also mark strings here
    ForEachListNode(RenumberListNodeObjectReferences); // Also mark strings here
    ForEachTable(RenumberTableObjectReferences); // Also mark strings here
@@ -236,6 +244,9 @@ void GarbageCollect()
    SetNumTimers(next_timer_renumber);
    ForEachString(CompactString);
    SetNumStrings(next_string_renumber);
+
+   // continue all astar workers
+   AStarFinishGC();
 }
 
 /////////////////////////////////////////////////////////////////////////////

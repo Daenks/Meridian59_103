@@ -178,6 +178,13 @@ id_struct BuiltinIds[] = {
 {"realtime",      I_MISSING,   36,  0,   I_CLASS},
 {"gameeventengine",I_MISSING,  37,  0,   I_CLASS},
 {"escapedconvict",I_MISSING,  38,  0,   I_CLASS},
+{"MoveCallback",  I_MISSING, 39, 0, I_MESSAGE },
+{"iRow",          I_MISSING, 40, 0, I_PARAMETER },
+{"iCol",          I_MISSING, 41, 0, I_PARAMETER },
+{"iFineRow",      I_MISSING, 42, 0, I_PARAMETER },
+{"iFineCol",      I_MISSING, 43, 0, I_PARAMETER },
+{"iType",         I_MISSING, 44, 0, I_PARAMETER },
+{"iFlags",        I_MISSING, 45, 0, I_PARAMETER },
 };
 
 int numbuiltins = (sizeof(BuiltinIds)/sizeof(id_struct));

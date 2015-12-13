@@ -564,6 +564,12 @@ messages:
          return;
       }
 
+      % waiting on a path response
+      if (behavior & AI_MOVE_WAITING_FOR_STEP)
+      {
+         return;
+      }
+	  
       if (behavior & AI_HAS_TARGET_LOCATION)
       {
          Send(mob,@DoGoTowardsLocation);

@@ -72,8 +72,11 @@ void ResetRooms()
          room = rooms[i % INIT_ROOMTABLE_SIZE];
          while (room)
          {
+            // send command to unload from astar
+            AStarEnqueueCommand(new astar_command_unloadroom(room->data.roomdata_id));
+            
             temp = room->next;
-            BSPFreeRoom(&room->data);
+            BSPFreeRoom(&room->data, NULL);
             FreeMemory(MALLOC_ID_ROOM, room, sizeof(room_node));
             room = temp;
          }
@@ -128,7 +131,7 @@ int LoadRoom(int resource_id)
    sprintf(s, "%s%s", ConfigStr(PATH_ROOMS), r->resource_val[0]);
 
    // try load it
-   if (!BSPLoadRoom(s, &newnode->data))
+   if (!BSPLoadRoom(s, &newnode->data, NULL))
    {
       FreeMemory(MALLOC_ID_ROOM, newnode, sizeof(room_node));
       bprintf("LoadRoomData couldn't open %s!!!\n",r->resource_val[0]);
@@ -150,6 +153,10 @@ int LoadRoom(int resource_id)
    room_rscs[resource_id % INIT_ROOMTABLE_SIZE] = rrsc;
 
    ret_val.v.data = newnode->data.roomdata_id;
+
+   // also load room in astar workers, using roomdata_id for mapping
+   AStarEnqueueCommand(new astar_command_loadroom(s, newnode->data.roomdata_id));
+
    return ret_val.int_val;
 }
 
@@ -192,7 +199,10 @@ void UnloadRoom(room_node *r)
          temp = room->next;
          if (room->data.roomdata_id == r->data.roomdata_id)
          {
-            BSPFreeRoom(&room->data);
+            // send command to unload from astar workers
+            AStarEnqueueCommand(new astar_command_unloadroom(room->data.roomdata_id));
+
+            BSPFreeRoom(&room->data, NULL);
             room = temp;
             rooms[r->data.roomdata_id % INIT_ROOMTABLE_SIZE] = temp;
             return;

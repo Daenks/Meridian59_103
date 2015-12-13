@@ -598,6 +598,35 @@ bool BSPCanMoveInRoomTree(BspNode* Node, V2* S, V2* E, Wall** BlockWall)
       return BSPCanMoveInRoomTree(Node->u.internal.LeftChild, S, E, BlockWall);
    }
 }
+
+void BSPClearPath(astar_path* Path)
+{
+   while (!Path->empty())
+   {
+      astar_path_node* pathnode = Path->front();
+      Path->pop_front();
+      free(pathnode);
+   }
+}
+
+void BSPClearNoPath(astar_nopath* NoPath)
+{
+	NoPath->S = { 0.0f, 0.0f };
+	NoPath->E = { 0.0f, 0.0f };
+	NoPath->Tick = ::std::chrono::time_point<::std::chrono::high_resolution_clock, ::std::chrono::milliseconds>();
+}
+
+void BSPClearPathCache(room_type* Room)
+{
+   for (int i = 0; i < PATHCACHESIZE; i++)  
+      BSPClearPath(Room->Paths[i]); 
+}
+
+void BSPClearNoPathCache(room_type* Room)
+{
+   for (int i = 0; i < NOPATHCACHESIZE; i++)
+      BSPClearNoPath(Room->NoPaths[i]);
+}
 #pragma endregion
 
 #pragma region Public
@@ -605,6 +634,102 @@ bool BSPCanMoveInRoomTree(BspNode* Node, V2* S, V2* E, Wall** BlockWall)
 /*                                            PUBLIC                                                          */
 /*                     These are defined in header and can be called from outside                             */
 /**************************************************************************************************************/
+
+bool BSPGetStepFromPath(room_type* Room, astar_path* Path, V2* S, V2* E, V2* P, unsigned int* Flags, int ObjectID)
+{
+	V2 d;
+	Wall* blockWall;
+
+	// a valid path would have at least two entries
+	if (Path->size() < 2)
+		return false;
+
+	// check start (better match almost exactly, or we might stepping back?)
+	astar_path_node* first = Path->front();
+	V2SUB(&d, &first->Location, S);
+	if (V2LEN2(&d) > PATHCACHESTARTTOLERANCE*PATHCACHESTARTTOLERANCE)
+		return false;
+
+	// check end (has small tolerance)
+	astar_path_node* last = Path->back();
+	V2SUB(&d, &last->Location, E);
+	if (V2LEN2(&d) > PATHCACHEENDTOLERANCE*PATHCACHEENDTOLERANCE)
+		return false;
+
+	// match! now remove first, so we also match on next step
+	Path->pop_front();
+
+	// get the next step endpoint
+	astar_path_node* next = Path->front();
+
+	// make sure we can still move to this next endpoint (cares for moved objects!)
+	// note: if objects block a cached path, the path will still be walked until the block occurs!
+	// to improve this revalidate the whole path from the first to the last node here
+	if (!BSPCanMoveInRoom(Room, &first->Location, &next->Location, ObjectID, false, &blockWall, false))
+		return false;
+
+	// for diagonal moves mark to be long step (required for timer elapse)
+	if (abs(first->Col - next->Col) &&
+		abs(first->Row - next->Row))
+	{
+		*Flags |= MF_LONG_STEP;
+	}
+	else
+		*Flags &= ~MF_LONG_STEP;
+
+	// set step endpoint
+	*P = next->Location;
+
+	// delete removed entry
+	free(first);
+
+	// cache hit
+	return true;
+}
+
+bool BSPGetStepFromPathCache(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags, int ObjectID)
+{
+	for (int i = 0; i < PATHCACHESIZE; i++)
+		if (BSPGetStepFromPath(Room, Room->Paths[i], S, E, P, Flags, ObjectID))
+			return true;
+
+	// no cache hit
+	return false;
+}
+
+bool BSPGetStepFromNoPath(astar_nopath* NoPath, V2* S, V2* E)
+{
+   V2 d;
+
+   // must match start
+   V2SUB(&d, &NoPath->S, S);
+   if (V2LEN2(&d) > NOPATHCACHESTARTTOLERANCE*NOPATHCACHESTARTTOLERANCE)
+      return false;
+
+   // must match end
+   V2SUB(&d, &NoPath->E, E);
+   if (V2LEN2(&d) > NOPATHCACHEENDTOLERANCE*NOPATHCACHEENDTOLERANCE)
+      return false;
+
+   // must not be too long ago
+   ::std::chrono::system_clock::time_point now = 
+      ::std::chrono::high_resolution_clock::now();
+
+   if (now - NoPath->Tick > ::std::chrono::seconds(NOPATHCACHEVALIDDURATIONINS))
+      return false;
+
+   return true;
+}
+
+bool BSPGetStepFromNoPathCache(room_type* Room, V2* S, V2* E)
+{
+   for (int i = 0; i < NOPATHCACHESIZE; i++)
+      if (BSPGetStepFromNoPath(Room->NoPaths[i], S, E))
+         return true;
+
+   // no cache hit
+   return false;
+}
 
 /*********************************************************************************************/
 /* BSPGetHeight:  Returns true if location is inside any sector, false otherwise.
@@ -674,7 +799,7 @@ bool BSPLineOfSight(room_type* Room, V3* S, V3* E)
 /*********************************************************************************************/
 /* BSPCanMoveInRoom:  Checks if you can walk a straight line from (S)tart to (E)nd           */
 /*********************************************************************************************/
-bool BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOutsideBSP, Wall** BlockWall)
+bool BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOutsideBSP, Wall** BlockWall, bool SkipBlockers)
 {
    if (!Room || Room->TreeNodesCount == 0 || !S || !E)
       return false;
@@ -695,6 +820,10 @@ bool BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOuts
    if (!roomok)
       return false;
 
+   // we're done if no need to check object blockers
+   if (SkipBlockers)
+      return true;
+
    // otherwise also check against blockers
    Blocker* blocker = Room->Blocker;
    while (blocker)
@@ -709,7 +838,7 @@ bool BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOuts
       V2 ms; // from m to s  
       V2SUB(&ms, S, &blocker->Position);
       float ds2 = V2LEN2(&ms);
-
+	  
       // CASE 1) Start is too close
       // Note: IntersectLineCircle below will reject moves starting or ending exactly
       //   on the circle as well as moves going from inside to outside of the circle.
@@ -794,6 +923,10 @@ void BSPChangeTexture(room_type* Room, unsigned int ServerID, unsigned short New
             sector->CeilingTexture = (isReset ? sector->CeilingTextureOrig : NewTexture);
       }
    }
+
+   // must invalidate astar pathcache attached to room
+   BSPClearPathCache(Room);
+   BSPClearNoPathCache(Room);
 }
 
 /*********************************************************************************************/
@@ -824,6 +957,10 @@ void BSPMoveSector(room_type* Room, unsigned int ServerID, bool Floor, float Hei
          BSPUpdateLeafHeights(Room, sector, false);
       }
    }
+
+   // must invalidate astar pathcache attached to room
+   BSPClearPathCache(Room);
+   BSPClearNoPathCache(Room);
 }
 
 /*********************************************************************************************/
@@ -966,22 +1103,64 @@ bool BSPGetRandomPoint(room_type* Room, int MaxAttempts, V2* P)
 }
 
 /*********************************************************************************************/
-/* BSPGetStepTowards:  Returns a location in P param, in a distant of 16 kod fineness units
-/*                     away from S on the way towards E.
+/* BSPInvokeMoveCallback:  Delivers a next-step response to the requesting KOD object
 /*********************************************************************************************/
-bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags, int ObjectID)
+void BSPInvokeMoveCallback(int ObjectID, int Type, unsigned int Flags, V2* P)
 {
-   if (!Room || !S || !E || !P || !Flags)
-      return false;
+   val_type vals[6];
+   vals[0].v.tag = TAG_INT;
+   vals[0].v.data = Type;
+   vals[1].v.tag = TAG_INT;
+   vals[1].v.data = Flags;
+   vals[2].v.tag = TAG_INT;
+   vals[2].v.data = ROOCOORDTOGRIDBIG(P->Y);
+   vals[3].v.tag = TAG_INT;
+   vals[3].v.data = ROOCOORDTOGRIDBIG(P->X);
+   vals[4].v.tag = TAG_INT;
+   vals[4].v.data = ROOCOORDTOGRIDFINE(P->Y);
+   vals[5].v.tag = TAG_INT;
+   vals[5].v.data = ROOCOORDTOGRIDFINE(P->X);
 
-   // Monsters that can move through walls or outside the tree will
-   // send this flag with state.
-   bool moveOutsideBSP = ((*Flags & MSTATE_MOVE_OUTSIDE_BSP) == MSTATE_MOVE_OUTSIDE_BSP);
+   parm_node parms[6];
+   parms[0].type = CONSTANT;
+   parms[0].name_id = ITYPE_PARM;
+   parms[0].value = vals[0].int_val;
 
-   // but must not give these back in piState
-   *Flags &= ~MSTATE_MOVE_OUTSIDE_BSP;
-   
+   parms[1].type = CONSTANT;
+   parms[1].name_id = IFLAGS_PARM;
+   parms[1].value = vals[1].int_val;
+
+   parms[2].type = CONSTANT;
+   parms[2].name_id = IROW_PARM;
+   parms[2].value = vals[2].int_val;
+
+   parms[3].name_id = ICOL_PARM;
+   parms[3].type = CONSTANT;
+   parms[3].value = vals[3].int_val;
+
+   parms[4].name_id = IFINEROW_PARM;
+   parms[4].type = CONSTANT;
+   parms[4].value = vals[4].int_val;
+
+   parms[5].name_id = IFINECOL_PARM;
+   parms[5].type = CONSTANT;
+   parms[5].value = vals[5].int_val;
+
+   SendBlakodMessage(ObjectID, MOVECALLBACK_MSG, 6, parms);
+}
+
+/*********************************************************************************************/
+/* BSPGetStepFromHeuristic:  Determines a new point to step to by an heuristic.                        
+/*********************************************************************************************/
+bool BSPGetStepFromHeuristic(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags, int ObjectID)
+{
+   Wall* blockWall = NULL;
    V2 se, stepend;
+
+   bool isAvoiding = ((*Flags & MF_AVOIDING) == MF_AVOIDING);
+   bool isLeft = ((*Flags & MF_CLOCKWISE) == MF_CLOCKWISE);
+   
+   // delta vector from start to end
    V2SUB(&se, E, S);
 
    // get length from start to end
@@ -990,10 +1169,9 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
    // trying to step to old location?
    if (ISZERO(len))
    {
-      // set step destination to end
-      *P = *E;
-      *Flags &= ~ESTATE_AVOIDING;
-      *Flags &= ~ESTATE_CLOCKWISE;
+      *P = *S;
+      *Flags &= ~MF_AVOIDING;
+      *Flags &= ~MF_CLOCKWISE;
       return true;
    }
 
@@ -1004,32 +1182,22 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
    // apply the scale on se
    V2SCALE(&se, scale);
 
-   /****************************************************/
-   // 1) try direct step towards destination first
-   /****************************************************/
-   Wall* blockWall = NULL;
+   /**********************************************************************************/  
+   // first try a step straight towards destination
 
-   // note: we must verify the location the object is actually going to end up in KOD,
-   // this means we must round to the next closer kod-fineness value,  
-   // so these values are also exactly expressable in kod coordinates.
-   // in fact this makes the vector a variable length between ~15.5 and ~16.5 fine units
    V2ADD(&stepend, S, &se);
    stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
    stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-   if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+   if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
    {
       *P = stepend;
-      *Flags &= ~ESTATE_AVOIDING;
-      *Flags &= ~ESTATE_CLOCKWISE;
+      *Flags &= ~MF_AVOIDING;
+      *Flags &= ~MF_CLOCKWISE;
       return true;
    }
-   
-   /****************************************************/
-   // 2) can't do direct step
-   /****************************************************/
 
-   bool isAvoiding = ((*Flags & ESTATE_AVOIDING) == ESTATE_AVOIDING);
-   bool isLeft = ((*Flags & ESTATE_CLOCKWISE) == ESTATE_CLOCKWISE);
+   /**********************************************************************************/
+   // determine step by heuristic
 
    // not yet in clockwise or cclockwise mode
    if (!isAvoiding)
@@ -1064,15 +1232,12 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          bool q2_neg = (df <= (float)-M_PI_2 && df >= (float)-M_PI);
          bool q3_neg = (df <= (float)-M_PI && df >= (float)-(M_PI + M_PI_2));
          bool q4_neg = (df <= (float)-(M_PI + M_PI_2) && df >= (float)-M_PI*2.0f);
- 
-         isLeft = (q1_pos || q2_pos || q1_neg || q3_neg) ? false : true;
 
-         /*if (isLeft)
-            dprintf("trying left first  r: %f", df);
-         else
-            dprintf("trying right first   r: %f", df);*/
+         isLeft = (q1_pos || q2_pos || q1_neg || q3_neg) ? false : true;
       }
    }
+
+   /**********************************************************************************/
 
    // must run this possibly twice
    // e.g. left after right failed or right after left failed
@@ -1082,16 +1247,16 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
       {
          V2 v = se;
 
-		 // try 22.5° left
-		 V2ROTATE(&v, 0.5f * (float)-M_PI_4);
-		 V2ADD(&stepend, S, &v);
+         // try 22.5° left
+         V2ROTATE(&v, 0.5f * (float)-M_PI_4);
+         V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
-		 {
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
+         {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
          }
 
@@ -1100,11 +1265,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
          }
 
@@ -1113,24 +1278,24 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
-		 }
+         }
 
          // try 90° left
          V2ROTATE(&v, 0.5f * (float)-M_PI_4);
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
          }
 
@@ -1139,11 +1304,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
          }
 
@@ -1152,18 +1317,18 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags |= ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags |= MF_CLOCKWISE;
             return true;
          }
 
          // failed to circumvent by going left, switch to right
          isLeft = false;
-         *Flags |= ESTATE_AVOIDING;
-         *Flags &= ~ESTATE_CLOCKWISE;
+         *Flags |= MF_AVOIDING;
+         *Flags &= ~MF_CLOCKWISE;
       }
       else
       {
@@ -1174,11 +1339,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
          }
 
@@ -1187,11 +1352,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
          }
 
@@ -1200,24 +1365,24 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
-		 }
+         }
 
          // try 90° right
          V2ROTATE(&v, 0.5f * (float)M_PI_4);
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
          }
 
@@ -1226,11 +1391,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
          }
 
@@ -1239,29 +1404,123 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
          V2ADD(&stepend, S, &v);
          stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
          stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
-         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall))
+         if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, false, &blockWall, false))
          {
             *P = stepend;
-            *Flags |= ESTATE_AVOIDING;
-            *Flags &= ~ESTATE_CLOCKWISE;
+            *Flags |= MF_AVOIDING;
+            *Flags &= ~MF_CLOCKWISE;
             return true;
          }
 
          // failed to circumvent by going right, switch to left
          isLeft = true;
-         *Flags |= ESTATE_AVOIDING;
-         *Flags |= ESTATE_CLOCKWISE;
+         *Flags |= MF_AVOIDING;
+         *Flags |= MF_CLOCKWISE;
+      }
+   }
+   return false;
+}
+
+/*********************************************************************************************/
+/* BSPGetStepTowards:  
+/*********************************************************************************************/
+void BSPGetStepTowards(room_type* Room, V2* S, V2* E, unsigned int Flags, int ObjectID)
+{
+   Wall* blockWall = NULL;
+
+   if (!Room || !S || !E)
+      return;
+
+   // some monsters can move through walls or outside the tree
+   bool moveOutsideBSP = ((Flags & MF_MOVE_OUTSIDE_BSP) == MF_MOVE_OUTSIDE_BSP);
+
+   V2 se, stepend;
+   V2SUB(&se, E, S);
+
+   // get length from start to end
+   float len = V2LEN(&se);
+
+   // trying to step to old location?
+   if (ISZERO(len))
+   {
+      BSPInvokeMoveCallback(ObjectID, MC_STRAIGHTLINE, Flags, S);
+      return;
+   }
+
+   // this first normalizes the se vector,
+   // then scales to a length of 16 kod-fineunits (=256  roo-fineunits)
+   float scale = (1.0f / len) * FINENESSKODTOROO(16.0f);
+
+   // apply the scale on se
+   V2SCALE(&se, scale);
+
+   /****************************************************/
+   // 1) try step on straight line towards destination
+   //  Note: Blockers are not important on the long line, only short
+   /****************************************************/
+   if (BSPCanMoveInRoom(Room, S, E, ObjectID, moveOutsideBSP, &blockWall, true))
+   {
+      // note: we must verify the location the object is actually going to end up in KOD,
+      // this means we must round to the next closer kod-fineness value,  
+      // so these values are also exactly expressable in kod coordinates.
+      // in fact this makes the vector a variable length between ~15.5 and ~16.5 fine units
+      V2ADD(&stepend, S, &se);
+      stepend.X = ROUNDROOTOKODFINENESS(stepend.X);
+      stepend.Y = ROUNDROOTOKODFINENESS(stepend.Y);
+      if (BSPCanMoveInRoom(Room, S, &stepend, ObjectID, moveOutsideBSP, &blockWall, false))
+      {
+         BSPInvokeMoveCallback(ObjectID, MC_STRAIGHTLINE, Flags, &stepend);
+         return;
       }
    }
 
    /****************************************************/
-   // 3) fully stuck
+   // 2) step from path cache
    /****************************************************/
+   if (BSPGetStepFromPathCache(Room, S, E, &stepend, &Flags, ObjectID))
+   {
+      BSPInvokeMoveCallback(ObjectID, MC_PATHFROMCACHE, Flags, &stepend);
+      return;
+   }
 
-   *P = *S;
-   *Flags &= ~ESTATE_AVOIDING;
-   *Flags &= ~ESTATE_CLOCKWISE;
-   return false;
+   /****************************************************/
+   // 3) get step from nopath (unreachable) cache
+   /****************************************************/
+   if (BSPGetStepFromNoPathCache(Room, S, E))
+   {
+      // step by heuristic
+      if (BSPGetStepFromHeuristic(Room, S, E, &stepend, &Flags, ObjectID))
+      {
+         BSPInvokeMoveCallback(ObjectID, MC_HEURISTIC, Flags, &stepend);
+         return;
+      }
+
+      // full block
+      else
+      {
+         stepend = { 0.0f, 0.0f };
+         BSPInvokeMoveCallback(ObjectID, MC_UNREACHABLE, Flags, &stepend);
+         return;
+      }
+   }
+
+   /****************************************************/
+   // 4) calculate new path async
+   /****************************************************/
+   astar_pathquery* query = new astar_pathquery(Room->roomdata_id, ObjectID, *S, *E, Flags);
+   if (!AStarQueries.enqueue(query))
+   {
+      // failed because full, fall back to heuristic
+      if (BSPGetStepFromHeuristic(Room, S, E, &stepend, &Flags, ObjectID))      
+         BSPInvokeMoveCallback(ObjectID, MC_HEURISTIC, Flags, &stepend);
+      
+      // full block
+      else
+      {
+         stepend = { 0.0f, 0.0f };
+         BSPInvokeMoveCallback(ObjectID, MC_UNREACHABLE, Flags, &stepend);
+      }
+   }
 }
 
 /*********************************************************************************************/
@@ -1273,7 +1532,7 @@ void BSPBlockerClear(room_type* Room)
    while (blocker)
    {
       Blocker* tmp = blocker->Next;
-      FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(Blocker));
+      free(blocker);
       blocker = tmp;
    }
    Room->Blocker = NULL;
@@ -1303,7 +1562,7 @@ bool BSPBlockerRemove(room_type* Room, int ObjectID)
             previous->Next = blocker->Next;
 
          // now cleanup node
-         FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(Blocker));
+         free(blocker);
 
          return true;
       }
@@ -1324,7 +1583,7 @@ bool BSPBlockerAdd(room_type* Room, int ObjectID, V2* P)
       return false;
 
    // alloc
-   Blocker* newblocker = (Blocker*)AllocateMemory(MALLOC_ID_ROOM, sizeof(Blocker));
+   Blocker* newblocker = (Blocker*)malloc(sizeof(Blocker));
 
    // set values on new blocker
    newblocker->ObjectID = ObjectID;
@@ -1372,7 +1631,7 @@ bool BSPBlockerMove(room_type* Room, int ObjectID, V2* P)
 /*********************************************************************************************/
 /* BSPRooFileLoadServer:  Fill "room" with server-relevant data from given roo file.         */
 /*********************************************************************************************/
-bool BSPLoadRoom(char *fname, room_type *room)
+bool BSPLoadRoom(char *fname, room_type *room, astar* Astar)
 {
    int i, j, temp;
    unsigned char byte;
@@ -1454,8 +1713,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate tree mem
-   room->TreeNodes = (BspNode*)AllocateMemory(
-      MALLOC_ID_ROOM, room->TreeNodesCount * sizeof(BspNode));
+   room->TreeNodes = (Astar) ? 
+      (BspNode*)AStarAlloc(Astar, room->TreeNodesCount * sizeof(BspNode)) : 
+      (BspNode*)AllocateMemory(MALLOC_ID_ROOM, room->TreeNodesCount * sizeof(BspNode));
 
    for (i = 0; i < room->TreeNodesCount; i++)
    {
@@ -1507,10 +1767,13 @@ bool BSPLoadRoom(char *fname, room_type *room)
          { fclose(infile); return False; }
 
          // allocate memory for points of polygon
-         node->u.leaf.PointsFloor = (V3*)AllocateMemory(
-            MALLOC_ID_ROOM, node->u.leaf.PointsCount * sizeof(V3));
-         node->u.leaf.PointsCeiling = (V3*)AllocateMemory(
-            MALLOC_ID_ROOM, node->u.leaf.PointsCount * sizeof(V3));
+         node->u.leaf.PointsFloor = (Astar) ?
+            (V3*)AStarAlloc(Astar, node->u.leaf.PointsCount * sizeof(V3)) :
+            (V3*)AllocateMemory(MALLOC_ID_ROOM, node->u.leaf.PointsCount * sizeof(V3));
+
+         node->u.leaf.PointsCeiling = (Astar) ? 
+            (V3*)AStarAlloc(Astar, node->u.leaf.PointsCount * sizeof(V3)) :
+            (V3*)AllocateMemory(MALLOC_ID_ROOM, node->u.leaf.PointsCount * sizeof(V3));
 
          // read points
          for (j = 0; j < node->u.leaf.PointsCount; j++)
@@ -1536,8 +1799,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate walls mem
-   room->Walls = (Wall*)AllocateMemory(
-      MALLOC_ID_ROOM, room->WallsCount * sizeof(Wall));
+   room->Walls = (Astar) ?
+      (Wall*)AStarAlloc(Astar, room->WallsCount * sizeof(Wall)) :
+      (Wall*)AllocateMemory(MALLOC_ID_ROOM, room->WallsCount * sizeof(Wall));
 
    for (i = 0; i < room->WallsCount; i++)
    {
@@ -1596,8 +1860,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate sides mem
-   room->Sides = (Side*)AllocateMemory(
-      MALLOC_ID_ROOM, room->SidesCount * sizeof(Side));
+   room->Sides = (Astar) ?
+      (Side*)AStarAlloc(Astar, room->SidesCount * sizeof(Side)) :
+      (Side*)AllocateMemory(MALLOC_ID_ROOM, room->SidesCount * sizeof(Side));
 
    for (i = 0; i < room->SidesCount; i++)
    {
@@ -1638,8 +1903,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate sectors mem
-   room->Sectors = (Sector*)AllocateMemory(
-      MALLOC_ID_ROOM, room->SectorsCount * sizeof(Sector));
+   room->Sectors = (Astar) ?
+	   (Sector*)AStarAlloc(Astar, room->SectorsCount * sizeof(Sector)) :
+	   (Sector*)AllocateMemory(MALLOC_ID_ROOM, room->SectorsCount * sizeof(Sector));
 
    for (i = 0; i < room->SectorsCount; i++)
    {
@@ -1688,8 +1954,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
       // possibly load floor slopeinfo
       if ((sector->Flags & SF_SLOPED_FLOOR) == SF_SLOPED_FLOOR)
       {
-         sector->SlopeInfoFloor = (SlopeInfo*)AllocateMemory(
-            MALLOC_ID_ROOM, sizeof(SlopeInfo));
+         sector->SlopeInfoFloor = (Astar) ?
+            (SlopeInfo*)AStarAlloc(Astar, sizeof(SlopeInfo)) :
+            (SlopeInfo*)AllocateMemory(MALLOC_ID_ROOM, sizeof(SlopeInfo));
 
          // read 3d plane equation coefficients (normal vector)
          if (fread(&sector->SlopeInfoFloor->A, 1, 4, infile) != 4)
@@ -1719,8 +1986,9 @@ bool BSPLoadRoom(char *fname, room_type *room)
       // possibly load ceiling slopeinfo
       if ((sector->Flags & SF_SLOPED_CEILING) == SF_SLOPED_CEILING)
       {
-         sector->SlopeInfoCeiling = (SlopeInfo*)AllocateMemory(
-            MALLOC_ID_ROOM, sizeof(SlopeInfo));
+         sector->SlopeInfoCeiling = (Astar) ?
+            (SlopeInfo*)AStarAlloc(Astar, sizeof(SlopeInfo)) :
+            (SlopeInfo*)AllocateMemory(MALLOC_ID_ROOM, sizeof(SlopeInfo));
 
          // read 3d plane equation coefficients (normal vector)
          if (fread(&sector->SlopeInfoCeiling->A, 1, 4, infile) != 4)
@@ -1855,43 +2123,43 @@ bool BSPLoadRoom(char *fname, room_type *room)
    // bsp nodes
    for (int i = 0; i < room->TreeNodesCount; i++)
    {
-      BspNode* node = &room->TreeNodes[i];
+	   BspNode* node = &room->TreeNodes[i];
 
-      // internal nodes
-      if (node->Type == BspInternalType)
-      {
-         // first wall
-         if (node->u.internal.FirstWallNum > 0 &&
-             room->WallsCount > node->u.internal.FirstWallNum - 1)
-               node->u.internal.FirstWall = &room->Walls[node->u.internal.FirstWallNum - 1];
-         else
-            node->u.internal.FirstWall = NULL;
+	   // internal nodes
+	   if (node->Type == BspInternalType)
+	   {
+		   // first wall
+		   if (node->u.internal.FirstWallNum > 0 &&
+			   room->WallsCount > node->u.internal.FirstWallNum - 1)
+			   node->u.internal.FirstWall = &room->Walls[node->u.internal.FirstWallNum - 1];
+		   else
+			   node->u.internal.FirstWall = NULL;
 
-         // right child
-         if (node->u.internal.RightChildNum > 0 &&
-             room->TreeNodesCount > node->u.internal.RightChildNum - 1)
-               node->u.internal.RightChild = &room->TreeNodes[node->u.internal.RightChildNum - 1];
-         else
-            node->u.internal.RightChild = NULL;
+		   // right child
+		   if (node->u.internal.RightChildNum > 0 &&
+			   room->TreeNodesCount > node->u.internal.RightChildNum - 1)
+			   node->u.internal.RightChild = &room->TreeNodes[node->u.internal.RightChildNum - 1];
+		   else
+			   node->u.internal.RightChild = NULL;
 
-         // left child
-         if (node->u.internal.LeftChildNum > 0 &&
-             room->TreeNodesCount > node->u.internal.LeftChildNum - 1)
-               node->u.internal.LeftChild = &room->TreeNodes[node->u.internal.LeftChildNum - 1];
-         else
-            node->u.internal.LeftChild = NULL;
-      }
+		   // left child
+		   if (node->u.internal.LeftChildNum > 0 &&
+			   room->TreeNodesCount > node->u.internal.LeftChildNum - 1)
+			   node->u.internal.LeftChild = &room->TreeNodes[node->u.internal.LeftChildNum - 1];
+		   else
+			   node->u.internal.LeftChild = NULL;
+	   }
 
-      // leafs
-      else if (node->Type == BspLeafType)
-      {
-         // sector this leaf belongs to
-         if (node->u.leaf.SectorNum > 0 &&
-             room->SectorsCount > node->u.leaf.SectorNum - 1)
-               node->u.leaf.Sector = &room->Sectors[node->u.leaf.SectorNum - 1];
-         else
-            node->u.leaf.Sector = NULL;
-      }
+	   // leafs
+	   else if (node->Type == BspLeafType)
+	   {
+		   // sector this leaf belongs to
+		   if (node->u.leaf.SectorNum > 0 &&
+			   room->SectorsCount > node->u.leaf.SectorNum - 1)
+			   node->u.leaf.Sector = &room->Sectors[node->u.leaf.SectorNum - 1];
+		   else
+			   node->u.leaf.Sector = NULL;
+	   }
    }
 
    /*************************************************************************/
@@ -1900,28 +2168,36 @@ bool BSPLoadRoom(char *fname, room_type *room)
 
    for (int i = 0; i < room->TreeNodesCount; i++)
    {
-      BspNode* node = &room->TreeNodes[i];
+	   BspNode* node = &room->TreeNodes[i];
 
-      if (node->Type != BspLeafType)
-         continue;
+	   if (node->Type != BspLeafType)
+		   continue;
 
-      for (int j = 0; j < node->u.leaf.PointsCount; j++)
-      {
-         if (!node->u.leaf.Sector)
-            continue;
+	   for (int j = 0; j < node->u.leaf.PointsCount; j++)
+	   {
+		   if (!node->u.leaf.Sector)
+			   continue;
 
-         V2 p = { node->u.leaf.PointsFloor[j].X, node->u.leaf.PointsFloor[j].Y };
+		   V2 p = { node->u.leaf.PointsFloor[j].X, node->u.leaf.PointsFloor[j].Y };
 
-         node->u.leaf.PointsFloor[j].Z = 
-            SECTORHEIGHTFLOOR(node->u.leaf.Sector, &p);
+		   node->u.leaf.PointsFloor[j].Z =
+			   SECTORHEIGHTFLOOR(node->u.leaf.Sector, &p);
 
-         node->u.leaf.PointsCeiling[j].Z =
-            SECTORHEIGHTCEILING(node->u.leaf.Sector, &p);
-      }
+		   node->u.leaf.PointsCeiling[j].Z =
+			   SECTORHEIGHTCEILING(node->u.leaf.Sector, &p);
+	   }
    }
 
    /****************************************************************************/
-   /****************************************************************************/
+
+   room->NextPathIdx = 0;
+   room->NextNoPathIdx = 0;
+
+   for (int i = 0; i < PATHCACHESIZE; i++)
+      room->Paths[i] = new astar_path();
+
+   for (int i = 0; i < NOPATHCACHESIZE; i++)
+      room->NoPaths[i] = new astar_nopath();
 
    // no initial blockers
    room->Blocker = NULL;
@@ -1932,23 +2208,35 @@ bool BSPLoadRoom(char *fname, room_type *room)
 /*********************************************************************************************/
 /* BSPRoomFreeServer:  Free the parts of a room structure used by the server.                */
 /*********************************************************************************************/
-void BSPFreeRoom(room_type *room)
+void BSPFreeRoom(room_type *room, astar* Astar)
 {
    int i;
 
    /****************************************************************************/
    /*                               CLIENT PARTS                               */
    /****************************************************************************/
-   
+
    // free bsp nodes 'submem'
    for (i = 0; i < room->TreeNodesCount; i++)
    {
       if (room->TreeNodes[i].Type == BspLeafType)
       {
-         FreeMemory(MALLOC_ID_ROOM, room->TreeNodes[i].u.leaf.PointsFloor,
-            room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
-         FreeMemory(MALLOC_ID_ROOM, room->TreeNodes[i].u.leaf.PointsCeiling,
-            room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
+         if (Astar)
+         {
+            AStarFree(Astar, room->TreeNodes[i].u.leaf.PointsFloor, 
+               room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
+				
+            AStarFree(Astar, room->TreeNodes[i].u.leaf.PointsCeiling,
+               room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
+         }
+         else
+         {
+            FreeMemory(MALLOC_ID_ROOM, room->TreeNodes[i].u.leaf.PointsFloor,
+               room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
+
+            FreeMemory(MALLOC_ID_ROOM, room->TreeNodes[i].u.leaf.PointsCeiling,
+               room->TreeNodes[i].u.leaf.PointsCount * sizeof(V3));
+         }
       }
    }
 
@@ -1956,15 +2244,34 @@ void BSPFreeRoom(room_type *room)
    for (i = 0; i < room->SectorsCount; i++)
    {
       if ((room->Sectors[i].Flags & SF_SLOPED_FLOOR) == SF_SLOPED_FLOOR)
-         FreeMemory(MALLOC_ID_ROOM, room->Sectors[i].SlopeInfoFloor, sizeof(SlopeInfo));
-      if ((room->Sectors[i].Flags & SF_SLOPED_CEILING) == SF_SLOPED_CEILING)
-         FreeMemory(MALLOC_ID_ROOM, room->Sectors[i].SlopeInfoCeiling, sizeof(SlopeInfo));
+      {
+         (Astar) ?
+            AStarFree(Astar, room->Sectors[i].SlopeInfoFloor, sizeof(SlopeInfo)) :
+            FreeMemory(MALLOC_ID_ROOM, room->Sectors[i].SlopeInfoFloor, sizeof(SlopeInfo));
+      }
+
+	  if ((room->Sectors[i].Flags & SF_SLOPED_CEILING) == SF_SLOPED_CEILING)
+      {
+         (Astar) ?
+            AStarFree(Astar, room->Sectors[i].SlopeInfoCeiling, sizeof(SlopeInfo)) :
+            FreeMemory(MALLOC_ID_ROOM, room->Sectors[i].SlopeInfoCeiling, sizeof(SlopeInfo));
+      }
    }
 
-   FreeMemory(MALLOC_ID_ROOM, room->TreeNodes, room->TreeNodesCount * sizeof(BspNode));
-   FreeMemory(MALLOC_ID_ROOM, room->Walls, room->WallsCount * sizeof(Wall));
-   FreeMemory(MALLOC_ID_ROOM, room->Sides, room->SidesCount * sizeof(Side));
-   FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(Sector));
+   if (Astar)
+   {
+      AStarFree(Astar, room->TreeNodes, room->TreeNodesCount * sizeof(BspNode));
+      AStarFree(Astar, room->Walls, room->WallsCount * sizeof(Wall));
+      AStarFree(Astar, room->Sides, room->SidesCount * sizeof(Side));
+      AStarFree(Astar, room->Sectors, room->SectorsCount * sizeof(Sector));
+   }
+   else
+   {
+      FreeMemory(MALLOC_ID_ROOM, room->TreeNodes, room->TreeNodesCount * sizeof(BspNode));
+      FreeMemory(MALLOC_ID_ROOM, room->Walls, room->WallsCount * sizeof(Wall));
+      FreeMemory(MALLOC_ID_ROOM, room->Sides, room->SidesCount * sizeof(Side));
+      FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(Sector));
+   }
 
    room->TreeNodesCount = 0;
    room->WallsCount = 0;
@@ -1972,6 +2279,13 @@ void BSPFreeRoom(room_type *room)
    room->SectorsCount = 0;
 
    BSPBlockerClear(room);
+   BSPClearPathCache(room);
+
+   for (int i = 0; i < PATHCACHESIZE; i++)
+      delete room->Paths[i];
+
+   for (int i = 0; i < NOPATHCACHESIZE; i++)
+      delete room->NoPaths[i];
 
    /****************************************************************************/
    /*                               SERVER PARTS                               */
