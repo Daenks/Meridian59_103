@@ -844,6 +844,11 @@ messages:
       % Give user the logon delay
       Send(self,@LogonDelay);
 
+      if (poEvilTwin <> $)
+      {
+         Send(poEvilTwin,@PlaceEvilTwin,#who=self);
+      }
+
       % Update vigor drain time as 'now' so we drain vigor correctly
       piLastVigorDrainTime = GetTickCount();
 
@@ -1032,6 +1037,32 @@ messages:
       }
 
       poSession = $;
+
+      return;
+   }
+
+   PhaseMinions()
+   "Deletes reflections, phases any ETs attacking us."
+   {
+      Send(SYS,@DeletePlayerReflections,#who=self);
+      if (poEvilTwin <> $
+         AND poOwner <> $)
+      {
+         Send(poEvilTwin,@OriginalPhased);
+         Send(poOwner,@SomethingChanged,#what=poEvilTwin);
+      }
+
+      return;
+   }
+
+   UnphaseMinions()
+   "Unphases any ETs attacking us."
+   {
+      if (poEvilTwin <> $)
+      {
+         Send(poEvilTwin,@OriginalUnphased,#who=self);
+         Send(poOwner,@SomethingChanged,#what=poEvilTwin);
+      }
 
       return;
    }
@@ -2805,10 +2836,19 @@ messages:
    {
       local iBehavior, iFlags, oIllusion, oOtherGuild;
 
-      if what = self
-         OR what = $
+      if what = $
          OR poOwner <> Send(what,@GetOwner)
       {
+         return MM_NONE;
+      }
+
+      if (what = self)
+      {
+         if (piFlags & PFLAG_TEMPSAFE)
+         {
+            return MM_TEMPSAFE;
+         }
+
          return MM_NONE;
       }
 
@@ -4838,7 +4878,7 @@ messages:
       }
 
       if IsClass(what,&StorageBox)
-         AND NOT Send(poOwner,@LineOfSight,#obj1=what,#obj2=self)
+         AND NOT Send(poOwner,@LineOfSight,#obj1=self,#obj2=what)
       {
          Debug("User ", self, vrName, "tried to look at storebox item they could not see!");
          return;
@@ -6128,7 +6168,8 @@ messages:
       }
 
       % Get the spell power
-      iSpellPower = Send(oSpell,@GetSpellPower,#who=self);
+      iSpellPower = Send(oSpell,@GetSpellPower,#who=self,
+                          #lTargets=lFinalTargets);
 
       % First make sure user has enough magic points, reagents, etc.
       if NOT Send(oSpell,@CanPayCosts,#who=self,#lTargets=lFinalTargets,
