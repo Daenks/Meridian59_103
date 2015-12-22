@@ -198,7 +198,6 @@ M59EXPORT void _cdecl dprintf(char *fmt,...);
 #include "d3drender.h"
 #include "d3dparticle.h"
 #include "matrix.h"
-#include "xform.h"
 #include "d3ddriver.h"
 #include "rscload.h"
 #include "crc.h"
