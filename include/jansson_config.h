@@ -9,13 +9,21 @@
  * Jansson, namely those things that affect the public API in
  * jansson.h.
  *
+<<<<<<< HEAD
  * The CMake system will generate the jansson_config.h file and
  * copy it to the build and install directories.
+=======
+ * The configure script copies this file to jansson_config.h and
+ * replaces @var@ substitutions by values that fit your system. If you
+ * cannot run the configure script, you can do the value substitution
+ * by hand.
+>>>>>>> Add Jansson JSON handling library
  */
 
 #ifndef JANSSON_CONFIG_H
 #define JANSSON_CONFIG_H
 
+<<<<<<< HEAD
 /* Define this so that we can disable scattered automake configuration in source files */
 #ifndef JANSSON_USING_CMAKE
 #define JANSSON_USING_CMAKE
@@ -41,12 +49,15 @@
 #endif
 
 
+=======
+>>>>>>> Add Jansson JSON handling library
 /* If your compiler supports the inline keyword in C, JSON_INLINE is
    defined to `inline', otherwise empty. In C++, the inline is always
    supported. */
 #ifdef __cplusplus
 #define JSON_INLINE inline
 #else
+<<<<<<< HEAD
 #define JSON_INLINE __inline
 #endif
 
@@ -61,4 +72,18 @@
 
 
 
+=======
+#define JSON_INLINE inline
+#endif
+
+/* If your compiler supports the `long long` type and the strtoll()
+   library function, JSON_INTEGER_IS_LONG_LONG is defined to 1,
+   otherwise to 0. */
+#define JSON_INTEGER_IS_LONG_LONG 1
+
+/* If locale.h and localeconv() are available, define to 1,
+   otherwise to 0. */
+#define JSON_HAVE_LOCALECONV 1
+
+>>>>>>> Add Jansson JSON handling library
 #endif
