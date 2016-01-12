@@ -2614,8 +2614,11 @@ messages:
                % People need to know they moved, they store the coords
                % However, sending this message could do addpackets... so we
                %  need to reset
-               ClearPacket();
-               packet_built = FALSE;
+               if packet_built
+               {
+                  ClearPacket();
+                  packet_built = FALSE;
+               }
                Send(each_obj,@SomethingMoved,#what=what,
                     #new_row=new_row,#new_col=new_col,
                     #fine_row=fine_row,#fine_col=fine_col,

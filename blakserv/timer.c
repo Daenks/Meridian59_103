@@ -24,7 +24,7 @@ int next_timer_num;
 
 timer_node *deleted_timers;
 
-int pause_time;
+UINT64 pause_time;
 
 /* local function prototypes */
 void AddTimerNode(timer_node *t);
@@ -42,7 +42,7 @@ void InitTimer(void)
    next_timer_num = 0;
    numActiveTimers = 0;
    deleted_timers = NULL;
-   
+
    pause_time = 0;
 }
 
@@ -83,12 +83,12 @@ void PauseTimers(void)
       eprintf("PauseTimers called when they were already paused at %s\n",TimeStr(pause_time));
       return;
    }
-   pause_time = GetTime();
+   pause_time = GetTimerMicro();
 }
 
 void UnpauseTimers(void)
 {
-   int add_time;
+   UINT64 add_time;
    timer_node *t;
    
    if (pause_time == 0)
@@ -96,7 +96,7 @@ void UnpauseTimers(void)
       eprintf("UnpauseTimers called when they were not paused\n");
       return;
    }
-   add_time = 1000*(GetTime() - pause_time);
+   add_time = (GetTimerMicro() - pause_time);
 
    t = timers;
    while (t != NULL)
@@ -111,7 +111,6 @@ void UnpauseTimers(void)
       so they aren't logged because of what seems to be lag */
 
    ForEachSession(ResetLastMessageTimes);
-
 }
 
 void ResetLastMessageTimes(session_node *s)
@@ -134,8 +133,7 @@ void AddTimerNode(timer_node *t)
       timers = t;
 
       /* we're making a new first-timer, so the time main loop should wait might
-	 have changed, so have it break out of loop and recalibrate */
-
+         have changed, so have it break out of loop and recalibrate */
       MessagePost(main_thread_id,WM_BLAK_MAIN_RECALIBRATE,0,0);
 
       return;
@@ -165,11 +163,13 @@ int CreateTimer(int object_id,int message_id,int milliseconds)
       t = deleted_timers;
       deleted_timers = deleted_timers->next;
    }
-      
+
    t->timer_id = next_timer_num++;
    t->object_id = object_id;
    t->message_id = message_id;
-   t->time = GetMilliCount() + milliseconds;
+
+   UINT64 mill = milliseconds;
+   t->time = GetTimerMicro() + (mill * 1000);
 
    AddTimerNode(t);
    numActiveTimers++;
@@ -201,7 +201,9 @@ Bool LoadTimer(int timer_id,int object_id,char *message_name,int milliseconds)
    t->timer_id = timer_id;
    t->object_id = object_id;
    t->message_id = m->message_id;
-   t->time = GetMilliCount() + milliseconds;
+
+   UINT64 mill = milliseconds;
+   t->time = GetTimerMicro() + (mill * 1000);
 
    AddTimerNode(t);
    numActiveTimers++;
@@ -274,44 +276,44 @@ Bool DeleteTimer(int timer_id)
    return False;
 }
 
-/* activate the 1st timer, if it is time */
+/* Activate the 1st timer, if it is time. Now processes up to 30 timers
+*  set to go off at once, to save returning here from main loop. */
 void TimerActivate()
 {
    timer_node *temp;
-   int object_id,message_id;
    UINT64 now;
+   int i = 0;
    val_type timer_val;
    parm_node p[1];
    
    if (timers == NULL)
       return;
-   
-   now = GetMilliCount();
+
+   now = GetTimerMicro();
    if (now > timers->time)
    {
-   /*
-     if (now - timers->time > TIMER_DELAY_WARN)
-       dprintf("Timer handled %i.%03is late\n",
-         (now-timers->time)/1000,(now-timers->time)%1000);
-   */
-
-      object_id = timers->object_id;
-      message_id = timers->message_id;
-      
+      /*
+      if (now - timers->time > TIMER_DELAY_WARN)
+         dprintf("Timer handled %i.%03is late\n",
+            (int)((now-timers->time)/1000000),(int)((now-timers->time)%1000000));
+      */
       timer_val.v.tag = TAG_TIMER;
-      timer_val.v.data = timers->timer_id;
-      
       p[0].type = CONSTANT;
-      p[0].value = timer_val.int_val;
       p[0].name_id = TIMER_PARM;
-      
-      temp = timers;
-      timers = timers->next;
-      
-      /* put deleted timer on deleted_timer list */
-      StoreDeletedTimer(temp);
-      
-      SendTopLevelBlakodMessage(object_id,message_id,1,p);
+
+      do
+      {
+         timer_val.v.data = timers->timer_id;
+         p[0].value = timer_val.int_val;
+
+         temp = timers;
+         timers = timers->next;
+
+         /* put deleted timer on deleted_timer list */
+         StoreDeletedTimer(temp);
+
+         SendTopLevelBlakodMessage(temp->object_id, temp->message_id, 1, p);
+      } while (now > timers->time && ++i < 30);
    }
 }
 
@@ -349,14 +351,17 @@ void ServiceTimers(void)
          ms = 500;
       else
       {
-         ms = timers->time - GetMilliCount();
-         if (ms <= 0)
+         ms = (INT64)(timers->time - GetTimerMicro());
+         // Shortest time we can wait is 1000 microseconds.
+         if (ms <= 1000)
             ms = 0;
-
+         // Convert to milliseconds.
+         else
+            ms /= 1000;
          if (ms > 500)
             ms = 500;
-      }	 
-      
+      }
+
       if (WaitForAnyMessageWithTimeout(ms))
       {
          while (MessagePeek(&msg,NULL,0,0,PM_REMOVE))
@@ -366,42 +371,35 @@ void ServiceTimers(void)
                lprintf("ServiceTimers shutting down the server\n");   
                return;
             }
-	    
+
             switch (msg.message)
             {
-               case WM_BLAK_MAIN_READ :
+            case WM_BLAK_MAIN_READ :
                EnterServerLock();
-
                PollSession(msg.lParam);
                TimerActivate();
-
                LeaveServerLock();
                break;
-
-               case WM_BLAK_MAIN_RECALIBRATE :
+            case WM_BLAK_MAIN_RECALIBRATE :
                /* new soonest timer, so we should recalculate our time left... 
                so we just need to restart the loop! */
                break;
-
-               case WM_BLAK_MAIN_DELETE_ACCOUNT :
+            case WM_BLAK_MAIN_DELETE_ACCOUNT :
                EnterServerLock();
                DeleteAccountAndAssociatedUsersByID(msg.lParam);
                LeaveServerLock();
                break;
-
-               case WM_BLAK_MAIN_VERIFIED_LOGIN :
+            case WM_BLAK_MAIN_VERIFIED_LOGIN :
                EnterServerLock();
                VerifiedLoginSession(msg.lParam);
                LeaveServerLock();
                break;
-
-               case WM_BLAK_MAIN_LOAD_GAME :
+            case WM_BLAK_MAIN_LOAD_GAME :
                EnterServerLock();
                LoadFromKod(msg.lParam);
                LeaveServerLock();
                break;
-
-               default :
+            default :
                dprintf("ServiceTimers got unknown message %i\n",msg.message);
                break;
             }
@@ -426,7 +424,7 @@ timer_node * GetTimerByID(int timer_id)
    while (t != NULL)
    {
       if (t->timer_id == timer_id)
-	 return t;
+         return t;
       t = t->next;
    }
    return NULL;

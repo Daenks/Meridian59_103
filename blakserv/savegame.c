@@ -347,6 +347,7 @@ void SaveTimers(void)
 void SaveEachTimer(timer_node *t)
 {
    int save_time;
+   UINT64 micro_time;
    object_node *o;
    char *s;
 
@@ -369,7 +370,12 @@ void SaveEachTimer(timer_node *t)
    SaveGameCopyIntBuffer(t->object_id);
    SaveGameCopyStringBuffer(GetNameByID(t->message_id));
 
-   save_time = (int)(t->time - GetMilliCount());
+   // Save millisecond time only.
+   micro_time = GetTimerMicro();
+   if (t->time < micro_time)
+      save_time = 0;
+   else
+      save_time = (int)((t->time - micro_time) / 1000);
    if (save_time < 0)
       save_time = 0;
    SaveGameCopyIntBuffer(save_time);
