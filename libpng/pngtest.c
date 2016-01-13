@@ -42,6 +42,7 @@
 #  include <stdio.h>
 #  include <stdlib.h>
 #  include <string.h>
+#  include <stdbool.h>
 #  define FCLOSE(file) fclose(file)
 
 #ifndef PNG_STDIO_SUPPORTED
@@ -850,11 +851,13 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
 
 #ifdef PNG_SETJMP_SUPPORTED
    pngtest_debug("Setting jmpbuf for read struct");
+   bool test;
 #ifdef USE_FAR_KEYWORD
-   if (setjmp(tmp_jmpbuf))
+   test = setjmp(tmp_jmpbuf);
 #else
-   if (setjmp(png_jmpbuf(read_ptr)))
+   test = setjmp(png_jmpbuf(read_ptr));
 #endif
+   if (test)
    {
       fprintf(STDERR, "%s -> %s: libpng read error\n", inname, outname);
       png_free(read_ptr, row_buf);
@@ -874,12 +877,14 @@ test_one_file(PNG_CONST char *inname, PNG_CONST char *outname)
 
 #ifdef PNG_WRITE_SUPPORTED
    pngtest_debug("Setting jmpbuf for write struct");
+   bool test;
 #ifdef USE_FAR_KEYWORD
 
-   if (setjmp(tmp_jmpbuf))
+   test = setjmp(tmp_jmpbuf);
 #else
-   if (setjmp(png_jmpbuf(write_ptr)))
+   test = setjmp(png_jmpbuf(write_ptr));
 #endif
+   if (test)
    {
       fprintf(STDERR, "%s -> %s: libpng write error\n", inname, outname);
       png_destroy_read_struct(&read_ptr, &read_info_ptr, &end_info_ptr);

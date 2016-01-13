@@ -39,6 +39,7 @@
 #endif
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -4701,6 +4702,7 @@ isofile_gen_utility_names(struct archive_write *a, struct isofile *file)
 	char *p, *dirname, *slash;
 	size_t len;
 	int ret = ARCHIVE_OK;
+	bool test;
 
 	iso9660 = a->format_data;
 
@@ -4759,11 +4761,12 @@ isofile_gen_utility_names(struct archive_write *a, struct isofile *file)
 		 */
 		while (u16len >= 2) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-			if (u16[u16len-2] == 0 &&
-			    (u16[u16len-1] == '/' || u16[u16len-1] == '\\'))
+			test = u16[u16len-2] == 0 &&
+			    (u16[u16len-1] == '/' || u16[u16len-1] == '\\');
 #else
-			if (u16[u16len-2] == 0 && u16[u16len-1] == '/')
+			test = u16[u16len-2] == 0 && u16[u16len-1] == '/';
 #endif
+			if (test)
 			{
 				u16len -= 2;
 			} else
@@ -4778,10 +4781,11 @@ isofile_gen_utility_names(struct archive_write *a, struct isofile *file)
 		ulen_last = u16len;
 		while (u16len > 0) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-			if (u16[0] == 0 && (u16[1] == '/' || u16[1] == '\\'))
+			test = u16[0] == 0 && (u16[1] == '/' || u16[1] == '\\');
 #else
-			if (u16[0] == 0 && u16[1] == '/')
+			test = u16[0] == 0 && u16[1] == '/';
 #endif
+			if (test)
 			{
 				ulast = u16 + 2;
 				ulen_last = u16len -1;
