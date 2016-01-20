@@ -30,8 +30,9 @@ messages:
       plTreasure = [ [ &YellowMushroom, 10 ],
                      [ &GrayMushroom, 30 ],
                      [ &CyanMushroom, 10 ],
-                     [ &GreenMushroom, 30 ],
-                     [ &PurpleMushroom, 20 ]
+                     [ &GreenMushroom, 28 ],
+                     [ &PurpleMushroom, 20 ],
+                     [ &IceArrow, 2 ]
                   ];
 
       propagate;

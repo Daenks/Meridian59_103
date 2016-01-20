@@ -28,10 +28,10 @@ messages:
    Constructed()
    {
       plTreasure = [ [ &LightningWand, 10 ],
-                     [ &HospiceWand, 30 ],
+                     [ &OrcTooth, 30 ],
                      [ &EnfeebleWand, 10 ],
-                     [ &MarkOfDishonorWand, 30 ],
-                     [ &BlindWand, 20 ]
+                     [ &MarkOfDishonorWand, 28 ],
+                     [ &FireArrow, 2 ]
                   ];
 
       propagate;
