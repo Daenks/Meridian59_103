@@ -1,0 +1,173 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+StaticField is PersonalEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   staticfield_name_rsc = "static field"
+   staticfield_icon_rsc = istatfld.bgf
+   staticfield_desc_rsc = \
+      "Charges the caster with large amounts of static electricity, "
+      "discharging frequently and shocking any who dare to strike them.  "
+      "Requires two blue mushrooms and a polished seraphym to cast."
+
+   staticfield_on_rsc = \
+      "The air around you begins to crackle as lightning discharges "
+      "from your skin."
+   staticfield_off_rsc = \
+      "The lightning surrounding you dissipates."
+   staticfield_already_enchanted_rsc = \
+      "You are already discharging electricity."
+
+   staticfield_enchantment_rsc = \
+      "\n\nYour current %s enchantment will deal %i-%i damage to melee "
+      "attackers"
+
+   staticfield_sound= fzap.wav
+   rHitSound = staticshock.wav
+
+classvars:
+
+   viSpell_num = SID_STATIC_FIELD
+   viSchool = SS_FAREN
+   viMana = 20
+   viCast_Time = 5000
+   viSpell_Exertion = 15
+   viSpell_level = 6
+
+   viChance_To_Increase = 15
+   viMeditate_ratio = 75
+
+   vrName = staticfield_name_rsc
+   vrIcon = staticfield_icon_rsc
+   vrDesc = staticfield_desc_rsc
+
+   vrAlreadyEnchanted = staticfield_already_enchanted_rsc
+   vrEnchantment_On = staticfield_On_rsc
+   vrEnchantment_Off = staticfield_Off_rsc
+
+   vrSucceed_wav = staticfield_sound
+
+   viFlash = FLASH_GOOD
+
+   vbCanCastonOthers = FALSE
+   
+   viAttack_spell = ATCK_SPELL_ALL+ATCK_SPELL_SHOCK
+   viAttack_type = 0
+
+properties:
+
+   piDamageMin = 3
+   piDamageMax = 7
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 15
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&BlueMushroom,2],plReagents);
+      plReagents = Cons([&PolishedSeraphym,1],plReagents);
+
+      return;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDuration;
+
+      % 60-360 seconds.
+      iDuration = 60000+(iSpellPower*3000);
+
+      return iDuration;
+   }
+
+   GetStateValue(who=$,iSpellPower=0)
+   {
+      Send(who,@AddDefenseModifier,#what=self);
+
+      return iSpellPower;
+   }
+
+   ModifyDefensePower(who=$,what=$,defense_power=$)
+   {
+      local iDamage, iSpellpower, oWeapon;
+
+      if what <> $
+         AND IsClass(what,&Battler)
+      {
+         if IsClass(what,&Player)
+            AND Send(what,@GetWeapon) <> $
+            AND IsClass((Send(what,@GetWeapon)),&RangedWeapon)
+         {
+            % Don't shock players attacking with ranged weapons.
+
+            return defense_power;
+         }
+
+         iDamage = Random(piDamageMin, piDamageMax);
+
+         iDamage = Send(what,@AssessDamage,#what=who,#damage=iDamage,
+                        #atype=viAttack_type,#aspell=viAttack_spell,
+                        #absolute=FALSE);
+
+         Send((Send(who,@GetOwner)),@SomethingWaveRoom,#what=self,#wave_rsc=rHitSound);
+         Send(who,@AssessHit,#what=what,#damage=iDamage,#use_weapon=self);
+
+         if iDamage = $
+         {
+            Post(who,@KilledSomething,#what=what,#use_weapon=self);
+         }
+      }
+
+      return defense_power;
+   }
+
+   EndEnchantment(who=$,report=TRUE,state=0)
+   {
+      Send(who,@RemoveDefenseModifier,#what=self);
+
+      propagate;
+   }
+
+   EffectDesc(who=$)
+   {
+      AddPacket(4,staticfield_enchantment_rsc, 4,Send(self,@GetName),
+                4,piDamageMin, 4,piDamageMax);
+
+      return;
+   }
+
+   % This is for the attack message infrastructure.
+   GetAttackName()
+   {
+      return vrName;
+   }
+
+   GetAttackSpell()
+   {
+      return viAttack_spell;
+   }
+
+   GetAttackType()
+   {
+      return viAttack_type;
+   }
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

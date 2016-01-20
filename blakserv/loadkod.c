@@ -85,7 +85,7 @@ void LoadBof(void)
 	SetClassVariables();
 	SetMessagesPropagate();
 
-	//dprintf("LoadBof loaded %i of %i found .bof files\n",files_loaded,files.size());
+	dprintf("LoadBof loaded %i of %i found .bof files\n",files_loaded,files.size());
 }
 
 void ResetLoadBof(void)
@@ -167,11 +167,19 @@ void AddFileMem(char *fname,char *ptr,int size)
 	lf->length = size;
 	
 	/* we store the fname so the class structures can point to it, but kill the path */
-	
+
+#ifdef BLAK_PLATFORM_WINDOWS
 	if (strrchr(lf->fname,'\\') == NULL)
 		FindClasses(lf->mem,lf->fname); 
 	else
 		FindClasses(lf->mem,strrchr(lf->fname,'\\')+1); 
+#else
+    if (strrchr(lf->fname,'/') == NULL)
+        FindClasses(lf->mem,lf->fname);
+    else
+        FindClasses(lf->mem,strrchr(lf->fname,'/')+1);
+
+#endif
 	
 	/* add to front of list */
 	lf->next = mem_files;

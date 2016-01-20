@@ -1802,7 +1802,7 @@ messages:
          if StringEqual(string,dm_morning_command)
             OR StringEqual(string,"morning")
          {
-            Send(SYS,@SetHour,#num=6);
+            Send(SYS,@SetHour,#iNum=6);
 
             return;
          }
@@ -1810,7 +1810,7 @@ messages:
          if StringEqual(string,dm_afternoon_command)
             OR StringEqual(string,"afternoon")
          {
-            Send(SYS,@SetHour,#num=13);
+            Send(SYS,@SetHour,#iNum=13);
 
             return;
          }
@@ -1818,7 +1818,7 @@ messages:
          if StringEqual(string,dm_evening_command)
             OR StringEqual(string,"evening")
          {
-            Send(SYS,@SetHour,#num=18);
+            Send(SYS,@SetHour,#iNum=18);
 
             return;
          }
@@ -1826,7 +1826,7 @@ messages:
          if StringEqual(string,dm_night_command)
             OR StringEqual(string,"night")
          {
-            Send(SYS,@SetHour,#num=23);
+            Send(SYS,@SetHour,#iNum=23);
 
             return;
          }
@@ -1834,7 +1834,7 @@ messages:
          if StringEqual(string,dm_restore_time_command)
             OR StringEqual(string,"restore time")
          {
-            Send(SYS,@RecalcLightAndWeather);
+            Send(SYS,@SystemInitGameHour);
 
             return;
          }

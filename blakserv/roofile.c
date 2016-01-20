@@ -67,7 +67,7 @@
 /*                                   These are not defined in header                                          */
 /**************************************************************************************************************/
 
-__inline float GetSectorHeightFloorWithDepth(Sector* Sector, V2* P)
+__inline float GetSectorHeightFloorWithDepth(SectorNode* Sector, V2* P)
 {
    float height = SECTORHEIGHTFLOOR(Sector, P);
    unsigned int depthtype = Sector->Flags & SF_MASK_DEPTH;
@@ -87,7 +87,7 @@ __inline float GetSectorHeightFloorWithDepth(Sector* Sector, V2* P)
    return height;
 }
 
-__inline bool BSPCanMoveInRoomTreeInternal(Sector* SectorS, Sector* SectorE, Side* SideS, Side* SideE, V2* Q)
+__inline bool BSPCanMoveInRoomTreeInternal(SectorNode* SectorS, SectorNode* SectorE, Side* SideS, Side* SideE, V2* Q)
 {
    // block moves with end outside
    if (!SectorE || !SideE)
@@ -124,7 +124,7 @@ __inline bool BSPCanMoveInRoomTreeInternal(Sector* SectorS, Sector* SectorE, Sid
    return true;
 }
 
-void BSPUpdateLeafHeights(room_type* Room, Sector* Sector, bool Floor)
+void BSPUpdateLeafHeights(room_type* Room, SectorNode* Sector, bool Floor)
 {
    for (int i = 0; i < Room->TreeNodesCount; i++)
    {
@@ -449,9 +449,9 @@ bool BSPCanMoveInRoomTree(BspNode* Node, V2* S, V2* E, Wall** BlockWall)
    {
       V2 q;
       Side* sideS;
-      Sector* sectorS;
+      SectorNode* sectorS;
       Side* sideE;
-      Sector* sectorE;
+      SectorNode* sectorE;
 
       // CASE 1) The move line actually crosses this infinite splitter.
       // This case handles long movelines where S and E can be far away from each other and
@@ -742,7 +742,7 @@ bool BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOuts
       return false;
 
    // otherwise also check against blockers
-   Blocker* blocker = Room->Blocker;
+   BlockerNode* blocker = Room->Blocker;
    while (blocker)
    {
       // don't block ourself
@@ -827,7 +827,7 @@ void BSPChangeTexture(room_type* Room, unsigned int ServerID, unsigned short New
    {
       for (int i = 0; i < Room->SectorsCount; i++)
       {
-         Sector* sector = &Room->Sectors[i];
+         SectorNode* sector = &Room->Sectors[i];
 
          // server ID does not match
          if (sector->ServerID != ServerID)
@@ -850,7 +850,7 @@ void BSPMoveSector(room_type* Room, unsigned int ServerID, bool Floor, float Hei
 {
    for (int i = 0; i < Room->SectorsCount; i++)
    {
-      Sector* sector = &Room->Sectors[i];
+      SectorNode* sector = &Room->Sectors[i];
 
       // server ID does not match
       if (sector->ServerID != ServerID)
@@ -916,7 +916,7 @@ bool BSPGetLocationInfo(room_type* Room, V2* P, unsigned int QueryFlags, unsigne
    // check too close to blocker
    if (isCheckOjectBlock)
    {
-      Blocker* blocker = Room->Blocker;
+      BlockerNode* blocker = Room->Blocker;
       while (blocker)
       {
          V2 b;
@@ -982,7 +982,7 @@ bool BSPGetRandomPoint(room_type* Room, int MaxAttempts, V2* P)
 			continue;
 
 		// 3. check for being too close to a blocker
-		Blocker* blocker = Room->Blocker;
+		BlockerNode* blocker = Room->Blocker;
 		bool collision = false;
 		while (blocker)
 		{
@@ -1315,11 +1315,11 @@ bool BSPGetStepTowards(room_type* Room, V2* S, V2* E, V2* P, unsigned int* Flags
 /*********************************************************************************************/
 void BSPBlockerClear(room_type* Room)
 {
-   Blocker* blocker = Room->Blocker;
+   BlockerNode* blocker = Room->Blocker;
    while (blocker)
    {
-      Blocker* tmp = blocker->Next;
-      FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(Blocker));
+      BlockerNode* tmp = blocker->Next;
+      FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(BlockerNode));
       blocker = tmp;
    }
    Room->Blocker = NULL;
@@ -1333,8 +1333,8 @@ bool BSPBlockerRemove(room_type* Room, int ObjectID)
    if (!Room)
       return false;
 
-   Blocker* blocker = Room->Blocker;
-   Blocker* previous = NULL;
+   BlockerNode* blocker = Room->Blocker;
+   BlockerNode* previous = NULL;
 
    while (blocker)
    {
@@ -1349,7 +1349,7 @@ bool BSPBlockerRemove(room_type* Room, int ObjectID)
             previous->Next = blocker->Next;
 
          // now cleanup node
-         FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(Blocker));
+         FreeMemory(MALLOC_ID_ROOM, blocker, sizeof(BlockerNode));
 
          return true;
       }
@@ -1370,7 +1370,7 @@ bool BSPBlockerAdd(room_type* Room, int ObjectID, V2* P)
       return false;
 
    // alloc
-   Blocker* newblocker = (Blocker*)AllocateMemory(MALLOC_ID_ROOM, sizeof(Blocker));
+   BlockerNode* newblocker = (BlockerNode*)AllocateMemory(MALLOC_ID_ROOM, sizeof(BlockerNode));
 
    // set values on new blocker
    newblocker->ObjectID = ObjectID;
@@ -1401,7 +1401,7 @@ bool BSPBlockerMove(room_type* Room, int ObjectID, V2* P)
    if (!Room || !P)
       return false;
 
-   Blocker* blocker = Room->Blocker;
+   BlockerNode* blocker = Room->Blocker;
    while (blocker)
    {
       if (blocker->ObjectID == ObjectID)
@@ -1684,12 +1684,12 @@ bool BSPLoadRoom(char *fname, room_type *room)
    { fclose(infile); return False; }
 
    // allocate sectors mem
-   room->Sectors = (Sector*)AllocateMemory(
-      MALLOC_ID_ROOM, room->SectorsCount * sizeof(Sector));
+   room->Sectors = (SectorNode*)AllocateMemory(
+      MALLOC_ID_ROOM, room->SectorsCount * sizeof(SectorNode));
 
    for (i = 0; i < room->SectorsCount; i++)
    {
-      Sector* sector = &room->Sectors[i];
+      SectorNode* sector = &room->Sectors[i];
 	   
       // serverid
       if (fread(&sector->ServerID, 1, 2, infile) != 2)
@@ -2010,7 +2010,7 @@ void BSPFreeRoom(room_type *room)
    FreeMemory(MALLOC_ID_ROOM, room->TreeNodes, room->TreeNodesCount * sizeof(BspNode));
    FreeMemory(MALLOC_ID_ROOM, room->Walls, room->WallsCount * sizeof(Wall));
    FreeMemory(MALLOC_ID_ROOM, room->Sides, room->SidesCount * sizeof(Side));
-   FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(Sector));
+   FreeMemory(MALLOC_ID_ROOM, room->Sectors, room->SectorsCount * sizeof(SectorNode));
 
    room->TreeNodesCount = 0;
    room->WallsCount = 0;

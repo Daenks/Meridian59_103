@@ -139,7 +139,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       plRecentCasters = $;
 

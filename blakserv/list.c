@@ -162,6 +162,13 @@ int AppendListElem(val_type source, val_type list_val)
    if (n > 500)
       bprintf("Warning, AppendListElem adding to large list, length %i",n);
 
+   if (!l)
+   {
+      bprintf("AppendListElem got invalid list node in list %i", list_id);
+
+      return list_id;
+   }
+
    new_node->rest.int_val = NIL;
 
    if (temp_list_id >= 0)
@@ -766,8 +773,8 @@ int ListCopy(int list_id)
       l = GetListNodeByID(l_list_id);
       if (!l)
       {
-         bprintf("ListCopy got invalid list node %i %i\n",
-            l->rest.v.tag, l->rest.v.data);
+         bprintf("ListCopy got invalid list node somewhere in list %i!\n",
+            list_id);
          return NIL;
       }
 

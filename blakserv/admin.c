@@ -46,21 +46,21 @@ void AdminProcessSessionBuffer(session_node *s)
       /* give up receive mutex, so the interface/socket thread can
 	 read data for us, even if doing something long (GC/save/reload sys) */
 
-      if (!ReleaseMutex(s->muxReceive))
-	 eprintf("APSBPollSession released mutex it didn't own in session %i\n",
-		 s->session_id);
+      if (!MutexRelease(s->muxReceive))
+         eprintf("APSBPollSession released mutex it didn't own in session %i\n",
+            s->session_id);
       
       AdminInputChar(s,ch);
 
-      if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
+      if (!MutexAcquireWithTimeout(s->muxReceive,10000))
       {
-	 eprintf("APSB bailed waiting for mutex on session %i\n",s->session_id);
-	 return;
+         eprintf("APSB bailed waiting for mutex on session %i\n",s->session_id);
+         return;
       }
 
       /* any character could change our state.  if so, leave */
       if (s->hangup == True || s->state != STATE_ADMIN)
-	 return;
+      return;
    }
 }
 

@@ -22,6 +22,27 @@ enum {
    HOTSPOT_OVEROVER   = 4,   // Overlay on an overlay
    HOTSPOT_UNDERUNDER = 5,   // Underlay on an underlay
    HOTSPOT_UNDEROVER  = 6,   // Over on an underlay
+   HOTSPOT_OVERUNDEROVERUNDER = 7, // Overlay displayed under underlays of overlays
+};
+
+// Hotspot indexes used in BGFs.
+enum {
+   HS_HEAD = 1,
+   HS_HELM = 2,
+   HS_EYES = 11,
+   HS_MOUTH = 12,
+   HS_TOUPEE = 13,
+   HS_NOSE = 14,
+   HS_RIGHT_HAND = 21,
+   HS_RIGHT_WEAPON = 22,
+   HS_TOKEN = 29,
+   HS_LEFT_HAND = 31,
+   HS_LEFT_WEAPON = 32,
+   HS_TOP_BOW = 32,
+   HS_BOTTOM_BOW = 33,
+   HS_LEGS = 41,
+   HS_EMBLEM = 51,
+   HS_SHIELD_BACK = 61,
 };
 
 // Factor by which overlay offsets are magnified to give extra resolution

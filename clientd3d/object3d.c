@@ -202,22 +202,29 @@ Bool DrawObjectOverlays( DrawObjectInfo *dos, list_type overlays, PDIB pdib_obj,
 	Bool visible, temp;
 
 	visible = False;
-	for (pass = 0; pass < 3; pass++)
+	for (pass = 0; pass < 4; pass++)
 	{
-		if (underlays)
-			switch (pass)
-			{
-			case 0: depth = HOTSPOT_UNDERUNDER;  break;
-			case 1: depth = HOTSPOT_UNDER;       break;
-			case 2: depth = HOTSPOT_UNDEROVER;   break;
-			}
-		else
-			switch (pass)
-			{
-			case 0: depth = HOTSPOT_OVERUNDER;  break;
-			case 1: depth = HOTSPOT_OVER;       break;
-			case 2: depth = HOTSPOT_OVEROVER;   break;
-			}
+      if (underlays)
+      {
+         if (pass == 0)
+            continue;
+         switch (pass)
+         {
+         case 1: depth = HOTSPOT_UNDERUNDER;  break;
+         case 2: depth = HOTSPOT_UNDER;       break;
+         case 3: depth = HOTSPOT_UNDEROVER;   break;
+         }
+      }
+      else
+      {
+         switch (pass)
+         {
+         case 0: depth = HOTSPOT_OVERUNDEROVERUNDER; break;
+         case 1: depth = HOTSPOT_OVERUNDER;  break;
+         case 2: depth = HOTSPOT_OVER;       break;
+         case 3: depth = HOTSPOT_OVEROVER;   break;
+         }
+      }
 
 		for (l = overlays; l != NULL; l = l->next)
 		{
@@ -724,44 +731,50 @@ int FindHotspot(list_type overlays, PDIB pdib, PDIB pdib_ov, char hotspot, int a
       
       pdib_ov2 = GetObjectPdib(overlay->icon_res, angle, overlay->animate.group);
       if (pdib_ov2 == NULL)
-	 continue;
+         continue;
 
       if ((retval = FindHotspotPdib(pdib_ov2, hotspot, point)) != HOTSPOT_NONE)
       {
-	 // Measure position relative to overlay's point of attachment
-	 // If hotspot is over or under object, use this as return value
-	 POINT p2;
-	 retval2 = FindHotspotPdib(pdib, overlay->hotspot, &p2);
-	 if (retval2 != HOTSPOT_NONE)
-	 {
+         // Measure position relative to overlay's point of attachment
+         // If hotspot is over or under object, use this as return value
+         POINT p2;
+         retval2 = FindHotspotPdib(pdib, overlay->hotspot, &p2);
+         if (retval2 != HOTSPOT_NONE)
+         {
 
-	    point->x = point->x * OVERLAY_FACTOR * obj_shrink / DibShrinkFactor(pdib_ov2) +
-	       p2.x * OVERLAY_FACTOR;
-	    point->y = point->y * OVERLAY_FACTOR * obj_shrink / DibShrinkFactor(pdib_ov2) + 
-	       p2.y * OVERLAY_FACTOR;
+            point->x = point->x * OVERLAY_FACTOR * obj_shrink / DibShrinkFactor(pdib_ov2) +
+               p2.x * OVERLAY_FACTOR;
+            point->y = point->y * OVERLAY_FACTOR * obj_shrink / DibShrinkFactor(pdib_ov2) + 
+               p2.y * OVERLAY_FACTOR;
 
-	    // Include offset, in units of underlying overlay pixels.
-	    // Also include offset of underlying overlay (first term).
+            // Include offset, in units of underlying overlay pixels.
+            // Also include offset of underlying overlay (first term).
 
-	    point->x += DibXOffset(pdib_ov2) * OVERLAY_FACTOR + 
-	       DibXOffset(pdib_ov) * OVERLAY_FACTOR *
-		  DibShrinkFactor(pdib) / DibShrinkFactor(pdib_ov2);
-	    point->y += DibYOffset(pdib_ov2) * OVERLAY_FACTOR + 
-	       DibYOffset(pdib_ov) * OVERLAY_FACTOR * 
-		  DibShrinkFactor(pdib) / DibShrinkFactor(pdib_ov2);
+            point->x += DibXOffset(pdib_ov2) * OVERLAY_FACTOR + 
+               DibXOffset(pdib_ov) * OVERLAY_FACTOR *
+               DibShrinkFactor(pdib) / DibShrinkFactor(pdib_ov2);
+            point->y += DibYOffset(pdib_ov2) * OVERLAY_FACTOR + 
+               DibYOffset(pdib_ov) * OVERLAY_FACTOR * 
+               DibShrinkFactor(pdib) / DibShrinkFactor(pdib_ov2);
 
             if (retval == HOTSPOT_OVER)
-	       if (retval2 == HOTSPOT_OVER)
-		  return HOTSPOT_OVEROVER;
-	       else return HOTSPOT_UNDEROVER;
-	    else
-	       if (retval2 == HOTSPOT_OVER)
-		  return HOTSPOT_OVERUNDER;
-	       else return HOTSPOT_UNDERUNDER;
-	 }
-	 
-	 // If overlay had no hotspot attachment, assume overlay
-	 return HOTSPOT_OVER;
+            {
+               if (retval2 == HOTSPOT_OVER)
+                  return HOTSPOT_OVEROVER;
+               else
+                  return HOTSPOT_UNDEROVER;
+            }
+            else
+            {
+               if (retval2 == HOTSPOT_OVER)
+                  return HOTSPOT_OVERUNDER;
+               else
+                  return HOTSPOT_UNDERUNDER;
+            }
+         }
+    
+         // If overlay had no hotspot attachment, assume overlay
+         return HOTSPOT_OVER;
       }
    }
    return HOTSPOT_NONE;
@@ -784,10 +797,11 @@ int FindHotspotPdib(PDIB pdib, char hotspot, POINT *point)
       num = DibHotspotNumber(pdib, i);
       if (ABS(num) == hotspot)
       {
-	 p = DibHotspotIndex(pdib, i);
-	 point->x = p.x;
-	 point->y = p.y;
-	 return (num > 0) ? HOTSPOT_OVER : HOTSPOT_UNDER;
+         p = DibHotspotIndex(pdib, i);
+         point->x = p.x;
+         point->y = p.y;
+         return (num > 0) ? ((num == HS_HELM) ? HOTSPOT_OVERUNDEROVERUNDER
+            : HOTSPOT_OVER) : HOTSPOT_UNDER;
       }
    }
    return HOTSPOT_NONE;
