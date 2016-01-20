@@ -119,6 +119,21 @@ messages:
       return;
    }
 
+   NewGameHour()
+   {
+      return;
+   }
+
+   NewGameDay()
+   {
+      return;
+   }
+
+   NewGameYear()
+   {
+      return;
+   }
+
    StartEvent()
    {
       if vbAnnounce

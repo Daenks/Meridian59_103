@@ -160,7 +160,7 @@ messages:
    {
       local i;
 
-      if StringEqual(string,MrEl_stat_window_trigger)
+      if StringEqual(string,KocatanBonePriestess_stat_window_trigger)
       {
          if Send(what,@FindHolding,#class=&StatsResetToken) <> $
             OR (Send(what,@GetBaseMaxHealth)

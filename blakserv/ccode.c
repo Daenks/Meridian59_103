@@ -143,7 +143,7 @@ int C_LoadGame(int object_id, local_var_type *local_vars,
       return NIL;
    }
 
-   PostThreadMessage(main_thread_id, WM_BLAK_MAIN_LOAD_GAME, 0, save_time);
+   MessagePost(main_thread_id, WM_BLAK_MAIN_LOAD_GAME, 0, save_time);
 
    return NIL;
 }
@@ -2026,6 +2026,149 @@ int C_GetTempString(int object_id,local_var_type *local_vars,
 	ret_val.v.tag = TAG_TEMP_STRING;
 	ret_val.v.data = 0;		/* doesn't matter for TAG_TEMP_STRING */
 	return ret_val.int_val;
+}
+
+/*
+ * C_AppendString: Takes a string of type TAG_STRING and any number of elements
+ *                 and appends the elements to the end of the string. Notably,
+ *                 this function will append the contents of a list (TAG_LIST)
+ *                 to the string one by one. Will create a new string if passed
+ *                 NULL. Returns the int value of the first/new string.
+ *                 Note: if one of the elements fails to be added, we skip it and
+ *                 add the rest.
+ */
+int C_AppendString(int object_id,local_var_type *local_vars,
+					   int num_normal_parms,parm_node normal_parm_array[],
+					   int num_name_parms,parm_node name_parm_array[])
+{
+   val_type s_old_val, s_add_val;
+   string_node *snod_old, *snod_add;
+   resource_node *r;
+   const char *str;
+   int list_count = 1, list_length = 0;
+
+   if (num_normal_parms < 2)
+   {
+      bprintf("C_AppendString called with %i parameters!\n",num_normal_parms);
+      return NIL;
+   }
+
+   s_old_val = RetrieveValue(object_id,local_vars,normal_parm_array[0].type,
+      normal_parm_array[0].value);
+
+   if (s_old_val.v.tag != TAG_STRING)
+   {
+      // If we're passed a NULL string, create one and use that.
+      if (s_old_val.v.tag == TAG_NIL)
+      {
+         s_old_val.v.tag = TAG_STRING;
+         s_old_val.v.data = CreateString("");
+      }
+      else
+      {
+         bprintf("C_AppendString got bad data type to add to %i\n",
+            s_old_val.v.tag);
+         return NIL;
+      }
+   }
+
+   snod_old = GetStringByID(s_old_val.v.data);
+   if (snod_old == NULL)
+   {
+      bprintf( "C_AppendString can't find old string %i,%i\n",
+         s_old_val.v.tag, s_old_val.v.data );
+      return NIL;
+   }
+
+   for (int i = 1; i < num_normal_parms; i++)
+   {
+      s_add_val = RetrieveValue(object_id,local_vars,normal_parm_array[i].type,
+         normal_parm_array[i].value);
+
+      // AppendString will add each element of the list (provided it is valid)
+      // to the string. It iterates through the list, keeping i at the same value
+      // and when the list is finished list_count is set back to 1 and the next
+      // object is processed.
+      if (s_add_val.v.tag == TAG_LIST)
+      {
+         // Get list length, to determine if we've completed the list or not.
+         list_length = Length(s_add_val.v.data);
+         // list_count starts at 1, ends == list_length.
+         if (list_count <= list_length)
+         {
+            // Decrement i so we iterate through the list properly.
+            i--;
+            // Change s_add_val to equal the current list node.
+            s_add_val.int_val = Nth(list_count, s_add_val.v.data);
+            // Increment list_count as we iterate through the list.
+            list_count++;
+         }
+         else
+         {
+            // Finished this list, reset list_count.
+            list_count = 1;
+            continue;
+         }
+      }
+
+      switch (s_add_val.v.tag)
+      {
+      case TAG_STRING:
+         snod_add = GetStringByID(s_add_val.v.data);
+         if (snod_add == NULL)
+         {
+            bprintf( "C_AppendString can't append bad string %i,%i\n",
+               s_add_val.v.tag, s_add_val.v.data );
+            break;
+         }
+         AppendString(snod_old, snod_add->data);
+         break;
+      case TAG_RESOURCE:
+         str = GetResourceStrByLanguageID(s_add_val.v.data, ConfigInt(RESOURCE_LANGUAGE));
+         if (str == NULL)
+         {
+            bprintf("C_AppendString can't set from invalid resource %i\n",
+               s_add_val.v.data);
+            break;
+         }
+         AppendString(snod_old,str);
+         break;
+      case TAG_INT:
+         char numbuf[20];
+         sprintf(numbuf, "%d", s_add_val.v.data);
+         AppendString(snod_old,numbuf);
+         break;
+      case TAG_DEBUGSTR :
+         str = GetClassDebugStr(GetClassByID(GetKodStats()->interpreting_class),
+                  s_add_val.v.data);
+         if (str == NULL)
+         {
+            bprintf("C_AppendString can't append invalid debug string %i\n",
+               s_add_val.v.data);
+            break;
+         }
+         AppendString(snod_old, (char *)str);
+         break;
+      case TAG_TEMP_STRING:
+         AppendString(snod_old, GetTempString()->data);
+         break;
+      case TAG_MESSAGE:
+         str = GetNameByID(s_add_val.v.data);
+         if (str == NULL)
+         {
+            bprintf("C_AppendString can't add invalid message %i\n", s_add_val.v.data);
+            break;
+         }
+         AppendString(snod_old, GetNameByID(s_add_val.v.data));
+         break;
+      default:
+         bprintf("C_AppendString can't add invalid data tag %i\n",
+               s_add_val.v.tag);
+         break;
+      }
+   }
+
+   return s_old_val.int_val;
 }
 
 int C_AppendTempString(int object_id,local_var_type *local_vars,
@@ -4730,7 +4873,8 @@ int C_MinigameStringToNumber(int object_id,local_var_type *local_vars,
 int C_RecordStat(int object_id,local_var_type *local_vars,
 				int num_normal_parms,parm_node normal_parm_array[],
 				int num_name_parms,parm_node name_parm_array[])
-{	
+{
+#ifdef BLAK_PLATFORM_WINDOWS
 	val_type stat_type, stat1, stat2, stat3, stat4, stat5, stat6, stat7, stat8, stat9, stat10, stat11, stat12, stat13;
 	resource_node *r_who_damaged, *r_who_attacker, *r_weapon, *r_victim, *r_killer, *r_room, *r_attack,
       *r_name, *r_home, *r_bind, *r_leader, *r_ghall;
@@ -5106,6 +5250,8 @@ int C_RecordStat(int object_id,local_var_type *local_vars,
 			break;
 	}
 
+#endif
+
 	return NIL;
 }
 
@@ -5140,7 +5286,11 @@ int C_GetSessionIP(int object_id,local_var_type *local_vars,
    // reverse the order, because the address is stored in network order in in6_addr
    for (int i = sizeof(struct in6_addr) - 1; i >= 0; i--)
    {
+#ifdef BLAK_PLATFORM_WINDOWS
       temp.v.data = session->conn.addr.u.Byte[i];
+#else
+      temp.v.data = session->conn.addr.s6_addr[i];
+#endif
       ret_val.v.data = Cons(temp, ret_val);
       ret_val.v.tag = TAG_LIST;
    }

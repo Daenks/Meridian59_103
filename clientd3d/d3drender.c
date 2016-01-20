@@ -7810,7 +7810,6 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 	anglePitch = PlayerGetHeightOffset();
 
 	for (curObject = 0; curObject < nitems; curObject++)
-//	for (list = room->contents; list != NULL; list = list->next)
 	{
 		list_type	list2;
 		int			pass, depth;
@@ -7818,7 +7817,6 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 		if (drawdata[curObject].type != DrawObjectType)
 			continue;
 
-//		pRNode = (room_contents_node *)list->data;
 		pRNode = drawdata[curObject].u.object.object->draw.obj;
 
 		if (pRNode == NULL)
@@ -7849,50 +7847,54 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 		if (NULL == *pRNode->obj.overlays)
 			continue;
 
-//		continue;
-
 		// three passes each
-		for (pass = 0; pass < 3; pass++)
+		for (pass = 0; pass < 4; pass++)
 		{
 			// flush cache between passes
 			// unlock all buffers
 
-			if (underlays)
-				switch (pass)
-				{
-					case 0:
-						depth = HOTSPOT_UNDERUNDER;
-						zBias = ZBIAS_UNDERUNDER;
-					break;
-
-					case 1:
-						depth = HOTSPOT_UNDER;
-						zBias = ZBIAS_UNDER;
-					break;
-
-					case 2:
-						depth = HOTSPOT_UNDEROVER;
-						zBias = ZBIAS_UNDEROVER;
-					break;
-				}
-			else
-				switch (pass)
-				{
-					case 0:
-						depth = HOTSPOT_OVERUNDER;
-						zBias = ZBIAS_OVERUNDER;
-					break;
-
-					case 1:
-						depth = HOTSPOT_OVER;
-						zBias = ZBIAS_OVER;
-					break;
-
-					case 2:
-						depth = HOTSPOT_OVEROVER;
-						zBias = ZBIAS_OVEROVER;
-					break;
-				}
+         if (underlays)
+         {
+            if (pass == 0)
+               continue;
+            switch (pass)
+            {
+            case 1:
+               depth = HOTSPOT_UNDERUNDER;
+               zBias = ZBIAS_UNDERUNDER;
+               break;
+            case 2:
+               depth = HOTSPOT_UNDER;
+               zBias = ZBIAS_UNDER;
+               break;
+            case 3:
+               depth = HOTSPOT_UNDEROVER;
+               zBias = ZBIAS_UNDEROVER;
+               break;
+            }
+         }
+         else
+         {
+            switch (pass)
+            {
+            case 0:
+               depth = HOTSPOT_OVERUNDEROVERUNDER;
+               zBias = ZBIAS_OVERUNDEROVERUNDER;
+               break;
+            case 1:
+               depth = HOTSPOT_OVERUNDER;
+               zBias = ZBIAS_OVERUNDER;
+               break;
+            case 2:
+               depth = HOTSPOT_OVER;
+               zBias = ZBIAS_OVER;
+               break;
+            case 3:
+               depth = HOTSPOT_OVEROVER;
+               zBias = ZBIAS_OVEROVER;
+               break;
+            }
+         }
 
 			for (list2 = *pRNode->obj.overlays; list2 != NULL; list2 = list2->next)
 			{
@@ -8093,10 +8095,6 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 
 					pPacket = D3DRenderPacketFindMatch(pPool, NULL, pDibOv, xLat0, xLat1,
 						pRNode->obj.drawingtype);
-//					pPacket = D3DRenderPacketNew(pPool);
-	//				pPacket = D3DRenderPacketNew(pPool);
-	//				pPacket = NULL;
-	//				pPool->curPacket--;
 
 					if (NULL == pPacket)
 						continue;
@@ -8189,13 +8187,6 @@ void D3DRenderOverlaysDraw(d3d_render_pool_new *pPool, room_type *room, Draw3DPa
 						if (D3DObjectLightingCalc(room, pRNode, &bgra, 0))
 							pChunk->flags |= D3DRENDER_NOAMBIENT;
 					}
-
-/*					if (pRNode->obj.id != INVALID_ID && pRNode->obj.id == GetUserTargetID())
-					{
-						bgra.b = 0.0f;
-						bgra.g = 0.0f;
-						bgra.r = 255.0f;
-					}*/
 
 					if (pRNode->obj.drawingtype == DRAWFX_TRANSLUCENT25)
 						bgra.a = D3DRENDER_TRANS25;

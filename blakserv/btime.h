@@ -25,4 +25,3 @@ UINT64 GetMilliCount();
 double GetMicroCountDouble();
 
 #endif
-

@@ -186,7 +186,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       local iDelay, iIndex, iNodeNumber, bNodeActivated;
 
