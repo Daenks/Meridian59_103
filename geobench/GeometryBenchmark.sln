@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeometryBenchmark", "GeometryBenchmark.vcxproj", "{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CSSE2|Win32 = CSSE2|Win32
+		SSE2|Win32 = SSE2|Win32
+		SSE4|Win32 = SSE4|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.CSSE2|Win32.ActiveCfg = CSSE2|Win32
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.CSSE2|Win32.Build.0 = CSSE2|Win32
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.SSE2|Win32.ActiveCfg = SSE2|Win32
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.SSE2|Win32.Build.0 = SSE2|Win32
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.SSE4|Win32.ActiveCfg = SSE4|Win32
+		{E3B28FE8-104B-4864-A6AF-9A1693A35C7F}.SSE4|Win32.Build.0 = SSE4|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

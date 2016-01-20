@@ -19,26 +19,31 @@
 /**************************************************************************************************************/
 /*                                           MACROS                                                           */
 /**************************************************************************************************************/
-#define DEBUGLOS            0                  // switch to 1 to enable debug output for BSP LOS
-#define DEBUGLOSVIEW        0                  // switch to 1 to enable debug output for directional LOS
-#define DEBUGMOVE           0                  // switch to 1 to enable debug output for BSP MOVES
-#define ROO_VERSION         14                 // required roo fileformat version (V14 = floatingpoint)
-#define ROO_SIGNATURE       0xB14F4F52         // signature of ROO files (first 4 bytes)
-#define OBJECTHEIGHTROO     768                // estimated object height (used in LOS and MOVE calcs)
-#define ROOFINENESS         1024.0f            // fineness used in ROO files
-#define HALFROOFINENESS     512.0f             // half ROO fineness for frustum calculations
-#define FINENESSKODTOROO(x) ((x) * 16.0f)      // scales a value from KOD fineness to ROO fineness
-#define FINENESSROOTOKOD(x) ((x) * 0.0625f)    // scales a value from ROO fineness to KOD fineness
-#define MAX_KOD_DEGREE      4096.0f            // max value of KOD angle
-#define HALFFRUSTUMWIDTH    600.0f             // half player view frustum, * ~1.5x to account for latency
+#define DEBUGLOS              0                      // switch to 1 to enable debug output for BSP LOS
+#define DEBUGLOSVIEW          0                      // switch to 1 to enable debug output for directional LOS
+#define DEBUGMOVE             0                      // switch to 1 to enable debug output for BSP MOVES
+#define ROO_VERSION           14                     // required roo fileformat version (V14 = floatingpoint)
+#define ROO_SIGNATURE         0xB14F4F52             // signature of ROO files (first 4 bytes)
+#define OBJECTHEIGHTROO       768                    // estimated object height (used in LOS and MOVE calcs)
+#define ROOFINENESS           1024.0f                // fineness used in ROO files
+#define HALFROOFINENESS       512.0f                 // half ROO fineness for frustum calculations
+#define FINENESSKODTOROO(x)   ((x) * 16.0f)          // scales a scalar value from KOD fineness to ROO fineness
+#define FINENESSROOTOKOD(x)   ((x) * 0.0625f)        // scales a scalar value from ROO fineness to KOD fineness
+#define V3FINENESSKODTOROO(x) V3SCALE((x), 16.0f)    // scales a V3 instance from KOD fineness to ROO fineness
+#define V3FINENESSROOTOKOD(x) V3SCALE((x), 0.0625f)  // scales a V3 instance from ROO fineness to KOD fineness
+#define V2FINENESSKODTOROO(x) V2SCALE((x), 16.0f)    // scales a V2 instance from KOD fineness to ROO fineness
+#define V2FINENESSROOTOKOD(x) V2SCALE((x), 0.0625f)  // scales a V2 instance from ROO fineness to KOD fineness
+#define MAX_KOD_DEGREE        4096.0f                // max value of KOD angle
+#define HALFFRUSTUMWIDTH      600.0f                 // half player view frustum, * ~1.5x to account for latency
 
-#define MAXSTEPHEIGHT       ((float)(24 << 4))                     // (from clientd3d/move.c)
-#define PLAYERWIDTH         (31.0f * (float)KODFINENESS * 0.25f)   // (from clientd3d/game.c)
-#define WALLMINDISTANCE     (PLAYERWIDTH / 2.0f)                   // (from clientd3d/game.c)
-#define WALLMINDISTANCE2    (WALLMINDISTANCE * WALLMINDISTANCE)    // (from clientd3d/game.c)
-#define OBJMINDISTANCE      768.0f                                 // 3 highres rows/cols, old value from kod
-#define OBJMINDISTANCE2     (OBJMINDISTANCE * OBJMINDISTANCE)
-#define LOSEXTEND           64.0f
+#define MAXSTEPHEIGHT         ((float)(24 << 4))                     // (from clientd3d/move.c)
+#define PLAYERWIDTH           (31.0f * (float)KODFINENESS * 0.25f)   // (from clientd3d/game.c)
+#define WALLMINDISTANCE       (PLAYERWIDTH / 2.0f)                   // (from clientd3d/game.c)
+#define WALLMINDISTANCE2      (WALLMINDISTANCE * WALLMINDISTANCE)    // (from clientd3d/game.c)
+#define OBJMINDISTANCE        768.0f                                 // 3 highres rows/cols, old value from kod
+#define OBJMINDISTANCE2       (OBJMINDISTANCE * OBJMINDISTANCE)
+#define LOSEXTEND             64.0f
+
 
 // Calculation to convert KOD angles to radians.
 #define KODANGLETORADIANS(x) ((float)((x) % (int)MAX_KOD_DEGREE) * PI_MULT_2 / MAX_KOD_DEGREE)
@@ -58,7 +63,21 @@
 
 // rounds a floatingpoint-value in ROO fineness to next close
 // value exactly expressable in KOD fineness units
-#define ROUNDROOTOKODFINENESS(a) FINENESSKODTOROO(roundf(FINENESSROOTOKOD(a)))
+#define ROUNDROOTOKODFINENESS(a)   FINENESSKODTOROO(roundf(FINENESSROOTOKOD(a)))
+
+// rounds a V3 instance in ROO fineness to next close
+// value exactly expressable in KOD fineness units
+#define V3ROUNDROOTOKODFINENESS(a) \
+  V3FINENESSROOTOKOD(a);           \
+  V3ROUND(a);                      \
+  V3FINENESSKODTOROO(a);
+
+// rounds a V2 instance in ROO fineness to next close
+// value exactly expressable in KOD fineness units
+#define V2ROUNDROOTOKODFINENESS(a) \
+  V2FINENESSROOTOKOD(a);           \
+  V2ROUND(a);                      \
+  V2FINENESSKODTOROO(a);
 
 // from blakston.khd, used in BSPGetNextStepTowards across calls
 #define ESTATE_AVOIDING  0x00004000

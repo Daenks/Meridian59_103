@@ -9,7 +9,8 @@ TOPDIR=..
 # Additional compiler flags (see common.mak)
 # /TP           Compile as C++ code
 # /arch:SSE2    Use SSE2 instructions (VS2013+ default to SSE2)
-CFLAGS = $(CFLAGS) /arch:SSE2 /TP
+# /DSSE2        Sets the SSE2 macro to enable explicit SSE2 instructions
+CFLAGS = $(CFLAGS) /arch:SSE2 /TP /DSSE2
 
 # ----------------------------------------------------------------------
 # Additional linker flags (see common.mak)

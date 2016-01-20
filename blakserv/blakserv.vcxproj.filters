@@ -298,9 +298,6 @@
     <ClCompile Include="garbage.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="intrlock.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -434,6 +431,21 @@
       <Filter>util\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="database.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="async_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="interface_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mutex_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="thdmsgqueue_windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
