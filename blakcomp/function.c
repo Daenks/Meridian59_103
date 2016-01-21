@@ -160,7 +160,7 @@ id_struct BuiltinIds[] = {
 {"getusername",   I_MISSING,   16,  0,   I_MESSAGE},
 {"getusericon",   I_MISSING,   17,  0,   I_MESSAGE},
 {"sendcharinfo",  I_MISSING,   18,  0,   I_MESSAGE},
-{"newhour",       I_MISSING,   19,  0,   I_MESSAGE},
+{"newgamehour",   I_MISSING,   19,  0,   I_MESSAGE},
 {"guest",         I_MISSING,   20,  0,   I_CLASS},
 {"name",          I_MISSING,   21,  0,   I_PARAMETER},
 {"icon",          I_MISSING,   22,  0,   I_PARAMETER},

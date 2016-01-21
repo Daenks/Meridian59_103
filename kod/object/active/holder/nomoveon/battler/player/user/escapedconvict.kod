@@ -17,6 +17,8 @@ constants:
 resources:
 
    escaped_convict_name_rsc = "Escaped Convict"
+   escaped_convict_smokebomb_rsc = \
+      "~B~bEscaped Convict throws a smoke bomb!"
 
 classvars:
 
@@ -36,6 +38,8 @@ properties:
    % Enable Convict Pick Pocket ability.
    % pbPickPocket = FALSE
 
+   plTeleportRooms = $
+
    % Queue of most recent attackers.
    plAttackers = $
    % Number of attackers to keep in queue.
@@ -51,6 +55,12 @@ properties:
    piNameColor = NC_EVENTCHAR
 
 messages:
+
+   Constructor()
+   {
+
+      propagate;
+   }
 
    % Handles damage done to player
    AssessDamage(what=$,damage=$,atype=0,aspell=0,stroke_obj=$,bonus=0,
@@ -193,6 +203,64 @@ messages:
       propagate;
    }
 
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % Bag o' Tricks:  Things an admin can make Escaped Convict do
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   SmokeBomb(rid = $)
+   {
+      local i,iRoom,lRooms;
+
+      lRooms = [RID_A5,RID_A6,RID_B6,RID_BADLAND1,RID_BADLAND2,
+                RID_BAR_SEWER,RID_C4,RID_C5,RID_C6,RID_C7,RID_CASTLE1,
+                RID_CASTLE1B,RID_CASTLE1C,RID_D4,RID_D5,RID_D6,RID_D7,
+                RID_DUNGEON,RID_E2,RID_E4];
+
+      % stupid limit on number of list items on initialization ^^
+      lRooms = Cons(RID_E5,lRooms);
+      lRooms = Cons(RID_E6,lRooms);
+      lRooms = Cons(RID_E7,lRooms);
+      lRooms = Cons(RID_F2,lRooms);
+      lRooms = Cons(RID_F3,lRooms);
+      lRooms = Cons(RID_F4,lRooms);
+      lRooms = Cons(RID_F5,lRooms);
+      lRooms = Cons(RID_F6,lRooms);
+      lRooms = Cons(RID_F7,lRooms);
+      lRooms = Cons(RID_F8,lRooms);
+      lRooms = Cons(RID_G4,lRooms);
+      lRooms = Cons(RID_G5,lRooms);
+      lRooms = Cons(RID_G6,lRooms);
+      lRooms = Cons(RID_G8,lRooms);
+      lRooms = Cons(RID_G9,lRooms);
+      lRooms = Cons(RID_H4,lRooms);
+      lRooms = Cons(RID_H5,lRooms);
+      lRooms = Cons(RID_H6,lRooms);
+      lRooms = Cons(RID_H7,lRooms);
+      lRooms = Cons(RID_H9,lRooms);
+      lRooms = Cons(RID_I3,lRooms);
+      lRooms = Cons(RID_I6,lRooms);
+      lRooms = Cons(RID_I7,lRooms);
+      lRooms = Cons(RID_I8,lRooms);
+      lRooms = Cons(RID_I9,lRooms);
+      lRooms = Cons(RID_ICE_CAVE1,lRooms);
+      lRooms = Cons(RID_J3,lRooms);
+      lRooms = Cons(RID_JAS_SEWER1,lRooms);
+      lRooms = Cons(RID_K5,lRooms);
+      lRooms = Cons(RID_NEST1,lRooms);
+
+      iRoom = Nth(lRooms,Random(1,Length(lRooms)));
+      foreach i in send(poOwner,@GetHolderActive)
+      {
+         Send(Nth(i,1),@MsgSendUser,#message_rsc=escaped_convict_smokebomb_rsc);
+      }
+      Send(self,@TeleportTo,#RID=iRoom,#bAdminPort=FALSE);
+
+      return;
+   }
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   % Admin messages to setup and maintain the Escaped Convict
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
    AdminReset()
    {
       
@@ -232,13 +300,14 @@ messages:
       piHealth = piHealth - (piHealth / (100 / percent));
       Send(self,@DrawHealth);
 
-      return piHealth;
+      return piHealth / 100;
    }
 
    AdminHeal(percent=10)
    {
       piHealth = piHealth + ((viMax_Health / (100 / percent)) * 100);
-      return;
+
+      return piHealth / 100;
    }
 
    FillHealth(percent=100)
@@ -252,7 +321,7 @@ messages:
       piBase_Max_Health = iAmount;
       Send(self,@DrawHealth);
 
-      return piHealth;
+      return piHealth / 100;
    }
 
    FillMana(percent=100)

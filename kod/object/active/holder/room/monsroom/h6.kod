@@ -18,7 +18,7 @@ resources:
 
    include h6.lkod
 
-   room_OutdoorsH6 = H6.roo
+   room_OutdoorsH6 = h6.roo
    room_name_OutdoorsH6 ="Main gate to the city of Tos"
    OutdoorsH6_music = walk1.mp3
 
@@ -33,8 +33,8 @@ classvars:
 
    viPermanent_Flags = ROOM_GUILD_PK_ONLY
 
-   viFlag_row = 24
-   viFlag_col = 31
+   viFlag_row = 31
+   viFlag_col = 33
 
    viWeatherZone = WEATHER_ZONE_TOS
 
@@ -73,6 +73,7 @@ messages:
       plGenerators = [ [8, 8], [9, 14], [5, 25], [10, 30], [18, 18], 
 		      [25, 19], [20, 3], [25, 9], [42, 5], [45, 12],
 		      [41, 22], [35, 30], [47, 34] ];
+      Send(self,@SetSectorFlags,#sector=30,#scrollSpeed=SCROLL_NONE);
       propagate;
    }
 
@@ -88,6 +89,66 @@ messages:
       plEdge_Exits = Cons([LEAVE_NORTH, RID_H5, 45, 11, ROTATE_NONE], plEdge_exits);
       plEdge_Exits = Cons([LEAVE_WEST, RID_H7, 8, 66, ROTATE_NONE], plEdge_exits);
  
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      % Check if we can have weather effects here.
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Add snow to special sections.
+            Send(self,@ChangeTexture,#id=30,#new_texture=61015,
+                  #flags=CTF_FLOOR);
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove snow from special sections.
+         Send(self,@RemoveTextureChange,#id=30);
+      }
+
+      propagate;
+   }
+
+   StartRain()
+   {
+      % Check if we can have weather effects here.
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      % Add water to special sections.
+      Send(self,@ChangeTexture,#id=30,#new_texture=08912,#flags=CTF_FLOOR);
+      Send(self,@SetSectorFlags,#sector=30,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_MEDIUM);
+
+      propagate;
+   }
+
+   EndRain()
+   {
+      % Remove water from special sections.
+      Send(self,@RemoveTextureChange,#id=30);
+      % Reset sector flag changes to sludge water.
+      Send(self,@SetSectorFlags,#sector=30,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+
       propagate;
    }
 

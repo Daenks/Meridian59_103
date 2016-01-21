@@ -317,22 +317,29 @@ void DrawOverlays(PDIB pdib_obj, RECT *obj_rect, list_type overlays,
 	int depth; // Current overlay depth to match
 	
 	/* Draw overlays over main object */
-	for (pass = 0; pass < 3; pass++)
+	for (pass = 0; pass < 4; pass++)
 	{
-		if (underlays)
-			switch (pass)
-		{
-	 case 0: depth = HOTSPOT_UNDERUNDER;  break;
-	 case 1: depth = HOTSPOT_UNDER;       break;
-	 case 2: depth = HOTSPOT_UNDEROVER;   break;
-		}
-		else
-			switch (pass)
-		{
-	 case 0: depth = HOTSPOT_OVERUNDER;  break;
-	 case 1: depth = HOTSPOT_OVER;       break;
-	 case 2: depth = HOTSPOT_OVEROVER;   break;
-		}
+      if (underlays)
+      {
+         if (pass == 0)
+            continue;
+         switch (pass)
+         {
+         case 1: depth = HOTSPOT_UNDERUNDER;  break;
+         case 2: depth = HOTSPOT_UNDER;       break;
+         case 3: depth = HOTSPOT_UNDEROVER;   break;
+         }
+      }
+      else
+      {
+         switch (pass)
+         {
+         case 0: depth = HOTSPOT_OVERUNDEROVERUNDER; break;
+         case 1: depth = HOTSPOT_OVERUNDER;  break;
+         case 2: depth = HOTSPOT_OVER;       break;
+         case 3: depth = HOTSPOT_OVEROVER;   break;
+         }
+      }
 		
 		for (l = overlays; l != NULL; l = l->next)
 		{

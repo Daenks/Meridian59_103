@@ -840,10 +840,11 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
             source_data.v.tag,source_data.v.data);
          break;
       }
-      if (opnode->source != opnode->dest)
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
          StoreValue(object_id, local_vars, opcode.dest, opnode->dest, source_data);
       ++source_data.v.data;
-      StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       return;
    case PRE_INCREMENT:
       if (source_data.v.tag != TAG_INT)
@@ -853,8 +854,9 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
          break;
       }
       ++source_data.v.data;
-      if (opnode->source != opnode->dest)
-         StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
+         StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       break;
    case POST_DECREMENT :
       if (source_data.v.tag != TAG_INT)
@@ -863,10 +865,11 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
             source_data.v.tag,source_data.v.data);
          break;
       }
-      if (opnode->source != opnode->dest)
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
          StoreValue(object_id, local_vars, opcode.dest, opnode->dest, source_data);
       --source_data.v.data;
-      StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       return;
    case PRE_DECREMENT:
       if (source_data.v.tag != TAG_INT)
@@ -876,8 +879,9 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
          break;
       }
       --source_data.v.data;
-      if (opnode->source != opnode->dest)
-         StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
+         StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       break;
    default :
       bprintf("InterpretUnaryAssign can't perform unary op %i\n",info);

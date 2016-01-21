@@ -19,6 +19,8 @@ int CompareParameters(void *param1, void *param2)
 {
    param_type p1 = (param_type) param1;
    param_type p2 = (param_type) param2;
+   if (p1->lhs->idnum == p2->lhs->idnum)
+      action_error("Duplicate parameter %s!", p1->lhs->name);
 
    return (p1->lhs->idnum < p2->lhs->idnum);
 }

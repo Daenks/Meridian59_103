@@ -209,12 +209,12 @@ void GameProcessSessionBuffer(session_node *s)
       /* give up receive mutex, so the interface/socket thread can
 	 read data for us, even if doing something long (GC/save/reload sys) */
       
-      if (!ReleaseMutex(s->muxReceive))
-	 eprintf("GPSB released mutex it didn't own in session %i\n",s->session_id);
+        if (!MutexRelease(s->muxReceive))
+            eprintf("GPSB released mutex it didn't own in session %i\n",s->session_id);
 	 
       GameProtocolParse(s,&msg);
       
-      if (WaitForSingleObject(s->muxReceive,10000) != WAIT_OBJECT_0)
+      if (!MutexAcquireWithTimeout(s->muxReceive,10000))
       {
 	 eprintf("GPSB bailed waiting for mutex on session %i\n",s->session_id);
 	 return;
@@ -307,6 +307,7 @@ void GameSyncInputChar(session_node *s,char ch)
       break;
    default :
       eprintf("GameSyncInputChar can't get here\n");
+      return;
    }
 
    if (ch == sync_buf[s->game->game_sync_index])
@@ -593,8 +594,10 @@ void GameStartUser(session_node *s,user_node *u)
    name_val.int_val = SendTopLevelBlakodMessage(s->game->object_id,USER_NAME_MSG,0,NULL);
    r = GetResourceByID(name_val.v.data);
 
+#ifdef BLAK_PLATFORM_WINDOWS
    if (r && r->resource_val[0])
      MySQLRecordPlayerLogin(s->account->name,r->resource_val[0],s->conn.name);
+#endif
 
    SetSessionTimer(s,ConfigInt(CREDIT_DRAIN_TIME));
 }
@@ -690,8 +693,10 @@ void GameDMCommand(session_node *s,int type,char *str)
    int acctype;
 
    acctype = ACCOUNT_NORMAL;
-   if (s && s->account)
-      acctype = s->account->type;
+   if (!s || !s->account)
+      return;
+
+   acctype = s->account->type;
 
 //   dprintf("DM command %i by session %i account %i acctype %i; string is \"%s\".\n",
 //      type, s->session_id, s->account->account_id, acctype, str);
