@@ -1,0 +1,74 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Newb9 is Guest9
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_newb9 = "The Adventurer's Hall of Raza"
+
+   news_raza_hall = "General News"
+   news_raza_hall_desc = "Find out the latest gossip around Meridian."
+
+   newb9_signname = "news globes"
+   newb9_sign = \
+      "This object on the platform beside the sign is a News Globe.  "
+      "General News Globes can be found in Adventurer's Halls in "
+      "each city in Meridian, while Designer's News Globes can be "
+      "found in Inns.  Players can post on the General News globe, like "
+      "the one here and you can use this medium to ask questions of other "
+      "players, post messages asking for a guild, etc.  Use the Post "
+      "button to make a post, Reply to post in the same thread as a "
+      "previous post, or Mail Author to send a private mail to the "
+      "author of a post."
+
+classvars:
+
+   vrName = room_name_newb9
+
+   viDemo_base = RID_NEWB_BASE
+
+properties:
+
+   piRoom_num = RID_NEWB9
+
+messages:
+
+   Constructed()
+   {
+      piRoom_flags = piRoom_flags & ~ROOM_GUEST_AREA;
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      local oNews, oSign;
+
+      oNews = Create(&Newslink,#nid=NID_TOS_HALL,
+                  #name=news_raza_hall,#desc=news_raza_hall_desc);
+      Send(self,@NewHold,#what=oNews,#new_row=10,#new_col=2,
+            #fine_row=40,#fine_col=0);
+
+      oSign = Create(&Sign,#name=newb9_signname,
+                     #desc=newb9_sign,#newbie=TRUE);
+      Send(self,@NewHold,#what=oSign,#new_row=10,#new_col=2,#fine_row=52,
+            #fine_col=52,#new_angle=ANGLE_NORTH_WEST);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

@@ -129,12 +129,13 @@ resources:
       "for dozens of Meridian years."
 
    guest6_door1_rsc = down2.wav
-   
+
 classvars:
 
    vrName = room_name_guest6
 
-   % These are here so we can have different text in the guest area as opposed to the newbie area.
+   % These are here so we can have different text in the
+   % guest area as opposed to the newbie area.
    vrSignName = guest6_signname
    vrSignText = guest6_sign
    
@@ -156,7 +157,7 @@ properties:
    prRoom = room_guest6
    piRoom_num = RID_guest6
 
-   piGenTime = 15000        % Need to regen faster since some monsters thrown out
+   piGenTime = 15000       % Need to regen faster since some monsters thrown out
 
    piBaseLight = LIGHT_DARK
    piOutside_factor = OUTDOORS_NONE
@@ -196,7 +197,7 @@ messages:
          DeleteTimer(ptDoor);
          ptDoor = $;
       }
-      
+
       propagate;
    }
 
@@ -204,7 +205,8 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 11, 17, viDemo_base + 2, 7, 43, SET_ANGLE_WEST, DISTANCE_NORMAL ],plExits);
+      plExits = Cons([ 11, 17, viDemo_base + 2, 27, 25, ROTATE_NONE,
+                     DISTANCE_NORMAL ],plExits);
 
       propagate;
    }
@@ -214,16 +216,16 @@ messages:
       local oSign;
 
       oSign = Create(&sign,#desc=vrSignText,#newbie=TRUE,#name=vrSignName);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=2,#fine_col=48);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=2,#fine_col=48);
 
       oSign = Create(&sign,#desc=guest6_sign2,#newbie=TRUE,#name=guest6_signname2);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=14,#fine_row=32,#fine_col=48);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=14,#fine_row=32,#fine_col=48);
       
       oSign = Create(&sign,#desc=guest6_sign3,#newbie=TRUE,#name=guest6_signname3);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=3,#fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=3,#fine_row=32,#fine_col=32);
 
       oSign = Create(&sign,#desc=guest6_sign4,#newbie=TRUE,#name=guest6_signname4);
-      send(self,@NewHold,#what=oSign,#new_row=29,#new_col=30,#fine_row=0,#fine_col=32);
+      Send(self,@NewHold,#what=oSign,#new_row=29,#new_col=30,#fine_row=0,#fine_col=32);
       
       oSign = Create(&Skull);
       Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=21,#fine_row=32,#fine_col=40);
@@ -286,7 +288,7 @@ messages:
       Send(self,@SetupColumnDown);
 
       % Lighting
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=45),
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=45),
            #new_row=11,#new_col=2,#fine_row=32,#fine_col=48);
 
       propagate;
@@ -299,7 +301,7 @@ messages:
          poLever1 = Create(&GuestLever);
          Send(self,@NewHold,#what=poLever1,#new_row=27,#new_col=4);
       }
-      
+
       if poLever2 = $
       {
          poLever2 = Create(&GuestLever);
@@ -312,7 +314,7 @@ messages:
    ReqNewHold(what = $, new_row = $, new_col = $)
    % Only allow a certain # of monsters in the pit
    {
-      if IsClass(what, &MummyNoTreasure) and piPit_Monsters >= viPit_Monsters_max
+      if IsClass(what,&MummyNoTreasure) AND piPit_Monsters >= viPit_Monsters_max
       {
          return FALSE;
       }
@@ -336,8 +338,9 @@ messages:
 
    FirstUserEntered()
    {
-      post(self,@NewHold,#what=Create(&MummyNoTreasure),#new_row=viPit_row,#new_col=viPit_col);
-      post(self,@ResetMonstersInFinal);
+      Post(self,@NewHold,#what=Create(&MummyNoTreasure),
+            #new_row=viPit_row,#new_col=viPit_col);
+      Post(self,@ResetMonstersInFinal);
 
       propagate;
    }
@@ -348,13 +351,13 @@ messages:
       {
          piPit_Monsters = piPit_Monsters + 1;
       }
-      
+
       propagate;
    }
 
    LeaveHold(what = $)
    {
-      if IsClass(what, &MummyNoTreasure)
+      if IsClass(what,&MummyNoTreasure)
       {
          piPit_Monsters = piPit_Monsters - 1;
       }
@@ -362,14 +365,14 @@ messages:
       if what = poLever1
       {
          poLever1 = $;
-         
+
          propagate;
       }
-      
+
       if what = poLever2
       {
          poLever2 = $;
-         
+
          propagate;
       }
 
@@ -383,7 +386,7 @@ messages:
          % gotta post because here it's not removed from room yet
          Post(self,@CheckAllDeadMonsters);
       }
-      
+
       propagate;
    }
 
@@ -398,7 +401,7 @@ messages:
       {
          iSwitched = iSwitched + 1;
       }
-      
+
       if Send(poLever2,@IsSwitched)
       {
          iSwitched = iSwitched + 1;
@@ -416,7 +419,7 @@ messages:
               #height=128,#speed=16);
          ptDoor = CreateTimer(self,@SlamTimer,SLAM_TIME);
       }
-      
+
       if iSwitched = 2
       {
          Send(self,@SetSector,#sector=SECTOR_DOOR,#animation=ANIMATE_CEILING_LIFT,
@@ -443,14 +446,12 @@ messages:
       return;
    }
 
-
    ResetPuzzle()
    {
-      send(self,@SlamTimer);
+      Send(self,@SlamTimer);
       
       return;
    }
-
 
    SlamTimer()
    {
@@ -475,9 +476,9 @@ messages:
          Send(self,@ResetFinal);
          return;
       }
-      
+
       ptDoor = CreateTimer(self,@FightTimer,FIGHT_TIME);
-      
+
       return;
    }
 
@@ -509,7 +510,7 @@ messages:
 
    CheckAllDeadMonsters()
    {
-      %debug(Send(self,@CountInFinal,#count=COUNT_MONSTERS));
+      %Debug(Send(self,@CountInFinal,#count=COUNT_MONSTERS));
 
       if pbColumn_down
       {
@@ -532,7 +533,7 @@ messages:
 
          ptDoor = CreateTimer(self,@FightTimer,FIGHT_TIME);
       }
-      
+
       return;
    }
 
@@ -540,7 +541,7 @@ messages:
    {
       Send(self,@NewHold,#what=Create(&ManaNode,#node_num=NODE_GUEST),
            #new_row=35,#new_col=5,#fine_row=0,#fine_col=0);
-           
+
       return;
    }
 
@@ -548,7 +549,6 @@ messages:
    {
       return;
    }
-
 
    CountInFinal(count = COUNT_PLAYERS)
    "With count = COUNT_MONSTERS, count monsters in region.\n"
@@ -561,7 +561,7 @@ messages:
       {
          each_obj = First(i);
          if count = COUNT_MONSTERS
-             AND IsClass(each_obj,&Monster) 
+             AND IsClass(each_obj,&Monster)
             OR count = COUNT_PLAYERS
              AND IsClass(each_obj,&User)
          {
@@ -583,7 +583,7 @@ messages:
             }
          }
       }
-      
+
       return iCount;
    }
 
@@ -618,10 +618,10 @@ messages:
             #fine_row=32,#fine_col=32);
       Send(self,@NewHold,#what=Create(&Mummy),#new_row=35,#new_col=2,
             #fine_row=32,#fine_col=32);
-      
+
       Send(self,@NewHold,#what=Create(&BlackMummy),#new_row=37,#new_col=5,
             #fine_row=0,#fine_col=0);
-      
+
       return;
    }
 
@@ -629,7 +629,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

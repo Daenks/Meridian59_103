@@ -52,11 +52,12 @@ classvars:
 
    vrName = room_name_guest1
 
-   viTeleport_row = 7
-   viTeleport_col = 4
+   viTeleport_row = 3
+   viTeleport_col = 7
    viTeleport_angle = ANGLE_EAST
 
-   viPermanent_flags = ROOM_NO_COMBAT | ROOM_SANCTUARY | ROOM_HOMETOWN | ROOM_GUEST_AREA | ROOM_SAFELOGOFF
+   viPermanent_flags = ROOM_NO_COMBAT | ROOM_SANCTUARY \
+               | ROOM_HOMETOWN | ROOM_GUEST_AREA | ROOM_SAFELOGOFF
 
    viDemo_base = RID_GUEST_BASE
 
@@ -73,10 +74,10 @@ messages:
    NewHold(what=$)
    {
       if IsClass(what,&Player)
-         AND send(what,@GetOwner) = $
+         AND Send(what,@GetOwner) = $
       {
-         post(what,@msgsenduser,#message_rsc=guest1_welcome,
-              #parm1=send(what,@GetTrueName));
+         Post(what,@MsgSendUser,#message_rsc=guest1_welcome,
+              #parm1=Send(what,@GetTrueName));
       }
 
       propagate;
@@ -86,10 +87,12 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 1, 6, viDemo_base + 2, 25, 41, ROTATE_NONE ],plExits);
+      plExits = Cons([ 9, 6, viDemo_base + 2, 8, 27, ROTATE_NONE ],plExits);
+      plExits = Cons([ 9, 7, viDemo_base + 2, 8, 27, ROTATE_NONE ],plExits);
 
-      plExits = Cons([ 8, 9, ROOM_LOCKED_DOOR, Guest1_Back_Door ],plExits);
-      
+      plExits = Cons([ 1, 2, ROOM_LOCKED_DOOR, Guest1_Back_Door ],plExits);
+      plExits = Cons([ 1, 3, ROOM_LOCKED_DOOR, Guest1_Back_Door ],plExits);
+
       propagate;
    }
 
@@ -97,33 +100,35 @@ messages:
    {
       local oSign;
 
-      send(self,@NewHold,#what=Create(&HazarInnkeeper),#new_row = 3, #new_col = 9);
+      Send(self,@NewHold,#what=Create(&HazarInnkeeper),#new_row=7,#new_col=3,
+            #fine_row=24,#fine_col=56);
 
       oSign = Create(&Sign,#desc=guest1_sign,#newbie=TRUE,#name=guest1_signname);
-      send(self,@NewHold,#what=oSign,#new_row=6,#new_col=7,#fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=oSign,#new_row=4,#new_col=5,
+            #fine_row=24,#fine_col=40);
 
       Send(self,@NewHold,#what=Create(&Table),
-           #new_row=3,#new_col=2,#fine_row=32,#fine_col=0,#angle=ANGLE_EAST);
+           #new_row=7,#new_col=11,#fine_row=24,#fine_col=8,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&Table),
-           #new_row=8,#new_col=3,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=2,#new_col=9,#fine_row=24,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&Table),
-           #new_row=7,#new_col=9,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=3,#new_col=3,#fine_row=24,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&BarStool),
-           #new_row=3,#new_col=3,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=7,#new_col=9,#fine_row=24,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&BarStool),
-           #new_row=5,#new_col=10,#fine_row=48,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=5,#new_col=2,#fine_row=8,#fine_col=40,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&BarStool),
-           #new_row=8,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=2,#new_col=10,#fine_row=24,#fine_col=40,#angle=ANGLE_EAST);
 
       % Dynamic lights
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=4,#fine_row=63,#fine_col=54); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=2,#new_col=11,#fine_row=55,#fine_col=40); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=2,#new_col=4,#fine_row=2,#fine_col=15); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=5,#new_col=2,#fine_row=48,#fine_col=58); 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=1,#new_col=8,#fine_row=57,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=8,#new_col=1,#fine_row=1,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=8,#new_col=8,#fine_row=54,#fine_col=57);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=5,#new_col=10,#fine_row=8,#fine_col=14);
 
       propagate;
    }
@@ -132,7 +137,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

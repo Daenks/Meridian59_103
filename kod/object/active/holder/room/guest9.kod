@@ -1,0 +1,89 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Guest9 is Room
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_guest9 = "The Adventurer's Hall of Hazar"
+   room_guest9 = guest9.roo
+   guest9_music = login.mp3
+
+classvars:
+
+   vrName = room_name_guest9
+
+   viTeleport_row = 6
+   viTeleport_col = 5
+
+   viDemo_base = RID_GUEST_BASE
+
+   viPermanent_flags = ROOM_NO_COMBAT | ROOM_GUEST_AREA | ROOM_SAFELOGOFF
+   viTerrain_type = TERRAIN_CITY | TERRAIN_RESIDENCE
+
+properties:
+
+   prRoom = room_guest9
+   piRoom_num = RID_GUEST9
+
+   piBaseLight = LIGHT_NICE
+   piOutside_factor = OUTDOORS_SOME
+
+   prMusic = guest9_music
+
+messages:
+
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      plExits = Cons([ 5, 9, viDemo_base + 2, 7, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 6, 9, viDemo_base + 2, 7, 12, ROTATE_NONE ],plExits);
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=2,#new_col=4,
+           #fine_row=28,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=2,#new_col=6,
+           #fine_row=28,#fine_col=40,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=3,#new_col=4,
+           #fine_row=16,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=3,#new_col=6,
+           #fine_row=16,#fine_col=40,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=4,
+           #fine_row=4,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=6,
+           #fine_row=4,#fine_col=40,#angle=ANGLE_EAST);
+
+      Send(self,@NewHold,#what=Create(&Chandelier),#new_row=6,#new_col=5,
+            #fine_row=18,#fine_col=40);
+
+      % Lighting
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,
+            #iIntensity=60),#new_row=6,#new_col=5,#fine_row=18,#fine_col=40);
+
+      propagate;
+   }
+
+   SeanceCheck()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
