@@ -457,13 +457,19 @@ messages:
 
       Send(EVENTENGINE_OBJECT,@NewMinute);
 
+      iMinute = Send(self,@GetMinute);
+
+      if (iMinute = 0)
+      {
+         Send(self,@NewHour);
+      }
+
       if plCallbacks <> $
       {
          iYear = Send(self,@GetYear);
          iMonth = Send(self,@GetMonth);
          iDay = Send(self,@GetDay);
          iHour = Send(self,@GetHour);
-         iMinute = Send(self,@GetMinute);
 
          foreach i in plCallbacks
          {
@@ -500,23 +506,48 @@ messages:
 
    NewHour()
    {
-      Send(EVENTENGINE_OBJECT,@NewHour);
+      local iHour;
+
       piTimeZoneOffset = GetTimeZoneOffset();
+
+      Send(EVENTENGINE_OBJECT,@NewHour);
+
+      iHour = Send(self,@GetHour);
+      if (iHour = 0)
+      {
+         Send(self,@NewDay);
+      }
 
       return;
    }
 
    NewDay()
    {
+      local iDay;
+
       Send(EVENTENGINE_OBJECT,@NewDay);
+
+      iDay = Send(self,@GetDay);
+      if (iDay = 1)
+      {
+         Send(self,@NewMonth);
+      }
 
       return;
    }
 
    NewMonth()
    {
+      local iMonth;
+
       Send(EVENTENGINE_OBJECT,@NewMonth);
 
+      iMonth = Send(self,@GetMonth);
+      if (iMonth = 1)
+      {
+         Send(self,@NewYear);
+      }
+   
       return;
    }
 
@@ -526,15 +557,16 @@ messages:
 
       return;
    }
-   
+
    GetTimeZoneOffset_K()
    {
       return GetTimeZoneOffset();
    }
-   
+
    SetTimeZoneOffset()
    {
       piTimeZoneOffset = GetTimeZoneOffset();
+
       return;
    }
 
@@ -542,10 +574,10 @@ messages:
    {
       return GetTime();
    }
-   
+
    GetYear()
    {
-      local iTime,iYear;
+      local iTime, iYear;
 
       iTime = GetTime() - piTimeZoneOffset;
       iYear=(iTime / 31536000) + OFFSET_YEAR;
@@ -569,7 +601,7 @@ messages:
 
    GetMonth()
    {
-      local i,iMonthDays,iMonth,iYearDays;
+      local i, iMonthDays, iMonth, iYearDays;
 
       iYearDays = Send(self,@GetYearDay);
 
@@ -610,7 +642,7 @@ messages:
 
    GetDay()
    {
-      local i,iDay,iMonthDays;
+      local i, iDay, iMonthDays;
 
       if Send(self,@IsLeapYear,#iYear=Send(self,@GetYear))
       {
@@ -636,7 +668,7 @@ messages:
 
    GetHour()
    {
-      local iTime,iHour;
+      local iTime, iHour;
 
       iTime = GetTime() - piTimeZoneOffset;
       iHour = (iTime MOD 86400) / 3600;
@@ -648,10 +680,10 @@ messages:
 
       return iHour;
    }
-   
+
    GetMinute()
    {
-      local iTime,iMinute;
+      local iTime, iMinute;
 
       iTime = GetTime() - piTimeZoneOffset;
       iMinute = (iTime MOD 3600) / 60;

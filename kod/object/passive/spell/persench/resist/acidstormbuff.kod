@@ -1,0 +1,75 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AcidStormBuff is ResistanceEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   AcidStormBuff_name_rsc = "acidic energies"
+   AcidStormBuff_icon_rsc = iresacid.bgf
+   AcidStormBuff_desc_rsc = \
+      "Strange green energies race around you, protecting you from acid."
+
+   AcidStormBuff_already_enchanted = \
+      "You are already resistant to acid spells."
+
+   AcidStormBuff_on = \
+      "Eerie green energies race around your body."
+   AcidStormBuff_off = \
+      "The eerie green energies depart."
+
+   AcidStormBuff_sound = shalille.wav
+
+classvars:
+
+   vrName = AcidStormBuff_name_rsc
+   vrIcon = AcidStormBuff_icon_rsc
+   vrDesc = AcidStormBuff_desc_rsc
+   vrSucceed_wav = AcidStormBuff_sound
+
+   viSpell_num = SID_ACID_STORM_BUFF
+   viSchool = SS_SHALILLE
+   viSpell_level = 2
+   viMana = 9
+
+   viPersonal_ench = True
+   viChance_To_Increase = 30
+
+   viFlash = FLASH_GOOD_SELF
+
+   viResistanceType = -ATCK_SPELL_ACID
+   vrAlreadyEnchanted = AcidStormBuff_already_enchanted
+   vrEnchantment_On = AcidStormBuff_on
+   vrEnchantment_Off = AcidStormBuff_off
+
+properties:
+
+messages:
+
+   GetResistanceStrength(iSpellpower = 0)
+   {
+      %% strength varies from 1 to 99
+      return iSpellPower;
+   }
+
+   GetDuration(iSpellPower = 0)
+   {
+      local iDuration;	   %%% 6 to 10 seconds
+      iDuration = 6000 + (iSpellPower+1)*40;
+      return iDuration;
+   }
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

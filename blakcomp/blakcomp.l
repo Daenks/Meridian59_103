@@ -1,15 +1,10 @@
 	/* Lex file for Blakod compiler */
 
+%option stack
+
 %{
 #include "blakcomp.h"
 #include "blakcomp.tab.h"
-
-/* Parser states */
-enum {
-   STATE_CODE, STATE_INITIAL,
-};
-
-int cur_state = STATE_INITIAL;
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,12 +19,14 @@ static FILE *open_file(char *fname);
 static void usage(void);
 
 int lineno;
-Bool generate_code = True;  /* True if we should generate code */
+Bool generate_code = True; /* True if we should generate code */
 extern int yydebug;        /* Set to nonzero to get yacc debug info */
 list_type file_list;       /* List of files to compile */
 char *current_fname;
-char *bof_fname;       /* Object code filename */
-int debug_bof;         /* Should we put debugging info in .bof file? */
+char *bof_fname;           /* Object code filename */
+int debug_bof;             /* Should we put debugging info in .bof file? */
+int add_eol = 0;           /* Hack to deal with EOL being significant in INITIAL */
+int comment_depth = 0;     /* Allow nested comments */
 
 struct file_state {
    YY_BUFFER_STATE buffer;
@@ -51,8 +48,8 @@ static int num_include_dirs;               /* # of include directories specified
 	/* A single line of a multiple-line string constant, minus newline & initial quote */
 strline  (([^\"\n\\]|\\.)*\")[ \t\r]*
 
-     /* String mode is for inside strings.  Code mode is for when we reach the messages block */
-%s STRING CODE
+   /* String mode is for inside strings.  Code mode is for when we reach the messages block */
+%s STRING CODE COMMENT
 
 %%
 
@@ -60,23 +57,95 @@ strline  (([^\"\n\\]|\\.)*\")[ \t\r]*
 
 <STRING>(([^\"\n\\]|\\.)*$)	{ yyerror("Unterminated string"); 
 			  yylval.string_val = assemble_string(yytext);
-			  if (cur_state == STATE_INITIAL)
-			     BEGIN INITIAL;
-			  else BEGIN CODE;
+			  yy_pop_state();
 			  return STRING_CONSTANT; 
 			}
 
    /* This nastiness allows multiple-line C-like strings to be interpreted as a single string */
 <STRING>{strline}(\n[ \t\r]*\"{strline})*   {
 			  yylval.string_val = assemble_string(yytext);
-			  if (cur_state == STATE_INITIAL)
-			     BEGIN INITIAL;
-			  else BEGIN CODE;
+			  yy_pop_state();
 			  return STRING_CONSTANT; 
 			}			
 
-\"			{ BEGIN STRING; }
+\"			{ yy_push_state(STRING); }
 
+   /* Handle comments */
+   /* Start multi-line comments */
+<CODE>"/*" {
+   ++comment_depth;
+   yy_push_state(COMMENT);
+}
+
+   /* INITIAL requires we keep track of whether to add EOL after comment */
+<INITIAL>^[ \t\r]*"/*" {
+   add_eol = false;
+   ++comment_depth;
+   yy_push_state(COMMENT);
+}
+
+   /* If we matched something other than nothing or whitespace before */
+   /* the comment starts, we have to return EOL when the comment ends.*/
+<INITIAL>"/*" {
+   add_eol = true;
+   ++comment_depth;
+   yy_push_state(COMMENT);
+}
+
+   /* Close multi-line comments */
+<COMMENT>"*/" {
+   comment_depth--;
+   if (!comment_depth)
+   {
+      yy_pop_state();
+      if (YYSTATE == INITIAL && add_eol)
+         return EOL;
+   }
+}
+
+   /* Close multi-line comments with newline */
+<COMMENT>"*/"[ \t\r]*\n {
+   comment_depth--;
+   lineno++;
+   if (!comment_depth)
+   {
+      yy_pop_state();
+      if (YYSTATE == INITIAL && add_eol)
+         return EOL;
+   }
+}
+
+   /* If two comments are separated by whitespace, join them. */
+<COMMENT>"*/"[ \t\r]*"/*" ;
+   /* Allow nested comments */
+<COMMENT>"/*" comment_depth++;
+   /* Single line comments take precedence over multilines. */
+<COMMENT>"//"[^\n]* ;
+   /* Throw error if we hit EOF while in comment mode. */
+<COMMENT><<EOF>> yyerror("Unclosed multi-line comment ");
+   /* Match any line not containing * / and newline (faster) */
+<COMMENT>[^*/\n]* ;
+   /* Ignore newline, but increment lineno. */
+<COMMENT>\n lineno++;
+   /* Ignore other characters. */
+<COMMENT>. ;
+
+   /* Kod-style single-line comments */
+   /* Ignore comment-only lines completely */
+^[ \t\r]*"\%".*\n	lineno++;
+   /* Otherwise just delete comment part of line */
+"\%".* ;
+
+   /* C++-style single-line comments */
+   /* Ignore comment-only lines completely */
+^[ \t\r]*"//".*\n lineno++;
+   /* Otherwise just delete comment part of line */
+"//".* ;
+
+   /* Region folding, disallow = and ; in region name to avoid */
+   /* conflict with # parameter names */
+^[ \t\r]*"#region"[^\=;\n]*\n lineno++;
+^[ \t\r]*"#endregion"[^\=;\n]*\n lineno++;
 
 	/* reserved words */
 and		{ return AND; }
@@ -85,14 +154,14 @@ classvars	{ return CLASSVARS; }
 continue	{ return CONTINUE; }
 constants	{ return CONSTANTS; }
 else            { return ELSE;}
-end		{ BEGIN INITIAL; cur_state = STATE_INITIAL; return END; } 
+end		{ yy_push_state(INITIAL); return END; } 
 for		{ return FOR; }
 foreach	{ return FOREACH; }
 if		{ return IF; }
 in		{ return IN; }
 is		{ return IS; }
 local		{ return LOCAL; }
-messages	{ BEGIN CODE; cur_state = STATE_CODE; return MESSAGES; }
+messages	{ yy_push_state(CODE); return MESSAGES; }
 mod             { return MOD; }
 not		{ return NOT; }
 or		{ return OR; }
@@ -130,10 +199,6 @@ default { return DEFAULT; }
 [0-9]+			{ yylval.int_val = atoi(yytext); return NUMBER; }
 0x[0-9a-fA-F]+		{ sscanf(yytext, "%x", &yylval.int_val); return NUMBER; }
 
-	/* comments */
-^[ \t\r]*"\%".*\n	lineno++;	/* Ignore comment-only lines completely */
-"\%".*			;		/* Otherwise just delete comment part of line */
-
   	/* line continuation */
 \\[ \t\r]*\n		lineno++;	/* Allow multiple-line statements */
 
@@ -165,10 +230,19 @@ void yyerror(const char *s)
 {
    /* If token is EOL, give useful error message */
    if (!strcmp(yytext, "\n"))
-      printf("%s(%d): error: Premature end of line\n", current_fname, lineno-1);
+   {
+      printf("%s(%d): fatal error: Premature end of line\n",
+         current_fname, lineno - 1);
+   }
    else
-      printf("%s(%d): error: %s on token %s\n", current_fname, lineno, s, yytext);
-   handle_error();
+   {
+      printf("%s(%d): fatal error: %s on token %s\n",
+         current_fname, lineno, s, yytext);
+   }
+
+   // These are critical errors, so just exit. Continuing will potentially
+   // crash blakcomp.
+   exit(1);
 }
 /************************************************************************/
 /* action_error should be used for semantic errors. */
@@ -379,7 +453,7 @@ FILE *open_include_file(char *filename)
    /* Loop through include directories and try to open file */
    for (i=0; i < num_include_dirs; i++)
    {
-      sprintf(tempbuf, "%s\\%s", include_dirs[i], filename);
+      sprintf(tempbuf, "%s/%s", include_dirs[i], filename);
       if ((fin = fopen(tempbuf, "r")) != NULL)
 	 return fin;
    }

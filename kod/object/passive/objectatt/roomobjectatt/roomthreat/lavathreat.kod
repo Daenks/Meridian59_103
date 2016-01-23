@@ -1,0 +1,256 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LavaThreat is RoomThreat 
+
+% Lava deals damage based on height. The higher the player is, the less
+% damage they're dealt.
+% This threat also rumbles the area.
+
+constants:
+
+   include blakston.khd
+
+   DAMAGE_MIN_TIME = 6000
+   DAMAGE_MAX_TIME = 12000
+   
+   LOW_DAMAGE = 3000
+   MEDIUM_DAMAGE = 6000
+   HIGH_DAMAGE = 9000
+
+   LOW_VIGOR_DRAIN = 50000
+   MEDIUM_VIGOR_DRAIN = 100000
+   HIGH_VIGOR_DRAIN = 200000
+
+resources:
+
+   lava_threat_name_rsc = "molten lava"
+   lava_threat_icon_rsc = iwalfire.bgf
+   lava_threat_desc_rsc = \
+      "The earth bubbles over and its molten innards flow freely here. "
+      "The deeper you go, the deadlier the heat will be. Resistance to fire "
+      "will prolong your life, but nothing can remain alive here for long."
+
+   lava_threat_begin_msg = \
+      "Terrible earthen fires begin to burn through the area."
+   lava_threat_end_msg = \
+      "The molten lava here cools somewhat."
+   lava_threat_damage_msg = \
+      "~rThe rising heat singes your skin and hurts your lungs."
+
+   lava_weak_damage_msg = \
+      "~rThe rising heat singes your skin and hurts your lungs."
+   lava_painful_damage_msg = \
+      "~rThe oppressive heat sears your limbs!"
+   lava_deadly_damage_msg = \
+      "~rVolcanic heat melts your skin!"
+   lava_catastrophic_damage_msg = \
+      "~B~rYou are cooking from the inside out!~B"
+
+   lava_death_msg = \
+      "~B~U~k[###]~n ~B~v%s was cooked alive by the heat of molten lava."
+      
+   flame_sound = fire02.wav
+
+classvars:
+
+   vrName = lava_threat_name_rsc
+   vrIcon = lava_threat_icon_rsc
+   vrDesc = lava_threat_desc_rsc
+
+   viThreatBeginMsg = lava_threat_begin_msg
+   viThreatEndMsg = lava_threat_end_msg
+   viThreatDamageMsg = lava_threat_damage_msg
+
+   viDeathMsg = lava_death_msg
+
+properties:
+
+   % What type of damage do we do?
+   piDamageTypeAttack = 0
+   piDamageTypeSpell = ATCK_SPELL_FIRE
+   
+   % How often do we deal damage?
+   % This threat randomizes 6000 to 12000.
+   piDamageTime = 6000
+   ptDamageTimer = $
+
+   % What height room are we dealing with here?
+   % Send a height at creation if this isn't Abyssal Bore.
+   piRoomMaxHeight = 4000
+
+   % If this isn't Abyssal Bore, use iDamage sent at creation.
+   piLavaDamageMax = 50000
+   
+   % If this isn't Abyssal Bore, use rumble duration sent at creation.
+   piRumbleDuration = 3000
+
+   % This threat drains vigor, but it usually changes based on height.
+   piVigorDrop = 50000
+
+messages:
+
+   Constructor(iHeight=4000,iDamage=50000,iRumbleDuration=3000)
+   {
+      piRoomMaxHeight = iHeight;
+      piLavaDamageMax = iDamage;
+      piRumbleDuration = iRumbleDuration;
+      propagate;
+   }
+
+   DealDamage(timer=$)
+   {
+      local i, iDamageResult;
+
+      ptDamageTimer = $;
+
+      % Shake the room.
+      Send(self,@DoLavaRumble);
+
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&Player)
+         {
+            Send(self,@DealLavaHeatDamage,#who=First(i));
+         }
+      }
+
+      % Some threats change the time dynamically.
+      Send(self,@AlterDamageTime);
+      ptDamageTimer = CreateTimer(self,@DealDamage,piDamageTime);
+      return;
+   }
+
+   AlterDamageTime()
+   {
+      piDamageTime = Random(DAMAGE_MIN_TIME,DAMAGE_MAX_TIME);
+      return;
+   }
+
+   DoLavaRumble()
+   {
+      local iDuration;
+
+      % Abyssal Bore is primary home to this threat.
+      if IsClass(poHostObject,&DesertRiver2)
+      {
+         switch(Send(SYS,@GetDayPhase))
+         {
+            case DAY_PHASE_DAWN:
+               iDuration = 2000;
+               break;
+            case DAY_PHASE_DAY:
+               % The heat threat is much worse while the rift is active.
+               iDuration = 3000;
+               break;
+            case DAY_PHASE_DUSK:
+               iDuration = 2000;
+               break;
+            case DAY_PHASE_NIGHT:
+               % The rift is weaker at night, as the Prism of Ice is dominant.
+               iDuration = 1000;
+               break;
+         }
+      }
+      else
+      {
+         iDuration = piRumbleDuration;
+      }
+      
+      Send(poHostObject,@Rumble,#duration=iDuration);
+
+      return;
+   }
+
+   DealLavaHeatDamage(who=$)
+   {
+      local iHeight, iInitialDamage, iDamage, iDamageResult, i,
+            iInitialVigorDrain, iVigorDrain;
+      
+      iHeight = Send(who,@GetHeightAtObject);
+
+      % Abyssal Bore is the primary home to this lava threat.
+      if IsClass(poHostObject,&DesertRiver2)
+      {
+         switch(Send(SYS,@GetDayPhase))
+         {
+            case DAY_PHASE_DAWN:
+               iInitialDamage = MEDIUM_DAMAGE;
+               iInitialVigorDrain = MEDIUM_VIGOR_DRAIN;
+               break;
+            case DAY_PHASE_DAY:
+               % The heat threat is much worse while the rift is active.
+               iInitialDamage = HIGH_DAMAGE;
+               iInitialVigorDrain = HIGH_VIGOR_DRAIN;
+               break;
+            case DAY_PHASE_DUSK:
+               iInitialDamage = MEDIUM_DAMAGE;
+               iInitialVigorDrain = MEDIUM_VIGOR_DRAIN;
+               break;
+            case DAY_PHASE_NIGHT:
+               % The rift is weaker at night, as the Prism of Ice is dominant.
+               iInitialDamage = LOW_DAMAGE;
+               iInitialVigorDrain = LOW_VIGOR_DRAIN;
+               break;
+         }
+      }
+      else
+      {
+         iInitialDamage = piLavaDamageMax;
+         iInitialVigorDrain = piVigorDrop;
+      }
+
+      iDamage = iInitialDamage;
+      iVigorDrain = iInitialVigorDrain;
+
+      if piRoomMaxHeight > 0
+      {
+         iDamage = Bound(iDamage - 
+                   ((iDamage * ((iHeight*100)/piRoomMaxHeight))/100),1,$);
+         iVigorDrain = Bound(iVigorDrain - 
+                   ((iVigorDrain * ((iHeight*100)/piRoomMaxHeight))/100),1,$);
+      }
+      
+      if iDamage >= (iInitialDamage * 3 / 4)
+      {
+         Send(who,@MsgSendUser,#message_rsc=lava_catastrophic_damage_msg);
+      }
+      else if iDamage >= (iInitialDamage * 2 / 4)
+      {
+         Send(who,@MsgSendUser,#message_rsc=lava_deadly_damage_msg);
+      }
+      else if iDamage >= (iInitialDamage / 4)
+      {
+         Send(who,@MsgSendUser,#message_rsc=lava_painful_damage_msg);
+      }
+      else
+      {
+         Send(who,@MsgSendUser,#message_rsc=lava_weak_damage_msg);
+      }
+
+      Send(who,@WaveSendUser,#wave_rsc=flame_sound);
+
+      Send(who,@AddExertion,#amount=iVigorDrain);
+      iDamageResult = Send(who,@AssessDamage,#what=self,
+                            #damage=iDamage,
+                            #aspell=ATCK_SPELL_FIRE,#report=FALSE,
+                            #precision=TRUE);
+      
+      if iDamageResult = $
+      {
+         Send(who,@Killed);
+         Send(self,@SendDeathMessage,#who=who);
+      }
+   
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

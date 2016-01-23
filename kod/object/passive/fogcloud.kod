@@ -43,6 +43,12 @@ messages:
    constructor(Caster=$,Duration=75)
    {
      local iDuration;
+     
+     if Duration=$
+     {
+        propagate;
+     }
+     
      iDuration = Random(Duration-15,Duration+15);
      iDuration = iDuration * 750;
      iDuration = bound(iDuration,22500,150000);

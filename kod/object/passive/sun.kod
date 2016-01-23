@@ -39,26 +39,29 @@ messages:
    Constructor()
    {
       Send(self,@NewGameHour);
+
       propagate;
    }
 
    NewGameHour()
    {
-      local i,iHour,iDay;
+      local i, iHour, iDay;
 
       iHour = Send(SYS,@GetHour);
       iDay = Send(SYS,@GetDay);
 
       % east = 0, west = 2048
-      piAngle = ((iHour+19) mod 24)*130;
-      piHeight = 420 - 7*(iHour - 13)*(iHour - 13);
+      piAngle = ((iHour + 19) MOD 24) * 130;
+
+      piHeight = 420 - 7 * (iHour - 13) * (iHour - 13);
       if piHeight < -200
       {
-	 piHeight = -200;
+         piHeight = -200;
       }
+
       foreach i in Send(SYS,@GetUsersLoggedOn)
       {
-	 Send(i,@ToCliChangeBackgroundOverlay,#what=self);
+         Send(i,@ToCliChangeBackgroundOverlay,#what=self);
       }
 
       return;
@@ -68,20 +71,23 @@ messages:
    "Called by user upon logon"
    {
       Send(who,@ToCliAddBackgroundOverlay,#what=self);
+
       return;
    }
 
    TryLook(what = $)
    {
-      post(self,@BlindViewer,#who=what);
+      Post(self,@BlindViewer,#who=what);
+
       propagate;
    }
 
    BlindViewer(who=$)
    {
       local oSpell;
-      oSpell = send(SYS,@FindSpellByNum,#num=SID_DAZZLE);
-      send(oSpell,@CastSpell,#who=self,#lTargets=[who],#iSpellPower=50);
+
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_DAZZLE);
+      Send(oSpell,@CastSpell,#who=self,#lTargets=[who],#iSpellPower=50);
 
       return;
    }
@@ -90,7 +96,7 @@ messages:
    {
       return piAngle;
    }
-   
+
    GetBackgroundOverlayHeight()
    {
       return piHeight;

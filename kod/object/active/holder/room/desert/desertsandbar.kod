@@ -1,0 +1,103 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertSandbar is DesertRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertsandbar = desertsandbar.roo
+   room_name_desertsandbar = "Lonely Sandbar"
+
+   no_travel_into_sea_sandbar = \
+      "Trying to head that direction seems foolhardy right now."
+   travel_into_sea_sandbar = \
+      "You trek back across the ice toward the shore."
+
+classvars:
+
+   vrName = room_name_desertsandbar
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertsandbar
+   piRoom_num = RID_DESERTSANDBAR
+
+messages:
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         if IsClass(what,&User)
+         {
+            if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(what,@MsgSendUser,#message_rsc=travel_into_sea_sandbar);
+               Send(SYS,@UtilGoNearSquare,#what=what,
+                    #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTSHORE3),
+                    #new_row=Send(what,@GetRow),
+                    #new_col=3,
+                    #fine_row=Send(what,@GetFineRow),
+                    #fine_col=0,
+                    #new_angle=Send(what,@GetAngle));
+            }
+            else
+            {
+               Send(what,@MsgSendUser,#message_rsc=no_travel_into_sea_sandbar);
+            }
+         }
+         return;
+      }
+
+      if new_col < 2
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=no_travel_into_sea_sandbar);
+         }
+         return;
+      }
+
+      if new_row < 2
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=no_travel_into_sea_sandbar);
+         }
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-2)
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=no_travel_into_sea_sandbar);
+         }
+         return;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

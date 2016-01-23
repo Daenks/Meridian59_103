@@ -195,6 +195,14 @@ messages:
       AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
       % 5 out of 255 intensity of light
       AddPacket(1,5);
+
+      if Send(self,@GetOwner) <> $
+         AND Send(Send(self,@GetOwner),@LightingColorOverride)
+      {
+         AddPacket(2,Send(Send(self,@GetOwner),@GetLightingColorOverride));
+         return;
+      }
+      
       % Lightning color
       AddPacket(2,LIGHT_LIGHTNING);
 

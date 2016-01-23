@@ -1,0 +1,284 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RoomStorm is RoomObjectAttribute 
+
+% Storms create random temporary areas of glowing light.
+% They apply an effect while a player is inside them.
+
+constants:
+
+   include blakston.khd
+
+   % In ms, how often we intensify lights and apply effects
+   INTENSIFY_TIME = 250
+
+resources:
+
+   default_storm_begin_msg = \
+      "A storm of arcane energies overtakes the area!"
+   default_storm_end_msg = \
+      "The storm of arcane energies passes."
+   default_bubble_sound = flamewind.wav
+   default_bubble_expire_sound = whoosh04.wav
+
+classvars:
+
+   viStormBeginMsg = default_storm_begin_msg
+   viStormEndMsg = default_storm_end_msg
+   vBubbleSound = default_bubble_sound
+   vBubbleExpireSound = default_bubble_expire_sound
+
+properties:
+
+   % What buff does the storm apply? What spellpower?
+   piSpellID = SID_BLESS
+   poSpell = $
+   piSpellPower = 50
+   
+   % How long does the storm last? (ms)
+   % Send iDuration to constructor to change
+   % $ means indefinite
+   piStormTime = 5 * 60 * 1000
+   ptStormTimer = $
+
+   % How many magical bubbles do we have max at one time?
+   piBubblesMax = 5
+   % How long does each bubble last? (ms)
+   piBubblesDuration = 10000
+   % How big are the bubbles?
+   piBubblesRadiusFine = 5 * 64
+   % How often do we spawn bubbles?
+   piBubblesTime = 5000
+   ptBubblesTimer = $
+   
+   % What is the start and end brightness of our bubbles?
+   piIntensityMin = 0
+   piIntensityMax = 255
+   % What color are our bubbles?
+   piColor = LIGHT_BWHITE
+
+   % These are our bubbles.
+   % [light object, intensity timer, intensity increment, end timer]
+   plBubbles = $
+   
+   pbPlayBubbleSound = FALSE
+   pbPlayBubbleExpireSound = FALSE
+
+messages:
+
+   Constructor(iDuration=$,iPower=$,report=TRUE,host_object=$)
+   {
+      local i;
+
+      % $ iDuration means indefinite
+      if iDuration <> $
+         AND iDuration > 0
+      {
+         ptStormTimer = CreateTimer(self,@EndStorm,iDuration);
+      }
+      else if piStormTime <> $
+         AND piStormTime > 0
+      {
+         ptStormTimer = CreateTimer(self,@EndStorm,piStormTime);
+      }
+      
+      if iPower <> $
+      {
+         piSpellPower = iPower;
+      }
+
+      poSpell = Send(SYS,@FindSpellByNum,#num=piSpellID);
+
+      foreach i in Send(host_object,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+            AND report
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=viStormBeginMsg);
+         }
+      }
+      
+      ptBubblesTimer = CreateTimer(self,@CreateBubble,piBubblesTime);
+      propagate;
+   }
+
+   CreateBubble(timer=$)
+   {
+      local i, oLight, iIncrement;
+
+      ptBubblesTimer = $;
+      if Length(plBubbles) < piBubblesMax
+      {
+         oLight = Create(&DynamicLight,#iIntensity=piIntensityMin,
+                        #iColor=piColor);
+         iIncrement = Bound((piIntensityMax - piIntensityMin),0,255) /
+                      Bound((piBubblesDuration / INTENSIFY_TIME),1,$);
+
+         Send(poHostObject,@NewHold,#what=oLight,
+               #new_row=Random(1,Send(poHostObject,@GetRoomRows)-1),
+               #new_col=Random(1,Send(poHostObject,@GetRoomCols)-1));
+
+         if pbPlayBubbleSound
+         {
+            foreach i in Send(poHostObject,@GetHolderActive)
+            {
+               if IsClass(First(i),&User)
+               {
+                  Send(First(i),@WaveSendUser,#wave_rsc=vBubbleSound,
+                        #source_obj=oLight);
+               }
+            }
+         }
+
+         plBubbles = Cons([oLight,
+                           CreateTimer(self,@BrightenBubble,INTENSIFY_TIME),
+                           iIncrement,
+                           CreateTimer(self,@EndBubble,piBubblesDuration)],
+                           plBubbles);
+      }
+      ptBubblesTimer = CreateTimer(self,@CreateBubble,piBubblesTime);
+      return;
+   }
+
+   BrightenBubble(timer=$)
+   {
+      local i;
+
+      foreach i in plBubbles
+      {
+         if Nth(i,2) = timer
+         {
+            SetNth(i,2,$);
+            
+            Send(First(i),@SetLight,
+               #iIntensity=Bound(Send(First(i),@GetIntensity)+Nth(i,3),0,255));
+
+            Send(self,@ApplyBubbleEffects,#what=First(i));
+
+            SetNth(i,2,CreateTimer(self,@BrightenBubble,INTENSIFY_TIME));
+         }
+      }
+      return;
+   }
+   
+   ApplyBubbleEffects(what=$)
+   {
+      local i;
+      
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+         {
+            if Send(First(i),@SquaredFineDistanceTo3D,#what=what)
+                  <= piBubblesRadiusFine*piBubblesRadiusFine
+            {
+               Send(self,@ApplyDirectEffect,#who=First(i),#what=what);
+            }
+         }
+      }
+      return;
+   }
+   
+   ApplyDirectEffect(who=$,what=$)
+   {
+      if poSpell <> $
+         AND NOT Send(who,@IsEnchanted,#what=poSpell)
+      {
+         Send(poSpell,@CastSpell,#who=what,#lTargets=[who],
+               #iSpellPower=piSpellPower);
+      }
+      return;
+   }
+
+   EndBubble(timer=$)
+   {
+      local i, n;
+      
+      foreach i in plBubbles
+      {
+         if Nth(i,4) = timer
+         {
+            if pbPlayBubbleExpireSound
+            {
+               foreach n in Send(poHostObject,@GetHolderActive)
+               {
+                  if IsClass(First(n),&User)
+                  {
+                     Send(First(n),@WaveSendUser,
+                           #wave_rsc=vBubbleExpireSound,
+                           #row=Send(First(i),@GetRow),
+                           #col=Send(First(i),@GetCol));
+                  }
+               }
+            }
+            Send(First(i),@Delete);
+            SetNth(i,1,$);
+            DeleteTimer(Nth(i,2));
+            SetNth(i,2,$);
+            SetNth(i,3,$);
+            SetNth(i,4,$);
+            plBubbles = DelListElem(plBubbles,i);
+         }
+      }
+
+      return;
+   }
+
+   EndStorm()
+   {
+      local i;
+      
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=viStormEndMsg);
+         }
+      }
+
+      ptStormTimer = $;
+
+      Send(self,@Delete);
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+
+      if ptStormTimer <> $
+      {
+         DeleteTimer(ptStormTimer);
+         ptStormTimer = $;
+      }
+      if ptBubblesTimer <> $
+      {
+         DeleteTimer(ptBubblesTimer);
+         ptBubblesTimer = $;
+      }
+
+      foreach i in plBubbles
+      {
+         Send(First(i),@Delete);
+         SetNth(i,1,$);
+         DeleteTimer(Nth(i,2));
+         SetNth(i,2,$);
+         SetNth(i,3,$);
+         DeleteTimer(Nth(i,4));
+         SetNth(i,4,$);
+         plBubbles = DelListElem(plBubbles,i);
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -197,7 +197,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data + index);
       if (index + 2 + len > msg->len) /* 2 = length word len */
          break;
-      if (len > sizeof(name))
+      if (len >= sizeof(name))
          break;
       memcpy(name, msg->data + index + 2, len);
       name[len] = 0; /* null terminate string */
@@ -206,7 +206,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data + index);
       if (index + 2 + len > msg->len)
          break;
-      if (len > sizeof(password))
+      if (len >= sizeof(password))
          break;
       memcpy(password, msg->data + index + 2, len);
       password[len] = 0; /* null terminate string */
@@ -258,7 +258,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data+index);
       if (index + 2 + len > msg->len)
          break;
-      if (len > sizeof(name))
+      if (len >= sizeof(name))
          break;
       memcpy(name,msg->data+index+2,len);
       name[len] = 0; /* null terminate string */
@@ -315,10 +315,17 @@ struct in6_addr check_addr;
 void CheckIPAddress(session_node *s)
 {
 	BOOL equal = 1;
+#ifdef BLAK_PLATFORM_WINDOWS
 	for (int i = 0; i < sizeof(check_addr.u.Byte); i++)
 	{
 		if (s->conn.addr.u.Byte[i] != check_addr.u.Byte[i])
 		{
+#else
+        for (int i = 0; i < sizeof(check_addr.s6_addr); i++)
+        {
+                if (s->conn.addr.s6_addr[i] != check_addr.s6_addr[i])
+                {
+#endif
 			equal = 0;
 			break;
 		}

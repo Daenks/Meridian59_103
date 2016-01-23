@@ -1,0 +1,76 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LightningPrism is PassiveObject
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   lightningprism_name_rsc = "essence of lightning"
+   lightningprism_icon_rsc = lightningprismhuge.bgf
+   default_lightningprism_desc_rsc = \
+      "This raw pulsing sphere of energy appears kin to Meridian's mana nodes,"
+      " but there is clearly something otherworldly about it. It as if "
+      "the pure concept of lightning has been made real in the physical "
+      "plane. It is impossible to guess what might happen if you were to touch "
+      "it."
+
+   lightningprism_not_in_range = \
+      "You are not close enough to touch the essence of lightning."
+   lightningprism_touched = \
+      "You touch the essence of lightning, and a massive burst of energy "
+      "tears through you!"
+
+classvars:
+
+   vrName = lightningprism_name_rsc
+
+   viObject_flags = OF_ACTIVATABLE
+
+properties:
+
+   vrDesc = default_lightningprism_desc_rsc
+   vrIcon = lightningprism_icon_rsc
+
+   piDrawEffectFlag = OF_FLICKERING
+   piRange = 3
+
+messages:
+
+   SendAnimation()
+   {
+      AddPacket(1,ANIMATE_CYCLE, 4,150, 2,1, 2,4);
+
+      return;
+   }
+
+   TryActivate(who=$)
+   "Return False only if you want user.kod to send its own error message to user."
+   {
+      if (abs(send(who,@getrow)-send(self,@getrow)) > piRange)
+            or (abs(send(who,@getcol)-send(self,@getcol)) > piRange)
+      {
+         Send(who,@MsgSendUser,#message_rsc=lightningprism_not_in_range);          
+         return TRUE;
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=lightningprism_touched);   
+      Post(Send(SYS,@FindRoomByNum,#num=RID_ELEMENTAL_DUNGEON2),
+            @Teleport,#what=who);
+      Post(who,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,#duration=1250);
+      
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

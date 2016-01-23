@@ -148,7 +148,14 @@ messages:
    {
       if IsClass(who,&Player)
       {
-         Send(who, @EffectSendUser, #what=self, #effect=EFFECT_PARALYZE_OFF);
+         % Don't override hold / frozen / phase.
+         
+         if NOT Send(who,@IsEnchanted,#byClass=&Hold)
+            AND NOT Send(who,@HasObjectAttribute,#cClass=&BattlerFrozen)
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PHASED)
+         {
+            Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
+         }
 
          if report
          {

@@ -40,9 +40,10 @@ $(OUTDIR)\bc.exe: $(OBJS)
 $(OUTDIR)\lexyy.obj: $(OUTDIR)\lexyy.c $(OUTDIR)\blakcomp.tab.h
 
 $(OUTDIR)\lexyy.c: {$(SOURCEDIR)}blakcomp.l {$(SOURCEDIR)}blakcomp.h
-	$(LEX) -o$(OUTDIR)\lexyy.c $(SOURCEDIR)\blakcomp.l
+	$(LEX) --wincompat -o$(OUTDIR)\lexyy.c $(SOURCEDIR)\blakcomp.l
 
 $(OUTDIR)\blakcomp.tab.c $(OUTDIR)\blakcomp.tab.h: {$(SOURCEDIR)}blakcomp.y {$(SOURCEDIR)}blakcomp.h
 	$(YACC) $(SOURCEDIR)\blakcomp.y -o $(OUTDIR)\blakcomp.tab.c
 
 !include $(TOPDIR)\rules.mak
+

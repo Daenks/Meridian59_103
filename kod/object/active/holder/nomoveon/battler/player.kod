@@ -1357,6 +1357,11 @@ messages:
          piFlags = piFlags | PFLAG_NO_MAGIC;
       }
 
+      foreach i in plObject_attributes
+      {
+         Send(i,@SetSpellPlayerFlag,#who=self);
+      }
+
       foreach i in plEnchantments
       {
          Send(Nth(i,2),@SetSpellPlayerFlag,#who=self);
@@ -1693,7 +1698,7 @@ messages:
 
    NewOwner(what = $)
    {
-      local iBasePhaseTime;
+      local iBasePhaseTime, i;
 
       Send(self,@ResetGainFlags);
 
@@ -1743,6 +1748,14 @@ messages:
          }
          DeleteTimer(ptRescue);
          ptRescue = $;
+      }
+      
+      foreach i in plEnchantments
+      {
+         if IsClass(Nth(i,2),&RegionEffect)
+         {
+            Send(Nth(i,2),@NewOwner,#who=self,#where=what);
+         }
       }
 
       return;
@@ -3457,8 +3470,10 @@ messages:
       foreach i in plEnchantments
       {
          % Phase reactivates enchantments while it is still in plEnchantments
+         % Spectate and Region Effects do not naturally wear off over time.
          if IsClass(Nth(i,2),&Phase)
             OR IsClass(Nth(i,2),&Spectate)
+            OR IsClass(Nth(i,2),&RegionEffect)
          {
             continue;
          }

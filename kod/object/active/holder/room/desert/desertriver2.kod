@@ -10,6 +10,86 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 DesertRiver2 is DesertRoom
 
+% The Abyssal Bore is where the Prism of Fire, an elemental pocket plane of
+% fire, intersects with our world. It's incredibly dangerous here while the
+% rift is active. This area has no weather effects from other elements due
+% to the rift's presence.
+%
+% Players must use the secret paths from Waylay Oasis to approach the high
+% entrance, and then jump from ledge to ledge.
+%
+% The Abyssal Bore shakes every so often, and then deals very substantial
+% fire damage to players based on their height. The closer they are to the
+% lava, the more damage they'll take. The damage is balanced around
+% players stacking fire resistances. Right up above the lava, unmitigated
+% damage (0% fire res) can be as high as 90 damage during the most active
+% rift periods. This is accomplished through &LavaThreat object.
+%
+% New custom sounds support the quakes and damage.
+%
+% Randomly created passive fires in the lava sector add to visuals.
+% Fog clouds denote where the rivers' waters make steam by hitting the lava.
+%
+% Players who fall into the lava (as tracked by &FallThreat)
+% will straight-up die. As in, @Killed, with a
+% custom message about a regretful choice of step. This is, as far as I know,
+% the first true deathtrap in Meridian. I think the area and high-level
+% danger focus of this entire region warrants it. A message warns players
+% whenever they enter: a single misstep here can get you KILLED.
+% If we don't implement corpse summoning, an NPC in Waylay Oasis will
+% have to automatically do it for players who die this way.
+% NPCs will also warn players multiple times about this place.
+%
+% In about 200 test runs, I managed to reach the prism without falling every
+% time. So it's a danger for those who like to jump off things blithely,
+% and will likely serve as their first brutal lesson about the desert's
+% dangers. Look before you leap - what did you think would happen if you
+% jumped 4000 units down into a quaking & flaming pit of lava?
+%
+% Players can't phase out here, but it's not really to add to the danger.
+% It's so that attempts to phase out will direct them toward the next step:
+% Casting phase in the proper spot when the rift is open will transport
+% them to the Prism of Fire elemental dungeon. Players who log out will
+% be kicked to Waylay Oasis (to employ the panicked feeling that actually
+% closing the client engenders). Blink will also return players to
+% the northern waterfall, but must be timed correctly and done with good
+% spellpower to escape. We might kill a few people who get deep down
+% and start taking massive damage and panic, but they'll learn (and
+% remember the experience forever).
+%
+% Casting Phase in the Prism of Fire will return players to Waylay Oasis.
+%
+% When the Prism of Fire's boss is defeated, the Abyssal Bore fills with
+% water and becomes Warmfire Lake. All that remains of the rift is light
+% from beneath. The rising waters also give access to the southern river,
+% allowing players to proceed further south.
+%
+% Defeating the Prism of Fire also has substantial effects on the region.
+% During the desert's day phase, players will no longer take heat damage.
+% Instead, areas will have &HeatStorm, which brings storms of magical
+% energy that heal health and give a special short-lived fire buff.
+%
+%
+%
+%
+% Structure:
+% FirstUserEntered begins rumbling and random fire.
+% LastUserLeft puts a stop to rumbling and random fire.
+%
+% Elements are handled in:
+% CreateLights / DeleteLights (don't want too many or players will lag)
+% CreateFogClouds / DeleteFogClouds
+% CreateRandomFire
+% CreateRandomFogClouds (for if it rains)
+%
+% Room's secondary state:
+% Stops all fire threats, sounds
+% Raises most terrain to 3000, depth 3
+% Changes most terrain textures to water
+% Changes name of screen to Warmfire Lake
+% Adds lots of water sounds
+% Changes water-step sound from lava to water
+
 constants:
 
    include blakston.khd
@@ -20,13 +100,29 @@ resources:
 
    room_desertriver2 = desertriver2.roo
    room_name_desertriver2 = "Abyssal Bore"
+   room_name_defeated = "Warmfire Lake"
+
+   waterfall_sound_into_lava = wfall2.wav
+   quake_sound = earthquake03.wav
+
+   entrance_warning = \
+      "~rSulfuric gasses taint the air. Vast heat radiates from the earth. "
+      "This is a place of fire and death, and you know instinctively "
+      "that ~Ba single misstep here could get you killed."
+
+   prism_opened_msg = \
+      "~r~BThe earth rumbles, and the lava below begins churning fiercely."
+   prism_closed_msg = \
+      "~rThe ground trembles, and the heat from below ebbs slightly."
+   
+   burning_step_sound = frying.wav
 
 classvars:
 
-   vrName = room_name_desertriver2
+   viTeleport_row = 8
+   viTeleport_col = 18
 
-   viTeleport_row = 4
-   viTeleport_col = 7
+   viTerrain_type = TERRAIN_MOUNTAIN | TERRAIN_LAVA
 
 properties:
 
@@ -38,24 +134,132 @@ properties:
    prRoom = room_desertriver2
    piRoom_num = RID_DESERTRIVER2
 
-messages:
+   ptFireElementsTimer = $
+   vrWading_Sound = burning_step_sound
+   vrName = room_name_desertriver2
+   
+   pbPrismOpen = FALSE
+   pbPrismOfFireDefeated = FALSE
 
- 
-   CreateStandardExits()
+messages:
+   
+   Constructed()
    {
-      plEdge_Exits = $;
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 13, 18, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 47, 28, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 49, 29, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ quake_sound, 0, 0, 300, 100],plLooping_sounds);
+      plLooping_sounds = Cons([ room_lava_sound, 0, 0, 300, 100 ],
+                              plLooping_sounds);
+      
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      Send(self,@CreateLights);
+      Send(self,@CreateFogClouds);
 
       propagate;
    }
 
-   SomethingMoved(what = $,new_row = $, new_col = $)
+   RecalcLightAndWeather()
+   {
+      local SysDayPhase, i;
+
+      SysDayPhase = Send(SYS,@GetDayPhase);
+
+      % We're crossing over into a new quarter.
+      if piPreviousPhase <> SysDayPhase
+      {
+         % Simulate weather.
+         % StartSnow redirects to StartRain.
+         % It never snows here, as the heat melts the rain.
+         Send(self,@DoPhaseWeather);
+
+         if SysDayPhase = DAY_PHASE_DAY
+            AND NOT pbPrismOfFireDefeated
+         {
+            Send(self,@OpenPrismOfFireEntrance);
+            foreach i in plActive
+            {
+               if IsClass(First(i),&User)
+               {
+                  Send(First(i),@MsgSendUser,#message_rsc=prism_opened_msg);
+               }
+            }
+         }
+         if SysDayPhase = DAY_PHASE_DUSK
+            and pbPrismOpen
+         {
+            Send(self,@ClosePrismOfFireEntrance);
+            foreach i in plActive
+            {
+               if IsClass(First(i),&User)
+               {
+                  Send(First(i),@MsgSendUser,#message_rsc=prism_closed_msg);
+               }
+            }
+         }
+      }
+
+      propagate;
+   }
+
+   GetPhaseThreats()
+   {
+      if pbPrismOfFireDefeated
+      {
+         return [&HeatStorm];
+      }
+
+      return [&LavaThreat, &FallThreat, &PhaseThreat];
+   }
+   
+   NewHold(what = $)
+   {
+      % Warn players of the danger.
+      if IsClass(what,&Player)
+         AND NOT pbPrismOfFireDefeated
+      {
+         Send(what,@MsgSendUser,#message_rsc=entrance_warning);
+      }
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      if ptFireElementsTimer = $
+         AND NOT pbPrismOfFireDefeated
+      {
+         ptFireElementsTimer = CreateTimer(self,@CreateRandomFire,1000);
+      }
+
+      propagate;
+   }
+
+   LastUserLeft()
+   {
+      if ptFireElementsTimer <> $
+      {
+         DeleteTimer(ptFireElementsTimer);
+         ptFireElementsTimer = $;
+      }
+
+      propagate;
+   }
+
+   SomethingMoved(what=$,new_row=0,new_col=0,fine_row=0,fine_col=0)
    {
       if new_row < 2 and (new_col < 15)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
               #new_row=37,#new_col=6,#fine_row=52,#fine_col=1,
-              #new_angle=ANGLE_NORTH);
+              #new_angle=Send(what,@GetAngle));
          return;
       }
 
@@ -64,12 +268,448 @@ messages:
          Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
               #new_row=37,#new_col=18,#fine_row=42,#fine_col=12,
-              #new_angle=ANGLE_NORTH_WEST);
+              #new_angle=Send(what,@GetAngle));
               
          return;
       }
 
       propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+
+      propagate;
+   }
+   
+   Delete()
+   {
+      Send(self,@DeleteFogClouds);
+      Send(self,@DeleteLights);
+      Send(self,@DeleteFirewalls);
+
+      if ptFireElementsTimer  <> $
+      {
+         DeleteTimer(ptFireElementsTimer);
+         ptFireElementsTimer = $;
+      }
+      
+      propagate;
+   }
+
+   CreateLights(iBr=255)
+   {
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=47,#new_col=30,#fine_row=26,#fine_col=2);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=50,#new_col=24,#fine_row=25,#fine_col=17);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=48,#new_col=15,#fine_row=53,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=43,#new_col=9,#fine_row=30,#fine_col=30);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=35,#new_col=4,#fine_row=35,#fine_col=28);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=28,#new_col=3,#fine_row=62,#fine_col=51);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=22,#new_col=3,#fine_row=27,#fine_col=50);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=15,#new_col=4,#fine_row=20,#fine_col=33);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=11,#new_col=7,#fine_row=56,#fine_col=35);
+      
+      % Waterfall
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,
+           #iIntensity=100),#new_row=13,#new_col=17,#fine_row=34,#fine_col=54);
+      % Prism Entrance itself
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BRED,
+           #iIntensity=255),#new_row=32,#new_col=24,#fine_row=43,#fine_col=16);
+           
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=15,#new_col=31,#fine_row=40,#fine_col=9);
+%     Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+%          #iIntensity=iBr),#new_row=17,#new_col=39,#fine_row=5,#fine_col=38);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=20,#new_col=42,#fine_row=60,#fine_col=55);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=30,#new_col=45,#fine_row=31,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=17,#new_col=39,#fine_row=5,#fine_col=38);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=37,#new_col=47,#fine_row=27,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=41,#new_col=44,#fine_row=59,#fine_col=15);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=45,#new_col=35,#fine_row=37,#fine_col=54);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,
+           #iIntensity=iBr),#new_row=46,#new_col=27,#fine_row=55,#fine_col=58);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_RED,
+           #iIntensity=iBr),#new_row=41,#new_col=19,#fine_row=39,#fine_col=63);
+
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=32,#new_col=13,#fine_row=56,#fine_col=1);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=20,#new_col=16,#fine_row=61,#fine_col=58);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=21,#new_col=11,#fine_row=42,#fine_col=57);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=19,#new_col=21,#fine_row=53,#fine_col=33);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=23,#new_col=28,#fine_row=5,#fine_col=5);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=24,#new_col=35,#fine_row=44,#fine_col=62);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=35,#new_col=38,#fine_row=18,#fine_col=16);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_ORANGE,
+           #iIntensity=iBr),#new_row=39,#new_col=30,#fine_row=34,#fine_col=1);
+      return;
+   }
+   
+   DeleteLights()
+   {
+      local i;
+      
+      foreach i in plPassive
+      {
+         if IsClass(First(i),&DynamicLight)
+         {
+            Send(First(i),@Delete);
+         }
+      }
+      return;
+   }
+
+   CreateRandomFire()
+   {
+      local iRandomRow, iRandomCol, oElement, i, iQflags, iRflags, iHeightF, 
+            iHeightFWD, iHeightC, iServerID, iRandomFineRow, iRandomFineCol;
+
+      ptFireElementsTimer = $;
+      
+      iRandomRow = Random(0,piRows);
+      iRandomCol = Random(0,piCols);
+      iRandomFineRow = Random(0,63);
+      iRandomFineCol = Random(0,63);
+
+      iQflags = LIQ_GET_SECTORINFO;
+
+      if GetLocationInfoBSP(
+                prmRoom, iQflags, iRandomRow, iRandomCol, iRandomFineRow,
+                iRandomFineCol, *iRflags, *iHeightF, *iHeightFWD,
+                *iHeightC, *iServerID)
+      {
+         % only place in lava
+         if iServerID = 44
+         {
+            Send(self,@NewHold,#what=Create(&PassiveWallofFire,#Duration=10),
+                  #new_row=iRandomRow,#new_col=iRandomCol,
+                  #fine_row=iRandomFineRow,#fine_col=iRandomFineCol);
+         }
+      }
+
+      if Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+      {
+         Send(self,@CreateRandomFogCloud);
+         Send(self,@CreateRandomFogCloud);
+         Send(self,@CreateRandomFogCloud);
+      }
+
+      ptFireElementsTimer=CreateTimer(self,@CreateRandomFire,1000);
+
+      return;
+   }
+
+   CreateRandomFogCloud()
+   {
+      local iRandomRow, iRandomCol, oElement, i, iQflags, iRflags, iHeightF, 
+            iHeightFWD, iHeightC, iServerID, iRandomFineRow, iRandomFineCol;
+      
+      iRandomRow = Random(0,piRows);
+      iRandomCol = Random(0,piCols);
+      iRandomFineRow = Random(0,63);
+      iRandomFineCol = Random(0,63);
+
+      iQflags = LIQ_GET_SECTORINFO;
+
+      if GetLocationInfoBSP(
+                prmRoom, iQflags, iRandomRow, iRandomCol, iRandomFineRow,
+                iRandomFineCol, *iRflags, *iHeightF, *iHeightFWD,
+                *iHeightC, *iServerID)
+      {
+         % only place in lava
+         if iServerID = 44
+         {
+            Send(self,@NewHold,#what=Create(&FogCloud,#Duration=10,
+                  #Caster=self),
+                  #new_row=iRandomRow,#new_col=iRandomCol,
+                  #fine_row=iRandomFineRow,#fine_col=iRandomFineCol);
+         }
+      }
+
+      return;
+   }
+   
+   CreateFogClouds()
+   {
+      % North waterfall
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=12,
+            #new_col=16,#fine_row=43,#fine_col=20);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=12,
+            #new_col=16,#fine_row=0,#fine_col=0);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=12,
+            #new_col=16,#fine_row=63,#fine_col=63);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=12,
+            #new_col=16,#fine_row=56,#fine_col=12);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=14,
+            #new_col=19,#fine_row=44,#fine_col=36);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=14,
+            #new_col=19,#fine_row=63,#fine_col=63);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=14,
+            #new_col=19,#fine_row=0,#fine_col=0);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=14,
+            #new_col=19,#fine_row=56,#fine_col=12);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=14,
+            #new_col=17,#fine_row=43,#fine_col=18);
+
+      % South waterfall
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=46,
+            #new_col=26,#fine_row=57,#fine_col=31);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=47,
+            #new_col=27,#fine_row=62,#fine_col=21);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=46,
+            #new_col=28,#fine_row=27,#fine_col=1);
+      Send(self,@NewHold,#what=Create(&FogCloud,#Duration=$),#new_row=46,
+            #new_col=28,#fine_row=49,#fine_col=62);
+
+      return;
+   }
+   
+   DeleteFogClouds()
+   {
+      local i;
+      
+      foreach i in plPassive
+      {
+         if IsClass(First(i),&FogCloud)
+         {
+            Send(First(i),@Delete);
+         }
+      }
+      
+      return;
+   }
+   
+   DeleteFirewalls()
+   {
+      local i;
+
+      foreach i in plPassive
+      {
+         if IsClass(First(i),&PassiveWallOfFire)
+         {
+            Send(First(i),@Delete);
+         }
+      }
+      return;
+   }
+   
+   OpenPrismOfFireEntrance()
+   {
+      if NOT pbPrismOfFireDefeated
+      {
+         Send(self,@SetSector,#sector=46,
+               #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=40);
+         % Texture the portal..
+         Send(self,@ChangeTexture,#id=46,#new_texture=07702,
+               #flags=CTF_FLOOR);
+         pbPrismOpen = TRUE;
+      }
+      return;
+   }
+   
+   ClosePrismOfFireEntrance()
+   {
+      if pbPrismOfFireDefeated
+      {
+         Send(self,@SetSector,#sector=46,
+               #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=0);
+      }
+      else
+      {
+         Send(self,@RemoveTextureChange,#id=46);
+         Send(self,@SetSector,#sector=46,
+               #animation=ANIMATE_FLOOR_LIFT,#height=6,#speed=1);
+      }
+      pbPrismOpen = FALSE;
+      return;
+   }
+
+   StartRain()
+   {
+      % Acid rain makes the water gross.
+      Send(self,@ChangeTexture,#id=48,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=49,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=90,#new_texture=09363,
+            #flags=CTF_BELOWWALL);
+
+      if pbPrismOfFireDefeated
+      {
+         Send(self,@ChangeTexture,#id=44,#new_texture=09363,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=45,#new_texture=09363,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=46,#new_texture=09363,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=47,#new_texture=09363,
+               #flags=CTF_FLOOR);
+      }
+      propagate;
+   }
+
+   EndRain()
+   {
+      Send(self,@RemoveTextureChange,#id=48);
+      Send(self,@RemoveTextureChange,#id=49);
+      Send(self,@RemoveTextureChange,#id=90);
+
+      if pbPrismOfFireDefeated
+      {
+         Send(self,@ChangeTexture,#id=44,#new_texture=08968,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=45,#new_texture=08968,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=46,#new_texture=08968,
+               #flags=CTF_FLOOR);
+         Send(self,@ChangeTexture,#id=47,#new_texture=08968,
+               #flags=CTF_FLOOR);
+      }
+
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      % Never snows here. The heat melts it into rain.
+      Send(self,@StartRain);
+      return;
+   }
+
+   EndSnow(override=FALSE)
+   {
+      Send(self,@EndRain);
+      return;
+   }
+
+   PrismOfFireDefeated()
+   {
+      local i;
+      
+      if ptFireElementsTimer <> $
+      {
+         DeleteTimer(ptFireElementsTimer);
+         ptFireElementsTimer = $;
+      }
+
+      Send(self,@DeleteFogClouds);
+      Send(self,@DeleteLights);
+      Send(self,@DeleteFirewalls);
+      
+      % Texture the new lake
+      Send(self,@ChangeTexture,#id=44,#new_texture=08968,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=45,#new_texture=08968,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=46,#new_texture=08968,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=47,#new_texture=08968,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=48,#new_texture=08968,
+            #flags=CTF_FLOOR);
+      Send(self,@SetSector,#sector=44,
+            #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      Send(self,@SetSector,#sector=45,
+            #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      Send(self,@SetSector,#sector=46,
+            #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      Send(self,@SetSector,#sector=47,
+            #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      Send(self,@SetSector,#sector=48,
+            #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+      Send(self,@SetSectorFlags,#sector=44,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=45,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=46,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=47,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=48,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=49,#depth=SF_DEPTH3,
+            #scrollSpeed=SCROLL_FAST);
+      Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH2,
+            #scrollSpeed=SCROLL_FAST);
+      Send(self,@SetSectorLight,#sector=46,#light_effect=80);
+
+      Post(self,@SetSector,#sector=44,
+            #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=100);
+      Post(self,@SetSector,#sector=45,
+            #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=100);
+      Post(self,@SetSector,#sector=46,
+            #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=100);
+      Post(self,@SetSector,#sector=47,
+            #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=100);
+      Post(self,@SetSector,#sector=48,
+            #animation=ANIMATE_FLOOR_LIFT,#height=3000,#speed=100);
+
+      vrWading_Sound = water_wading_sound;
+      Send(self,@RemoveLoopingSound,#sound_rsc=quake_sound);
+      Send(self,@RemoveLoopingSound,#sound_rsc=room_lava_sound);
+
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 5, 5, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 10, 5, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 15, 10, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 25, 5, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 5, 50, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 5, 35, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 15, 25, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 25, 25, 180, 100 ],
+                              plLooping_sounds);
+      plLooping_sounds = Cons([ waterfall_sound_into_lava, 50, 5, 180, 100 ],
+                              plLooping_sounds);
+      
+      vrName = room_name_defeated;
+      Send(self,@EndAllThreats);
+      pbPrismOfFireDefeated = TRUE;
+
+      return;
+   }
+
+   GetPrismOfFireDefeated()
+   {
+      return pbPrismOfFireDefeated;
+   }
+   
+   SpecialPhaseConditionsSatisfied(sector=0)
+   {
+      % Special Phase conditions
+      if sector=46
+         AND pbPrismOpen
+      {
+         return TRUE;
+      }
+
+      return FALSE;
    }
 
 end

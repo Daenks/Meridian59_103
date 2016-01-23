@@ -120,9 +120,7 @@ messages:
 
       foreach i in plActiveEvents
       {
-         Send(i,@UserKilled,
-            #who=who,
-            #killer=killer);
+         Send(i,@UserKilled,#who=who,#killer=killer);
       }
 
       return;
@@ -183,6 +181,42 @@ messages:
       foreach i in plActiveEvents
       {
          Send(i,@NewMonth);
+      }
+
+      return;
+   }
+
+   NewGameHour()
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@NewGameHour);
+      }
+
+      return;
+   }
+
+   NewGameDay()
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@NewGameDay);
+      }
+
+      return;
+   }
+
+   NewGameYear()
+   {
+      local i;
+
+      foreach i in plActiveEvents
+      {
+         Send(i,@NewGameYear);
       }
 
       return;

@@ -1,0 +1,174 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BattlerFrozen is BattlerObjectAttribute 
+
+% Battler is frozen and cannot move. Blue tint, if possible.
+% This is a non-spell status effect that is dealt as a result of
+% certain heavy cold damage strikes. Its duration is dependent upon
+% damage dealt, and is typically very short-lived. Whereas Hold
+% can last a few seconds, BattlerFrozen is typically 1 second or less.
+%
+% Alternatively, something is indefinitely frozen as part of a storyline
+% or content experience.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   frozen_begin_msg = \
+      "You have been frozen!"
+   frozen_end_msg = \
+      "The ice cracks away, and you are able to move again."
+   frozen_cannot_do_action_msg = \
+      "You can't move! You're frozen!"
+
+classvars:
+
+   viEffectStartMsg = frozen_begin_msg
+   viEffectEndMsg = frozen_end_msg
+   viRefuseMsg = frozen_cannot_do_action_msg
+
+properties:
+   
+   % How long does the freeze last? (often variable through constructor)
+   piFreezeTime = 1000
+   ptFreezeTimer = $
+   
+   % What light and color do we apply to a frozen battler?
+   piIntensity = 40
+   piColor = LIGHT_BBLUE
+
+   pbPlayFreezeSound = FALSE
+   pbPlayUnfreezeSound = FALSE
+   
+   % Our light object.
+   poLight = $
+
+messages:
+
+   Constructor(iDuration=$,report=TRUE,host_object=$)
+   {
+      local i;
+
+      % $ iDuration means indefinite
+      if iDuration <> $
+         AND iDuration > 0
+      {
+         ptFreezeTimer = CreateTimer(self,@EndFreeze,iDuration);
+      }
+      else if piFreezeTime <> $
+         AND piFreezeTime > 0
+      {
+         ptFreezeTimer = CreateTimer(self,@EndFreeze,piFreezeTime);
+      }
+
+      propagate;
+   }
+
+   Constructed()
+   {
+      Send(self,@Freeze,#who=poHostObject);
+      propagate;
+   }
+
+   Freeze(who=$)
+   {
+      local oRoom;
+      
+      oRoom = Send(poHostObject,@GetOwner);
+      if oRoom <> $
+      {
+         poLight = Create(&DynamicLight,#iIntensity=piIntensity,
+                        #iColor=piColor);
+
+         Send(oRoom,@NewHold,#what=poLight,
+               #new_row=Send(who,@GetRow),
+               #new_col=Send(who,@GetCol),
+               #fine_row=Send(who,@GetFineRow),
+               #fine_col=Send(who,@GetFineCol));
+      }
+
+      if IsClass(who,&User)
+      {
+         Send(who,@MsgSendUser,#message_rsc=frozen_begin_msg);
+         Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
+         return;
+      }
+      
+      if IsClass(who,&Monster)
+      {
+         Send(who,@SetBehaviorFlag,#flag=AI_NOMOVE,#value=TRUE);
+         Send(who,@SetBehaviorFlag,#flag=AI_NOFIGHT,#value=TRUE);
+      }
+      return;
+   }
+   
+   Unfreeze(who=$)
+   {
+      if poLight <> $
+      {
+         Send(poLight,@Delete);
+      }
+      poLight = $;
+
+      if IsClass(who,&User)
+      {
+         % Don't override Hold / Phase.
+         if NOT Send(who,@IsEnchanted,#byClass=&Hold)
+            AND NOT Send(who,@IsEnchanted,#byClass=&DMHold)
+            AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PHASED)
+         {
+            Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
+         }
+         return;
+      }
+
+      if IsClass(who,&Monster)
+      {
+         Send(who,@SetBehaviorFlag,#flag=AI_NOMOVE,#value=FALSE);
+         Send(who,@SetBehaviorFlag,#flag=AI_NOFIGHT,#value=FALSE);
+      }
+      return;
+   }
+
+   SetSpellPlayerFlag(who=$)
+   {
+      Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=TRUE);
+      Send(who,@SetPlayerFlag,#flag=PFLAG_NO_FIGHT,#value=TRUE);
+      Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=TRUE);
+
+      return;
+   }
+
+   EndFreeze()
+   {
+      ptFreezeTimer = $;
+      Send(self,@Delete);
+      return;
+   }
+
+   Delete()
+   {
+      Send(self,@Unfreeze,#who=poHostObject);
+
+      if ptFreezeTimer <> $
+      {
+         DeleteTimer(ptFreezeTimer);
+         ptFreezeTimer = $;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -261,7 +261,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    "Called every new M59 day."
    {
       piDaysUntilRankLoss = piDaysUntilRankLoss - 1;

@@ -1,0 +1,176 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RegionEffect is Spell
+
+% These use the spell system, but are not really spells.
+% For example, GreyGhost marks a person as grayscale and anon.
+% Used by content for immersion.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   default_system_effect_on = "You've become affected by a system effect."
+   default_system_effect_off = "You're no longer affected by a system effect."
+
+classvars:
+
+   applied_on_first = default_system_effect_on
+   applied_off_first = default_system_effect_off
+   
+   applied_in_rooms_of_class = &MonsterRoom
+
+properties:
+
+messages:
+
+   ShowDesc()
+   {
+      AddPacket(4,vrDesc);
+
+      return;
+   }
+
+   GetNumSpellTargets()
+   {
+      return 1;
+   }
+
+   PlaySpellSound(room_obj = $,what = $)
+   {
+      return;
+   }
+
+   CanPayCosts(who = $)
+   {
+      % Can always cast this.
+      return TRUE;
+   }
+
+   SuccessChance()
+   {
+      return TRUE;
+   }
+   
+   % Informed by player.kod NewOwner.
+   % Necessary in case of offline teleportation.
+   NewOwner(who=$,where=$)
+   {
+      if where = $
+         OR NOT IsClass(where,applied_in_rooms_of_class)
+      {
+         Post(who,@RemoveEnchantment,#what=self);
+      }
+
+      return;
+   }
+
+   CastSpell(who=$,lTargets=$,report=TRUE)
+   {
+      local each_obj, i, oRoom, oTarget;
+
+      if lTargets = $
+      {
+         return;
+      }
+
+      oTarget = First(lTargets);
+
+      if oTarget = $
+         OR NOT IsClass(oTarget,&Player)
+      {
+         return;
+      }
+
+      % Usually called by a Post after user LeaveHolds from rooms that
+      % apply these. That way we'll have our new owner by then.
+      % If the player has the RegionEffect and is no longer 
+      % in our type of room, remove ourself.
+      if Send(oTarget,@IsEnchanted,#what=self)
+         AND Send(oTarget,@GetOwner) <> $
+         AND NOT IsClass(Send(oTarget,@GetOwner),applied_in_rooms_of_class)
+      {
+         Send(oTarget,@RemoveEnchantment,#what=self);
+
+         return;
+      }
+
+      % If we're still enchanted, player is still in region. Do nothing.
+      if Send(oTarget,@IsEnchanted,#what=self)
+      {
+         return;
+      }
+
+      oRoom = Send(oTarget,@GetOwner);
+      if oRoom <> $
+         AND report
+      {
+         foreach i in Send(oRoom,@GetHolderActive)
+         {
+            each_obj = First(i);
+            if each_obj = oTarget
+            {
+               Send(oTarget,@MsgSendUser,#message_rsc=applied_on_first);
+
+               continue;
+            }
+         }
+      }
+
+      Send(oTarget,@StartEnchantment,#what=self,#time=$);
+
+      propagate;
+   }
+
+   EndEnchantment(who = $,report = TRUE,state = $)
+   {
+      local each_obj, i, oRoom;
+
+      if who = $
+      {
+         return;
+      }
+
+      Send(who,@EffectSendUserXlat,#xlat=0);
+
+      oRoom = Send(who,@GetOwner);
+      if oRoom <> $
+         AND report
+      {
+         foreach i in Send(oRoom,@GetHolderActive)
+         {
+            each_obj = First(i);
+            if each_obj = who
+            {
+               Send(who,@MsgSendUser,#message_rsc=applied_off_first);
+
+               continue;
+            }
+         }
+      }
+
+      return;
+   }
+
+   CanBeRemovedByPlayer()
+   {
+      return FALSE;
+   }
+
+   GetStateValue()
+   {
+      return $;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

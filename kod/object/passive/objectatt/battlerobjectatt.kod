@@ -1,0 +1,79 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BattlerObjectAttribute is ObjectAttribute
+
+% These are special effects such as freeze, shock, burning.
+% They are NOT spells! We do not want them interacting with spells.
+% They would disrupt or alter things like Purge.
+
+constants:
+
+   include blakston.khd   
+
+resources:
+
+   battlerobjectatt_name_rsc = "Special Battler Attribute"
+   battlerobjectatt_icon_rsc = light.bgf
+   battlerobjectatt_desc_rsc = "There is a special effect on this battler."
+      
+classvars:
+
+   vrName = battlerobjectatt_name_rsc
+   vrIcon = battlerobjectatt_icon_rsc
+   vrDesc = battlerobjectatt_desc_rsc
+   
+   viShow_enchantment_icon = 0x02
+
+properties:
+
+messages:
+     
+   ReqAddToObject(host_object=$)
+   {
+      if NOT IsClass(host_object,&Battler)
+      {
+         return FALSE;
+      }
+      return TRUE;
+   }
+
+   Constructed(host_object=$)
+   {
+      if IsClass(poHostObject,&User)
+      {
+         Send(poHostObject,@ShowUsersAddEnchantment,#what=self);
+      }
+
+      propagate;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x02;
+   }
+
+   SetSpellPlayerFlag(who=$)
+   {
+      return;
+   }
+
+   Delete()
+   {
+      if IsClass(poHostObject,&User)
+      {
+         Send(poHostObject,@ShowUsersRemoveEnchantment,#what=self);
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

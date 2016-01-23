@@ -1,0 +1,76 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ColdStormBuff is ResistanceEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ColdStormBuff_name_rsc = "chilling cold"
+   ColdStormBuff_icon_rsc = irescold.bgf
+   ColdStormBuff_desc_rsc = \
+      "Strange freezing energies race around you, protecting you from cold."
+
+   ColdStormBuff_already_enchanted = \
+      "You are already resistant to cold spells."
+
+   ColdStormBuff_on = \
+      "Freezing energies empower your body."
+   ColdStormBuff_off = \
+      "The freezing strength leaves your body."
+
+   ColdStormBuff_sound = faren.wav
+
+classvars:
+
+   vrName = ColdStormBuff_name_rsc
+   vrIcon = ColdStormBuff_icon_rsc
+   vrDesc = ColdStormBuff_desc_rsc
+   vrSucceed_wav = ColdStormBuff_sound
+
+   viSpell_num = SID_COLD_STORM_BUFF
+   viSchool = SS_FAREN
+   viSpell_level = 2
+   viMana = 9
+
+   viPersonal_ench = True
+   viChance_To_Increase = 30
+   viMeditate_ratio = 0
+
+   viFlash = FLASH_GOOD_SELF
+
+   viResistanceType = -ATCK_SPELL_COLD
+   vrAlreadyEnchanted = ColdStormBuff_already_enchanted
+   vrEnchantment_On = ColdStormBuff_on
+   vrEnchantment_Off = ColdStormBuff_off
+
+properties:
+
+messages:
+
+   GetResistanceStrength(iSpellpower = 0)
+   {
+      %% strength varies from 1 to 99
+      return iSpellPower;
+   }
+
+   GetDuration(iSpellPower = 0)
+   {
+      local iDuration;	   %%% 60 to 120 seconds
+      iDuration = 60000 + (iSpellPower+1)*600;
+      return iDuration;
+   }
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

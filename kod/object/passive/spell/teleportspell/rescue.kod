@@ -167,6 +167,15 @@ messages:
 
             return;
          }
+
+         % If we're in the desert, teleport to Waylay Oasis.
+         if Send(oCurrentRoom,@GetRegion) = RID_DESERT
+         {
+            oTargetRoom = Send(SYS,@FindRoomByNum,#num=RID_WAYLAYOASIS);
+            Post(oTargetRoom,@Teleport,#what=who);
+
+            return;
+         }
       }
 
       % Default: Go to our home room.

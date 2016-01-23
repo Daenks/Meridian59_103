@@ -6,9 +6,10 @@
 
 DEPEND = ..\desert.bof
 
-BOFS = desertpath1.bof desertdunes.bof desertcliffaccess.bof waylayoasis.bof \
+BOFS = desertpath1.bof desertdunes.bof desertcliffaccess.bof \
        desertcliffnoaccess1.bof desertcliffnoaccess2.bof \
        desertcliffnoaccess3.bof desertshore1.bof desertshore2.bof \
-       desertshore3.bof desertriver1.bof desertriver2.bof desertbridge.bof
+       desertshore3.bof desertriver1.bof desertriver2.bof desertbridge.bof \
+       desertcaveraft.bof desertsandbar.bof desertsteppes.bof
 
 !include $(KODDIR)\kod.mak

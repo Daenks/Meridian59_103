@@ -213,6 +213,9 @@ void AdminUnsuspendUser(int session_id,admin_parm_type parms[],
 void AdminUnsuspendAccount(int session_id,admin_parm_type parms[],
                            int num_blak_parm,parm_node blak_parm[]);
 
+void AdminCheckTimerHeap(int session_id, admin_parm_type parms[],
+                         int num_blak_parm, parm_node blak_parm[]);
+
 void AdminCreateAccount(int session_id,admin_parm_type parms[],
                         int num_blak_parm,parm_node blak_parm[]);
 void AdminCreateAutomated(int session_id,admin_parm_type parms[],
@@ -391,6 +394,13 @@ admin_table_type admin_unsuspend_table[] =
 };
 #define LEN_ADMIN_UNSUSPEND_TABLE (sizeof(admin_unsuspend_table)/sizeof(admin_table_type))
 
+admin_table_type admin_check_table[] =
+{
+   { AdminCheckTimerHeap, {N}, F, A|M, NULL, 0, "timerheap",
+      "Checks the validity of the timer heap" },
+};
+#define LEN_ADMIN_CHECK_TABLE (sizeof(admin_check_table)/sizeof(admin_table_type))
+
 admin_table_type admin_setcfg_table[] =
 {
 	{ AdminSetConfigBool,     {S,S,S,N}, F, A|M, NULL, 0, "boolean",  
@@ -538,6 +548,7 @@ admin_table_type admin_save_table[] =
 admin_table_type admin_main_table[] = 
 { 
 	{ NULL, {N}, F, A|M, admin_add_table,    LEN_ADMIN_ADD_TABLE,    "add",    "Add subcommand" },
+	{ NULL, {N}, F, A|M, admin_check_table,  LEN_ADMIN_CHECK_TABLE,  "check",  "Check subcommand" },
 	{ NULL, {N}, F, A|M, admin_create_table, LEN_ADMIN_CREATE_TABLE, "create", "Create subcommand" },
 	{ NULL, {N}, F, A|M, admin_delete_table, LEN_ADMIN_DELETE_TABLE, "delete", "Delete subcommand" },
 	{ NULL, {N}, F, A|M, admin_disable_table,LEN_ADMIN_DISABLE_TABLE,"disable", "Disable subcommand" },
@@ -1317,6 +1328,7 @@ void AdminMail(int session_id,admin_parm_type parms[],
 void AdminPage(int session_id,admin_parm_type parms[],
                int num_blak_parm,parm_node blak_parm[])
 {
+#ifdef BLAK_PLATFORM_WINDOWS
 	session_node *s;
 	
 	s = GetSessionByID(session_id);
@@ -1327,6 +1339,7 @@ void AdminPage(int session_id,admin_parm_type parms[],
 			lprintf("AdminPage %s paged the console\n",s->account->name);
 		
 		InterfaceSignalConsole();
+#endif
 }
 
 
@@ -1512,7 +1525,7 @@ void AdminShowBlockers(int session_id,admin_parm_type parms[],
                       int num_blak_parm,parm_node blak_parm[])
 {
    room_node *room;
-   Blocker *b;
+   BlockerNode *b;
    int row, col, finerow, finecol;
 
    room = GetRoomDataByID((int)parms[0]);
@@ -1993,6 +2006,25 @@ void AdminShowDynamicResources(int session_id,admin_parm_type parms[],
 {
 	aprintf("%-7s %s\n","ID","Name = Value");
 	ForEachDynamicRsc(AdminPrintResource);
+}
+
+// Check the validity of the timer min binary heap.
+// Prints the result.
+void AdminCheckTimerHeap(int session_id, admin_parm_type parms[],
+                         int num_blak_parm, parm_node blak_parm[])
+{
+   double startTime = GetMicroCountDouble();
+
+   // Perform the check, returns true or false.
+   bool retVal = TimerHeapCheck(0, 0);
+
+   aprintf("Timer heap check completed in %.3f microseconds.\n",
+      GetMicroCountDouble() - startTime);
+
+   if (retVal)
+      aprintf("Timer heap is valid.\n");
+   else
+      aprintf("Timer heap is NOT valid.\n");
 }
 
 void AdminShowTimers(int session_id,admin_parm_type parms[],

@@ -1011,6 +1011,18 @@ messages:
       return viObject_flags | piDrawEffectFlag;
    }
 
+   RemoveDrawingEffects(value=0)
+   {
+      piDrawfx = piDrawfx & ~value;
+      return;
+   }
+
+   AddDrawingEffects(value=0)
+   {
+      piDrawfx = piDrawfx | value;
+      return;
+   }
+
    GetDrawingEffects()
    "This returns any special drawing effect the object has. Default is "
    "no drawing effect."
@@ -1315,6 +1327,36 @@ messages:
    GetObjectAttributes()
    {
       return plObject_attributes;
+   }
+   
+   HasObjectAttribute(cClass=&ShockStorm)
+   {
+      local i;
+      
+      foreach i in plObject_attributes
+      {
+         if IsClass(i,cClass)
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+   
+   GetObjectAttribute(cClass=&ShockStorm)
+   {
+      local i;
+      
+      foreach i in plObject_attributes
+      {
+         if IsClass(i,cClass)
+         {
+            return i;
+         }
+      }
+
+      return $;
    }
 
 end

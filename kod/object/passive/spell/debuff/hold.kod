@@ -222,13 +222,14 @@ messages:
    {
       if IsClass(who,&Player)
       {
-         % Don't override phasing hold.
+         % Don't override phasing hold, dm hold, or frozen.
          if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PHASED)
+            AND NOT Send(who,@IsEnchanted,#byClass=&DMHold)
+            AND NOT Send(who,@HasObjectAttribute,#cClass=&BattlerFrozen)
          {
             Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
          }
 
-         Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
          if state
          {
             Send(who,@MsgSendUser,#message_rsc=vrEnchantment_Off);

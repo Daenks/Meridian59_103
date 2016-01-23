@@ -145,6 +145,7 @@ messages:
       }
 
       if IsClass(oRoom,&GuildHall)
+         AND NOT Send(oRoom,@InFoyer,#who=who)
       {
          Send(who,@MsgSendUser,#message_rsc=no_phasing_in_guildhall_msg);
 
@@ -364,9 +365,10 @@ messages:
       Send(who,@SetPlayerFlag,#flag=PFLAG_PHASED,#value=FALSE);
       Send(who,@FreezePhaseTimer);
 
-      % Don't override Hold.
+      % Don't override Hold / Frozen.
       if NOT Send(who,@IsEnchanted,#byClass=&Hold)
          AND NOT Send(who,@IsEnchanted,#byClass=&DMHold)
+         AND NOT Send(who,@HasObjectAttribute,#cClass=&BattlerFrozen)
       {
          Send(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
       }
