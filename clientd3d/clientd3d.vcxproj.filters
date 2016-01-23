@@ -21,9 +21,6 @@
     <ClInclude Include="winxblak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="xform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="xlat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -585,9 +582,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="winmsg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="xform.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="xlat.c">

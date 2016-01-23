@@ -9,15 +9,20 @@ CP = cp
 RM = rm
 MKDIR = mkdir
 RMDIR = rmdir
-CC     = gcc
+CC     = g++
+LINK   = g++
 OUTDIR=debug
 BLAKINCLUDEDIR = $(TOPDIR)/include
+BLAKSERVRUNDIR = $(TOPDIR)/run/server
 
-CFLAGS = -I $(BLAKINCLUDEDIR) -x c++ -DBLAK_PLATFORM_LINUX
+# -g generate debug info for gdb
+# -m32 compile as 32-bit
+# -Wno-write-strings: turns off deprecated warning for const char*
+#   strings passed as char* (Should be properly fixed)
+CFLAGS = -m32 -I $(BLAKINCLUDEDIR) -g -x c++ -DBLAK_PLATFORM_LINUX -Wno-write-strings
 
 
-
-BLAKSERVLINKFLAGS =
+BLAKSERVLINKFLAGS = -m32 -lpthread -lrt
 
 SOURCEDIR = .
 
@@ -25,6 +30,7 @@ LIBS =
 
 OBJS =  \
 	$(OUTDIR)/main.obj \
+	$(OUTDIR)/main_linux.obj \
 	$(OUTDIR)/loadkod.obj \
 	$(OUTDIR)/class.obj \
 	$(OUTDIR)/message.obj \
@@ -43,6 +49,7 @@ OBJS =  \
 	$(OUTDIR)/commcli.obj \
 	$(OUTDIR)/string.obj \
 	$(OUTDIR)/async.obj \
+   $(OUTDIR)/async_linux.obj \
 	$(OUTDIR)/loadgame.obj \
 	$(OUTDIR)/game.obj \
 	$(OUTDIR)/term.obj \
@@ -74,7 +81,6 @@ OBJS =  \
 	$(OUTDIR)/version.obj \
 	$(OUTDIR)/systimer.obj \
 	$(OUTDIR)/memory.obj \
-	$(OUTDIR)/interface.obj \
 	$(OUTDIR)/intrlock.obj \
 	$(OUTDIR)/chanbuf.obj \
 	$(OUTDIR)/debug.obj \
@@ -90,7 +96,11 @@ OBJS =  \
 	$(OUTDIR)/stringinthash.obj \
 	$(OUTDIR)/intstringhash.obj \
 	$(OUTDIR)/files.obj \
-	$(OUTDIR)/critical_section.obj \
+	$(OUTDIR)/sprocket.obj \
+	$(OUTDIR)/linux-critical_section.obj \
+	$(OUTDIR)/interface_linux.obj \
+	$(OUTDIR)/mutex_linux.obj \
+    $(OUTDIR)/thdmsgqueue_linux.obj \
 
 
 all : makedirs $(OUTDIR)/blakserv
@@ -105,17 +115,17 @@ $(OUTDIR)/md5.obj : $(TOPDIR)/util/md5.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OUTDIR)/blakserv: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
-	$(LINK)	$@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
+#   $(CC) $(CFLAGS) -o $@ -c $(SOURCEDIR)/version.c
+#   $(LINK) $@ $(LIBS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
+	$(LINK) -o $@ $(OBJS) $(BLAKSERVLINKFLAGS) $(LINKFLAGS)
 	$(CP) $@ $(BLAKSERVRUNDIR)
-
 
 #!include $(TOPDIR)/rules.mak
 makedirs:
-	-$(MKDIR) $(OUTDIR)
+	-$(MKDIR) -p $(OUTDIR)
 
 $(OUTDIR)/%.obj : %.c
-	$(CC) $(CFLAGS) -o $@ -c $< 
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:
 	-$(RM) $(OUTDIR)/*

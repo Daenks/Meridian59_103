@@ -20,13 +20,17 @@
 /*                                           MACROS                                                           */
 /**************************************************************************************************************/
 #define DEBUGLOS            0                  // switch to 1 to enable debug output for BSP LOS
+#define DEBUGLOSVIEW        0                  // switch to 1 to enable debug output for directional LOS
 #define DEBUGMOVE           0                  // switch to 1 to enable debug output for BSP MOVES
 #define ROO_VERSION         14                 // required roo fileformat version (V14 = floatingpoint)
 #define ROO_SIGNATURE       0xB14F4F52         // signature of ROO files (first 4 bytes)
 #define OBJECTHEIGHTROO     768                // estimated object height (used in LOS and MOVE calcs)
 #define ROOFINENESS         1024.0f            // fineness used in ROO files
+#define HALFROOFINENESS     512.0f             // half ROO fineness for frustum calculations
 #define FINENESSKODTOROO(x) ((x) * 16.0f)      // scales a value from KOD fineness to ROO fineness
 #define FINENESSROOTOKOD(x) ((x) * 0.0625f)    // scales a value from ROO fineness to KOD fineness
+#define MAX_KOD_DEGREE      4096.0f            // max value of KOD angle
+#define HALFFRUSTUMWIDTH    600.0f             // half player view frustum, * ~1.5x to account for latency
 
 #define MAXSTEPHEIGHT       ((float)(24 << 4))                     // (from clientd3d/move.c)
 #define PLAYERWIDTH         (31.0f * (float)KODFINENESS * 0.25f)   // (from clientd3d/game.c)
@@ -35,6 +39,9 @@
 #define OBJMINDISTANCE      768.0f                                 // 3 highres rows/cols, old value from kod
 #define OBJMINDISTANCE2     (OBJMINDISTANCE * OBJMINDISTANCE)
 #define LOSEXTEND           64.0f
+
+// Calculation to convert KOD angles to radians.
+#define KODANGLETORADIANS(x) ((float)((x) % (int)MAX_KOD_DEGREE) * PI_MULT_2 / MAX_KOD_DEGREE)
 
 // converts grid coordinates
 // input: 1-based value of big row (or col), 0-based value of fine-row (or col)
@@ -110,7 +117,7 @@ typedef struct SlopeInfo
    float D;
 } SlopeInfo;
 
-typedef struct Sector
+typedef struct SectorNode
 {
    unsigned short ServerID;
    unsigned short FloorTexture;
@@ -122,7 +129,7 @@ typedef struct Sector
    SlopeInfo*     SlopeInfoCeiling;
    unsigned short FloorTextureOrig;
    unsigned short CeilingTextureOrig;
-} Sector;
+} SectorNode;
 
 typedef struct Wall
 {
@@ -134,8 +141,8 @@ typedef struct Wall
    V2             P2;
    unsigned short RightSectorNum;
    unsigned short LeftSectorNum;
-   Sector*        RightSector;
-   Sector*        LeftSector;
+   SectorNode*    RightSector;
+   SectorNode*    LeftSector;
    Side*          RightSide;
    Side*          LeftSide;
    Wall*          NextWallInPlane;
@@ -166,7 +173,7 @@ typedef struct BspLeaf
    unsigned short PointsCount;
    V3*            PointsFloor;
    V3*            PointsCeiling;
-   Sector*        Sector;
+   SectorNode*    Sector;
 } BspLeaf;
 
 typedef struct BspNode
@@ -182,12 +189,12 @@ typedef struct BspNode
 
 } BspNode;
 
-typedef struct Blocker
+typedef struct BlockerNode
 {
    int ObjectID;
    V2 Position;
-   Blocker* Next;
-} Blocker;
+   BlockerNode* Next;
+} BlockerNode;
 
 typedef struct room_type
 {
@@ -202,7 +209,7 @@ typedef struct room_type
    int security;         /* Security number, to ensure that client loads the correct roo file */
    
    BoundingBox2D  ThingsBox;
-   Blocker*       Blocker;
+   BlockerNode*   Blocker;
 
    BspNode*       TreeNodes;
    unsigned short TreeNodesCount;
@@ -210,7 +217,7 @@ typedef struct room_type
    unsigned short WallsCount;
    Side*          Sides;
    unsigned short SidesCount;
-   Sector*        Sectors;
+   SectorNode*    Sectors;
    unsigned short SectorsCount; 
 } room_type;
 #pragma endregion
@@ -221,6 +228,7 @@ typedef struct room_type
 /**************************************************************************************************************/
 bool  BSPGetHeight(room_type* Room, V2* P, float* HeightF, float* HeightFWD, float* HeightC, BspLeaf** Leaf);
 bool  BSPCanMoveInRoom(room_type* Room, V2* S, V2* E, int ObjectID, bool moveOutsideBSP, Wall** BlockWall);
+bool  BSPLineOfSightView(V2 *S, V2 *E, int kod_angle);
 bool  BSPLineOfSight(room_type* Room, V3* S, V3* E);
 void  BSPChangeTexture(room_type* Room, unsigned int ServerID, unsigned short NewTexture, unsigned int Flags);
 void  BSPMoveSector(room_type* Room, unsigned int ServerID, bool Floor, float Height, float Speed);

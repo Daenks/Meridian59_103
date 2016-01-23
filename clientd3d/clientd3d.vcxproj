@@ -249,7 +249,6 @@ $(SolutionDir)postbuild.bat
     <ClInclude Include="winmenu.h" />
     <ClInclude Include="winmsg.h" />
     <ClInclude Include="winxblak.h" />
-    <ClInclude Include="xform.h" />
     <ClInclude Include="xlat.h" />
   </ItemGroup>
   <ItemGroup>
@@ -348,7 +347,6 @@ $(SolutionDir)postbuild.bat
     <ClCompile Include="web.c" />
     <ClCompile Include="winmenu.c" />
     <ClCompile Include="winmsg.c" />
-    <ClCompile Include="xform.c" />
     <ClCompile Include="xlat.c" />
   </ItemGroup>
   <ItemGroup>

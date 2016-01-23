@@ -5,10 +5,6 @@
 // the LICENSE file that accompanies it.
 //
 // Meridian is a registered trademark.
-/*
- * interface.h
- *
- */
 
 #ifndef _INTERFAC_H
 #define _INTERFAC_H

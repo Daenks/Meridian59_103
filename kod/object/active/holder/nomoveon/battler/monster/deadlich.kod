@@ -157,7 +157,7 @@ messages:
          return;
       }
 
-      Post(poOwner,@SomeoneSaid,#what=self,#string=lich_respel,
+      Post(poOwner,@SomeoneSaid,#what=self,#string=deadlich_respel,
             #type=SAY_MESSAGE);
 
       pbIllusioned = TRUE;

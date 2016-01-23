@@ -54,7 +54,7 @@ constants:
    USER_RUNNING_SPEED = 50
 
    % How many packets incoming per second do we allow?
-   INCOMING_PACKET_THROTTLE = 20
+   INCOMING_PACKET_THROTTLE = 25
 
    % What's the lower threshold for being able to run?  Below this, we can't
    %  run.
@@ -988,7 +988,7 @@ messages:
       Send(poOwner,@LeaveHold,#what=self);
       if poOwner <> $
          AND Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
-         AND Send(self,@GetDeathRiftProtection)
+         AND (piflags & PFLAG_DEATH_RIFTING)
       {
          % Don't let players stay in the Underworld with Death Rift
          Post(self,@AdminGoToSafety);
@@ -1187,6 +1187,13 @@ messages:
       return;
    }
 
+   SetFloodCount(iNum=0)
+   {
+      piFloodCount = iNum;
+
+      return;
+   }
+
    ReceiveClient(client_msg = $,number_stuff = $,type = $)
    "Sent by the server when the client has a message.  The client_msg "
    "is the permanent list created by AllocateCommCli in the server, "
@@ -1194,10 +1201,8 @@ messages:
    "parameters for any of the client_msg things that are number objects.  "
    "It is dynamically allocated each time (wasting list nodes)."
    {
-      local liClient_cmd, oWhat, oWhere, oRoom, iRow, iCol, iSay_type,
-            sStr_said, sStr_mailed, lDest_mail, iAttack_type, iGroup, lItems,
-            lUsers, oApply_on, iNid, sTitle, iAngle, sBody, iNum, iSpeed,
-            lTargets, i;
+      local liClient_cmd, oWhat, oRoom, iRow, iCol, lUsers, iAngle, sBody,
+            iSpeed, i, sStr_said;
 
       % This checks to see if the user is trying to Send too many packets
       %  per second.  If they are, then we mark them as a spammer and
@@ -1214,6 +1219,13 @@ messages:
             AND NOT Send(self,@PlayerIsImmortal)
          {
             piFloodCount++;
+
+            % Have to let this message through in case they're logging off.
+            if (type = 0
+               AND First(client_msg) = BP_REQ_QUIT)
+            {
+               Send(self,@UserLogoff);
+            }
 
             % Don't go on if marked as spammer
             return;
@@ -1242,7 +1254,7 @@ messages:
 
          % Check if it's an outdated message, from a person going off side of
          %  room multiple times before they got their new room.
-         if oRoom <> poOwner 
+         if oRoom <> poOwner
          {
             return;
          }
@@ -1316,69 +1328,79 @@ messages:
 
       if liClient_cmd = BP_REQ_DROP
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserDrop,#what=oWhat,#number=number_stuff);
+         Send(self,@UserDrop,#what=Nth(client_msg,2),#number=number_stuff);
 
          return;
       }
 
       if liClient_cmd = BP_REQ_INVENTORY_MOVE
       {
-         oWhat = Nth(client_msg,2);
-         oWhere = Nth(client_msg,3);
-         Send(self,@UserMoveInventoryItem,#what=oWhat,#where=oWhere);
+         Send(self,@UserMoveInventoryItem,#what=Nth(client_msg,2),
+               #where=Nth(client_msg,3));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_PUT
       {
-         oWhat = Nth(client_msg,2);
-         oWhere = Nth(client_msg,3);
-         Send(self,@UserPut,#what=oWhat,#where=oWhere,#number=number_stuff);
+         Send(self,@UserPut,#what=Nth(client_msg,2),#where=Nth(client_msg,3),
+               #number=number_stuff);
 
          return;
       }
 
       if liClient_cmd = BP_SEND_OBJECT_CONTENTS
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserObjectContents,#what=oWhat);
+         Send(self,@UserObjectContents,#what=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_SAY_TO
       {
-         iSay_type = Nth(client_msg,2);
          sStr_said = Nth(client_msg,3);
-         Send(self,@UserSay,#type=iSay_type,#string=sStr_said);
+
+         % don't send oversized chat strings
+         if (StringLength(sStr_said) > MAX_CHAT_LEN)
+         {
+            Debug("ALERT! ",Send(self,@GetTrueName),self," tried to "
+               "send an overly large chat message.");
+            return;
+         }
+
+         Send(self,@UserSay,#type=Nth(client_msg,2),#string=sStr_said);
 
          return;
       }
 
       if liClient_cmd = BP_SAY_GROUP
       {
-         lUsers  = Nth(client_msg,2);
          sStr_said = Nth(client_msg,3);
-         Send(self,@UserSayGroup,#users=lUsers,#string=sStr_said);
+
+         % don't send oversized chat strings
+         if (StringLength(sStr_said) > MAX_CHAT_LEN)
+         {
+            Debug("ALERT! ",Send(self,@GetTrueName),self," tried to "
+               "send an overly large chat message.");
+            return;
+         }
+
+         Send(self,@UserSayGroup,#users=Nth(client_msg,2),#string=sStr_said);
 
          return;
       }
 
       if liClient_cmd = BP_REQ_LOOK
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserLook,#what=oWhat);
+         Send(self,@UserLook,#what=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_SEND_MAIL
       {
-         lDest_mail = Nth(client_msg,2);
-         sStr_mailed = Nth(client_msg,3);
-         Send(self,@UserMail,#dest_list=lDest_mail,#string=sStr_mailed);
+         Send(self,@UserMail,#dest_list=Nth(client_msg,2),
+               #string=Nth(client_msg,3));
 
          return;
       }
@@ -1397,45 +1419,46 @@ messages:
          return;
       }
 
+      if liClient_cmd = BP_DELETE_NEWS
+      {
+         Send(self,@UserDeleteNews,#nid=Nth(client_msg,2),
+               #index=Nth(client_msg,3));
+
+         return;
+      }
+
       if liClient_cmd = BP_REQ_USE
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserUseItem,#what=oWhat);
+         Send(self,@UserUseItem,#what=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_UNUSE
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserUnuseItem,#what=oWhat);
+         Send(self,@UserUnuseItem,#what=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_ATTACK
       {
-         iAttack_type = Nth(client_msg,2);
-         oWhat = Nth(client_msg,3);
-         Send(self,@UserAttack,#type=iAttack_type,#what=oWhat);
+         Send(self,@UserAttack,#type=Nth(client_msg,2),#what=Nth(client_msg,3));
 
          return;
       }
 
       if liClient_cmd = BP_SEND_STATS
       {
-         iGroup = Nth(client_msg,2);
-         Send(self,@ToCliStats,#group=iGroup);
+         Send(self,@ToCliStats,#group=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_OFFER
       {
-         oWhat = Nth(client_msg,2);
-         lItems = Nth(client_msg,3);
-         Send(self,@UserOffer,#what=oWhat,#item_list=lItems,
-              #number_list=number_stuff);
+         Send(self,@UserOffer,#what=Nth(client_msg,2),
+               #item_list=Nth(client_msg,3),#number_list=number_stuff);
 
          return;
       }
@@ -1449,8 +1472,7 @@ messages:
 
       if liClient_cmd = BP_REQ_COUNTEROFFER
       {
-         lItems = Nth(client_msg,2);
-         Send(self,@UserCounterOffer,#item_list=lItems,
+         Send(self,@UserCounterOffer,#item_list=Nth(client_msg,2),
               #number_list=number_stuff);
 
          return;
@@ -1486,9 +1508,8 @@ messages:
          oWhat = Nth(client_msg,2);
          if IsClass(oWhat,&Monster)
          {
-            lItems = Nth(client_msg,3);
-            Send(self,@UserBuyItems,#what=oWhat,#item_list=lItems,
-               #number_list=number_stuff);
+            Send(self,@UserBuyItems,#what=oWhat,#item_list=Nth(client_msg,3),
+                  #number_list=number_stuff);
          }
 
          return;
@@ -1510,9 +1531,8 @@ messages:
          oWhat = Nth(client_msg,2);
          if IsClass(oWhat,&Monster)
          {
-            lItems = Nth(client_msg,3);
-            Send(self,@UserWithdrawalItems,#what=oWhat,#item_list=lItems,
-               #number_list=number_stuff);
+            Send(self,@UserWithdrawalItems,#what=oWhat,
+                  #item_list=Nth(client_msg,3),#number_list=number_stuff);
          }
 
          return;
@@ -1523,8 +1543,7 @@ messages:
          oWhat = Nth(client_msg,2);
          if IsClass(oWhat,&Monster)
          {
-            lItems = Nth(client_msg,3);
-            Send(self,@UserDeposit,#what=oWhat,#item_list=lItems,
+            Send(self,@UserDeposit,#what=oWhat,#item_list=Nth(client_msg,3),
                #number_list=number_stuff);
          }
 
@@ -1533,9 +1552,8 @@ messages:
 
       if liClient_cmd = BP_REQ_APPLY
       {
-         oWhat = Nth(client_msg,2);
-         oApply_on = Nth(client_msg,3);
-         Send(self,@UserApply,#what=oWhat,#apply_on=oApply_on);
+         Send(self,@UserApply,#what=Nth(client_msg,2),
+               #apply_on=Nth(client_msg,3));
 
          return;
       }
@@ -1556,44 +1574,38 @@ messages:
 
       if liClient_cmd = BP_REQ_CAST
       {
-         oWhat = Nth(client_msg,2);  % Spell type
-         lTargets = Nth(client_msg,3); % Targets of spell (if any)
-         Send(self,@UserCast,#oSpell=oWhat,#lTargets=lTargets);
+         Send(self,@UserCast,#oSpell=Nth(client_msg,2),
+               #lTargets=Nth(client_msg,3));
 
          return;
       }
 
       if liClient_cmd = BP_POST_ARTICLE
       {
-         iNid = Nth(client_msg,2);
-         sTitle = Nth(client_msg,3);
-         sBody = Nth(client_msg,4);
-         Send(self,@UserPost,#nid=iNid,#title=sTitle,#body=sBody);
+         Send(self,@UserPost,#nid=Nth(client_msg,2),#title=Nth(client_msg,3),
+               #body=Nth(client_msg,4));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_ARTICLES
       {
-         iNid = Nth(client_msg,2);
-         Send(self,@UserGetNewsTitles,#nid=iNid);
+         Send(self,@UserGetNewsTitles,#nid=Nth(client_msg,2));
 
          return;
       }
 
       if liClient_cmd = BP_REQ_ARTICLE
       {
-         iNid = Nth(client_msg,2);
-         iNum = Nth(client_msg,3);
-         Send(self,@UserGetNewsArticle,#nid=iNid,#num=iNum);
+         Send(self,@UserGetNewsArticle,#nid=Nth(client_msg,2),
+               #num=Nth(client_msg,3));
 
          return;
       }
 
       if liClient_cmd = BP_ACTION
       {
-         iNum = Nth(client_msg, 2);
-         Send(self,@UserAction,#action=iNum);
+         Send(self,@UserAction,#action=Nth(client_msg,2));
 
          return;
       }
@@ -1607,8 +1619,7 @@ messages:
 
       if liClient_cmd = BP_SAY_BLOCKED
       {
-         oWhat = Nth(client_msg,2);
-         Send(self,@UserBlockedSend,#what=oWhat);
+         Send(self,@UserBlockedSend,#what=Nth(client_msg,2));
 
          return;
       }
@@ -1645,9 +1656,9 @@ messages:
             return;
          }
 
-         oWhere = Send(oWhat,@GetOwner);
+         oRoom = Send(oWhat,@GetOwner);
          if Send(oWhat,@CanEditInscription)
-            AND ((oWhere = self) or (oWhere = poOwner))
+            AND ((oRoom = self) or (oRoom = poOwner))
          {
             sBody = Send(SYS,@CleanseString,#string=sBody);
             Send(oWhat,@SetInscription,#string=sBody);
@@ -1754,7 +1765,6 @@ messages:
       piLast_Restart_time = getTime();
       piLastLoginTime = 0;
       psUrl = $;
-      psHonor = $;
       plHonor = $;
       piLogoffPenaltyCount = -1;
 
@@ -2701,7 +2711,7 @@ messages:
       else if piSave_Room >= RID_NEWB_BASE AND piSave_Room <= RID_NEWB_MAX
       {
          Debug("Player died while offline, but in newbie area!  (how did "
-                "a necromancer get there?):",Send(self,@GetName));
+                "a necromancer get there?):",Send(self,@GetTrueName));
          piSave_Room = RID_NEWB1;
          oRoom = Send(SYS,@FindRoomByNum,#num=RID_NEWB1);
          piSave_Row = Send(oRoom,@GetTeleportRow);
@@ -2709,6 +2719,7 @@ messages:
       }
       else
       {
+         Debug("Player died while offline: ",Send(self,@GetTrueName));
          piSave_Room = RID_UNDERWORLD;
          piSave_Row = 24;
          piSave_Col = 10;
@@ -2751,7 +2762,7 @@ messages:
       }
 
       iDrawingFlags = Send(what,@GetDrawingEffects);
-      iFlags = Send(what,@GetObjectFlags);
+      iFlags = Send(what,@GetObjectFlags,#what=self);
       % If we can see the invisible object, remove its invis drawing flag
       % and set it to flash instead (in object flags).
       if (piFlags2 & PFLAG2_DETECT_INVIS)
@@ -3494,39 +3505,45 @@ messages:
 
    ToCliSpells()
    {
-      local i,oSpell;
+      local i, oSpell;
 
-      AddPacket(1,BP_SPELLS, 2,Length(plSpells));
-
-      foreach i in plSpells
+      if pbLogged_on
       {
-         oSpell = Send(SYS,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,
-                                                     #compound=i));
-         Send(self,@ToCliObject,#what=oSpell);
-         AddPacket(1,Send(oSpell,@GetNumSpellTargets));
-         AddPacket(1,Send(oSpell,@GetSchool));
-      }
+         AddPacket(1,BP_SPELLS, 2,Length(plSpells));
 
-      SendPacket(poSession);
-      Send(self,@ToCliStats,#group=3);
+         foreach i in plSpells
+         {
+            oSpell = Send(SYS,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,
+                                                        #compound=i));
+            Send(self,@ToCliObject,#what=oSpell);
+            AddPacket(1,Send(oSpell,@GetNumSpellTargets));
+            AddPacket(1,Send(oSpell,@GetSchool));
+         }
+
+         SendPacket(poSession);
+         Send(self,@ToCliStats,#group=3);
+      }
 
       return;
    }
 
    ToCliSkills()
    {
-      local i,oSkill;
+      local i, oSkill;
 
-      AddPacket(1, BP_SKILLS,2,Length(plSkills));
-      foreach i in plSkills
+      if pbLogged_on
       {
-         oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@DecodeSkillNum,
-                                                     #compound=i));
-         Send(self,@ToCliObject,#what=oSkill);
-      }
+         AddPacket(1, BP_SKILLS,2,Length(plSkills));
+         foreach i in plSkills
+         {
+            oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@DecodeSkillNum,
+                                                        #compound=i));
+            Send(self,@ToCliObject,#what=oSkill);
+         }
 
-      SendPacket(poSession);
-      Send(self,@ToCliStats,#group=4);
+         SendPacket(poSession);
+         Send(self,@ToCliStats,#group=4);
+      }
 
       return;
    }
@@ -4857,13 +4874,17 @@ messages:
 
    UserObjectContents(what = $)
    {
-      local i,iObjs,oThing,rName,rIcon,lHolding1,lHolding2;
+      local i, iObjs, oThing, lHolding1, lHolding2;
 
-      if NOT IsClass(what,&Holder)
-         AND NOT IsClass(what,&ReagentBag)
-         OR (IsClass(what,&Player)
+      if (NOT IsClass(what,&Holder)
+         AND NOT IsClass(what,&ReagentBag))
+         OR (IsClass(what,&User)
              AND NOT (what = self OR IsClass(self,&Admin)))
+         OR IsClass(what,&Monster)
       {
+         Debug("ALERT!!  User ",self,Send(self,@GetTrueName),"trying to look ",
+               "inside ",what,Send(what,@GetTrueName));
+
          Send(self,@MsgSendUser,#message_rsc=user_err_get_contents,
               #parm1=Send(what,@GetDef),#parm2=Send(what,@GetName));
 
@@ -4871,20 +4892,22 @@ messages:
       }
 
       % Make sure object is in the same room as player
-      if NOT Send(self, @IsInSameRoom, #what = what)
+      if NOT Send(self,@IsInSameRoom,#what=what)
       {
-         Debug("User ", self, vrName, "tried to look at object in another room");
+         Debug("User ",self,vrName," tried to look at object in another room");
+
          return;
       }
 
       if IsClass(what,&StorageBox)
          AND NOT Send(poOwner,@LineOfSight,#obj1=self,#obj2=what)
       {
-         Debug("User ", self, vrName, "tried to look at storebox item they could not see!");
+         Debug("User ",self,vrName," tried to look at storebox item they could not see!");
+
          return;
       }
 
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
       {
          lHolding1 = Send(what,@GetPlayerUsing);
          lHolding2 = $;
@@ -5945,6 +5968,41 @@ messages:
       return;
    }
 
+   UserDeleteNews(nid = $, index = $)
+   {
+      local oNews;
+
+      if (index = $
+         OR nid = $)
+      {
+         Debug("UserDeleteNews got $ parameter! Index is ",index,
+               " NID is ",nid);
+
+         return;
+      }
+
+      oNews = Send(SYS,@FindNewsByNum,#num=nid);
+      if (oNews = $)
+      {
+         Debug("UserDeleteNews couldn't find news globe ",nid);
+
+         return;
+      }
+
+      if (Send(oNews,@RemovePost,#who=self,#index=index))
+      {
+         GodLog(Send(self,@GetTrueName)," deleted post ",index,
+               " from newsglobe ",Send(oNews,@GetName));
+      }
+      else if (IsClass(self,&DM))
+      {
+         Debug("Failed to remove post index ",index," from newsglobe ",
+               Send(oNews,@GetName));
+      }
+
+      return;
+   }
+
    UserUseItem(what = $)
    {
       % check if valid, if item, if holding
@@ -6350,7 +6408,7 @@ messages:
          }
       }
 
-      if not Send(what,@ReqOffer,#what=self,#item_list=plOffer_items)
+      if NOT Send(what,@ReqOffer,#what=self,#item_list=plOffer_items)
       {
          Send(self,@CleanupCancelOffer);
 
@@ -6679,7 +6737,7 @@ messages:
 
       plOffer_items = $;
       lNumbers = number_list;
-      lObjects = $;
+
       foreach i in item_list
       {
          if lObjects <> $
@@ -7477,9 +7535,8 @@ messages:
    NewOwner(what = $)
    "A user has a new owner when they enter a new room."
    {
-      local old;
+      local i, oOldRoom;
 
-      old = $;
       Send(self,@CancelIfOffer);
 
       % Count right now as the last time we moved.
@@ -7488,21 +7545,21 @@ messages:
       % This is here because it has to be done before poOwner is changed.
 
       % If newbie is entering a kill zone, warn him.  If he is leaving
-      %  one, then tell him he's safe again.  Ignore during chaos night.
+      % one, then tell him he's safe again.  Ignore during chaos night.
 
       if NOT Send(SYS,@GetChaosNight)
          AND NOT (piFlags & PFLAG_PKILL_ENABLE)
       {
          if Send(what,@CheckRoomFlag,#flag=ROOM_KILL_ZONE)
-            AND (poOwner = $
-                 OR NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_KILL_ZONE))
          {
-            Send(self,@MsgSendUser,#message_rsc=user_kill_zone);
+            if (poOwner = $
+               OR NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_KILL_ZONE))
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_kill_zone);
+            }
          }
-
-         if NOT Send(what,@CheckRoomFlag,#flag=ROOM_KILL_ZONE)
-            AND (poOwner <> $
-                 AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_KILL_ZONE))
+         else if (poOwner <> $
+            AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_KILL_ZONE))
          {
             Send(self,@MsgSendUser,#message_rsc=user_angel_rejoins);
          }
@@ -7512,16 +7569,17 @@ messages:
       % execute this stuff before Sending new info to client
 
       if Send(what,@GetRoomNum) = RID_UNDERWORLD
-         AND Send(self,@GetDeathRiftProtection) = TRUE
+         AND (piflags & PFLAG_DEATH_RIFTING)
       {
-         % Deliverance people who somehow got to the Underworld already protected
-         % Usually it's because they logged off in the Underworld while Death Rifting
+         % Deliverance people who somehow got to the Underworld
+         % already protected. Usually it's because they logged off
+         % in the Underworld while Death Rifting.
          Post(self,@AdminGoToSafety);
       }
 
       if poOwner <> $
       {
-        old = poOwner;
+        oOldRoom = poOwner;
         Send(poOwner,@LeaveHold,#what=self);
       }
 
@@ -7529,19 +7587,36 @@ messages:
 
       if poOwner <> $
       {
-         if old <> $
+         if oOldRoom <> $
          {
-            Send(self,@CheckLeavingNewbieOrGuest,#leaving=old);
-            Send(self,@CheckTokenInNewRoom,#what=old);
+            Send(self,@CheckLeavingNewbieOrGuest,#leaving=oOldRoom);
+            Send(self,@CheckTokenInNewRoom,#what=oOldRoom);
          }
 
          % If room is no combat and safe logoff, record it as the
          % player's last safe location
          if Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
-            AND Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
          {
-            piLastSafeRoom = Send(poOwner,@GetRoomNum);
-            Send(self,@RechargeAllRods);
+            if Send(poOwner,@CheckRoomFlag,#flag=ROOM_SAFELOGOFF)
+            {
+               piLastSafeRoom = Send(poOwner,@GetRoomNum);
+
+               % Recharge user's rods.
+               Send(self,@RechargeAllRods);
+            }
+
+            % If this player has created any evil twins, delete them.
+            if plEvilTwins <> $
+            {
+               foreach i in plEvilTwins
+               {
+                  if IsClass(i,&EvilTwin)
+                  {
+                     Send(i,@Delete);
+                  }
+               }
+               plEvilTwins = $;
+            }
          }
 
          piRow = First(Send(poOwner,@GetRoomPos,#what=self));
@@ -7557,7 +7632,7 @@ messages:
       % This is intended to protect players from wall spells stacked on
       % entrances. It will clear out a small space when they enter the zone,
       % so that they don't appear in the middle of a wall spell.
-      if old <> $
+      if oOldRoom <> $
          AND (piFlags & PFLAG_PKILL_ENABLE)
          AND Send(poOwner,@AllowGuildAttack,#what=self)
          AND NOT IsClass(self,&DM)
@@ -7568,9 +7643,10 @@ messages:
       % This removes Death Rift's protection when the user enters any
       % non-Underworld room
       if Send(poOwner,@GetRoomNum) <> RID_UNDERWORLD
-         AND Send(self,@GetDeathRiftProtection) = TRUE
+         AND (piflags & PFLAG_DEATH_RIFTING)
       {
          Send(self,@SetDeathRiftProtection,#value=FALSE);
+         piLastSafeRoom = Send(self,@GetHomeRoom);
       }
 
       propagate;
@@ -9064,10 +9140,13 @@ messages:
             }
             else
             {
-               % If the user is in a different region from their last safe room, use region default homeroom instead.
-               % This can happen if a player goes to a new region but never stops in at a safe room.
+               % If the user is in a different region from their last
+               % safe room, use region default homeroom instead.
+               % This can happen if a player goes to a new region but
+               % never stops in at a safe room.
 
-               oTargetRoom = Send(SYS,@FindRoomByNum,#num=Send(oCurrentRoom,@GetCurrentRegionHomeroom));
+               oTargetRoom = Send(SYS,@FindRoomByNum,
+                                 #num=Send(oCurrentRoom,@GetCurrentRegionHomeroom));
                Send(oTargetRoom,@Teleport,#what=self);
                Send(self,@MsgSendUser,#message_rsc=user_goto_safety);
             }

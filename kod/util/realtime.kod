@@ -432,11 +432,37 @@ messages:
       return;
    }
 
+   DeleteCallback(what = $)
+   "Deletes all callbacks matching the given object. Returns number deleted."
+   {
+      local i, iDeleted;
+
+      iDeleted = 0;
+
+      foreach i in plCallbacks
+      {
+         if (Nth(i,2) = what)
+         {
+            plCallbacks = DelListElem(plCallbacks,i);
+            ++iDeleted;
+         }
+      }
+
+      return iDeleted;
+   }
+
    NewMinute()
    {
-      local i, iYear, iMonth, iDay, iHour, iMinute;
+      local lCallbackTime, i, iYear, iMonth, iDay, iHour, iMinute;
 
       Send(EVENTENGINE_OBJECT,@NewMinute);
+
+      iMinute = Send(self,@GetMinute);
+
+      if (iMinute = 0)
+      {
+         Send(self,@NewHour);
+      }
 
       if plCallbacks <> $
       {
@@ -444,16 +470,17 @@ messages:
          iMonth = Send(self,@GetMonth);
          iDay = Send(self,@GetDay);
          iHour = Send(self,@GetHour);
-         iMinute = Send(self,@GetMinute);
 
          foreach i in plCallbacks
          {
-            if Nth(Nth(i,1),3) <= iYear
-               AND Nth(Nth(i,1),1) <= iMonth
-               AND Nth(Nth(i,1),2) <= iDay
-               AND Nth(Nth(i,1),4) <= iHour
+            lCallbackTime = First(i);
+
+            if Nth(lCallbackTime,3) <= iYear
+               AND First(lCallbackTime) <= iMonth
+               AND Nth(lCallbackTime,2) <= iDay
+               AND Nth(lCallbackTime,4) <= iHour
             {
-               if Nth(Nth(i,1),5) = iMinute
+               if Nth(lCallbackTime,5) = iMinute
                {
                      % foreach creates a copy of the list so i exists even if we
                      % delete it from the original list
@@ -464,41 +491,63 @@ messages:
                         #parm7=Nth(i,10),#parm8=Nth(i,11),#parm9=Nth(i,12),
                         #parm10=Nth(i,13),#parm11=Nth(i,14),#parm12=Nth(i,15),
                         #parm13=Nth(i,16),#parm14=Nth(i,17),#parm15=Nth(i,18));
-                }
-               else
+               }
+               else if Nth(lCallbackTime,5) < iMinute
                {
-                  if Nth(Nth(i,1),5) < iMinute
-                  {
-                     Debug("Deleting expired event that would never have started! (event time is less than current time)");
-                     plCallbacks = DelListElem(plCallbacks,i);
-                  }
+                  Debug("Deleting expired event that would never have started! (event time is less than current time)");
+                  plCallbacks = DelListElem(plCallbacks,i);
                }
             }
          }
       }
-   
+
       return;
    }
-   
+
    NewHour()
    {
-      Send(EVENTENGINE_OBJECT,@NewHour);
+      local iHour;
+
       piTimeZoneOffset = GetTimeZoneOffset();
+
+      Send(EVENTENGINE_OBJECT,@NewHour);
+
+      iHour = Send(self,@GetHour);
+      if (iHour = 0)
+      {
+         Send(self,@NewDay);
+      }
 
       return;
    }
 
    NewDay()
    {
+      local iDay;
+
       Send(EVENTENGINE_OBJECT,@NewDay);
+
+      iDay = Send(self,@GetDay);
+      if (iDay = 1)
+      {
+         Send(self,@NewMonth);
+      }
 
       return;
    }
 
    NewMonth()
    {
+      local iMonth;
+
       Send(EVENTENGINE_OBJECT,@NewMonth);
 
+      iMonth = Send(self,@GetMonth);
+      if (iMonth = 1)
+      {
+         Send(self,@NewYear);
+      }
+   
       return;
    }
 
@@ -508,15 +557,16 @@ messages:
 
       return;
    }
-   
+
    GetTimeZoneOffset_K()
    {
       return GetTimeZoneOffset();
    }
-   
+
    SetTimeZoneOffset()
    {
       piTimeZoneOffset = GetTimeZoneOffset();
+
       return;
    }
 
@@ -524,10 +574,10 @@ messages:
    {
       return GetTime();
    }
-   
+
    GetYear()
    {
-      local iTime,iYear;
+      local iTime, iYear;
 
       iTime = GetTime() - piTimeZoneOffset;
       iYear=(iTime / 31536000) + OFFSET_YEAR;
@@ -537,17 +587,21 @@ messages:
 
    GetYearDay()
    {
-      local iTime,iDay;
+      local iTime;
 
       iTime = GetTime() - piTimeZoneOffset;
-      iDay = (iTime - 31536000) / 86400 + OFFSET_DAY;
 
-      return iDay;
+      if (Send(self,@IsLeapYear,#year=Send(self,@GetYear)))
+      {
+         return (iTime / DAY MOD 366) + OFFSET_DAY;
+      }
+
+      return (iTime / DAY MOD 365) + OFFSET_DAY;
    }
 
    GetMonth()
    {
-      local i,iMonthDays,iMonth,iYearDays;
+      local i, iMonthDays, iMonth, iYearDays;
 
       iYearDays = Send(self,@GetYearDay);
 
@@ -588,7 +642,7 @@ messages:
 
    GetDay()
    {
-      local i,iTime,iDay,iMonthDays;
+      local i, iDay, iMonthDays;
 
       if Send(self,@IsLeapYear,#iYear=Send(self,@GetYear))
       {
@@ -599,8 +653,7 @@ messages:
          iMonthDays = [31,28,31,30,31,30,31,31,30,31,30,31];
       }
 
-      iTime = GetTime() - piTimeZoneOffset;
-      iDay = (iTime - 31536000) / 86400 + OFFSET_DAY;
+      iDay = Send(self,@GetYearDay);
 
       foreach i in iMonthDays
       {
@@ -615,7 +668,7 @@ messages:
 
    GetHour()
    {
-      local iTime,iHour;
+      local iTime, iHour;
 
       iTime = GetTime() - piTimeZoneOffset;
       iHour = (iTime MOD 86400) / 3600;
@@ -627,10 +680,10 @@ messages:
 
       return iHour;
    }
-   
+
    GetMinute()
    {
-      local iTime,iMinute;
+      local iTime, iMinute;
 
       iTime = GetTime() - piTimeZoneOffset;
       iMinute = (iTime MOD 3600) / 60;

@@ -878,14 +878,13 @@ param_type make_parameter(id_type id, expr_type e)
       break;
 
    case I_UNDEFINED:   /* New parameter # */
-      id->ownernum = st.curmessage;
+      id->ownernum = st.curmessage; // Invalid, but replaced later.
       add_identifier(id, I_PARAMETER);
       break;
 
    case I_PARAMETER:
-      /* Legal only if it hasn't yet appeared in this message */
-      if (id->ownernum == st.curmessage && id->source == COMPILE)
-	 action_error("Parameter %s appears twice", id->name);
+      // Can't check for duplicates here, current message ID is invalid
+      // due to parameters being parsed before message name.
       break;
 
    default:            /* Other types indicate name already used */
@@ -1610,14 +1609,15 @@ message_header_type make_message_header(id_type id, list_type args)
    }
 
    s->message_id = id;
-   /* Sort parameters in increasing id # order */
+   /* Sort parameters in increasing id # order.
+      SortParameterList will throw action_error on duplicate parameters. */
    s->params = SortParameterList(args);
 
    /* Add parameters as handler's local variables--this must be done AFTER sorting */
    for (l = s->params; l != NULL; l = l->next)
    {
       param = (param_type) l->data;
-      
+      param->lhs->ownernum = id->idnum;
       /* Make a copy of the id for the local table */
       temp_id = duplicate_id(param->lhs);
       temp_id->type = I_LOCAL;

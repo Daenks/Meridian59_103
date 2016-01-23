@@ -7,7 +7,7 @@
 //
 // Meridian is a registered trademark.
 
-#include "critical_section.h"
+#include "linux-critical_section.h"
 
 void InitializeCriticalSection(CRITICAL_SECTION *m)
 {
@@ -27,4 +27,11 @@ void LeaveCriticalSection(CRITICAL_SECTION *m)
 void DeleteCriticalSection(CRITICAL_SECTION *m)
 {
    pthread_mutex_destroy(m);
+}
+
+bool TryEnterCriticalSection(CRITICAL_SECTION *m)
+{
+   if (pthread_mutex_trylock(m) == 0)
+      return true;
+   return false;
 }

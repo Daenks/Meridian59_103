@@ -59,6 +59,11 @@ messages:
       return;
    }
 
+   Recreate()
+   {
+      return;
+   }
+
    IsUnique()
    {
       return vbUnique;
@@ -110,6 +115,21 @@ messages:
    }
 
    NewYear()
+   {
+      return;
+   }
+
+   NewGameHour()
+   {
+      return;
+   }
+
+   NewGameDay()
+   {
+      return;
+   }
+
+   NewGameYear()
    {
       return;
    }

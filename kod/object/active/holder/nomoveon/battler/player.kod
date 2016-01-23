@@ -1,5 +1,4 @@
 % Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
-% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
 % All rights reserved.
 %
 % This software is distributed under a license that is described in
@@ -10,7 +9,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Player is Battler
-   
+
 % Don't instantiate this class--use things derived from it
 
 constants:
@@ -1033,7 +1032,6 @@ properties:
 
    ptAttackTimer = $
 
-   psHonor = $
    plHonor = $
 
    piMonsterChasers = 0
@@ -1079,7 +1077,6 @@ properties:
    piBound_angle = ANGLE_SOUTH
 
    % Is the player currently using a Death Rift spell?
-   pbDeath_rift = FALSE
    ptDeathRiftTimer = $
 
    % This list keeps track of selfcast buffs for passive improvement.
@@ -4172,7 +4169,7 @@ messages:
    }
 
    AllowPlayerAttack(victim=$,stroke_obj=$,use_weapon=$,report=TRUE,
-                     actual=TRUE,minion=FALSE)
+                     actual=TRUE,minion=FALSE,oMinionRoom=$)
    "Will not let a person attack someone who isn't pkill_enabled."
    "Will not let a person who isn't pkill_enabled attack another person."
    {
@@ -4186,7 +4183,15 @@ messages:
       if victim <> $
          AND Send(victim,@GetOwner) <> poOwner
       {
-         oRoom = Send(victim,@GetOwner);
+         if (minion
+            AND oMinionRoom <> $)
+         {
+            oRoom = oMinionRoom;
+         }
+         else
+         {
+            oRoom = Send(victim,@GetOwner);
+         }
       }
 
       % No attacking logged out players under any circumstances
@@ -4260,7 +4265,7 @@ messages:
       }
 
       % Check for guildmates and allies
-      if IsClass(victim,&Player)
+      if IsClass(victim,&User)
          AND victim <> self
       {
          oVictimGuild = Send(victim,@GetGuild);
@@ -4291,7 +4296,7 @@ messages:
       }
 
       % Check for temporary safety flag.
-      if IsClass(victim,&Player)
+      if IsClass(victim,&User)
          AND ((piFlags & PFLAG_TEMPSAFE)
             OR Send(victim,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE))
       {
@@ -4322,7 +4327,7 @@ messages:
          return FALSE;
       }
 
-      if IsClass(victim,&Player)
+      if IsClass(victim,&User)
          AND Send(victim,@IsInCannotInteractMode)
       {
          return FALSE;
@@ -4361,7 +4366,8 @@ messages:
                if NOT Send(self,@AllowPlayerAttack,
                            #victim=Send(victim,@GetMaster),
                            #use_weapon=use_weapon,#stroke_obj=stroke_obj,
-                           #report=report,#actual=actual,#minion=TRUE)
+                           #report=report,#actual=actual,#minion=TRUE,
+                           #oMinionRoom=oRoom)
                {
                   return FALSE;
                }
@@ -4989,50 +4995,20 @@ messages:
             OR (IsClass(stroke_obj,&Spell)
                AND Send(stroke_obj,@GetNumSpellTargets) = 1))
       {
-         iAngle = Send(self,@GetAngle);
-         iRow = piRow;
-         iCol = piCol;
-         iTargetRow = Send(oTarget,@GetRow);
-         iTargetCol = Send(oTarget,@GetCol);
-
-         % What this does:
-         % Basically, it finds your direction and makes sure you aren't trying to target
-         % something behind you. "Behind you" is defined as behind the line defined
-         % by the cardinal directions that are the closest to being perpendicular to the
-         % player's direction vector. For example, if you're facing mostly east, then
-         % the cardinal direction direction line runs north/south; in essense, anything
-         % that is further west than you is "behind" you. The more interesting cases
-         % are when the player is facing one of the corner directions. We calculate
-         % the equation of the line using the point-slope formula and determine which
-         % side of the line the target is.
-         % Equation of the SW-NE line: iTargetRow - iRow = iCol - iTargetRow
-         % Equation of the SE-NW line: iTargetRow - iRow = iTargetCol - iCol
          if iDist > 1
-            AND (((iAngle > ANGLE_ENE OR iAngle <= ANGLE_ESE)
-                  AND iTargetCol < iCol)
-               OR (iAngle > ANGLE_ESE AND iAngle <= ANGLE_SSE
-                  AND (iTargetRow - iRow) < (iCol - iTargetCol))
-               OR (iAngle > ANGLE_SSE AND iAngle <= ANGLE_SSW
-                  AND iTargetRow < iRow)
-               OR (iAngle > ANGLE_SSW AND iAngle <= ANGLE_WSW
-                  AND (iTargetRow - iRow) < (iTargetCol - iCol))
-               OR (iAngle > ANGLE_WSW AND iAngle <= ANGLE_WNW
-                  AND iTargetCol > iCol)
-               OR (iAngle > ANGLE_WNW AND iAngle <= ANGLE_NNW
-                  AND (iTargetRow - iRow) > (iCol - iTargetCol))
-               OR (iAngle > ANGLE_NNW AND iAngle <= ANGLE_NNE
-                  AND iTargetRow > iRow)
-               OR (iAngle > ANGLE_NNE AND iAngle <= ANGLE_ENE
-                  AND (iTargetRow - iRow) > (iTargetCol - iCol)))
+            AND NOT LineOfSightView(Send(self,@GetAngle), piRow, piCol, piFine_row,
+                        piFine_col, Send(oTarget,@GetRow), Send(oTarget,@GetCol),
+                        Send(oTarget,@GetFineRow), Send(oTarget,@GetFineCol))
          {
             if iDist > 2
                AND IsClass(oFinalTarget,&Player)
                AND Send(self,@CheckLog)
             {
                Debug("ALERT! ",Send(self,@GetTrueName),self," at "
-                     "[",iRow,iCol,"] and angle ",iAngle," tried to hit ",
-                     Send(oFinalTarget,@GetTrueName),oFinalTarget," at "
-                     "[",iTargetRow,iTargetCol,"] that was behind them.");
+                     "[",piRow,piCol,"] and angle ",Send(self,@GetAngle),
+                     " tried to hit ", Send(oFinalTarget,@GetTrueName),
+                     oFinalTarget," at [",Send(oTarget,@GetRow),
+                     Send(oTarget,@GetCol),"] that was behind them.");
             }
 
             Send(self,@MsgSendUser,#message_rsc=player_attack_not_in_view);
@@ -9631,7 +9607,7 @@ messages:
          piFlags = piFlags & ~PFLAG_KILLED_BY_PLAYER;
       }
 
-      if Send(self,@GetDeathRiftProtection)
+      if (piflags & PFLAG_DEATH_RIFTING)
       {
          % Leaving the Underworld while protected, no penalties. Protection
          % is removed in NewOwner to allow them to log off without penalties.
@@ -12682,7 +12658,8 @@ messages:
    {
       local oSoldierShield;
 
-      if faction < FACTION_NEUTRAL OR faction > FACTION_MAX
+      if faction < FACTION_NEUTRAL
+         OR faction > FACTION_NORMAL_MAX
       {
          return FALSE;
       }
@@ -12950,7 +12927,8 @@ messages:
          return FALSE;
       }
 
-      if new_faction <= FACTION_NEUTRAL OR new_faction > FACTION_MAX
+      if new_faction <= FACTION_NEUTRAL
+         OR new_faction > FACTION_NORMAL_MAX
       {
          return FALSE;
       }
@@ -13418,7 +13396,7 @@ messages:
 
       foreach i in Send(SYS,@GetSpells)
       {
-         if not IsClass(i,&Spell)
+         if NOT IsClass(i,&Spell)
          {
             continue;
          }
@@ -13428,7 +13406,7 @@ messages:
             if iMaxLevel >= Send(i,@Getlevel)
             {
                Send(self,@AddSpell,#num=Send(i,@GetSpellNum),
-                     #iability=iAbility);
+                     #iability=iAbility,#dontSend=TRUE);
             }
          }
       }
@@ -13445,6 +13423,8 @@ messages:
          % Need -10 Karma per spell level (-10 for fudge).
          piKarma = level * -1000;
       }
+      Send(self,@ToCliSpells);
+      Send(self,@DrawKarma);
 
       return TRUE;
    }
@@ -13499,7 +13479,7 @@ messages:
 
       foreach i in Send(SYS,@GetSkills)
       {
-         if not IsClass(i,&Skill)
+         if NOT IsClass(i,&Skill)
          {
             continue;
          }
@@ -13508,10 +13488,13 @@ messages:
          {
             if iMaxLevel >= Send(i,@Getlevel)
             {
-               Send(self,@AddSkill,#num=Send(i,@GetSkillNum),#iability=iAbility);
+               Send(self,@AddSkill,#num=Send(i,@GetSkillNum),
+                     #iability=iAbility,#dontSend=TRUE);
             }
          }
       }
+
+      Send(self,@ToCliSkills);
 
       return TRUE;
    }
@@ -14371,7 +14354,7 @@ messages:
             #new_row=piBound_row,#new_col=piBound_col,
             #fine_row=piBound_fine_row,#fine_col=piBound_fine_col,
             #new_angle=piBound_angle, #max_distance=3);
-      
+
       return;
    }
 
@@ -14402,33 +14385,29 @@ messages:
 
    SetDeathRiftProtection(value=FALSE)
    {
-      if value=TRUE
-         AND poOwner <> $
-         AND Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+      if value
       {
-         % Only allow Death Rift Protection for those already
-         % logged on and in the Underworld
-         pbDeath_rift = TRUE;
+         if poOwner <> $
+            AND Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
+         {
+            % Only allow Death Rift Protection for those already
+            % logged on and in the Underworld
+            piFlags = piflags | PFLAG_DEATH_RIFTING;
 
-         return;
+            return;
+         }
       }
-
-      if value=FALSE
+      else
       {
          if ptDeathRiftTimer <> $
          {
             DeleteTimer(ptDeathRiftTimer);
             ptDeathRiftTimer = $;
          }
-         pbDeath_rift = FALSE;
+         piFlags = piflags & ~PFLAG_DEATH_RIFTING;
       }
 
       return;
-   }
-
-   GetDeathRiftProtection()
-   {
-      return pbDeath_rift;
    }
 
    StartDeathRiftTimer()
@@ -14446,7 +14425,7 @@ messages:
 
       if poOwner <> $
          AND Send(poOwner,@GetRoomNum) = RID_UNDERWORLD
-         AND Send(self,@GetDeathRiftProtection) = TRUE
+         AND (piflags & PFLAG_DEATH_RIFTING)
       {
          Send(self,@AdminGoToSafety);
 

@@ -6,7 +6,7 @@
 //
 // Meridian is a registered trademark.
 /*
-* interface.c
+* interface_windows.c
 *
 
   This module maintains the dialog box interface to the server.  The

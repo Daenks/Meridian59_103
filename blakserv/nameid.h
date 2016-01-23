@@ -27,7 +27,7 @@ void ResetNameID(void);
 void CreateNameID(char *parm_name,int parm_id);
 nameid_node * GetNameIDNode(int id);
 int GetIDByName(const char *name);
-char * GetNameByID(int id);
+char* GetNameByID(int id);
 int GetMaxNameID(void);
 void ForEachNameID(void(*callback_func)(nameid_node *n));
 

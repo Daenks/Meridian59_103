@@ -16,8 +16,10 @@
 void InitAsyncConnections(void);
 void ExitAsyncConnections(void);
 void AsyncSocketStart(void);
-void AsyncSocketAccept(SOCKET sock,int event,int error,int connection_type);
 void AsyncNameLookup(HANDLE hLookup,int error);
-void AsyncSocketSelect(SOCKET sock,int event,int error);
+
+void AsyncSocketClose(SOCKET sock);
+void AsyncSocketWrite(SOCKET sock);
+void AsyncSocketRead(SOCKET sock);
 
 #endif

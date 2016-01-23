@@ -237,18 +237,94 @@ messages:
       return;
    }
 
-   GetQuestTemplateObject(index=$)
-   "Returns the QuestTemplate object for the given quest template index."
+   Jumpstart()
+   "A quick and dirty way to get things running again."
    {
-      local lQT;
+      Send(self,@Recreate);
+      Send(self,@RecreateQuestNodes);
 
-      lQT = GetListNode(plQuestTemplates, QT_QST_ID, index);
-      if lQT <> $
+      return;
+   }
+
+#region Delete/Disable
+
+  /**
+   * Suspends the QuestEngine.
+   *
+   * Sets piActive to 0 or 1 based on parameter.
+   *
+   * @param resume The state QuestEngine will be put into
+   *   (TRUE = active, FALSE = suspended).
+   *
+   * @return Returns $.
+   */
+   Suspend(resume=0)
+   "Suspends scheduling of quests and processing of deadlines.  "
+   "Call with resume <> 0 to resume scheduling."
+   {
+      if resume = 0
       {
-         return Nth(lQT,QT_QUEST_OBJECT);
+         Debug("Quest scheduling suspended.");
+         piActive = 0;
+      }
+      else
+      {
+         Debug("Quest scheduling resumed.");
+         piActive = 1;
       }
 
-      return $;
+      return;
+   }
+
+  /**
+   * Deletes active quests.
+   *
+   * DeleteActiveQuests puts QuestEngine into 'suspend' mode, then
+   * cancels all active quests followed by reactivating QuestEngine.
+   *
+   * @return Returns $.
+   */
+   DeleteActiveQuests()
+   "Deletes all active quests."
+   {
+      local iQT, oQuest, iStatus, lOcc, oNPC;
+
+      iStatus = piActive;
+      if iStatus
+      {
+         Send(self,@Suspend);
+      }
+
+      foreach iQT in plQuestTemplates
+      {
+         foreach oQuest in Nth(iQT,QT_ACTIVE_QUESTS)
+         {
+            Send(oQuest,@Cancel,#bRecreate=TRUE);
+         }
+      }
+
+      if iStatus
+      {
+         Send(self,@Suspend,#resume=1);
+      }
+
+      return;
+   }
+
+   ClearAllQuests()
+   "This cancels all active quests, and strips the quest templates so NPC's "
+   "can be rebuilt. It is called by RecreateAll, prior to rebuilding the "
+   "templates with Recreate(#all=1)"
+   {
+      Send(self,@DeleteActiveQuests);
+      Send(self,@Suspend);
+
+      plQuestTemplates = $;
+      plDefaultNPCList = $;
+      plQuestNodeTemplates = $;
+      plQuestNodesAwaitingMonsterDeath = $;
+
+      return;
    }
 
    Delete()
@@ -266,6 +342,10 @@ messages:
 
       propagate;
    }
+
+#endregion
+
+#region Recreate
 
    Recreate()
    "Does not start timer. After this call, call RecreateQuestNodes "
@@ -632,6 +712,10 @@ messages:
 
       return;
    }
+
+#endregion Recreate
+
+#region QuestNodeTemplate
 
    AddQuestNodeTemplate(NPC_modifier = $, questnode_type = $, cargolist = $,
                         monsterlist = $, prizelist = $, penaltylist = $,
@@ -1227,6 +1311,10 @@ messages:
       return 1;
    }
 
+#endregion QuestNodeTemplate
+
+#region QuestTemplate
+
    AddQuestTemplate(num_players = $, quest_type = $, player_restrict = $,
                     player_restrict2 = $, nodes = $, max_active = $, 
                     schedule_pct = $, quest_index = $, quest_object = $)
@@ -1353,6 +1441,20 @@ messages:
       }
 
       return lQT;
+   }
+
+   GetQuestTemplateObject(index=$)
+   "Returns the QuestTemplate object for the given quest template index."
+   {
+      local lQT;
+
+      lQT = GetListNode(plQuestTemplates, QT_QST_ID, index);
+      if lQT <> $
+      {
+         return Nth(lQT,QT_QUEST_OBJECT);
+      }
+
+      return $;
    }
 
    SetQuestNumPlayers(index = 0, new_num = $)
@@ -1617,10 +1719,9 @@ messages:
       return Nth(Send(self,@GetQuestTemplate,#index=index), QT_PLAYER_RESTRICT2);
    }
 
-   GetDebugStatus()
-   {
-      return piDebug;
-   }
+#endregion QuestTemplate
+
+#region Quest monster/chess move
 
    GetRandomChessMove()
    "Return a string containing a random legal chess move."
@@ -1712,6 +1813,10 @@ messages:
 
       return;
    }
+
+#endregion
+
+#region Quest Timer
 
    ManualSetoffQuestTimer()
    {
@@ -1832,65 +1937,13 @@ messages:
       return;
    }
 
-   Suspend(resume=0)
-   "Suspends scheduling of quests and processing of deadlines.  "
-   "Call with resume <> 0 to resume scheduling."
+#endregion Quest Timer
+
+#region Quest reports/debug
+
+   GetDebugStatus()
    {
-      if resume = 0
-      {
-         Debug("Quest scheduling suspended.");
-         piActive = 0;
-      }
-      else
-      {
-         Debug("Quest scheduling resumed.");
-         piActive = 1;
-      }
-
-      return;
-   }
-
-   DeleteActiveQuests()
-   "Deletes all active quests."
-   {
-      local iQT, oQuest, iStatus, lOcc, oNPC;
-
-      iStatus = piActive;
-      if iStatus
-      {
-         Send(self,@Suspend);
-      }
-
-      foreach iQT in plQuestTemplates
-      {
-         foreach oQuest in Nth(iQT,QT_ACTIVE_QUESTS)
-         {
-            Send(oQuest,@Cancel,#bRecreate=TRUE);
-         }
-      }
-
-      if iStatus
-      {
-         Send(self,@Suspend,#resume=1);
-      }
-
-      return;
-   }
-
-   ClearAllQuests()
-   "This cancels all active quests, and strips the quest templates so NPC's "
-   "can be rebuilt. It is called by RecreateAll, prior to rebuilding the "
-   "templates with Recreate(#all=1)"
-   {
-      Send(self,@DeleteActiveQuests);
-      Send(self,@Suspend);
-
-      plQuestTemplates = $;
-      plDefaultNPCList = $;
-      plQuestNodeTemplates = $;
-      plQuestNodesAwaitingMonsterDeath = $;
-
-      return;
+      return piDebug;
    }
 
    QuestReport(who = $)
@@ -2039,14 +2092,7 @@ messages:
       return;
    }
 
-   Jumpstart()
-   "A quick and dirty way to get things running again."
-   {
-      Send(self,@Recreate);
-      Send(self,@RecreateQuestNodes);
-
-      return;
-   }
+#endregion
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
