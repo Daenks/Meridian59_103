@@ -798,7 +798,7 @@ messages:
          Send(self,@RefigureAllAbilityTotals);
       }
 
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
       Send(self,@ReturnShrineAllegiance);
       Send(self,@RecreateStatistics);  % Must create after anything you want to measure
 
@@ -1041,7 +1041,7 @@ messages:
       Send(poHolder2,@Delete);
       poHolder2 = Create(&Holder);
 
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
 
       return;
    }
@@ -1363,24 +1363,35 @@ messages:
       return piHour;
    }
 
-   SetHour(num = $)
+   SetHour(iNum = $)
    {
-      piHour = num mod 24;
+      if (iNum = $)
+      {
+         Debug("SetHour passed $ iNum!");
+
+         return;
+      }
+
+      % Take 1 because NewGameHour will increment hour.
+      piHour = (iNum - 1) MOD 24;
       Send(self,@NewGameHour);
+
       return;
    }
 
-   NewHour()
+   NewGameHour()
    {
-      piHour = (piHour + 1) mod 24;
-      %Send(self,@RecalcLightAndWeather);
+      piHour = (piHour + 1) MOD 24;
+
+      % Tell GameEventEngine object we have a new hour.
+      Send(EVENTENGINE_OBJECT,@NewGameHour);
 
       if piHour = 0
       {
-         Send(self,@NewDay);
+         Send(self,@NewGameDay);
       }
 
-      Send(self,@NewGameHour);
+      Send(self,@SysRecalcLightAndDayPhase);
 
       % Change the color of rainbow ferns.
       Send(&RainbowFern,@ChangeColor,#iHour=piHour);
@@ -1388,49 +1399,17 @@ messages:
       return;
    }
 
-   NewDay()
-   {
-      piDay = (piDay + 1) mod 240;
-
-      if piDay = 0
-      {
-         Send(self,@NewYear);
-      }
-
-      ++pbDecay_counter;
-      ++piLogoffPenaltyDecayCounter;
-      if pbDecay_counter >= 3
-      {
-         pbDecay_counter = 0;
-         SendList(plUsers,0,@DecayPKillCount);
-      }
-
-      if piLogoffPenaltyDecayCounter >= piLogoffPenaltyDecayTime
-      {
-         piLogoffPenaltyDecayCounter = 0;
-         SendList(plUsers,0,@DecayLogoffPenaltyCount);
-      }
-
-      Send(self,@RecalcWeatherConditions);
-      Send(self,@NewGameDay);
-
-      Send(poParliament,@NewDay);
-      Send(poNodeAttack,@NewDay);
-      Send(poRentableRoomMaintenance,@NewDay);
-      Send(&SoldierShield,@NewDay);
-
-      Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewDay);
-
-      Send(self,@VerifyUsersLoggedOn);
-
-      return;
-   }
-
-   NewYear()
+   NewGameYear()
    {
       local i;
-      Send(self,@NewYearClean);
+
+      % Clean currently does nothing.
+      Send(self,@NewGameYearClean);
+
       piYear = piYear + 1;
+
+      % Tell GameEventEngine object we have a new year.
+      Send(EVENTENGINE_OBJECT,@NewGameYear);
 
       % Determine if anyone needs to lose their newbie tag.
       foreach i in plUsers
@@ -1445,7 +1424,7 @@ messages:
       
       % Notify stat reset tokens that a game year has passed
       % (deletes temporary tokens without unecessary timers)
-      Send(&StatsResetToken,@NewYear);
+      Send(&StatsResetToken,@NewGameYear);
 
       return;
    }
@@ -2084,7 +2063,7 @@ messages:
       return 110;
    }
 
-   NewYearClean()
+   NewGameYearClean()
    {
       return;
    }
@@ -3942,12 +3921,12 @@ messages:
    {
       ptRecreateTimer = $;
       Send(self,@RecalcWeatherConditions);
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
 
       return;
    }
 
-   RecalcLightAndWeather()
+   SystemInitGameHour()
    {
       local i,iTime,iDay,iMinutes;
 
@@ -3965,7 +3944,7 @@ messages:
       % That number ranges from 0 to 119, so div by 5 is our game hour
       piHour = iMinutes/5;
 
-      Send(self,@NewGameHour);
+      Send(self,@SysRecalcLightAndDayPhase);
 
       return;
    }
@@ -4032,8 +4011,8 @@ messages:
       return;
    }
 
-   NewGameHour()
-   "Recalculates the light and weather, based on piHour"
+   SysRecalcLightAndDayPhase()
+   "Recalculates the light and day phase, based on piHour"
    {
       local i,iLight_hour;
 
@@ -4055,7 +4034,7 @@ messages:
       }
 
       % shift hour so doesn't get light /dark until later
-      iLight_hour = (piHour-2) mod 24;
+      iLight_hour = (piHour - 2) MOD 24;
 
       if iLight_hour <= 12
       {
@@ -4076,7 +4055,6 @@ messages:
          piBrightness = 75;
       }
 
-
       foreach i in plBackground_objects
       {
          Send(i,@NewGameHour);
@@ -4092,6 +4070,41 @@ messages:
 
    NewGameDay()
    {
+      piDay = (piDay + 1) MOD 240;
+
+      % Tell GameEventEngine object we have a new day.
+      Send(EVENTENGINE_OBJECT,@NewGameDay);
+
+      if piDay = 0
+      {
+         Send(self,@NewGameYear);
+      }
+
+      ++pbDecay_counter;
+      ++piLogoffPenaltyDecayCounter;
+      if pbDecay_counter >= 3
+      {
+         pbDecay_counter = 0;
+         SendList(plUsers,0,@DecayPKillCount);
+      }
+
+      if piLogoffPenaltyDecayCounter >= piLogoffPenaltyDecayTime
+      {
+         piLogoffPenaltyDecayCounter = 0;
+         SendList(plUsers,0,@DecayLogoffPenaltyCount);
+      }
+
+      Send(self,@RecalcWeatherConditions);
+
+      Send(poParliament,@NewGameDay);
+      Send(poNodeAttack,@NewGameDay);
+      Send(poRentableRoomMaintenance,@NewGameDay);
+      Send(&SoldierShield,@NewGameDay);
+
+      Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewGameDay);
+
+      Send(self,@VerifyUsersLoggedOn);
+
       return;
    }
 
@@ -4105,24 +4118,20 @@ messages:
    }
 
    TestGameDayTimer()
+   "Cycles to the next game midnight."
    {
       local i;
+
+      Send(self,@NewGameHour);
 
       foreach i in plUsers_logged_on
       {
          Send(i,@MsgSendUser,#message_rsc=system_new_hour,#parm1=piHour);
       }
 
-      Send(self,@NewGameHour);
-
-      piHour = (piHour + 1) mod 24;
       if piHour <> 0
       {
-         CreateTimer(self,@TestGameDayTimer,500);
-      }
-      else
-      {
-         Send(self,@RecalcLightAndWeather);
+         CreateTimer(self,@TestGameDayTimer,1500);
       }
 
       return;
@@ -4949,7 +4958,7 @@ messages:
       {
          poParliament = Create(&Parliament);
          Send(poParliament,@Recreate,#initial=True);
-         Send(poParliament,@NewDay);
+         Send(poParliament,@NewGameDay);
       }
 
       return TRUE;

@@ -21,6 +21,7 @@ inline DWORD F2DW( FLOAT f ) { return *((DWORD*)&f); }
 #define ZBIAS_UNDER				3
 #define ZBIAS_UNDEROVER			6
 #define ZBIAS_BASE				10
+#define ZBIAS_OVERUNDEROVERUNDER   10 // Renders after base, but at same zbias.
 #define ZBIAS_OVERUNDER			11
 #define ZBIAS_OVER				13
 #define ZBIAS_OVEROVER			15

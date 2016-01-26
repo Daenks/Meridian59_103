@@ -139,13 +139,14 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       % Every game day, we re-figure our numbers.
-      send(self,@CalcIntrigueNumbers);
+      Send(self,@CalcIntrigueNumbers);
+
       return;
    }
-      
+
    SendInfoMail(who=$)
    "Admin supported. Send a summary email of the faction scenario to the given user."
    {

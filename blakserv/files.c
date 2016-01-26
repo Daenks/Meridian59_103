@@ -35,7 +35,12 @@ bool FindMatchingFiles(const char *path, std::vector<std::string> *files)
  #elif BLAK_PLATFORM_LINUX
 
    struct dirent *entry;
-   DIR *dir = opendir(path); // XXX Need to parse out path name
+   std::string spath = path;
+   std::size_t last_found = spath.find_last_of("/\\");
+   std::string sext = spath.substr(last_found+2);
+   spath = spath.substr(0,last_found);
+
+   DIR *dir = opendir(spath.c_str());
    if (dir == NULL)
       return false;
 
@@ -43,12 +48,16 @@ bool FindMatchingFiles(const char *path, std::vector<std::string> *files)
    {
       std::string filename = entry->d_name;
       if (filename != "." && filename != "..")
-         files->push_back(filename);
+      {
+         if (filename.length() > sext.length() &&
+             filename.substr(filename.length() - sext.length()) == sext)
+         {
+             files->push_back(filename);
+         }
+      }
    }
    
    closedir(dir);
-
-   // XXX Need to pattern match
    
    return true;
    

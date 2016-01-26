@@ -117,7 +117,7 @@ typedef struct SlopeInfo
    float D;
 } SlopeInfo;
 
-typedef struct Sector
+typedef struct SectorNode
 {
    unsigned short ServerID;
    unsigned short FloorTexture;
@@ -129,7 +129,7 @@ typedef struct Sector
    SlopeInfo*     SlopeInfoCeiling;
    unsigned short FloorTextureOrig;
    unsigned short CeilingTextureOrig;
-} Sector;
+} SectorNode;
 
 typedef struct Wall
 {
@@ -141,8 +141,8 @@ typedef struct Wall
    V2             P2;
    unsigned short RightSectorNum;
    unsigned short LeftSectorNum;
-   Sector*        RightSector;
-   Sector*        LeftSector;
+   SectorNode*    RightSector;
+   SectorNode*    LeftSector;
    Side*          RightSide;
    Side*          LeftSide;
    Wall*          NextWallInPlane;
@@ -173,7 +173,7 @@ typedef struct BspLeaf
    unsigned short PointsCount;
    V3*            PointsFloor;
    V3*            PointsCeiling;
-   Sector*        Sector;
+   SectorNode*    Sector;
 } BspLeaf;
 
 typedef struct BspNode
@@ -189,12 +189,12 @@ typedef struct BspNode
 
 } BspNode;
 
-typedef struct Blocker
+typedef struct BlockerNode
 {
    int ObjectID;
    V2 Position;
-   Blocker* Next;
-} Blocker;
+   BlockerNode* Next;
+} BlockerNode;
 
 typedef struct room_type
 {
@@ -209,7 +209,7 @@ typedef struct room_type
    int security;         /* Security number, to ensure that client loads the correct roo file */
    
    BoundingBox2D  ThingsBox;
-   Blocker*       Blocker;
+   BlockerNode*   Blocker;
 
    BspNode*       TreeNodes;
    unsigned short TreeNodesCount;
@@ -217,7 +217,7 @@ typedef struct room_type
    unsigned short WallsCount;
    Side*          Sides;
    unsigned short SidesCount;
-   Sector*        Sectors;
+   SectorNode*    Sectors;
    unsigned short SectorsCount; 
 } room_type;
 #pragma endregion

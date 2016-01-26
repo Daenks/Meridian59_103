@@ -246,3 +246,20 @@ void MatrixMultiplyVector(custom_xyzw *pResult, D3DMATRIX *pMatrix,
 	pResult->z = temp.z;
 	pResult->w = temp.w;
 }
+
+void XformMatrixPerspective(D3DMATRIX *matrix, float fovHor, float fovVert, float nearZ, float farZ)
+{
+	float	w, h, q;
+
+	MatrixZero(matrix);
+
+	w = 1.0f / (float)tan(fovHor * 0.5f);
+	h = 1.0f / (float)tan(fovVert * 0.5f);
+	q = farZ / (farZ - nearZ);
+
+	matrix->_11 = w;
+	matrix->_22 = h;
+	matrix->_33 = q;
+	matrix->_43 = -q * nearZ;
+	matrix->_34 = 1;
+}
