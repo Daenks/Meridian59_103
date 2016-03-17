@@ -1,0 +1,268 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RoomThreat is RoomObjectAttribute 
+
+% Room threats do damage periodically according to certain conditions.
+% For example, a blizzard might deal a player cold damage unless they are
+% wearing something warm or have a resist cold ring.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   default_threat_begin_msg = \
+      "A threat overtakes the area."
+   default_threat_end_msg = \
+      "The looming threat passes."
+   default_threat_damage_msg = \
+      "Somehow, a threat damages you somewhere on your person for a generic "
+      "amount of damage! You feel less healthy than before!"
+   default_good_item_use_msg = \
+      "Congratulations! You used an item this threat cares about!"
+   default_good_spell_use_msg = \
+      "That spell was a smart idea. You're smart. I like you. I mean, the "
+      "threat likes you. Or hates you less, as it were. You get the idea."
+   default_death_msg = \
+      "~B~U~k[###]~n ~B~v%s died to a generic threat! What a loser!"
+
+classvars:
+
+   viThreatBeginMsg = default_threat_begin_msg
+   viThreatEndMsg = default_threat_end_msg
+   viThreatDamageMsg = default_threat_damage_msg
+   
+   viGoodItemUseMsg = default_good_item_use_msg
+   viGoodSpellUseMsg = default_good_spell_use_msg
+
+   viDeathMsg = default_death_msg
+
+properties:
+
+   % What type of damage do we do?
+   piDamageTypeAttack = 0
+   piDamageTypeSpell = 0
+   
+   % How much damage do we do?
+   piDamageMin = 6
+   piDamageMax = 14
+   
+   % How often do we deal damage?
+   pbDealDamage = TRUE
+   piDamageTime = 3000
+   ptDamageTimer = $
+   
+   % How long does the threat last?
+   piThreatTime = 10 * 60 * 1000
+   ptThreatTimer = $
+
+   % Do we report the damage?
+   piReport = FALSE
+
+   % Inform players they've done well in avoiding the threat.
+   plSpecialItemClasses = $
+   
+   % We check for item use at ReqSomethingUse, so it's possible we'll
+   % fail to equip if something is cursed. See Constructor in subclasses.
+   plSpecialExemptItemClasses = $
+   
+   % Special spell messages on a successful spell cast
+   plSpecialSpellClasses = $
+
+messages:
+
+   Constructor(iDuration=0,iPower=$,report=TRUE,host_object=$)
+   {
+      local i;
+
+      % $ iDuration means indefinite
+      if iDuration = $
+      {
+         ptThreatTimer = $;
+      }
+      else if iDuration > 0
+      {
+         ptThreatTimer = CreateTimer(self,@EndThreat,iDuration);
+      }
+      else if piThreatTime <> $
+         AND piThreatTime > 0
+      {
+         ptThreatTimer = CreateTimer(self,@EndThreat,piThreatTime);
+      }
+
+      foreach i in Send(host_object,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+            AND report
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=viThreatBeginMsg);
+         }
+      }
+ 
+%      Example special items lists. Don't set here or they'll overwrite.
+%      plSpecialItemClasses = [&Robe, &ColdRing];
+%      plSpecialExemptItemClasses = [&RingOfLethargy];
+%      plSpecialSpellClasses = [&ResistCold];
+
+      if pbDealDamage
+      {
+         ptDamageTimer = CreateTimer(self,@DealDamage,piDamageTime);
+      }
+
+      propagate;
+   }
+
+   DealDamage(timer=$)
+   {
+      local i, iDamageResult;
+
+      ptDamageTimer = $;
+
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+            AND Send(self,@ReqDealDamage,#who=First(i))
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=viThreatDamageMsg);
+            
+            % Some threats apply other effects.
+            Send(self,@ApplyDirectEffect,#who=First(i));
+            
+            iDamageResult = Send(First(i),@AssessDamage,#what=self,
+                  #damage=Random(piDamageMin,piDamageMax),
+                  #atype=piDamageTypeAttack,
+                  #aspell=piDamageTypeSpell,#report=piReport);
+            
+            % We killed someone!
+            if iDamageResult = $
+            {
+               Send(First(i),@Killed);
+               Send(self,@SendDeathMessage,#who=First(i));
+            }
+         }
+      }
+
+      % Some threats change the time dynamically.
+      Send(self,@AlterDamageTime);
+      ptDamageTimer = CreateTimer(self,@DealDamage,piDamageTime);
+      return;
+   }
+
+   ReqDealDamage(who=$)
+   {
+      % Alter this to create exemptions to the threat.
+      return TRUE;
+   }
+
+   ApplyDirectEffect(who=$)
+   {
+      return;
+   }
+
+   AlterDamageTime()
+   {
+      % Modify this in a subclass to change threat time dynamically.
+      return;
+   }
+
+   EndThreat()
+   {
+
+      ptThreatTimer = $;
+
+      Send(self,@Delete);
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+         {
+            Send(First(i),@MsgSendUser,#message_rsc=viThreatEndMsg);
+         }
+      }
+
+      if ptThreatTimer <> $
+      {
+         DeleteTimer(ptThreatTimer);
+         ptThreatTimer = $;
+      }
+      if ptDamageTimer <> $
+      {
+         DeleteTimer(ptDamageTimer);
+         ptDamageTimer = $;
+      }
+      propagate;
+   }
+
+   ReqSomethingUse(what = $, use_item = $)
+   {
+      local i, bFoundExempt;
+
+      if IsClass(what,&Player)
+      {
+         foreach i in plSpecialExemptItemClasses
+         {
+            if Send(what,@IsUsingA,#class=i)
+            {
+               return TRUE;
+            }
+         }
+         
+         foreach i in plSpecialItemClasses
+         {
+            if IsClass(use_item,i)
+            {
+               Post(what,@MsgSendUser,#message_rsc=viGoodItemUseMsg);
+               return TRUE;
+            }
+         }
+      }
+
+      return TRUE;
+   }
+
+   SpellCast(who = $,oSpell = $)
+   {
+      local i;
+      
+      foreach i in plSpecialSpellClasses
+      {
+         if IsClass(oSpell,i)
+         {
+            Post(who,@MsgSendUser,#message_rsc=viGoodSpellUseMsg);
+         }
+      }
+
+      propagate;
+   }
+   
+   SendDeathMessage(who=$)
+   {
+      local i;
+
+      % Threats have custom death messages, for funsies.
+      foreach i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Send(i,@MsgSendUser,#message_rsc=viDeathMsg,
+               #parm1=Send(who,@GetName));
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

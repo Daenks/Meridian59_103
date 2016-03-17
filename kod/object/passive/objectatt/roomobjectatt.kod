@@ -1,0 +1,66 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RoomObjectAttribute is ObjectAttribute
+
+% These are special effects in a room, such as storms and general threats.
+% They are NOT spells! We do not want them interacting with spells.
+% They would disrupt or alter things like Discordance.
+
+constants:
+
+   include blakston.khd   
+
+resources:
+
+   roomobjectatt_name_rsc = "Special Room Attribute"
+   roomobjectatt_icon_rsc = light.bgf
+   roomobjectatt_desc_rsc = "There is a special event happening in this room."
+      
+classvars:
+
+   vrName = roomobjectatt_name_rsc
+   vrIcon = roomobjectatt_icon_rsc
+   vrDesc = roomobjectatt_desc_rsc
+   
+   viShow_enchantment_icon = 0x01
+
+properties:
+
+messages:
+     
+   ReqAddToObject(host_object=$)
+   {
+      if NOT IsClass(host_object,&Room)
+      {
+         return FALSE;
+      }
+      return TRUE;
+   }
+
+   Constructed(host_object=$)
+   {
+      Send(poHostObject,@ShowUsersAddEnchantment,#what=self);
+      propagate;
+   }
+
+   ShowEnchantmentIcon(type = $)
+   {
+      return viShow_enchantment_icon & 0x01;
+   }
+
+   Delete()
+   {
+      Send(poHostObject,@ShowUsersRemoveEnchantment,#what=self);
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

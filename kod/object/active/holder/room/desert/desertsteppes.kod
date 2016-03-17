@@ -1,0 +1,104 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertSteppes is DesertRoom
+
+% The Sandswept Steppes are dynamically generated.
+% There is no actual 'Sandswept Steppe' room on its own. Instead, players
+% who enter are placed in a newly generated instance based on certain rules.
+%
+% - Groups of players are separated at zone transitions.
+% - Players may never meet up more than 1 on 1. (i.e. 2 people max in an area)
+% - Layout, monsters, and objects are created upon entrance.
+% - Previous rooms are destroyed the moment nobody is left. No backtracking.
+% - Players appear in the center of each room to avoid zone-edge confusion.
+% - Each room has 'coordinates'. The desert is not infinite in size.
+%    Players can be in two different instances that are both Lat 7 Longi 8, ex
+%     because players won't see these values.
+%    Going north or west of 1, or south or east of 10, = leaving this area.
+%    So it's 10 x 10.
+%    Can't escape everywhere, though, as the edge rooms will have walls.
+%    Exits only in certain places (exits may move).
+% - Yells are heard everywhere in this area.
+
+constants:
+
+   include blakston.khd
+
+   % South wall sectors: 6, 15, 22, 39, 46, 63, 70, 87, 94, 111, 118, 135, 142, 159, 165, 182
+   % Southeast wall sec: 110, 119, 120, 133, 132, 145, 146, 155, 153, 154, 152, 151
+   % east wall sectors: 151-162
+   
+resources:
+
+   room_desertsteppes = desertsteppes.roo
+   room_name_desertsteppes = "Sandswept Steppes"
+
+classvars:
+
+   vrName = room_name_desertsteppes
+
+   viTeleport_row = 60
+   viTeleport_col = 102
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertsteppes
+   piRoom_num = $
+   
+   piLatitude = 1
+   piLongitude = 1
+
+messages:
+
+   Constructor(iLatitude=$,iLongitude=$)
+   {
+      piLatitude = iLatitude;
+      piLongitude = iLongitude;
+      propagate;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      % GO EAST
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         return;
+      }
+
+      % GO WEST
+      if new_col < 2
+      {
+         return;
+      }
+
+      % GO NORTH
+      if new_row < 2
+      {
+         return;
+      }
+
+      % GO SOUTH
+      if new_row > (Send(self,@GetRoomRows)-2)
+      {
+         return;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

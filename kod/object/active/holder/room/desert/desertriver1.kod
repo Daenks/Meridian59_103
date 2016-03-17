@@ -40,7 +40,22 @@ properties:
 
 messages:
 
- 
+   Constructed()
+   {
+      % Natural state of Sector Group 31 is flowing and depth.
+      % We hide this most of the time.
+      % Group 33 is similar, but outside, so gets snow sometimes.
+      Send(self,@SetSectorFlags,#sector=31,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=33,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      % We also hide our waterfalls.
+      Send(self,@AnimateWall,#wall=32,#animation=ANIMATE_NONE,
+            #first_group=1,#second_group=1,#end_group=1);
+   
+      propagate;
+   }
+
    CreateStandardExits()
    {
       plEdge_Exits = $;
@@ -88,6 +103,83 @@ messages:
               
          return;
       }
+
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Add snow to floor regions that are also sometimes water.
+            Send(self,@ChangeTexture,#id=33,#new_texture=61015,
+                  #flags=CTF_FLOOR);
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   {
+      local i;
+
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove snow from sand/rain floors.
+         Send(self,@RemoveTextureChange,#id=33);
+      }
+
+      propagate;
+   }
+
+   StartRain()
+   {
+      % This area has special tunnels that overflow.
+      % ID 31 covers a group of sectors that are naturally flowing
+      % but most of the time we cover that up.
+      
+      % Reveal the sectors!
+      Send(self,@RemoveSectorFlagChange,#id=31);
+      Send(self,@RemoveSectorFlagChange,#id=33);
+
+      % Make those sectors into gross water!
+      Send(self,@ChangeTexture,#id=31,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=33,#new_texture=09363,
+            #flags=CTF_FLOOR);
+
+      % Gross acid rain pours into tunnels.
+      % Again, natural state is animated, and we are revealing that
+      % by removing the stoppage.
+      Send(self,@ChangeTexture,#id=32,#new_texture=09363,
+            #flags=CTF_BELOWWALL);
+      Send(self,@RemoveAnimateWallChange,#wall=32);
+
+      propagate;
+   }
+   
+   EndRain()
+   {
+      % Stop water scroll effect and remove depth to hide flow behavior.
+      Send(self,@SetSectorFlags,#sector=31,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      % Stop water scroll effect and remove depth to hide flow behavior.
+      Send(self,@SetSectorFlags,#sector=33,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+
+      % Go back to normal textures, groups 31 and 33.
+      Send(self,@RemoveTextureChange,#id=31);
+      Send(self,@RemoveTextureChange,#id=33);
+      
+      % No more waterfall animation.
+      Send(self,@AnimateWall,#wall=32,#animation=ANIMATE_NONE,
+            #first_group=1,#second_group=1,#end_group=1);
+      % Remove sludge waterfalls.
+      Send(self,@RemoveTextureChange,#id=32);
 
       propagate;
    }

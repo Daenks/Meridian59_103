@@ -79,6 +79,7 @@ resources:
    creaky_door_sound = doropen1.wav
 
    water_wading_sound = splash.wav
+   snow_walk_sound = snowstep.wav
 
    room_jungle_sound1 = jungle01.wav
    room_jungle_sound2 = jungle02.wav
@@ -1993,7 +1994,7 @@ messages:
 
    ReqSpellCast(who = $, oSpell = $, lItems = $)
    {
-      local oTarget;
+      local oTarget, i;
 
       if (piRoom_flags & ROOM_NO_MAGIC)
       {
@@ -2015,6 +2016,14 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=room_no_attack);
 
          return FALSE;
+      }
+      
+      foreach i in plObject_attributes
+      {
+         if NOT Send(i,@ReqSpellCast,#who=who,#oSpell=oSpell,#lItems=lItems)
+         {
+            return FALSE;
+         }
       }
 
       % Must have Line of Sight if spell is single target
@@ -2663,6 +2672,12 @@ messages:
 
       % first send room icons
       Send(self,@SendRoomIcons,#what=what);
+      
+      % next send special room events
+      foreach i in plObject_attributes
+      {
+         Send(what,@ShowAddEnchantment,#what=i,#type=ENCHANTMENT_ROOM);
+      }
 
       foreach i in plEnchantments
       {

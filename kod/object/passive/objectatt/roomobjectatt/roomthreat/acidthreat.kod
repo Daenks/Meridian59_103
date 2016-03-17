@@ -1,0 +1,130 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AcidThreat is RoomThreat 
+
+% Acid rain deals damage if players aren't wearing a helmet.
+% Also exempted if resist acid / ring.
+% Damage is small but very rapid to simulate ongoing rain drops.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   acid_threat_name_rsc = "elemental acid"
+   acid_threat_icon_rsc = isplacid.bgf
+   acid_threat_desc_rsc = \
+      "Acid rains down from the skies. The only protections against this "
+      "kind of burning agony are helmets or the appropriate resistance magics."
+
+   acid_threat_begin_msg = \
+      "Horrendously noxious rain begins to fall."
+   acid_threat_end_msg = \
+      "The noxious rain suddenly crystalizes as a cold flash point is reached."
+   acid_threat_damage_msg = \
+      "Without a helmet to slough it away, the acidic rain burns "
+      "your exposed skin."
+
+   acid_good_item_use_msg = \
+      "You sigh with relief as the acid ceases to burn."
+   acid_good_spell_use_msg = \
+      "The chalkiness on your skin provides immediate relief from the "
+      "precipitating acid."
+
+   acid_death_msg = \
+      "~B~U~k[###]~n ~B~v%s melted under the onslaught of acid rain."
+
+classvars:
+
+   vrName = acid_threat_name_rsc
+   vrIcon = acid_threat_icon_rsc
+   vrDesc = acid_threat_desc_rsc
+
+   viThreatBeginMsg = acid_threat_begin_msg
+   viThreatEndMsg = acid_threat_end_msg
+   viThreatDamageMsg = acid_threat_damage_msg
+   viGoodItemUseMsg = acid_good_item_use_msg
+   viGoodSpellUseMsg = acid_good_spell_use_msg
+   
+   viDeathMsg = acid_death_msg
+
+properties:
+
+   % What type of damage do we do?
+   piDamageTypeAttack = 0
+   piDamageTypeSpell = ATCK_SPELL_ACID
+
+   % How much damage do we do?
+   piDamageMin = 1
+   piDamageMax = 3
+   
+   % How often do we deal damage?
+   piDamageTime = 1000
+   ptDamageTimer = $
+   
+   % How long does the threat last?
+   piThreatTime = 10 * 60 * 1000
+   ptThreatTimer = $
+
+   % Do we report the damage?
+   piReport = FALSE
+
+   % This threat drains vigor.
+   piVigorDrop = 10000
+
+messages:
+
+   Constructor()
+   {
+%      plSpecialItemClasses = [&AcidRing,&SimpleHelm];
+%      plSpecialExemptItemClasses = [&RingOfLethargy];
+%      plSpecialSpellClasses = [&ResistAcid];
+
+      propagate;
+   }
+   
+   Constructed()
+   {
+      Send(poHostObject,@StartRain);
+      propagate;
+   }
+
+   ReqDealDamage(who=$)
+   {
+      % A helmet protects players.
+      % Magic spirit helms count, too.
+      % But don't use &Helmet class because that includes circlets & masks.
+      if Send(who,@IsUsingA,#class=&SimpleHelm)
+         OR Send(who,@IsUsingA,#class=&Helm)
+%         OR Send(who,@IsEnchanted,#byClass=&ResistAcid)
+%         OR Send(who,@IsUsingA,#class=&AcidRing)
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   ApplyDirectEffect(who=$)
+   {
+      Send(who,@AddExertion,#amount=piVigorDrop);
+      propagate;
+   }
+   
+   Delete()
+   {
+      Send(poHostObject,@EndRain);
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

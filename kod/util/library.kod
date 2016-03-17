@@ -1760,6 +1760,11 @@ messages:
  %Priestesses
 
      plSpeechLib = Cons(
+     [&XaerdunAfterlife, [
+       [[LT_jala], 0, [LIBACT_MOOD, 2], 3]
+     ]], plSpeechLib);
+
+     plSpeechLib = Cons(
      [&kraananpriestess, [
        [[LT_threecon], 0, [LIBACT_MOOD, -2], 1]
      ]], plSpeechLib);

@@ -2608,6 +2608,15 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER1,#class=&DesertRiver1);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER2,#class=&DesertRiver2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTBRIDGE,#class=&DesertBridge);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTCAVERAFT,#class=&DesertCaveRaft);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON1,#class=&ElementalDungeon1);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON2,#class=&ElementalDungeon2);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON3,#class=&ElementalDungeon3);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTSANDBAR,#class=&DesertSandbar);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES,#class=&DesertAfterlifeDunes);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES2E,#class=&DesertAfterlifeDunes2East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES3E,#class=&DesertAfterlifeDunes3East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES4E,#class=&DesertAfterlifeDunes4East);
 
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.
@@ -3378,6 +3387,13 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_ACID_STORM_BUFF,#class=&AcidStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_SHOCK_STORM_BUFF,#class=&ShockStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEAT_STORM_BUFF,#class=&HeatStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_COLD_STORM_BUFF,#class=&ColdStormBuff);
+      
+      Send(self,@CreateOneSpellIfNew,#num=SID_GREY_GHOST,#class=&GreyGhost);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_FLAME_DASH,#class=&FlameDash);
       Send(self,@CreateOneSpellIfNew,#num=SID_LIGHTNING_STRIKE,#class=&LightningStrike);
@@ -5381,6 +5397,8 @@ messages:
       plMonsterTemplates = cons(create(&IceElementalChampion),plMonsterTemplates);
       plMonsterTemplates = cons(create(&NeruElemental),plMonsterTemplates);
       plMonsterTemplates = cons(create(&NeruElementalChampion),plMonsterTemplates);
+      
+      plMonsterTemplates = cons(create(&LostSoul),plMonsterTemplates);
 
       return;
    }
@@ -5581,6 +5599,7 @@ messages:
       plItemTemplates = cons(create(&ForgetPotionSkills),plItemTemplates);
       plItemTemplates = cons(create(&ForgetPotionRiija),plItemTemplates);
       plItemTemplates = cons(create(&ForgetPotionJala),plItemTemplates);
+      plItemTemplates = cons(create(&ForgetPotionXaerdunWitchery),plItemTemplates);
 
       plItemTemplates = cons(create(&IllusionaryFormPotion),plItemTemplates);
       plItemTemplates = cons(create(&PurifyPotion),plItemTemplates);

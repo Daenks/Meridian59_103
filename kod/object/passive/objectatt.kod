@@ -137,6 +137,11 @@ messages:
       return iModifier;
    }
    
+   ReqSpellCast()
+   {
+      return TRUE;
+   }
+   
    AppendDesc()
    {
       return;

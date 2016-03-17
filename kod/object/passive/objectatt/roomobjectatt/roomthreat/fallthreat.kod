@@ -1,0 +1,190 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FallThreat is RoomThreat 
+
+% This threat kills players that reach 0 height or below for >1500 ms.
+% Used for good old fashioned deathtraps.
+
+constants:
+
+   include blakston.khd
+
+   DAMAGE_MIN_TIME = 6000
+   DAMAGE_MAX_TIME = 12000
+   
+   LOW_DAMAGE = 3000
+   MEDIUM_DAMAGE = 6000
+   HIGH_DAMAGE = 9000
+
+resources:
+
+   fall_threat_name_rsc = "lethal fall"
+   fall_threat_icon_rsc = irthquak.bgf
+   fall_threat_desc_rsc = \
+      "If you fall here, you will most certainly die."
+
+   fall_threat_begin_msg = \
+      "You must watch your step. A fall here would be deadly."
+   fall_threat_end_msg = \
+      "You sigh with relief as the threat of falling to your death fades."
+
+   fell_msg = \
+      "As you fall to your doom, you have time only to regret your "
+      "choice of step."
+
+   fell_death_msg = \
+      "~B~U~k[###]~n ~B~v%s fell to %s doom."
+
+classvars:
+
+   vrName = fall_threat_name_rsc
+   vrIcon = fall_threat_icon_rsc
+   vrDesc = fall_threat_desc_rsc
+
+   viThreatBeginMsg = fall_threat_begin_msg
+   viThreatEndMsg = fall_threat_end_msg
+
+   viDeathMsg = fell_death_msg
+
+properties:
+
+   % In this case, we check those at 0 or below height every piDamageTime.
+   % Gives players 2-4 seconds to escape a fall / do small jumps.
+   % If you are in plFallDanger and the check finds you again, you die.
+   piDamageTime = 2000
+   plFallDanger = $
+
+   % Extra quick checks to remove players from the list if they make landfall.
+   % This is to avoid situations where a check finds a player, he runs across
+   % safe ground for < 2 seconds, then hits open air - and dies instantly.
+   piRemoveTime = 250
+   ptRemoveTimer = $
+
+messages:
+
+   Constructed()
+   {
+      ptRemoveTimer = CreateTimer(self,@RemoveSafePlayers,piRemoveTime);
+      propagate;
+   }
+
+   DealDamage(timer=$)
+   {
+      local i;
+
+      ptDamageTimer = $;
+
+      % If you're on this list already and still at height 0 or below,
+      % you die.
+      % The two-check method allows for small jumps.
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+         {
+            if Send(First(i),@GetHeightAtObject) <= 0
+            {
+               if plFallDanger <> $
+                  AND FindListElem(plFallDanger,First(i)) <> 0
+               {
+                  Send(self,@PlayerFell,#who=First(i));
+                  plFallDanger = DelListElem(plFallDanger,First(i));
+               }
+               else
+               {
+                  plFallDanger = Cons(First(i),plFallDanger);
+               }
+            }
+            else
+            {
+               % Not at height 0. Take them off of the list.
+               if plFallDanger <> $
+                  AND FindListElem(plFallDanger,First(i)) <> 0
+               {
+                  plFallDanger = DelListElem(plFallDanger,First(i));
+               }
+            }
+         }
+      }
+
+      % Some threats change the time dynamically.
+      Send(self,@AlterDamageTime);
+      ptDamageTimer = CreateTimer(self,@DealDamage,piDamageTime);
+      return;
+   }
+   
+   PlayerFell(who=$)
+   {
+      Send(who,@MsgSendUser,#message_rsc=fell_msg);
+      Send(who,@Killed);
+      Send(self,@SendDeathMessage,#who=who);
+      return;
+   }
+   
+   RemoveSafePlayers()
+   {
+      local i;
+
+      ptRemoveTimer = $;
+      
+      foreach i in Send(poHostObject,@GetHolderActive)
+      {
+         if IsClass(First(i),&User)
+         {
+            if Send(First(i),@GetHeightAtObject) > 0
+            {
+               % Not at height 0. Take them off of the list.
+               if plFallDanger <> $
+                  AND FindListElem(plFallDanger,First(i)) <> 0
+               {
+                  plFallDanger = DelListElem(plFallDanger,First(i));
+               }
+            }
+         }
+      }
+      
+      ptRemoveTimer = CreateTimer(self,@RemoveSafePlayers,piRemoveTime);
+      return;
+   }
+   
+   Delete()
+   {
+      local i;
+
+      foreach i in plFallDanger
+      {
+         plFallDanger = DelListElem(plFallDanger,i);
+      }
+      
+      if ptRemoveTimer <> $
+      {
+         DeleteTimer(ptRemoveTimer);
+         ptRemoveTimer = $;
+      }
+
+      propagate;
+   }
+   
+   SendDeathMessage(who=$)
+   {
+      local i;
+
+      % Need an extra parameter for HisHer
+      foreach i in Send(SYS,@GetUsersLoggedOn)
+      {
+         Send(i,@MsgSendUser,#message_rsc=viDeathMsg,#parm1=Send(who,@GetName),
+               #parm2=Send(who,@GetHisHer));
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

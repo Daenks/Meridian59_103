@@ -152,5 +152,10 @@ messages:
       propagate;
    }
 
+   GetIntensity()
+   {
+      return piLightIntensity;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

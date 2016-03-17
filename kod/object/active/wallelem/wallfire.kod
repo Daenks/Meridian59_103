@@ -235,6 +235,13 @@ messages:
          AddPacket(1,5);
       }
 
+      if Send(self,@GetOwner) <> $
+         AND Send(Send(self,@GetOwner),@LightingColorOverride)
+      {
+         AddPacket(2,Send(Send(self,@GetOwner),@GetLightingColorOverride));
+         return;
+      }
+
       % Red color
       AddPacket(2,LIGHT_RED);
 

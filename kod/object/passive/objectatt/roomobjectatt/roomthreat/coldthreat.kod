@@ -1,0 +1,133 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ColdThreat is RoomThreat 
+
+% Blizzards deal damage if players aren't wearing robes / resist ring / buff.
+% Their damage time also changes randomly to reflect the storm's ebb and flow.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   cold_threat_name_rsc = "elemental blizzard"
+   cold_threat_icon_rsc = iexfrost.bgf
+   cold_threat_desc_rsc = \
+      "The cold here is unnatural and brutal. The only protections against "
+      "this kind of danger are warm robes or the appropriate resistance "
+      "magics."
+
+   cold_threat_begin_msg = \
+      "Snow begins whipping across the sands as the last of the sun's heat "
+      "fades."
+   cold_threat_end_msg = \
+      "The desert's burgeoning heat melts away the chill night's snow."
+   cold_threat_damage_msg = \
+      "The biting cold gnaws at your bones."
+
+   cold_good_item_use_msg = \
+      "The icy breezes no longer bother you."
+   cold_good_spell_use_msg = \
+      "Faren's magical fire battles away the gnawing desert chill."
+
+   cold_death_msg = \
+      "~B~U~k[###]~n ~B~v%s froze to death in a blizzard."
+
+classvars:
+
+   vrName = cold_threat_name_rsc
+   vrIcon = cold_threat_icon_rsc
+   vrDesc = cold_threat_desc_rsc
+
+   viThreatBeginMsg = cold_threat_begin_msg
+   viThreatEndMsg = cold_threat_end_msg
+   viThreatDamageMsg = cold_threat_damage_msg
+   viGoodItemUseMsg = cold_good_item_use_msg
+   viGoodSpellUseMsg = cold_good_spell_use_msg
+   
+   viDeathMsg = cold_death_msg
+
+properties:
+
+   % What type of damage do we do?
+   piDamageTypeAttack = 0
+   piDamageTypeSpell = ATCK_SPELL_COLD
+   
+   % How much damage do we do?
+   piDamageMin = 6
+   piDamageMax = 14
+   
+   % How often do we deal damage?
+   piDamageTime = 3000
+   ptDamageTimer = $
+   
+   % How long does the threat last?
+   piThreatTime = 10 * 60 * 1000
+   ptThreatTimer = $
+
+   % Do we report the damage?
+   piReport = FALSE
+
+   % This threat drains vigor.
+   piVigorDrop = 50000
+
+messages:
+
+   Constructor()
+   {
+%      plSpecialItemClasses = [&Robe, &ColdRing];
+%      plSpecialExemptItemClasses = [&RingOfLethargy];
+%      plSpecialSpellClasses = [&ResistCold];
+
+      propagate;
+   }
+   
+   Constructed()
+   {
+      Send(poHostObject,@StartSnow);
+      propagate;
+   }
+
+   ReqDealDamage(who=$)
+   {
+      % Robes are warm enough to protect players.
+      if Send(who,@IsUsingA,#class=&Robe)
+%         OR Send(who,@IsEnchanted,#byClass=&ResistCold)
+%         OR Send(who,@IsUsingA,#class=&ColdRing)
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   AlterDamageTime()
+   {
+      piDamageTime = Bound(piDamageTime +
+                        Random(-100,100),500,6000);
+      propagate;
+   }
+
+   ApplyDirectEffect(who=$)
+   {
+      Send(who,@AddExertion,#amount=piVigorDrop);
+      propagate;
+   }
+   
+   Delete()
+   {
+      Send(poHostObject,@EndSnow);
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

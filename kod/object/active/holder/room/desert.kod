@@ -8,8 +8,142 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 DesertRoom is Room
+
+% The desert is very active with elemental energies.
+% Each phase of the day has either a helpful or harmful storm or threat that is
+% based on which Elemental Prisms have been defeated.
+% The Lightning Prism begins defeated, so DAWN phase always has &ShockStorm.
+% Storms are helpful, Threats are harmful.
+% Both storms and threats alter the weather and music.
+% Therefore, the desert changes constantly throughout each day.
+%
+% Storms and Threats are RoomObjectAttributes that come complete with
+% a room icon. They're not spells, though, so they can't be discorded or
+% altered by players except through coded triggered actions.
+% For example, defeating the Prism of Fire removes the Falling, Lava, and Phase
+% threats from the Abyssal Bore.
+% 
+% Other desert systems:
+% 
+% If you log off anywhere in the desert, you're booted to Waylay Oasis,
+% or (if you log off before you even reach it) all the way back to mainland.
+%
+% A large part of the desert is instanced. Monsters and objects do not respawn.
+% Instead, players must continually move on to the next instanced area,
+% where monsters and objects are spawned upon entrance.
+%
+% The instanced desert naturally separates players so that they end up alone.
+% Once they're alone, they can begin running across each other, but only
+% one to one. This ensures 1v1 situations (if one is pking) or temporary 2 
+% person alliances against
+% very dangerous mobs. As soon as you have your fight with mobs and move on,
+% the two of you split up again.
+%
+% The instanced desert screens also have a variety of objects
+% and things of interest.
+%
+% ===
+% Chests: nomad bands have a chest in their encampment. The nomad leader
+% has a key on him. These chests contain substantial unique rewards
+% you can't get elsewhere that reflect the tribe they come from.
+% It's tough being alone (or paired) and taking on content.
+% These chests are to give players incentive to actually take on these
+% nomad bands - because the nomads work together, the fights will be
+% very difficult. Ex. one purges you, one blinds you, two fire arrows
+% while the last one heals and buffs his allies. The rewards will
+% likely be gear imbues of specific types that are unavailable elsewhere.
+% For example, +max mana might only be available from a witch-heavy
+% tribe, and nowhere else in the game.
+% Nomad bands will also be part of the reputation system, so that
+% players can make enemies of them (aggro if you come near)
+% or friends (they heal you, buff you, and even give you supplies).
+% The three tribes do not like each other, though, so going up in rep
+% with one tribe means losing rep with the other two. This lets players
+% befriend the tribe they're least effective against, or the tribe
+% whose types of buffs and help they most want.
+%
+% If the Witchery school is enabled, gaining reputation with a tribe
+% will allow players to buy spells (the higher the rep, the higher
+% the level, assuming they qualify in %s).
+%
+% The three tribes' primary demons and attributes are:
+% - Xaerdun (merchants, some honest / some not, thieves, greedy types)
+% - Nequzon (witches, witch-worshippers, naturalists)
+% - Iwodach (battle warlocks, prideful, value strength and knowledge)
+%
+% ===
+% Ruins: enter one of several specific dungeons. These dungeons are
+% not instanced, and you can run across other players regularly in them.
+% These areas are heavy on lore, puzzles, and traps. Some of these
+% ruins have quest objects. Some just have awesome loot. The ruin 
+% dungeons do not contain monsters (the puzzles are incredibly hard
+% and often time-of-day based so that one might need to spend lots of
+% time within and risk other players coming by). The traps can and will
+% kill people, too, if they screw up badly enough. If the Sorcery
+% school is enabled, some of its skills can be found in these dungeons,
+% either in ancient tomes or by examining the tattoos on mummified
+% remains.
+%
+% ===
+% Altars: the decayed remains of ancient temples. These altars have
+% had all identifying marks worn away by time, but the magic within them
+% has maintained their core stone forms. It's impossible to know whether
+% the altar is for one of the region's deities (good effect) or for one
+% of the demons the tribes still have pacts with (bad effect), but either
+% way, using one will make something interesting and random happen to
+% the player. Examples include total loss of health regeneration for ten
+% minutes, double loot drops for five minutes, a random XP gain, etc.
+% And one very rare result that players will always hope for.
+%
+% ===
+% Bandits: lone or paired human NPCs who are not part of the reputation
+% system. These bandits will be rare, but dire. They'll be balanced
+% difficult enough that players will actually run away and complain
+% most of the time. Bandits are out there to KILL. However, the instanced
+% areas will only have one or the pair at a time, and slaying them
+% will make everything 'bandit free' for quite some time (72 hours).
+% There are several different solo and paired bandit types with their
+% own personalities. Most of the bandits do not attack outlaws and
+% murderers, and might actually help them attack white-named players.
+% Once a certain type of bandit is chosen for the area, it will never
+% change unless someone slays them. (e.g. if you get a really dangerous
+% pair, someone will have to take care of them, or they'll spawn at
+% random for the indefinite future). Bandits themselves have scarce
+% loot, but the rewards offered by the tribes are Very Nice. Bring
+% the bandits' heads to collect. The posted rewards also serve as
+% notice for players as to which bandits to expect. For example,
+% if a reward is up for Kerrenor & Celegorm, you'll know you're
+% going to run across a Qor & Shal bandit pair.
+%
+% Turning in bandit heads will give you +rep with all three tribes.
+% Reaching max rep with all three tribes will cause them to address
+% you by names of honor, and none will attack you unless you
+% attack them and lose rep. This honored situation would take quite
+% a bit of bandit slaying, though, and also take a long time
+% (since they only regenerate every 72 hours).
+%
+% If the Banditry school is enabled, some of its higher-level skills
+% can be learned from bandits if you run across them and are
+% an outlaw or murderer yourself and qualify in %s.
+% (That is not to say they're not available elsewhere - but those 
+%   will be at much higher costs & possibly requiring quests.
+%   The idea is to encourage players to actually think about going
+%   outlaw temporarily and spending time in the desert in order
+%   to meet up with the proper teachers - and in so doing, probably
+%   run across other players in the meantime and inevitably clash.
+%   Living the bandit life!)
+%
+% ===
+% Oases: Non-combat areas where players can quickly heal and recover.
+% Intended for breaks (you can't log off there, and you can't return
+% at will, since the desert is instanced).
+%
+% ===
+% Monsters: The desert has very strong monsters that wield elemental
+% magics and respond to player actions. Ex. if you try to use
+% Explosive Frost on a fire monster, it'll cast Resist Cold on itself.
+%
 
 constants:
 
@@ -17,14 +151,310 @@ constants:
 
 resources:
 
+   desert_music = desertheat.mp3
+   desert_music_snow = desertsnow.mp3
+   desert_music_acid_rain = desertrain.mp3
+   desert_music_static_shock = desertdawn.mp3
+
 classvars:
 
    viTerrain_type = TERRAIN_BADLANDS 
 
 properties:
 
+   vrWading_Sound = water_wading_sound
+
+   pbSnowGroundTexture = TRUE
+   prMusic = desert_music
+
+   piPreviousPhase = 0
 
 messages:
+
+   RecalcLightAndWeather()
+   {
+      local SysDayPhase, i;
+
+      SysDayPhase = Send(SYS,@GetDayPhase);
+
+      % We're crossing over into a new quarter.
+      if piPreviousPhase <> SysDayPhase
+      {
+         Send(self,@EndAllThreats);
+         Send(self,@StartThreat,#cClasses=Send(self,@GetPhaseThreats));
+         
+         prMusic = Send(self,@GetPhaseMusic);
+         foreach i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            }
+         }
+      }
+
+      piPreviousPhase = SysDayPhase;
+      propagate;
+   }
+
+   GetPhaseMusic()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            return desert_music_static_shock;
+         case DAY_PHASE_DAY:
+            return desert_music;
+         case DAY_PHASE_DUSK:
+            return desert_music_acid_rain;
+         case DAY_PHASE_NIGHT:
+            return desert_music_snow;
+      }
+      return desert_music;
+   }
+   
+   GetPhaseThreats()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            return [&ShockStorm];
+         case DAY_PHASE_DAY:
+            if Send(Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER2),
+                     @GetPrismOfFireDefeated)
+            {
+               return [&HeatStorm];
+            }
+            return [&HeatThreat];
+         case DAY_PHASE_DUSK:
+            return [&AcidThreat];
+         case DAY_PHASE_NIGHT:
+            return [&ColdThreat];
+      }
+      return [&ShockStorm];
+   }
+
+   StartThreat(cClasses=$,report=TRUE)
+   {
+      local i;
+
+      % Don't start same threat if one already exists.
+      % Don't start threats with no players present.
+      if pbUser_in_room
+         AND cClasses <> $
+      {
+         foreach i in cClasses
+         {
+            if NOT Send(self,@HasObjectAttribute,#cClass=i)
+            {
+               Create(i,#host_object=self,#iDuration=$,#report=report);
+            }
+         }
+      }
+
+      return;
+   }
+
+   EndThreat(cClass=&ShockStorm)
+   {
+      if Send(self,@HasObjectAttribute,#cClass=cClass)
+      {
+         Send(Send(self,@GetObjectAttribute,#cClass=cClass),@Delete);
+      }
+      return;
+   }
+   
+   EndAllThreats()
+   {
+      local i;
+      
+      foreach i in plObject_attributes
+      {
+         if IsClass(i,&RoomThreat)
+            OR IsClass(i,&RoomStorm)
+         {
+            Send(i,@Delete);
+         }
+      }
+
+      return;
+   }
+
+   FirstUserEntered()
+   {
+      Post(self,@StartThreat,#cClasses=Send(self,@GetPhaseThreats),
+            #report=FALSE);
+
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      Post(self,@EndAllThreats);
+
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Turn any water to ice. Water tagged as ID 13.
+            % Water sidedefs tagged as ID 14.
+            Send(self,@ChangeTexture,#id=13,#new_texture=61017,
+                  #flags=CTF_FLOOR);
+            % Stop vertically scrolling water from animating.
+            Send(self,@AnimateWall,#wall=14,#animation=ANIMATE_NONE,
+                  #first_group=1,#second_group=1,#end_group=1);
+            % Change texture.
+            Send(self,@ChangeTexture,#id=14,#new_texture=61017,
+                  #flags=CTF_BELOWWALL);
+            % Stop water scroll effect and remove depth.
+            Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH0,
+                  #scrollSpeed=SCROLL_NONE);
+
+            % Give snow some depth and walking sounds.
+            Send(self,@SetSectorFlags,#sector=0,#depth=SF_DEPTH1,
+                  #scrollSpeed=SCROLL_NONE);
+            vrWading_Sound = snow_walk_sound;
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   "Use override if rooms have manually placed textures."
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove sludge water textures.
+         Send(self,@RemoveTextureChange,#id=13);
+         % Remove sludge water sides.
+         Send(self,@RemoveTextureChange,#id=14);
+         Send(self,@RemoveAnimateWallChange,#wall=14);
+         % Reset sector flag changes to sludge water.
+         Send(self,@RemoveSectorFlagChange,#id=13);
+
+         % Remove snow depth and walking sounds.
+         Send(self,@RemoveSectorFlagChange,#id=0);
+         vrWading_Sound = water_wading_sound;
+      }
+
+      propagate;
+   }
+
+   StartRain()
+   {
+      % Acid rain darkens the sand and pock marks rock.
+      Send(self,@ChangeTexture,#id=0,#new_texture=09080,#flags=CTF_FLOOR);
+      % Acid rain makes the water gross.
+      Send(self,@ChangeTexture,#id=13,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=14,#new_texture=09363,
+            #flags=CTF_NORMALWALL);
+      Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_SLOW);
+
+      propagate;
+   }
+   
+   EndRain()
+   {
+      % Remove gross sand.
+      Send(self,@RemoveTextureChange,#id=0);
+      % Remove sludge water textures.
+      Send(self,@RemoveTextureChange,#id=13);
+      % Remove sludge water sides.
+      Send(self,@RemoveTextureChange,#id=14);
+      % Reset sector flag changes to sludge water.
+      Send(self,@RemoveSectorFlagChange,#id=13);
+
+      propagate;
+   }
+
+   DoPhaseWeather()
+   "Called to simulate weather by some rooms."
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            % Some rooms rain instead of snow.
+            if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+               OR Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@EndSnow);
+               Send(self,@EndRain);
+            }
+            break;
+         case DAY_PHASE_DAY:
+            break;
+         case DAY_PHASE_DUSK:
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@StartRain);
+            }
+            break;
+         case DAY_PHASE_NIGHT:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@EndRain);
+            }
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@StartSnow);
+            }
+            break;
+      }
+      return;
+   }
+
+   Delete()
+   {
+      Send(self,@EndAllThreats);
+      propagate;
+   }
+
+   ReqSomethingUse(what = $, use_item = $)
+   {
+      local i;
+      
+      foreach i in plObject_attributes
+      {
+         % This area gives special messages to inform players
+         % of threat avoidance. Can also be used to prevent some item use
+         % by threats.
+         if IsClass(i,&RoomThreat)
+         {
+            if NOT Send(i,@ReqSomethingUse,#what=what,#use_item=use_item)
+            {
+               return FALSE;
+            }
+         }
+      }
+
+      propagate;
+   }
+
+   SpellCast(who = $,oSpell = $)
+   {
+      local i;
+      
+      foreach i in plObject_attributes
+      {
+         % This area gives special messages to inform players
+         % of threat avoidance.
+         if IsClass(i,&RoomThreat)
+         {
+            Send(i,@SpellCast,#who=who,#oSpell=oSpell);
+         }
+      }
+
+      propagate;
+   }
 
    GetRegion()
    {

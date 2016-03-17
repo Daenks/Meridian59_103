@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+XaerdunAfterlife is DesertTown
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   xaerdun_name_rsc = "Xaerdun, Demon of Greed"
+   xaerdun_icon_rsc = xaerdun.bgf
+   xaerdun_desc_rsc = \
+      "Remarkably straightforward for a Demon, Xaerdun eschews all traditional"
+      " codes of demonic conduct in favor of profit-seeking. Here, Xaerdun "
+      "keeps some part of himself in this form of existence, lying in wait "
+      "for those unfortunate souls that have recently died, "
+      "for he offers a product that few hapless mortals can refuse. "
+      "He will no doubt assist you - for a cost."
+   
+   demise_greeting = \
+      "~s~IIt seems you have met a terrible fate. I'm sure you'd like to "
+      "live again. Most do. Fortunately for you, I specialize in all things "
+      "the living desire. Perhaps we can make a deal. Approach me, "
+      "once-mortal."
+
+   initial_recovery_offer = \
+      "~s~II'm uncertain of the quality of this new currency you possess, "
+      "but gold is gold. Perhaps you would like to recover your items "
+      "for one million of said coins? I know you are in a bad situation, "
+      "so I shall employ my powers to withdraw them from "
+      "whichever banks hold your currency."
+
+   initial_resurrection_offer = \
+      "~s~IHow much do you value the chance to live again? Perhaps five "
+      "hundred thousand of your coins?"
+      
+   random_musing_msg1 = \
+      "~s~II know of things in other places, though my power may not always "
+      "extend to them. I have seen the lavish desires of a great man in "
+      "your land, a true hero, one Bei Naq. Surely, you must look up to him?"
+   random_musing_msg2 = \
+      "~s~II am surprised that your people tolerate one of our kind in such "
+      "a position of power. You likely hope that Bei Naq shall slay the "
+      "Demon among you, yes?"
+   random_musing_msg3 = \
+      "~s~IOne of your kind, a man named Roq, has seen us on occasion."
+   random_musing_msg4 = \
+      "~s~II am likely the only demon who cares to know of your ranks, "
+      "if only so that I may make more profitable alliances. You had a king, "
+      "once, who allied with forces far darker than we. Perhaps you could "
+      "set up a meeting between myself and those forces? No? That's too bad."
+   random_musing_msg5 = \
+      "~s~IThe followers of the one you call Jala came here quite some time "
+      "ago. I despise them, for they refuse to make deals. High and mighty "
+      "ideals make for very poor and very dead folk, don't they know? "
+      "Their greatest heroine still wanders this barren unlife simply "
+      "to spite me!"
+   random_musing_msg6 = \
+      "~s~II wonder who I would speak with to possibly purchase your fabled "
+      "Lich Queen of Brax..."
+   random_musing_msg7 = \
+      "~s~IYou've quite an interesting face. Is it for sale?"
+   random_musing_msg8 = \
+      "~s~IHow long are you going to hang around here, once-mortal? Don't "
+      "your kind have an insatiable desire to adventure? Just pay me "
+      "and move on already."
+   random_musing_msg9 = \
+      "~s~II can't seem to phase my lower half any further into this place. "
+      "It's quite drafty down there."
+   random_musing_msg10 = \
+      "~s~IThis place was once quite beautiful. But you wouldn't want to know "
+      "about~n ~o~Bthat~n ~s~Icataclysm. Simply understanding what happened "
+      "to this existence you call an afterlife would likely cause your "
+      "brain-flesh to spontaneously incinerate. We can't have that. You "
+      "wouldn't be able to make deals anymore."
+
+   riija_response = \
+      "~r~BDo not speak the name of that vile Trickster here!"
+   qor_response = \
+      "~s~IEvil is ~Iso~I bourgeoisie."
+   shal_response = \
+      "~s~IWhat profit is there in doing good for its own sake?"
+   kraanan_response = \
+      "~s~IWar is profitable. I like war. Do you know anyone who can put me "
+      "in touch with this Kraanan entity?"
+   faren_response = \
+      "~s~ICan his magics pull gold from the earth?"
+   jala_response = \
+      "~s~IUgh."
+   sorcery_response = \
+      "~s~II have allied with powerful sorcerers at times. That was long ago, "
+      "however. Do any practitioners still live? If not, I suppose you might "
+      "find them wandering in this place, if they have not lost their minds "
+      "over the ages."
+   banditry_response = \
+      "~s~ICrude tactics, but effective. Bandits are some of my favorite "
+      "trading partners."
+   witchery_response = \
+      "~s~IYou wanna join the fighting elite?"
+
+   Witchery_forget_potion_sale = \
+      "~s~IYou choose to sever our alliance? So be it, %s%s is yours if you "
+      "wish to buy one. Beware though, the powers of the amnesiac are "
+      "permanent.~n~k"
+   Xaerdun_witchery_teach = \
+      "~s~IThrough alliance with me, you can learn %s%s%s%s%s%s%s%s%s%s%s%s "
+      "at that level."
+   Xaerdun_nothing_for_sale = \
+      "~s~II've nothing minor to sell to once-mortals right now."
+   Xaerdun_too_costly = \
+      "~s~IYou can't afford %s%s! No sale!"
+   Xaerdun_cannot_give = \
+      "~s~II'm unable to give you %s%s. Perhaps you carry too much?"
+
+classvars:
+
+   vrName = xaerdun_name_rsc
+   vrIcon = xaerdun_icon_rsc
+   vrDesc = xaerdun_desc_rsc
+   viOccupation = MOB_ROLE_ELDER
+
+   vrTeach_message = Xaerdun_witchery_teach
+   vrNothing_for_sale = Xaerdun_nothing_for_sale
+   vrMrcnt_too_costly = Xaerdun_too_costly
+   vrMrcntCannotGive = Xaerdun_cannot_give
+
+   viAttributes = \
+      MOB_NOFIGHT | MOB_LISTEN | MOB_RANDOM | MOB_RECEIVE \
+      | MOB_TEACHER | MOB_COND_SELLER | MOB_NOMOVE | MOB_PERM_QUESTER
+
+properties:
+
+messages:
+
+   UserEntered(who=$)
+   {
+      Post(who,@SomeoneSaid,#what=self,#string=demise_greeting,
+            #type=SAY_RESOURCE);
+
+      propagate;
+   }
+
+   InitCondSale()
+   {
+      local oObj;
+
+      oObj=Create(&ForgetPotionXaerdunWitchery);
+      Send(Send(SYS,@GetLibrary),@AddToMobLib,#mob=self,
+            #triggers=[Send(oObj,@GetName)],
+            #action=[LIBACT_CONDITIONAL,oObj,25000,Witchery_forget_potion_sale]);
+
+      return;
+   }
+
+   SetForSale()
+   {
+      % Xaerdun sells levels 1-3 of his spells here.
+      % Players will have to find him in reality for levels 4-6.
+      plFor_Sale = [
+         $,$,
+         [
+            SID_LIGHT
+         ],
+      $];
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

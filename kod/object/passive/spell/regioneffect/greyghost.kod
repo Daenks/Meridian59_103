@@ -1,0 +1,59 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GreyGhost is RegionEffect
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   greyghost_name_rsc = "dead"
+   greyghost_icon_rsc = ispectate.bgf
+   greyghost_desc_rsc = \
+      "You feel strange - and grey. This condition seems to be different than "
+      "the forms you're used to, but it is most certainly Death!"
+   greyghost_on_first = \
+      "You feel strange... lifeless... grey..."
+   greyghost_off_first = \
+      "You feel the spark of life burgeoning within you."
+
+classvars:
+
+   vrName = greyghost_name_rsc
+   vrIcon = greyghost_icon_rsc
+   vrDesc = greyghost_desc_rsc
+   
+   applied_on_first = greyghost_on_first
+   applied_off_first = greyghost_off_first
+   
+   applied_in_rooms_of_class = &DesertAfterlife
+
+   viSpell_num = SID_GREY_GHOST
+
+properties:
+
+messages:
+
+   SetSpellPlayerFlag(who = $)
+   {
+      if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PHASED)
+         AND NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_SPECTATOR)
+      {
+         Send(who,@SetPlayerDrawFX,#drawfx=DRAWFX_SECONDTRANS);
+         Send(who,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
+      }
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
