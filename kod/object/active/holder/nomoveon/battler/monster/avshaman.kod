@@ -57,10 +57,10 @@ resources:
    avarshaman_dead_icon_rsc = avshamX.bgf
    avarshaman_dead_name_rsc = "dead avar shaman"
 
-   avarshaman_sound_hit = as_atkh.wav
-   avarshaman_sound_miss = as_atkm.wav
-   avarshaman_sound_death = as_dth.wav
-   avarshaman_sound_aware = as_awr.wav
+   avarshaman_sound_hit = as_atkh.ogg
+   avarshaman_sound_miss = as_atkm.ogg
+   avarshaman_sound_death = as_dth.ogg
+   avarshaman_sound_aware = as_awr.ogg
 
    avarshaman_lightning = avarspel.bgf
    shaman_cast_spell = "The shaman calls upon the great spirits to aid him!"

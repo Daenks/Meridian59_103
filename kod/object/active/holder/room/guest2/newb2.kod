@@ -45,20 +45,21 @@ messages:
    {
       local oSign;
 
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=31,#new_col=56);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=35,#new_col=59);
-      Send(self,@NewHold,#what=Create(&Cow),#new_row=30,#new_col=59);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=27,#new_col=48);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=29,#new_col=47);
+      Send(self,@NewHold,#what=Create(&Cow),#new_row=30,#new_col=45);
 
       propagate;
    }
 
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
+   CreateStandardExits()
    {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
+      plEdge_exits = $;
+      // plEdge_Exits = Cons([ LEAVE_NORTH, RID_RAZA_FOREST, 44, 40, ROTATE_NONE ],
+      //                  plEdge_exits);
 
+      propagate;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

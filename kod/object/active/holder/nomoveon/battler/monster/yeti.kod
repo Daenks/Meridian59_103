@@ -32,13 +32,13 @@ resources:
    yeti_dead_icon_rsc = yetiX.bgf
    yeti_dead_name_rsc = "dead yeti"
 
-   yeti_sound_hit = yti_atkh.wav
-   yeti_sound_miss = yti_atkm.wav
-   yeti_sound_death = yti_dth.wav
-   yeti_sound_aware = yti_awr.wav
+   yeti_sound_hit = yti_atkh.ogg
+   yeti_sound_miss = yti_atkm.ogg
+   yeti_sound_death = yti_dth.ogg
+   yeti_sound_aware = yti_awr.ogg
 
    yeti_cast_spell = "The yeti is offended by the polluting human magic."
-   yeti_cast_sound = bsp_dth.wav
+   yeti_cast_sound = bsp_dth.ogg
 
 classvars:
    vrKocName = yeti_koc_name_rsc

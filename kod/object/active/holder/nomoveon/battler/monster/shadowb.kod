@@ -39,10 +39,10 @@ resources:
    Shadowbeast_dead_icon_rsc = shadowX.bgf
    Shadowbeast_dead_name_rsc = "slain shadowbeast"
 
-   Shadowbeast_sound_hit = sha_atkm.wav
-   Shadowbeast_sound_miss = sha_atkm.wav
-   Shadowbeast_sound_death = sha_dth.wav
-   Shadowbeast_sound_aware = sha_awr.wav
+   Shadowbeast_sound_hit = sha_atkm.ogg
+   Shadowbeast_sound_miss = sha_atkm.ogg
+   Shadowbeast_sound_death = sha_dth.ogg
+   Shadowbeast_sound_aware = sha_awr.ogg
 
 classvars:
 

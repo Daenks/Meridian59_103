@@ -5,6 +5,40 @@ rem Create a shortcut that can connect to localhost.
 call :makeshortcut
 
 echo Post-Build started.
+
+rem Step 1: Try to find 105's resource directory.
+for /F "tokens=1-6 usebackq delims=:" %%a in ("%ProgramW6432%\Open Meridian\settings.txt") do (
+   set string=%%a
+   set string=!string: =!
+   if !string! == "ServerNumber" (
+      set servernum=%%b
+      set servernum=!servernum: =!
+      set servernum=!servernum:~0,-1!
+      if !servernum! == 105 set foundcli=1
+   )
+
+   if defined foundcli if !string! == "ClientFolder" (
+      set m59path=%%b%%c%%d%%e%%f
+      set m59path=!m59path:\\=\!
+      set m59driveletter=!m59path:~2,1!
+      set m59path=!m59path:~1,-2!
+      set m59path=!m59path:~2,255!
+      set m59path=!m59driveletter!:!m59path!
+
+      rem These two filetypes are the important ones. We could check for the music,
+      rem but I've heard more than one user say they deleted it from their resource
+      rem folder for various reasons.
+      if EXIST "!m59path!\resource\*.bgf" if EXIST "!m59path!\resource\*.bsf" (
+         call :copying
+         if %ERRORLEVEL% LSS 8 goto found
+      )
+      echo Copy failed from !m59path!, trying all profiles.
+      goto searchallprofiles
+   )
+)
+
+:searchallprofiles
+rem Step 2: Failed to find 105's resource directory, try all profiles.
 for /F "tokens=1-6 usebackq delims=:" %%a in ("%ProgramW6432%\Open Meridian\settings.txt") do (
    set string=%%a
    set string=!string: =!
@@ -34,10 +68,10 @@ exit /b 0
 echo Copying live graphics from !m59path! to client folder.
 rem The error check after this is currently redundant, but kept in case
 rem further copying code is added.
-robocopy "!m59path!\resource" ".\run\localclient\resource" *.bsf *.bgf *.wav *.mp3 /R:0 /MT /XO > postbuild.log
+robocopy "!m59path!\resource" ".\run\localclient\resource" *.bsf *.bgf *.ogg /R:0 /MT /XO > postbuild.log
 if %ERRORLEVEL% GTR 7 goto:eof
 rem These extensions aren't used.
-rem robocopy "!m59path!\resource" ".\run\localclient\resource" *.mid *.xmi /R:0 /MT /XO > nul
+rem robocopy "!m59path!\resource" ".\run\localclient\resource" *.mid *.xmi *.wav *.mp3 /R:0 /MT /XO > nul
 rem if %ERRORLEVEL% GTR 7 goto:eof
 goto:eof
 

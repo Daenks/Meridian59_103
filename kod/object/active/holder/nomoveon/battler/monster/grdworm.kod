@@ -46,9 +46,9 @@ resources:
    GroundWorm_dead_icon_rsc = wormmX.bgf
    GroundWorm_dead_name_rsc = "slain groundworm"
 
-   GroundWorm_sound_miss = gwrmatk.wav
-   GroundWorm_sound_death = gwrmdie.wav
-   GroundWorm_sound_aware = gwrm1awr.wav
+   GroundWorm_sound_miss = gwrmatk.ogg
+   GroundWorm_sound_death = gwrmdie.ogg
+   GroundWorm_sound_aware = gwrm1awr.ogg
 
    groundworm_cannot_hit = \
       "You are unable to reach the groundworm with your attacks."

@@ -162,8 +162,8 @@ vaultman_nodeposit_cash = de \
    "Die Verwahrung dieser Gegenstände würde %i Schillinge kosten - ich sehe, "
    "dass Du sie nicht hast."
 vaultman_cant_part = de \
-   "Wow... Ich könnte nicht die Verantwortung übernehmen, wenn Dein %s verschwinden "
-   "würde - Ich kann es nicht verwahren."
+   "Wow... ich könnte nicht die Verantwortung übernehmen, wenn dir %s verschwinden "
+   "würde! Ich kann es einfach nicht verwahren."
 vaultman_noaccount = de "Ich scheine nichts von Deiner Ausrüstung zu verwahren."
 vaultman_not_enough = de \
    "Du hast nicht so viele %s unter Deinem Namen in Verwahrung gegeben!"
@@ -181,18 +181,36 @@ minion_trouble = de "Du bemerkst, dass dein Diener dir Ärger gebracht hat..."
 autolooted_all = de "Du plünderst die Leiche und findest %d Schillinge."
 autolooted_all_no_money = de "Du plünderst die Leiche leer."
 autolooted_some = de \
-   "Du plünderst einige Dinge von der Leiche, und findest  %d Schillinge."
+   "Du plünderst einige Dinge von der Leiche, und findest %d Schillinge."
 autolooted_some_no_money = de "Du plünderst einige Gegenstände von der Leiche."
 autolooted_only_money = de \
-   "Du findest nichts besonderes was du plündern kannst, erhälst dafür aber  "
+   "Du findest nichts besonderes was du plündern kannst, erhältst dafür aber "
    "%d Schillinge."
 autolooted_none = de "Du findest nichts besonderes, was du plündern kannst."
 autoloot_too_far_away = de "Du bist zu weit weg um die Leiche zu plündern!"
 autoloot_got_some_but_full_now = de \
-   "Du nimmst ein paar Gegenstände von der Leiche auf , aber wirst behindert, "
+   "Du nimmst ein paar Gegenstände von der Leiche auf, wirst aber behindert "
    "alles aufzunehmen."
 autoloot_got_nothing_because_full = de \
    "Du kannst nicht alles plündern, da du schon zu voll bist."
 autoloot_got_only_shillings_because_full = de \
    "Du kannst nichts mehr von der Leiche plündern da du zu voll bist, und "
    "nimmst nur die %d Schillinge."
+monster_faction_negative_msg = de \
+      "Dein Ansehen bei %s hat sich verringgert"
+monster_faction_positive_msg = de \
+      "Dein Ansehen bei %s hat sich gesteigert"
+monster_faction_unspecified = de "UNSPEZIFIZIERTE MONSTER PARTEI!"
+monster_faction_farol = de "Knechte des Lebens"
+monster_faction_orc = de "den Orks"
+monster_faction_troll = de "den Trollen"
+monster_faction_farnohl = de "dem Haus von Lord Far'Nohl"
+monster_faction_lich = de "dem Opfern von Königin Queen Venya'cyr"
+monster_faction_psavar = de "dem Peet-Seeeep Avar Clan"
+monster_faction_kkavar = de "dem Kyip-Kyip-Kreeet Avar Clan"
+monster_faction_ctavar = de "dem Chyup-Tewee Avar Clan"
+monster_faction_fey_good = de "dem Fey Elhai"
+monster_faction_fey_evil = de "dem Fey Dirhai"
+monster_faction_frogmen = de "dem Froschman"
+monster_faction_heretic = de "dem Kult der Drei"
+monster_faction_undead = de "den Knechten des Todes"

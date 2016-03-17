@@ -41,7 +41,7 @@ resources:
    FreeAction_evade_caster = \
       "Kraanan's magic prevents you from hindering the free flow of battle."
 
-   FreeAction_sound = kfreeact.wav
+   FreeAction_sound = kfreeact.ogg
 
 classvars:
 
@@ -74,6 +74,11 @@ properties:
    % What percent of spellpower should we take in order to
    % give the player a chance to completely resist hold?
    piResistPercent = 15
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 40
 
 messages:
 

@@ -44,10 +44,10 @@ resources:
    OrcWizard_dead_icon_rsc = orcwizaX.bgf
    OrcWizard_dead_name_rsc = "dead orc"
 
-   OrcWizard_sound_hit = orc_atkh.wav
-   OrcWizard_sound_miss = orc_atkm.wav
-   OrcWizard_sound_death = wor_dth.wav
-   OrcWizard_sound_aware = wor_awr.wav
+   OrcWizard_sound_hit = orc_atkh.ogg
+   OrcWizard_sound_miss = orc_atkm.ogg
+   OrcWizard_sound_death = wor_dth.ogg
+   OrcWizard_sound_aware = wor_awr.ogg
 
 classvars:
 

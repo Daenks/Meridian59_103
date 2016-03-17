@@ -36,7 +36,7 @@ classvars:
    viHits_init_min = 250
    viHits_init_max = 300
 
-   % Being gold, it's worth much more than your average shield, but it's much heavier too
+   // Being gold, it's worth much more than your average shield, but it's much heavier too
    viValue_average = 500
    viWeight = 225  
    viBulk = 150
@@ -57,12 +57,16 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [ATCK_WEAP_SLASH,10],
+      return [ [ATCK_WEAP_SLASH,5],
                [ATCK_WEAP_BLUDGEON,10],
                [ATCK_WEAP_THRUST,10]
              ];
    }
 
+   GetHeatDamage()
+   {
+      return 1;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

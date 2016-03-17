@@ -1,8 +1,12 @@
 Scroll_name_rsc = de "Die Schriftrolle"
 Scroll_label_name_rsc = de "Allgemeine Schriftrolle"
 Scroll_desc_rsc = de \
-   "Diese Schriftrolle ist mit einer unleserlichen, krakeligen, mystischen "
+   "Diese Schriftrolle ist mit einer unleserlichen, krakeligen und mystischen "
    "Schrift bedeckt"
+scroll_append_hits = de "\n\nDiese Schriftrolle hat noch %i %s."
+scroll_hits_plural = de "mystische Aufladungen"
+scroll_hits_singular = de "mystische Aufladung"
+scroll_append_spellpower = de "  Diese Schriftrolle hat %i Zauberkraft."   
 Scroll_Broken = de \
    "Die Schriftrolle entzündet sich in Deinen Händen und zerfällt zu Asche."
 Scroll_fails = de \

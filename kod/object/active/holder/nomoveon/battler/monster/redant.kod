@@ -29,10 +29,10 @@ resources:
    redant_dead_icon_rsc = antrX.bgf
    redant_dead_name_rsc = "dead mutant ant"
 
-   redant_sound_hit = ant_atkh.wav
-   redant_sound_miss = ant_atkm.wav
-   redant_sound_death = ant_dth.wav
-   redant_sound_aware = ant_awr.wav
+   redant_sound_hit = ant_atkh.ogg
+   redant_sound_miss = ant_atkm.ogg
+   redant_sound_death = ant_dth.ogg
+   redant_sound_aware = ant_awr.ogg
 
 classvars:
 

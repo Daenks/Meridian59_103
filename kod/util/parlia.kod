@@ -72,7 +72,7 @@ resources:
    parliament_huge_number = "an incredibly large and unruly group."
 
    faction_power_shift = "~IYou sense a shift in the balance of power at the Royal Court."
-   faction_shift_wav = kaliorup.wav
+   faction_shift_wav = kaliorup.ogg
 
    parliament_scandalous_behavior = "There are rumors that someone on the Meridian Council is accepting favors from a faction in exchange for his vote. Oh, scandal!"
 
@@ -139,13 +139,14 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       % Every game day, we re-figure our numbers.
-      send(self,@CalcIntrigueNumbers);
+      Send(self,@CalcIntrigueNumbers);
+
       return;
    }
-      
+
    SendInfoMail(who=$)
    "Admin supported. Send a summary email of the faction scenario to the given user."
    {

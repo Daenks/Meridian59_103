@@ -43,9 +43,9 @@ resources:
    thrasher_dead_icon_rsc = res0001b.bgf
    thrasher_dead_name_rsc = "dead thrasher"
 
-   thrasher_sound_attack = res0001b.wav
-   thrasher_sound_death = res0001c.wav
-   thrasher_sound_aware = res0001a.wav
+   thrasher_sound_attack = res0001b.ogg
+   thrasher_sound_death = res0001c.ogg
+   thrasher_sound_aware = res0001a.ogg
 
    thrasher_spin_message = \
       "~bThe thrasher spins, damaging you with its attack."

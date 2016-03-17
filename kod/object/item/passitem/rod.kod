@@ -14,8 +14,6 @@ constants:
 
    include blakston.khd
 
-   ROD_HOLD_MAX = 5
-
 resources:
 
    include rod.lkod
@@ -31,17 +29,11 @@ resources:
    rod_charges_left_rsc = \
       "\n\nThis rod has %i charges remaining, and can hold a maximum "
       "of %i charges."
-   rod_success_wav_default_rsc = healwand.wav
-   rod_fail_wav_default_rsc = spelfail.wav
-
+   rod_success_wav_default_rsc = healwand.ogg
+   rod_fail_wav_default_rsc = spelfail.ogg
    rod_cannot_hold_more_rsc = \
       "If you held another rod, their competing magics would all "
       "conflict and explode!"
-   rod_default_expire_msg = \
-      "Your rod effect has expired."
-   rod_default_secondary_expire_msg = \
-      "Your rod's secondary effect has expired."
-
    rod_cant_use_yet = "You cannot use that item yet."
 
 classvars:
@@ -56,31 +48,16 @@ classvars:
    vrGoodDesc = Rod_desc_rsc
    vrBrokenDesc = Rod_desc_broken_rsc
 
-   use_fail_msg = Rod_useless
-   use_fail_wav = rod_fail_wav_default_rsc
-   use_success_msg = Rod_success_msg
-   use_success_wav = rod_success_wav_default_rsc
-   duration_expire_msg = rod_default_expire_msg
-   secondary_duration_expire_msg = rod_default_secondary_expire_msg
-
-   vbDurationEffect = FALSE
-   viEffectDuration = 0
-   vbSecondaryDurationEffect = FALSE
-   viSecondaryEffectDuration = 0
+   vrFail = Rod_useless
+   vrFailSound = rod_fail_wav_default_rsc
+   vrSuccess = Rod_success_msg
+   vrSuccessSound = rod_success_wav_default_rsc
 
    viRodUseDelay = 500 % Milliseconds
 
 properties:
 
    vrDesc = Rod_desc_rsc
-
-   % For rods with durations
-   ptActiveTimer = $
-   pbActive = FALSE
-
-   ptSecondaryActiveTimer = $
-   pbSecondaryActive = FALSE
-
    piRodUseDelay = 500 % Milliseconds
 
 messages:
@@ -117,7 +94,7 @@ messages:
             }
          }
 
-         if iRodCount >= ROD_HOLD_MAX
+         if iRodCount >= Send(SETTINGS_OBJECT,@GetMaxNumRods)
          {
             Send(what,@MsgSendUser,#message_rsc=rod_cannot_hold_more_rsc);
 
@@ -142,8 +119,8 @@ messages:
 
       if Send(self,@GetHits) < viConsumesHits
       {
-         Send(poOwner,@MsgSendUser,#message_rsc=use_fail_msg);
-         Send(poOwner,@WaveSendUser,#wave_rsc=use_fail_wav);
+         Send(poOwner,@MsgSendUser,#message_rsc=vrFail);
+         Send(poOwner,@WaveSendUser,#wave_rsc=vrFailSound);
 
          return FALSE;
       }
@@ -175,34 +152,9 @@ messages:
 
    CastSpell(what = $, apply_on = $)
    {
-      if vbDurationEffect
-      {
-         if ptActiveTimer <> $
-         {
-            DeleteTimer(ptActiveTimer);
-            ptActiveTimer = $;
-         }
-
-         pbActive = TRUE;
-         ptActiveTimer = CreateTimer(self,@DurationEffectExpire,viEffectDuration);
-      }
-
-      if vbSecondaryDurationEffect
-      {
-         if ptSecondaryActiveTimer <> $
-         {
-            DeleteTimer(ptSecondaryActiveTimer);
-            ptSecondaryActiveTimer = $;
-         }
-
-         pbSecondaryActive = TRUE;
-         ptSecondaryActiveTimer = CreateTimer(self,
-                @SecondaryDurationEffectExpire,viSecondaryEffectDuration);
-      }
-
-      Send(poOwner,@MsgSendUser,#message_rsc=use_success_msg);
+      Send(poOwner,@MsgSendUser,#message_rsc=vrSuccess);
       Send(Send(poOwner,@GetOwner),@SomethingWaveRoom,#what=poOwner,
-            #wave_rsc=use_success_wav);
+            #wave_rsc=vrSuccessSound);
 
       return;
    }
@@ -294,63 +246,6 @@ messages:
       AddPacket(4,rod_charges_left_rsc, 4,piHits, 4,viStartMaxHits);
 
       return;
-   }
-
-   DurationEffectExpire()
-   {
-      ptActiveTimer = $;
-      pbActive = FALSE;
-
-      if poOwner <> $
-         AND IsClass(poOwner,&User)
-         AND Send(poOwner,@IsLoggedOn)
-      {
-         Send(poOwner,@MsgSendUser,#message_rsc=duration_expire_msg);
-      }
-
-      return;
-   }
-   
-   SecondaryDurationEffectExpire()
-   {
-      ptSecondaryActiveTimer = $;
-      pbSecondaryActive = FALSE;
-
-      if poOwner <> $
-         AND IsClass(poOwner,&User)
-         AND Send(poOwner,@IsLoggedOn)
-      {
-         Send(poOwner,@MsgSendUser,#message_rsc=secondary_duration_expire_msg);
-      }
-
-      return;
-   }
-
-   IsActive()
-   {
-      return pbActive;
-   }
-
-   IsSecondaryActive()
-   {
-      return pbSecondaryActive;
-   }
-
-   Delete()
-   {
-      if ptActiveTimer <> $
-      {
-         DeleteTimer(ptActiveTimer);
-         ptActiveTimer = $;
-      }
-
-      if ptSecondaryActiveTimer <> $
-      {
-         DeleteTimer(ptSecondaryActiveTimer);
-         ptSecondaryActiveTimer = $;
-      }
-
-      propagate;
    }
 
 end

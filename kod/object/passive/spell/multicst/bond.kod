@@ -29,7 +29,7 @@ resources:
       "prism.  The item to be bonded must be targetted.  Once the casting "
       "is complete the item will follow its owner to hell itself."
    
-   Bond_sound = sbond.wav
+   Bond_sound = sbond.ogg
 
    bond_bad_target = "You may only bond items to a player."
    bond_no_prism = "The magic energies of the prism do not allow it to be bonded."
@@ -67,14 +67,17 @@ classvars:
    viDrainTime = 1000
 
    % In ms.
-   viCast_time = 0    
+   viCast_time = 0
 
-properties:                     
+properties:
 
    % 10 minutes for worst case, 2.3 mins for best case.
    viMultiCast_Spellpower = 6000
 
-messages:    
+   pbAccessible = FALSE
+   pbEnabled = FALSE
+
+messages:
 
    ResetReagents()
    {

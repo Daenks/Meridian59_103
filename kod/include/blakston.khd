@@ -405,6 +405,10 @@
 
    %%% Room IDs (RIDS)
 
+   % IMPORTANT: If you add new rooms, please add room constants in logical
+   % places. Currently this is a bit messy, and the way to stop it getting
+   % worse is to put some thought into where your constant should go.
+
    % Used by exits to indicate that the exit only leads to a locked door,
    %  not to a valid room.
    ROOM_LOCKED_DOOR = -1
@@ -426,16 +430,17 @@
    RID_CAVE2 = 27
    RID_CANYON1 = 32
    RID_NEST1 = 35
-   RID_HERMITHUT = 37
-   RID_HERMIT_HUT = 37
+   RID_HERMITHUT = 36
+   RID_HERMIT_HUT = 36
 
+   RID_CASTLE1D = 37
    RID_VICTORIA = 38
    RID_CASTLE1 = 38
    RID_CASTLE1B = 39
    RID_THRONE1 = 40
-   RID_DUNGEON = 41
+   RID_THRONE2 = 41 // Moved from 383
+   RID_DUNGEON = 42
 
-   RID_FORGOTTEN_TOO = 42
    RID_OOG = 43
    RID_OUTOFGRACE = 43
    RID_BADLAND1 = 45
@@ -539,9 +544,6 @@
    RID_JASWEST = 382
    RID_JAS_WEST = 382
    RID_JAS_VAULT = 384
-   
-   % New areas as extensions of old areas
-   RID_THRONE2 = 383
 
    % Outside world works as follows:
    % Name of roo and RID is grid coordinates, in form letter-number.
@@ -763,6 +765,7 @@
    RID_MOCKERS_ROOM = 854
    RID_BAZMANS_ROOM = 855
    RID_CASTLE2E = 856
+   RID_FORGOTTEN_TOO = 857 // Moved from 42
 
    RID_GODROOM = 901
    RID_UNIVERSITY = 902
@@ -790,6 +793,7 @@
    RID_GUEST_BAR = 1007
    RID_GUEST8 = 1008
    RID_GUEST_MUSEUM = 1008
+   RID_GUEST9 = 1009
 
    % Newbie rooms must be sequential from RID_NEWB_BASE
    RID_NEWB_BASE        = 1010
@@ -806,8 +810,8 @@
    RID_RAZA_BAR         = 1017
    RID_NEWB8            = 1018
    RID_RAZA_MUSEUM      = 1018
-
-   RID_NEWB_MAX = 1018
+   RID_NEWB9            = 1019
+   RID_NEWB_MAX         = 1019
 
    % Desert rooms, start at 1500.
    % RID_DESERT is the constant used by GetRegion.
@@ -941,7 +945,7 @@
    % Other stuff
    RID_UWORLD = 1
    RID_CANYONS = 32
-   RID_HERMHUT = 37
+   RID_HERMHUT = 36
    RID_GREENY = 41
    RID_OUTGRACE = 43
    RID_CANYONS2 = 47
@@ -1176,6 +1180,7 @@
    % Ambient lighting constants
    % Constants for natural level of light in the room.
    LIGHT_MIN = 0
+   LIGHT_ALMOST_NONE = 60
    LIGHT_VERY_DARK = 84
    LIGHT_DARK = 124
    LIGHT_NICE = 164
@@ -1862,6 +1867,7 @@
    IA_BONDED               = 18
    IA_MADE                 = 19
    IA_MADE_TRANSCENDANT    = 20
+   IA_DM_CREATED           = 21
 
    % Weapon Attributes.  These are attributes only applied to weapons.
    WA_TRAINING             = 51

@@ -42,14 +42,14 @@ resources:
    % battler_defender_miss - Psychochild's attack is blocked by you.
    % battler_defender_fail - Psychochild's scimitar scrapes you, failing to cause any real harm.
 
-   battler_attacker_hit = "%sYour %s %s %s%s for ~k~B%i~B%s damage."
-   battler_attacker_slay = "%sYour %s %s %s%s."
-   battler_attacker_miss = "%sYour attack %s %s%s."
-   battler_attacker_fail = "%sYour %s %s %s%s, failing to cause any real harm."
-   battler_defender_hit = "%s%s%s's %s %s you for ~r~B%i~B%s damage."
-   battler_defender_slay = "%s%s%s's %s %s you."
-   battler_defender_miss = "%s%s%s's attack %s you."
-   battler_defender_fail = "%s%s%s's %s %s you, failing to cause any real harm."
+   battler_attacker_hit = "%sYour %s %s %s%q for ~k~B%i~B%s damage."
+   battler_attacker_slay = "%sYour %s %s %s%q."
+   battler_attacker_miss = "%sYour attack %s %s%q."
+   battler_attacker_fail = "%sYour %s %s %s%q, failing to cause any real harm."
+   battler_defender_hit = "%s%s%q's %s %s you for ~r~B%i~B%s damage."
+   battler_defender_slay = "%s%s%q's %s %s you."
+   battler_defender_miss = "%s%s%q's attack %s you."
+   battler_defender_fail = "%s%s%q's %s %s you, failing to cause any real harm."
 
    battler_punch = "punch"
    battler_attack = "attack"
@@ -454,7 +454,6 @@ messages:
             }
 
             if Length(i) >= ENCHANTMENT_LIST_STATE
-               OR IsClass(Nth(i,2),&Boon)
             {
                state = Nth(i,3);
             }
@@ -505,28 +504,6 @@ messages:
       }
 
       return FALSE;
-   }
-
-   GetRawState(what=$)
-   "This message is needed to smoothly handle the transition from 3-element "
-   "enchantment list elements to 4-element ones.  When EndEnchantment is "
-   "called during RecreateAll, spells that modify stats (and are cast with "
-   "the old system) need to be able to obtain the correct state.  This is the "
-   "safest way to ensure the stats are reset correctly, and should be removed "
-   "after the transition."
-   {
-      local i;
-
-      foreach i in plEnchantments
-      {
-         if Nth(i,2) = what
-            AND Length(i) > 2
-         {
-            return Nth(i,3);
-         }
-      }
-
-      return $;
    }
 
    GetEnchantedState(what=$)
@@ -633,7 +610,7 @@ messages:
    {
       local iManaLost;
 
-      if IsClass(self,&Player)
+      if IsClass(self,&User)
          AND Send(self,@IsInCannotInteractMode)
       {
          Send(self,@NewMana);
@@ -662,7 +639,7 @@ messages:
 
       iManaGained = amount;
 
-      if IsClass(self,&Player)
+      if IsClass(self,&User)
          AND Send(self,@IsInCannotInteractMode)
       {
          Send(self,@NewMana);
@@ -707,7 +684,7 @@ messages:
          ptMana = $;
       }
 
-      if IsClass(self,&Player)
+      if IsClass(self,&User)
       {
          Send(self,@DrawMana);
       }
@@ -1359,7 +1336,7 @@ messages:
          iType = -iType;
       }
 
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
          AND damage <> $
          AND damage >= (Send(what,@GetMaxHealth)*33)
       {
@@ -1372,12 +1349,12 @@ messages:
          iDmg = damage;
       }
 
-      rDamageDesc = Send(self,@GetDamageDesc,#damage=iDmg,#type=iType);      
+      rDamageDesc = Send(self,@GetDamageDesc,#damage=iDmg,#type=iType);
       rColor = battler_blue_text;
 
-      if IsClass(self,&Player)
+      if IsClass(self,&User)
       {
-         if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED) 
+         if Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
          {
             % Don't use "punch" if we're morphed, use a more generic term.
             if oWeapon = $
@@ -1387,7 +1364,7 @@ messages:
          }
 
 
-         if IsClass(what,&Player)
+         if IsClass(what,&User)
             AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
          {
             rColor = battler_plain_text;
@@ -1403,27 +1380,29 @@ messages:
             {
                Send(self,@MsgSendUser,#message_rsc=battler_attacker_slay,
                      #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
+                     #parm4=Send(what,@GetDef),#type5=STRING_RESOURCE,
+                     #parm5=Send(what,@GetName));
             }
             else if damage > 99
             {
                Send(self,@MsgSendUser,#message_rsc=battler_attacker_hit,
                      #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName),
-                     #parm6=damage/100,#parm7=rColor);
+                     #parm4=Send(what,@GetDef),#type5=STRING_RESOURCE,
+                     #parm5=Send(what,@GetName),#parm6=damage/100,#parm7=rColor);
             }
             else
             {
                Send(self,@MsgSendUser,#message_rsc=battler_attacker_fail,
                      #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
+                     #parm4=Send(what,@GetDef),#type5=STRING_RESOURCE,
+                     #parm5=Send(what,@GetName));
             }
          }
       }
 
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
       {
-         if IsClass(self,&Player)
+         if IsClass(self,&User)
             AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED) 
          {
             rColor = battler_plain_text;
@@ -1437,22 +1416,23 @@ messages:
          {
             Send(what,@MsgSendUser,#message_rsc=battler_defender_slay,
                   #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc);
+                  #type3=STRING_RESOURCE,#parm3=Send(self,@GetName),
+                  #parm4=rWeaponName,#parm5=rDamageDesc);
          }
          else if damage > 99
          {
             Send(what,@MsgSendUser,#message_rsc=battler_defender_hit,
                   #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc,#parm6=damage/100,#parm7=rColor);
+                  #type3=STRING_RESOURCE,#parm3=Send(self,@GetName),
+                  #parm4=rWeaponName,#parm5=rDamageDesc,
+                  #parm6=damage/100,#parm7=rColor);
          }
          else
          {
             Send(what,@MsgSendUser,#message_rsc=battler_defender_fail,
                   #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc);
+                  #type3=STRING_RESOURCE,#parm3=Send(self,@GetName),
+                  #parm4=rWeaponName,#parm5=rDamageDesc);
          }
       }
 
@@ -1466,9 +1446,10 @@ messages:
       local rColor;
 
       % This is kinda kludgy, should call messages in subclasses instead.
-      if IsClass(self,&Player)
+      if IsClass(self,&User)
       {
-         if IsClass(what,&Player) AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_MORPHED) 
+         if IsClass(what,&User)
+            AND NOT Send(what,@CheckPlayerFlag,#flag=PFLAG_MORPHED) 
          {
             rColor = battler_plain_text;
          }
@@ -1477,19 +1458,18 @@ messages:
             rColor = battler_blue_text;
          }
 
-         Send(self,@MsgSendUser,#message_rsc=battler_attacker_miss,
-              #parm1=rColor,
-              #parm2=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj),
-              #parm3=Send(what,@GetDef),
-              #parm4=Send(what,@GetName));
+         Send(self,@MsgSendUser,#message_rsc=battler_attacker_miss,#parm1=rColor,
+               #parm2=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj),
+               #parm3=Send(what,@GetDef),#type4=STRING_RESOURCE,
+               #parm4=Send(what,@GetName));
          Send(stroke_obj,@SendMissMessageToAttacker,#who=self,#victim=what,
-              #color_rsc=rColor,#weapon_used=Send(self,@LookupPlayerWeapon),
-              #bText=FALSE);
+               #color_rsc=rColor,#weapon_used=Send(self,@LookupPlayerWeapon),
+               #bText=FALSE);
       }
 
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
       {
-         if IsClass(self,&Player)
+         if IsClass(self,&User)
             AND NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_MORPHED)
          {
             rColor = battler_plain_text;
@@ -1501,7 +1481,7 @@ messages:
       
          Send(what,@MsgSendUser,#message_rsc=battler_defender_miss,
                #parm1=rColor,#parm2=Send(self,@GetCapDef),
-               #parm3=Send(self,@GetName),
+               #type3=STRING_RESOURCE,#parm3=Send(self,@GetName),
                #parm4=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj));
          % Flag them as "dodging", so they can potentially improve.
          Send(what,@SetPlayerFlag,#flag=PFLAG_DODGED,#value=TRUE);

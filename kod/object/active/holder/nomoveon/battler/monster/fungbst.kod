@@ -39,10 +39,10 @@ resources:
    fungusbeast_dead_icon_rsc = fungX.bgf
    fungusbeast_dead_name_rsc = "dead fungus beast"
 
-   fungusbeast_sound_hit = fng_atkh.wav
-   fungusbeast_sound_miss = fng_atkm.wav
-   fungusbeast_sound_death = fng_dth.wav
-   fungusbeast_sound_aware = fng_awr.wav
+   fungusbeast_sound_hit = fng_atkh.ogg
+   fungusbeast_sound_miss = fng_atkm.ogg
+   fungusbeast_sound_death = fng_dth.ogg
+   fungusbeast_sound_aware = fng_awr.ogg
 
 classvars:
 

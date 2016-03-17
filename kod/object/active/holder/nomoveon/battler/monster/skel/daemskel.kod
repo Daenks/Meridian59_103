@@ -32,9 +32,9 @@ resources:
    DaemonSkeleton_dead_icon_rsc = skelX.bgf
    DaemonSkeleton_dead_name_rsc = "pile of bones"
 
-   DaemonSkeleton_sound_miss = skl4_atk.wav
-   DaemonSkeleton_sound_death = skl4_die.wav
-   DaemonSkeleton_sound_aware = skl4_awr.wav
+   DaemonSkeleton_sound_miss = skl4_atk.ogg
+   DaemonSkeleton_sound_death = skl4_die.ogg
+   DaemonSkeleton_sound_aware = skl4_awr.ogg
 
 classvars:
 
@@ -58,7 +58,7 @@ classvars:
    viDefault_behavior = \
       AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE \
       | AI_FIGHT_SWITCHALOT | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 450
+   viCashmin = 350
    viCashmax = 1025
    vrSound_miss = DaemonSkeleton_sound_miss
    vrSound_aware = DaemonSkeleton_sound_aware

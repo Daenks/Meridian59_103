@@ -554,7 +554,7 @@ messages:
 
       piMood = 0;
 
-      iStatPoints = (viDifficulty + 1) * 10;
+      iStatPoints = Bound((viDifficulty + 1) * 10,20,100);
 
       if iStatPoints - 1 > 50
       {
@@ -1728,19 +1728,28 @@ messages:
 
    RangedAttackChance(base=0)
    {
+      local oSpell, state;
+
       if Send(self,@IsEnchanted,#byClass=&Vertigo)
       {
          base = base + 18;
       }
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Winds)
+      if (poOwner <> $)
       {
-         base = base + 24;
-      }
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_WINDS);
+         state = Send(poOwner,@GetEnchantmentState,#what=oSpell);
+         if (state <> $)
+         {
+            base = base + 24;
+         }
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Sandstorm)
-      {
-         base = base + 30;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SANDSTORM);
+         state = Send(poOwner,@GetEnchantmentState,#what=oSpell);
+         if (state <> $)
+         {
+            base = base + 30;
+         }
       }
 
       return base;
@@ -2137,7 +2146,7 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered;
+      local iDamage, iResist, iPercentClass, i, each_obj;
 
       if NOT precision
       {
@@ -2154,28 +2163,7 @@ messages:
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
 
-      % Increase initial damage by 35 percent if attacker damage rod is active
-      bAttackerEmpowered = FALSE;
-      if what <> $
-         AND IsClass(what,&Player)
-      {
-         foreach i in Send(what,@GetHolderPassive)
-         {
-            if IsClass(i,&DamageRod)
-               AND Send(i,@IsActive)
-            {
-               bAttackerEmpowered = TRUE;
-            }
-         }
-      }
-
-      if bAttackerEmpowered
-      {
-         damage = damage * 135 / 100;
-      }
-
-      % check for any applicable resistances.
-
+      % Check for any applicable resistances.
       if NOT absolute
       {
          iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,
@@ -5845,7 +5833,6 @@ messages:
                Create(&Longsword),
                Create(&Longbow),
                Create(&BattleBow),
-               Create(&HealWand),
                Create(&Gauntlet),
                Create(&JewelOfFroz),
                Create(&Arrow,#number=150),
@@ -5853,6 +5840,7 @@ messages:
                Create(&NeruditeArrow,#number=150),
                Create(&IceArrow,#number=150),
                Create(&FireArrow,#number=150),
+               Create(&AcidArrow,#number=150),
                Create(&Helm),
                Create(&Mint,#number=100),
                Create(&NeruditeBow),

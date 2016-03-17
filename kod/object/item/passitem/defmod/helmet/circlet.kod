@@ -46,7 +46,8 @@ classvars:
    viGround_group = 1
    viInventory_group = 1
 
-   viDefense_base = 5               % This is the default value for piDefense_bonus
+   // This is the default value for piDefense_bonus
+   viDefense_base = 5
 
    viLayer = 1
 
@@ -106,6 +107,10 @@ messages:
       return TRUE;
    }
 
+   GetHeatDamage()
+   {
+      return 1;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

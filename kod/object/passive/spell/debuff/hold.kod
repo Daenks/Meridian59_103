@@ -21,17 +21,13 @@ resources:
    hold_name_rsc = "hold"
    hold_icon_rsc = ihold.bgf
    hold_desc_rsc = \
-      "Surrounds the target with magical energy, causing "
-      "paralysis for several seconds.  "
-      "Requires two purple mushrooms to cast."
-
+      "Surrounds the target with magical energy, causing paralysis for "
+      "several seconds.  Requires two purple mushrooms to cast."
    hold_already_enchanted = "%s%s is already held."
    hold_caster = "%s%s is now held in place by a magical force."
-   hold_on = "A magical tingling pulses through your body.  You are unable to move."
+   hold_on = \
+      "A magical tingling pulses through your body.  You are unable to move."
    hold_off = "The magical hold lifts and you are able to move once more."
-   
-   hold_break_rod_active = \
-      "Flowing energies dissipate your spell before you even begin!"
 
 classvars:
 
@@ -51,20 +47,20 @@ classvars:
    viSpellExertion = 2
    viMana = 15
 
-   viChance_To_Increase = 10
+   viChance_To_Increase = 15
    viMeditate_ratio = 50
 
    viFlash = FLASH_BAD
 
-   % In seconds, since it works off GetTime()
-   viPostCast_time = 2 % Recommended value 1.
+   // In seconds, since it works off GetTime()
+   viPostCast_time = 1 // 103 value 2.
 
 properties:
 
-   piBaseDuration = 2000 % Recommended value 2000.
-   piSpellPowerModifier = 40 % Recommended value 30.
-   piDeviation = 50 % Recommended value 10%.
-   viCast_time = 0 % Recommended value 600 (milliseconds).
+   piBaseDuration = 2000 // 103 value 2000.
+   piSpellPowerModifier = 30 // 103 value 40.
+   piDeviation = 10 // 103 value 50%.
+   viCast_time = 600 // 103 value 0 (milliseconds).
 
 messages:
 
@@ -74,52 +70,6 @@ messages:
       plReagents = Cons([&PurpleMushroom,2],plReagents);
 
       return;
-   }
-
-   CanPayCosts(who=$,lTargets=$,bItemCast=FALSE)
-   {
-      local target, i;
-
-      % Can cast spell if the 1 target item is a user
-      if Length(lTargets) <> 1
-      {
-         return FALSE;
-      }
-
-      target = First(lTargets);
-
-      % TODO: this is not an ideal implementation of blind/hold resistance.
-      % These should be enchantments themselves, rather than requiring
-      % multiple checks of every item in the target's inventory.
-      if IsClass(target,&Player)
-      {
-         foreach i in Send(target,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodHold)
-               AND Send(i,@IsActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=hold_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-
-      if IsClass(who,&Player)
-      {
-         foreach i in Send(who,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodHold)
-               AND Send(i,@IsSecondaryActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=hold_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-
-      propagate;
    }
 
    CastSpell(who=$,lTargets=$,iSpellpower=0,report=TRUE)
@@ -178,7 +128,7 @@ messages:
       Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,#report=report,
             #state=report);
 
-      if IsClass(oTarget,&Player)
+      if IsClass(oTarget,&User)
       {
          if report
          {
@@ -186,7 +136,8 @@ messages:
          }
 
          % Do not paralyze DMs.
-         if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
+         if NOT (IsClass(oTarget,&DM)
+            AND Send(oTarget,@PlayerIsImmortal))
          {
             Send(oTarget,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_ON);
          }
@@ -220,7 +171,7 @@ messages:
 
    EndEnchantment(who=$,report=TRUE,state=$)
    {
-      if IsClass(who,&Player)
+      if IsClass(who,&User)
       {
          % Don't override phasing hold.
          if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PHASED)

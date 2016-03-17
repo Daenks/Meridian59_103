@@ -1,0 +1,10 @@
+# common rules
+#
+# to be included at the end of each makefile
+
+makedirs:
+		-@mkdir $(OUTDIR) 2>&1
+
+clean :
+		@$(RM) $(OUTDIR)/* 2>&1
+		@$(RMDIR) $(OUTDIR) 2>&1

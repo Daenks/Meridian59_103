@@ -29,10 +29,10 @@ resources:
    ant_dead_icon_rsc = antX.bgf
    ant_dead_name_rsc = "dead ant"
 
-   ant_sound_hit = ant_atkh.wav
-   ant_sound_miss = ant_atkm.wav
-   ant_sound_death = ant_dth.wav
-   ant_sound_aware = ant_awr.wav
+   ant_sound_hit = ant_atkh.ogg
+   ant_sound_miss = ant_atkm.ogg
+   ant_sound_death = ant_dth.ogg
+   ant_sound_aware = ant_awr.ogg
 
 classvars:
 

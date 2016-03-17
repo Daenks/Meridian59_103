@@ -28,10 +28,10 @@ resources:
    giantratkdead_icon_rsc = ratkingX.bgf
    giantratkdead_name_rsc = "dead rat king"
 
-   giantratksound_hit = rat_atkh.wav
-   giantratksound_miss = rat_atkm.wav
-   giantratksound_death = rat_dth.wav
-   giantratksound_aware = rat_awr.wav
+   giantratksound_hit = rat_atkh.ogg
+   giantratksound_miss = rat_atkm.ogg
+   giantratksound_death = rat_dth.ogg
+   giantratksound_aware = rat_awr.ogg
 
 classvars:
 

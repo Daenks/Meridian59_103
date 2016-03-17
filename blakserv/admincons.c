@@ -93,6 +93,9 @@ void LoadAdminConstants(void)
 		if (name_str[0] == '%')	/* ignore comments lines */
 			continue;
 		
+		if (strlen(name_str) > 1 && name_str[0] == '/' && name_str[1] == '/')
+			continue;
+
 		value_str = strtok(NULL,"= \t\n");
 		
 		if (name_str == NULL || name_str[0] == '%')

@@ -31,7 +31,7 @@ resources:
    DetectEvil_already_enchanted_rsc = "You can already see the vile."
    DetectEvil_Success_rsc = "You grant %s%s the ability to sense evil."
 
-   DetectEvil_sound = sdevil.wav
+   DetectEvil_sound = sdevil.ogg
 
    DetectEvil_spell_intro = \
       "Shal'ille Lv. 1: Allows you to detect evil people and monsters."
@@ -62,6 +62,11 @@ classvars:
    vrSucceed_wav = DetectEvil_sound
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 90
 
 messages:
 

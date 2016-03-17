@@ -36,10 +36,10 @@ resources:
    spiderqueen_dead_icon_rsc = spdrquX.bgf
    spiderqueen_dead_name_rsc = "dead queen spider"
 
-   spiderqueen_sound_hit = qn_atkh.wav
-   spiderqueen_sound_miss = qn_atkm.wav
-   spiderqueen_sound_death = qn_dth.wav
-   spiderqueen_sound_aware = qn_awr.wav
+   spiderqueen_sound_hit = qn_atkh.ogg
+   spiderqueen_sound_miss = qn_atkm.ogg
+   spiderqueen_sound_death = qn_dth.ogg
+   spiderqueen_sound_aware = qn_awr.ogg
 
 classvars:
 

@@ -148,40 +148,13 @@ enum
 #include <crtdbg.h>
 #include <io.h>
 #include <process.h>
+#include "mutex_windows.h"
+#include "thdmsgqueue_windows.h"
+#include "main_windows.h"
 #endif  // BLAK_PLATFORM_WINDOWS
 
 #ifdef BLAK_PLATFORM_LINUX
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <limits.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include "critical_section.h"
-#define MAX_PATH PATH_MAX
-#define O_BINARY 0
-#define O_TEXT 0
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
-
-#define VER_PLATFORM_WIN32_WINDOWS 1
-#define VER_PLATFORM_WIN32_NT 2
-#define PROCESSOR_INTEL_386 386
-#define PROCESSOR_INTEL_486 486
-#define PROCESSOR_INTEL_PENTIUM 586
-
-// XXX stuff below here is junk
-typedef int DWORD;
-typedef int SOCKET;
-typedef int HANDLE;
-typedef int HINSTANCE;
-typedef int HMODULE;
-typedef int HWND;
-typedef unsigned long long UINT64;
-#define MAXGETHOSTSTRUCT 64
+#include "linux-types.h"
 #endif  // BLAK_PLATFORM_LINUX
 
 #include <algorithm>
@@ -297,7 +270,12 @@ char * GetLastErrorStr();
 #include "systimer.h"
 #include "memory.h"
 
-#include "interface.h"
+#ifdef BLAK_PLATFORM_WINDOWS
+#include "interface_windows.h"
+#else
+#include "interface_linux.h"
+#endif
+
 #include "intrlock.h"
 #include "chanbuf.h"
 
@@ -309,6 +287,13 @@ char * GetLastErrorStr();
 #include "adminfn.h"
 
 #include "async.h"
+
+#ifdef BLAK_PLATFORM_WINDOWS
+#include "async_windows.h"
+#else
+#include "async_linux.h"
+#endif
+
 #include "debug.h"
 
 #include "admincons.h"
@@ -317,7 +302,10 @@ char * GetLastErrorStr();
 
 #include "maintenance.h"
 #include "block.h"
+
+#ifdef BLAK_PLATFORM_WINDOWS
 #include "database.h"
+#endif
 
 #include "jansson.h"
 

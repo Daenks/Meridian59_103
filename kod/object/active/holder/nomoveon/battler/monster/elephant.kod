@@ -27,10 +27,10 @@ resources:
    elephant_dead_icon_rsc = elephantX.bgf
    elephant_dead_name_rsc = "dead elephant"
 
-   elephant_sound_hit = elephant_atkh.wav
-   elephant_sound_miss = elephant_atkh.wav
-   elephant_sound_death = elephant_dth.wav
-   elephant_sound_aware = elephant_awr.wav
+   elephant_sound_hit = elephant_atkh.ogg
+   elephant_sound_miss = elephant_atkh.ogg
+   elephant_sound_death = elephant_dth.ogg
+   elephant_sound_aware = elephant_awr.ogg
 
 classvars:
 

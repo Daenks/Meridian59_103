@@ -30,7 +30,7 @@ resources:
       "transgressors against you when you are anonymous.  "
       "Requires two rainbow ferns and one firesand to cast."
 
-   anonymity_sound = ranonym.wav
+   anonymity_sound = ranonym.ogg
 
 classvars:
 
@@ -59,6 +59,11 @@ classvars:
    vbCanCastOnOthers = FALSE
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 80
 
 messages:
 

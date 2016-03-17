@@ -35,9 +35,9 @@ resources:
    include duke2.lkod
 
    room_name_Duke2 = "Blackstone Keep"
-   room_Duke2 = Duke2.roo
+   room_Duke2 = duke2.roo
 
-   Duke2_music = area01.mp3
+   Duke2_music = area01.ogg
 
    Duke2_West_Wing_Door = \
       "The west wing of the keep is closed by the Duke's orders."
@@ -48,12 +48,12 @@ resources:
    Duke2_East_Wing_Door_Open = \
       "The ceremony hall is now opened on the Duke's authority."
 
-   Duke2_Hall_Open_Sound = fanfare1.wav
-   Duke2_Hall_Close_Sound = dorclose.wav
-   fountain_soundDuke2 = boil.wav
+   Duke2_Hall_Open_Sound = fanfare1.ogg
+   Duke2_Hall_Close_Sound = dorclose.ogg
+   fountain_soundDuke2 = boil.ogg
 
-   Duke2_door_open_sound = doordown.wav
-   Duke2_door_close_sound = doorrsup.wav
+   Duke2_door_open_sound = doordown.ogg
+   Duke2_door_close_sound = doorrsup.ogg
 
 classvars:
 

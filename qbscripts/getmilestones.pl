@@ -7,8 +7,8 @@ use Pithub;
 
 my $m = Pithub::Issues::Milestones->new;
 my $result = $m->list(
-    repo => 'Meridian59_103',
-    user => 'Daenks',
+    repo  => 'Meridian59',
+    user  => 'OpenMeridian105',
 );
 
 

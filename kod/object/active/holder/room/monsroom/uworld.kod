@@ -23,10 +23,10 @@ resources:
 
    room_name_underworld = "The Underworld"
    room_underworld = uworld.roo
-   underworld_music = undrwrld.mp3
+   underworld_music = undrwrld.ogg
 
    hell_projectile_icon_rsc = lightnin.bgf
-   portal_zap_sound = fbolt.wav
+   portal_zap_sound = fbolt.ogg
 
    underworld_assgame = "Something forces you to stay your hand."
 
@@ -48,7 +48,7 @@ resources:
       "You enter the portal, and find yourself lost, confusion starts to "
       "take over when you find yourself home."
 
-   burning_wading_sound = frying.wav
+   burning_wading_sound = frying.ogg
 
 classvars:
 

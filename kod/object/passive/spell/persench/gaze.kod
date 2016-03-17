@@ -40,7 +40,7 @@ resources:
 
    paralyze_no_soul = "You can't detect a soul in %s%s to turn to stone!"
 
-   paralyze_sound= qparalyz.wav
+   paralyze_sound= qparalyz.ogg
 
 classvars:
 
@@ -72,6 +72,10 @@ classvars:
 
 properties:
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 10
 
 messages:
 
@@ -86,13 +90,9 @@ messages:
 
    GetDuration(iSpellPower=0)
    {
-      local iDuration;
-
       % Duration for Gaze is simply the spellpower it was cast at.
       % One second per spellpower, bound 1-99 here just in case.
-      iDuration = Bound(iSpellPower,1,99);
-
-      return iDuration * 1000;
+      return Bound(iSpellPower,1,99) * 1000;
    }
 
    GetStateValue(who=$,iSpellPower=0)

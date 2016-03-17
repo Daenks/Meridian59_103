@@ -28,10 +28,10 @@ resources:
    CaveOrc_dead_icon_rsc = OrcCaveX.bgf
    CaveOrc_dead_name_rsc = "dead cave orc"
 
-   CaveOrc_sound_hit = orc_atkh.wav
-   CaveOrc_sound_miss = cor_atkm.wav
-   CaveOrc_sound_death = cor_dth.wav
-   CaveOrc_sound_aware = cor_awr.wav
+   CaveOrc_sound_hit = orc_atkh.ogg
+   CaveOrc_sound_miss = cor_atkm.ogg
+   CaveOrc_sound_death = cor_dth.ogg
+   CaveOrc_sound_aware = cor_awr.ogg
 
 classvars:
 

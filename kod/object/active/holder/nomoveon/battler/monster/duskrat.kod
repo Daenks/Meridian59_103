@@ -42,10 +42,10 @@ resources:
    duskrat_dead_icon_rsc = ratX.bgf
    duskrat_dead_name_rsc = "dead dusk rat"
 
-   duskrat_sound_hit = rat_atkh.wav
-   duskrat_sound_miss = rat_atkm.wav
-   duskrat_sound_death = rat_dth.wav
-   duskrat_sound_aware = rat_awr.wav
+   duskrat_sound_hit = rat_atkh.ogg
+   duskrat_sound_miss = rat_atkm.ogg
+   duskrat_sound_death = rat_dth.ogg
+   duskrat_sound_aware = rat_awr.ogg
 
 classvars:
 

@@ -40,10 +40,10 @@ resources:
    ghost_dead_icon_rsc = ghostX.bgf
    ghost_dead_name_rsc = "dead ghost"
 
-   ghost_sound_hit = gst_atkh.wav
-   ghost_sound_miss = gst_atkm.wav
-   ghost_sound_death = gst_dth.wav
-   ghost_sound_aware = gst_awr.wav
+   ghost_sound_hit = gst_atkh.ogg
+   ghost_sound_miss = gst_atkm.ogg
+   ghost_sound_death = gst_dth.ogg
+   ghost_sound_aware = gst_awr.ogg
 
 classvars:
 

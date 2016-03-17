@@ -39,12 +39,12 @@ static int timer_id;
 static int scroll_width, scroll_height;  // Size of scrolling window
 static int scroll_y;       // Current y position in scrolling bitmap
 
-static char *sounds[] = { "swrdmtl1.wav", 
-			  "swrdmtl2.wav", 
-			  "swrdmtl3.wav",
-			  "patk.wav",
-			  "orc_awr.wav",
-			  "fquake.wav",                          
+static char *sounds[] = { "swrdmtl1.ogg", 
+			  "swrdmtl2.ogg", 
+			  "swrdmtl3.ogg",
+			  "patk.ogg",
+			  "orc_awr.ogg",
+			  "fquake.ogg",                          
 };
 #define num_sounds 3   // # of sounds for default dude
 

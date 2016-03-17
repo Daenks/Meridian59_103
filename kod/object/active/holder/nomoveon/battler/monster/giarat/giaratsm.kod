@@ -28,10 +28,10 @@ resources:
    smallratdead_icon_rsc = ratsmX.bgf
    smallratdead_name_rsc = "dead rat"
 
-   smallratsound_hit = rat_atkh.wav
-   smallratsound_miss = rat_atkm.wav
-   smallratsound_death = rat_dth.wav
-   smallratsound_aware = rat_awr.wav
+   smallratsound_hit = rat_atkh.ogg
+   smallratsound_miss = rat_atkm.ogg
+   smallratsound_death = rat_dth.ogg
+   smallratsound_aware = rat_awr.ogg
 
 classvars:
 

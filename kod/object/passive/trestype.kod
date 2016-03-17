@@ -289,8 +289,9 @@ messages:
             {
                iSafetyCntr = 0;
 
-               while (NOT Send(oTreasure,@SpellItemIsAccessible))
-                     AND iSafetyCntr++ < 5
+               while ((IsClass(oTreasure,&SpellItem)
+                     AND NOT Send(oTreasure,@SpellItemIsAccessible))
+                  AND iSafetyCntr++ < 5)
                {
                   oTreasure = Send(self,@GenerateTreasure,#level=level,
                                     #who=who,#mob=mob,#tokengen=tokengen,

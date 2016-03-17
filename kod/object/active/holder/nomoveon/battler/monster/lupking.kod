@@ -38,14 +38,14 @@ resources:
    lupoggking_dead_icon_rsc = lupkingx.bgf
    lupoggking_dead_name_rsc = "dead lupogg king"
 
-   lupoggking_sound_hit = lup_atkm.wav
-   lupoggking_sound_miss = lup_atkm.wav
-   lupoggking_sound_death = lup_dth.wav
-   lupoggking_sound_aware = lup_awr.wav
+   lupoggking_sound_hit = lup_atkm.ogg
+   lupoggking_sound_miss = lup_atkm.ogg
+   lupoggking_sound_death = lup_dth.ogg
+   lupoggking_sound_aware = lup_awr.ogg
 
    lupoggking_cast_spell = \
       "The lupogg king covers you in a foul paralyzing slime!"
-   lupoggking_cast_sound = bsp_dth.wav
+   lupoggking_cast_sound = bsp_dth.ogg
 
    lupoggking_death_blow = \
       "Your last attack ends the lupogg king's reign!"

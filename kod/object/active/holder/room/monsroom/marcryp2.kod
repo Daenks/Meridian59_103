@@ -28,8 +28,8 @@ resources:
    include marcryp2.lkod
 
    room_name_MarionCrypt2 = "Resting place of Marion's ancestors"
-   room_MarionCrypt2 = MarDun02.roo
-   MarionCrypt2_music = Song.mp3
+   room_MarionCrypt2 = mardun02.roo
+   MarionCrypt2_music = Song.ogg
 
    MarionCrypt2_boss_message = \
       "~kAn eerie voice echos, \"~IYou may not pass yet!~I\""
@@ -40,7 +40,7 @@ resources:
       "This place is lost to civility and those that enter are likely to "
       "die.  No pity shall be given to those that cross this order. "
   
-   MarionCrypt2_door_sound = stoneup2.wav
+   MarionCrypt2_door_sound = stoneup2.ogg
 
 classvars:
 

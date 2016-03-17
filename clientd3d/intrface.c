@@ -529,6 +529,10 @@ void PerformAction(int action, void *action_data)
       TextInputSetText((char *) action_data, True);
       break;
 
+   case A_TEXTINSERT_MERINTR_RSC:
+      TextInputSetText(GetString(GetModuleHandle("MERINTR"),(int)action_data), True);
+      break;
+
    case A_TEXTCOMMAND:
       TextInputSetText((char *) action_data, False);
       ParseGotText((char *) action_data);

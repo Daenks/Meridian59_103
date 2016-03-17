@@ -29,10 +29,10 @@ resources:
    mummy_dead_icon_rsc = mummyX.bgf
    mummy_dead_name_rsc = "dead mummy"
 
-   mummy_sound_hit = mum_atkh.wav
-   mummy_sound_miss = mum_atkm.wav
-   mummy_sound_death = mum_die.wav
-   mummy_sound_aware = mum_awr2.wav
+   mummy_sound_hit = mum_atkh.ogg
+   mummy_sound_miss = mum_atkm.ogg
+   mummy_sound_death = mum_die.ogg
+   mummy_sound_aware = mum_awr2.ogg
 
 classvars:
 

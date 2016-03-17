@@ -1,0 +1,100 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ItemAttDMCreated is ItemAttribute
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  Added to an item if created by a DM or higher.
+%
+%  Form is:
+%
+%      [IA_DM_CREATED, $, dm object ID]
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   itematt_dmcreated_name = "dm-created %s"
+   itematt_dmcreated_desc = \
+      "  This %s was created by %q."
+
+classvars:
+
+   viItem_Att_Num = IA_DM_CREATED
+   vrName = itematt_dmcreated_name
+   vrDesc = itematt_dmcreated_desc
+
+properties:
+
+messages:
+
+   SetPrimaryState(state1=$)
+   "State1 contains the DMs object ID."
+   {
+      if (state1 = $)
+      {
+         Debug("SetPrimaryState called with nil state!");
+
+         return FALSE;
+      }
+
+      return state1;
+   }
+
+   AppendDesc(oItem=$,who=$,lData=$)
+   {
+      if (IsClass(who,&DM))
+      {
+         AddPacket(4,vrDesc,4,Send(oItem,@GetName),6,Send(Nth(lData,3),@GetTrueName));
+      }
+      else
+      {
+         AddPacket(4,system_blank_resource);
+      }
+
+      return;
+   }
+
+   AddToTreasureTable()
+   {
+      return FALSE;
+   }
+
+   SetItemsToAttribute()
+   {
+      // plItems_to_attribute should never be used by this itematt
+      plItems_to_Attribute = $;
+
+      return;
+   }
+
+   CanBeSpoofed()
+   {
+      return FALSE;
+   }
+
+   InitiallyIdentified()
+   {
+      return TRUE;
+   }
+
+   IsMagicalEffect()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

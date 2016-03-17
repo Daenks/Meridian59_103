@@ -17,10 +17,10 @@ constants:
 resources:
 
    include g5.lkod
-   waterfall_soundg5 = wfall2.wav
-   room_OutdoorsG5 = G5.roo
+   waterfall_soundg5 = wfall2.ogg
+   room_OutdoorsG5 = g5.roo
    room_name_OutdoorsG5 ="The King's Way"
-   OutdoorsG5_music = walk1.mp3
+   OutdoorsG5_music = walk1.ogg
 
 classvars:
 

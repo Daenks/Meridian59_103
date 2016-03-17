@@ -32,10 +32,10 @@ resources:
    reflection_dead_name_rsc = "dead reflection"
    reflection_weapon_rsc = scimov.bgf
 
-   reflection_sound_hit = orc_atkh.wav
-   reflection_sound_miss = orc_atkm.wav
-   reflection_sound_death = orc_dth.wav
-   reflection_sound_aware = orc_awr.wav
+   reflection_sound_hit = orc_atkh.ogg
+   reflection_sound_miss = orc_atkm.ogg
+   reflection_sound_death = orc_dth.ogg
+   reflection_sound_aware = orc_awr.ogg
 
    reflection_delete =  "%s%s disappears into a puff of smoke."
 

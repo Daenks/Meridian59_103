@@ -27,9 +27,9 @@ messages:
 
    Constructed()
    {
-      plTreasure = [ [ &NeruditeArrow, 10 ],
+      plTreasure = [ [ &NeruditeArrow, 9 ],
+                     [ &HealWand, 1 ],
                      [ &Spideye, 3 ],
-                     [ &DamageRod, 3 ],
                      [ &NightVisionPotion, 3],
                      [ &FireRing, 3],
                      [ &ColdRing, 3],
@@ -50,7 +50,7 @@ messages:
                      [ &DetectInvisibilityPotion, 3],
                      [ &DetectGoodPotion, 3],
                      [ &DetectEvilPotion, 3],
-                     [ &CurePoisonPotion, 3],
+                     [ &CurePoisonPotion, 6],
                      [ &CureDiseasePotion, 3],
                      [ &BaitPotion, 3],
                      [ &HastePotion, 3],

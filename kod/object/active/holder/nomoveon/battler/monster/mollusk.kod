@@ -54,9 +54,9 @@ resources:
    MolluskMonster_dead_icon_rsc = molX.bgf
    MolluskMonster_dead_name_rsc = "slain mollusk creature"
 
-   MolluskMonster_sound_miss = mol_atk.wav
-   MolluskMonster_sound_death = mol_dth.wav
-   MolluskMonster_sound_aware = mol_awr.wav
+   MolluskMonster_sound_miss = mol_atk.ogg
+   MolluskMonster_sound_death = mol_dth.ogg
+   MolluskMonster_sound_aware = mol_awr.ogg
 
    MolluskMonster_rock_small = rocksm.bgf
    MolluskMonster_rock_large = rockla.bgf

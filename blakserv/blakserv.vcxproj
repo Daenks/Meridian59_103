@@ -266,6 +266,7 @@ copy $(SolutionDir)bin\libcurl.dll $(SolutionDir)run\server</Command>
     <ClCompile Include="adminfn.c" />
     <ClCompile Include="apndfile.c" />
     <ClCompile Include="async.c" />
+    <ClCompile Include="async_windows.c" />
     <ClCompile Include="blakres.c" />
     <ClCompile Include="block.c" />
     <ClCompile Include="bufpool.c" />
@@ -283,7 +284,7 @@ copy $(SolutionDir)bin\libcurl.dll $(SolutionDir)run\server</Command>
     <ClCompile Include="game.c" />
     <ClCompile Include="gamelock.c" />
     <ClCompile Include="garbage.c" />
-    <ClCompile Include="interface.c" />
+    <ClCompile Include="interface_windows.c" />
     <ClCompile Include="intrlock.c" />
     <ClCompile Include="intstringhash.c" />
     <ClCompile Include="kodbase.c" />
@@ -295,10 +296,12 @@ copy $(SolutionDir)bin\libcurl.dll $(SolutionDir)run\server</Command>
     <ClCompile Include="loadrsc.c" />
     <ClCompile Include="loadstr.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="main_windows.c" />
     <ClCompile Include="maintenance.c" />
     <ClCompile Include="memory.c" />
     <ClCompile Include="message.c" />
     <ClCompile Include="motd.c" />
+    <ClCompile Include="mutex_windows.c" />
     <ClCompile Include="nameid.c" />
     <ClCompile Include="object.c" />
     <ClCompile Include="parsecli.c" />
@@ -320,6 +323,7 @@ copy $(SolutionDir)bin\libcurl.dll $(SolutionDir)run\server</Command>
     <ClCompile Include="systimer.c" />
     <ClCompile Include="table.c" />
     <ClCompile Include="term.c" />
+    <ClCompile Include="thdmsgqueue_windows.c" />
     <ClCompile Include="time.c" />
     <ClCompile Include="timer.c" />
     <ClCompile Include="trysync.c" />

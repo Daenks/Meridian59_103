@@ -12,7 +12,7 @@ CorHall is CorNothRoom
 
 constants:
 
-   include blakston.khd             
+   include blakston.khd
 
 
 resources:
@@ -21,7 +21,7 @@ resources:
 
    room_name_corhall = "The Adventurer's Hall of Cor Noth"
    room_corhall = corhall.roo
-   corhall_music = main.mp3
+   corhall_music = main.ogg
 
    news_cor_hall = "General News"
    news_cor_hall_desc = "Find out what's going on around Meridian."

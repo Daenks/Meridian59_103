@@ -19,11 +19,11 @@ resources:
    include h4.lkod
 
    room_name_OutdoorsH4 ="The Flatlands"
-   room_OutdoorsH4 = H4.roo
-   OutdoorsH4_music = forest.mp3
+   room_OutdoorsH4 = h4.roo
+   OutdoorsH4_music = forest.ogg
 
    waterfall_msg1 = "You aren't daring enough to take ~BTHAT~n plunge!"
-   waterfall_soundH4 = wfall2.wav
+   waterfall_soundH4 = wfall2.ogg
    
 classvars:
 

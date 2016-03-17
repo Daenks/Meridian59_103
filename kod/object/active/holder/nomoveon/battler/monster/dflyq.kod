@@ -48,10 +48,10 @@ resources:
    DragonFlyQueen_dead_icon_rsc = dfloX.bgf
    DragonFlyQueen_dead_name_rsc = "dead dragonfly queen"
 
-   DragonFlyQueen_sound_hit = df_atkm.wav
-   DragonFlyQueen_sound_miss = df_atkm.wav
-   DragonFlyQueen_sound_death = df_dth.wav
-   DragonFlyQueen_sound_aware = df_awr.wav
+   DragonFlyQueen_sound_hit = df_atkm.ogg
+   DragonFlyQueen_sound_miss = df_atkm.ogg
+   DragonFlyQueen_sound_death = df_dth.ogg
+   DragonFlyQueen_sound_aware = df_awr.ogg
 
    dragonfly_charmed = \
       "The dragonfly scarfs down the %s and looks at you with "

@@ -1,0 +1,186 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Truce is RoomEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   include truce.lkod
+
+   truce_name_rsc = "truce"
+   truce_icon_rsc = itruce.bgf
+   truce_desc_rsc = \
+      "The spirit of Shal'ille descends upon the area and calms the minds of "
+      "all present, preventing combat for several minutes. Requires an "
+      "emerald and a vial of yrxl sap to cast."
+   truce_unnecessary = "Combat with monsters is already impossible here."
+   truce_on = \
+      "A numbing calm settles upon your mind. You find yourself unable "
+      "to lift a weapon against nature."
+   truce_off = \
+      "The calm that had gripped your mind departs.  You feel ready "
+      "for battle once more."
+   truce_guardian = \
+      "Your guardian angel tells you, \"You are not ready to cast this spell.\""
+   truce_no_towns = "Shal'ille does not permit you to interfere right now."
+   truce_sound = shalille.ogg
+
+classvars:
+
+   vrIcon = truce_icon_rsc
+   vrDesc = truce_desc_rsc
+   vrName = truce_name_rsc
+   vrSucceed_wav = truce_sound
+   vrAlreadyEnchanted = truce_unnecessary
+
+   viSpell_num = SID_TRUCE
+   viSchool = SS_SHALILLE
+   viMana = 20
+   viSpellExertion = 3
+   viSpell_level = 4
+   viChance_To_Increase = 15
+   viMeditate_ratio = 30
+   viBaseRange = 10
+
+   // In seconds, since it works off GetTime()
+   viPostCast_time = 1
+
+   // Default animation speed for icon in ms
+   viAnimationSpeed = 200
+   viAnimation_start = 1
+   viAnimation_end = 3
+   viIcon_animation_start = 4
+   viIcon_animation_end = 6
+
+properties:
+
+   pbAccessible = FALSE
+   pbEnabled = FALSE
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Emerald,1],plReagents);
+      plReagents = Cons([&Yrxlsap,1],plReagents);
+
+      return;
+   }
+
+   CanPayCosts(who = $, lTargets = $)
+   {
+      local oRoom, i, oActive;
+
+      oRoom = Send(who,@GetOwner);
+
+      // Check if combat already banned in room.
+      if Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_MOB_COMBAT)
+         OR Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+      {
+         Send(who,@MsgSendUser,#message_rsc=truce_unnecessary);
+
+         return FALSE;
+      }
+
+      if NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         OR Send(who,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE)
+      {
+         Send(who,@MsgSendUser,#message_rsc=truce_guardian);
+
+         return FALSE;
+      }
+
+      // Check to see if the room restricts guild attacks.
+      // Check to see if the person is attackable in the area, is on a PvP
+      //  server, or is a DM.
+      if (NOT Send(oRoom,@AllowGuildAttack,#what=who))
+         AND Send(SYS,@IsPKAllowed)
+         AND NOT IsClass(who,&DM)
+      {
+         % Tried to cast unguilded in town with no monsters.  Denied!
+         Send(who,@MsgSendUser,#message_rsc=truce_no_towns);
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   CastSpell(who = $, iSpellPower = 0)
+   "Initiation point for the spell."
+   {
+      local oRoom;
+
+      oRoom = Send(who,@GetOwner);
+
+      // Global effects of the enchantment
+      Send(oRoom,@SomeoneSaid,#type=SAY_MESSAGE,#string=truce_on,#what=self);
+      Send(oRoom,@RoomStartEnchantment,#what=self,#state=$,
+           #time=Send(self,@GetDuration,#iSpellPower=iSpellPower));
+      Send(oRoom,@SetRoomFlag,#flag=ROOM_NO_MOB_COMBAT,#value=TRUE);
+
+      propagate;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDur;
+
+      % 10-20 seconds at 1 spellpower
+      % 60-120 seconds at 99 spellpower.
+      iDur = (20 + iSpellPower) * 1000;
+      iDur = Random(iDur/2, iDur);
+
+      return iDur;
+   }
+
+   StartEnchantmentNewOccupant(who = $)
+   "Called on new occupants of the enchanted room."
+   {
+      Send(who,@MsgSendUser,#message_rsc=truce_on);
+
+      return;
+   }
+
+   EndRoomEnchantment(who = $, state = $)
+   "Sent to each user as they leave the room.  Since we didn't enchant them, "
+   "nothing to undo."
+   {
+      Send(who,@MsgSendUser,#message_rsc=truce_off);
+
+      return;
+   }
+
+   EndSpell(where = $, state = $)
+   "Called when spell expires."
+   {
+      local i;
+
+      Send(where,@SomeoneSaid,#type=SAY_MESSAGE,#string=truce_off,#what=self);
+      if Send(where,@CheckRoomFlag,#flag=ROOM_NO_MOB_COMBAT)
+      {
+         Send(where,@SetRoomFlagtoDefault,#flag=ROOM_NO_MOB_COMBAT);
+      }
+
+      return;
+   }
+
+   SpellBannedInArena()
+   {
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -36,7 +36,7 @@ enum
 
 void CreateBuiltInAccounts(void)
 {
-	int i,account_id,object_id;
+	int i, account_id, object_id = INVALID_OBJECT;
 	val_type name_val,system_id_val;
 	parm_node p[2];
 	
@@ -88,11 +88,12 @@ void CreateBuiltInAccounts(void)
 #endif
 					object_id = CreateObject(ADMIN_CLASS,2,p);
 				break;
-			} 
+			}
 			
-			if (AssociateUser(account_id,object_id) == False)
+			if (object_id == INVALID_OBJECT
+				|| AssociateUser(account_id,object_id) == false)
 				eprintf("CreateBuiltInAccounts had AssociateUser fail, on account %i object %i\n",
-				account_id,object_id);
+					account_id, object_id);
 		}
 	}
 }

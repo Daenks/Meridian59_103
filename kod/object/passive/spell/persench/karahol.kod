@@ -40,7 +40,7 @@ resources:
    Karahols_spell_intro = "Qor Lv. 2: Temporarily gives you berserker combat "
    "abilities, but with a price to pay later."
 
-   KaraholsCurse_sound = qkcurse.wav
+   KaraholsCurse_sound = qkcurse.ogg
 
 classvars:
 
@@ -74,6 +74,11 @@ classvars:
    viOffensive = TRUE
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 20
 
 messages:
 

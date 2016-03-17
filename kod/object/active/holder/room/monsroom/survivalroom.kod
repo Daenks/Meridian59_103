@@ -34,7 +34,7 @@ constants:
    PB_START_TIME = 180000
    
    % 1 minute to begin other survivals
-   DEFLT_START_TIME = 60000
+   DEFLT_START_TIME = 30000
    
    % Report goals every 1 minute
    REPORT_TIME = 60000
@@ -107,7 +107,7 @@ resources:
    spectator_only_msg = \
       "Combat has already begun. You may spectate until all participants "
       "have died."
-   round_begin_wav = gong.wav
+   round_begin_wav = gong.ogg
 
 classvars:
 
@@ -413,10 +413,11 @@ messages:
                         [&TrollMask,30],
                         [&ShrunkenHeadMask,35],
                         [&DaemonMask,40],
-                        [&FeyMask,45],
-                        [&XeoMask,50],
-                        [&KriipaMask,55],
-                        [&CowMask,75],
+                        [&FeyMask,50],
+                        [&XeoMask,60],
+                        [&KriipaMask,70],
+                        [&StoneTrollMask,80],
+                        [&CowMask,90],
                         [&KraananCharm,100]];
 
       Send(self,@RecalcLightAndWeather);
@@ -655,7 +656,7 @@ messages:
             Send(self,@NewHold,#what=oReward,
                   #new_row=First(lRandomSpawnPoint),
                   #new_col=Nth(lRandomSpawnPoint,2));
-            iRewardTime = iRewardTime + 45000;
+            iRewardTime = iRewardTime + 75000;
          }
       }
 

@@ -34,7 +34,7 @@ resources:
       "visible once more."
    invisibility_success_rsc = "%s%s disappears from view."
 
-   invisibility_sound = qinvis.wav
+   invisibility_sound = qinvis.ogg
 
 classvars:
 
@@ -63,6 +63,11 @@ classvars:
    viDefensive = TRUE
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 20
 
 messages:
 

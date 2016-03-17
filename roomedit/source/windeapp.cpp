@@ -66,7 +66,7 @@
 //
 // Main window title
 //
-#define TITLE "BlakSton Room Editor version 2.2 (October 19, 2015)"
+#define TITLE "BlakSton Room Editor version 2.3 (February 23, 2016)"
 
 //
 // Generated help file.

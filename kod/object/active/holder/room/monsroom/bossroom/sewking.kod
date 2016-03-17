@@ -72,10 +72,10 @@ resources:
    room_SewerKingLair = sewking.roo
    room_name_SewerKingLair = "The Ancient Smuggler's Crossing"
 
-   SewerKingLair_music = cave.mp3
-   SewerKingLair_door_sound = down2.wav
-   SewerKingLair_water_sound = wfall2.wav
-   SewerKingLair_drowning_sound = ouchf2.wav
+   SewerKingLair_music = cave.ogg
+   SewerKingLair_door_sound = down2.ogg
+   SewerKingLair_water_sound = wfall2.ogg
+   SewerKingLair_drowning_sound = ouchf2.ogg
 
    SewerKingLair_lever_desc = \
       "This lever is caked with years' worth of accumulated rust and slime."
@@ -90,7 +90,7 @@ resources:
 %      "and probably unwise, explorer.  You shudder to think of the fate "
 %      "that must have befallen this poor soul."
 
-   SewerKingLair_waterfall_sound = wfall2.wav
+   SewerKingLair_waterfall_sound = wfall2.ogg
 
 classvars:
 

@@ -104,9 +104,6 @@ classvars:
 
 properties:
 
-   piOldAreaEnchStyle = FALSE   % If true, spell functions as an old-style Area Enchantment
-                                % No trance required, and will remain in initial room for duration
-                                
    plCurrentEnchantments = $    % Each radius spell keeps track of every instance of its own application
                                 
    ptRecalculationTimer = $     % Each radius spell checks boundaries and effects every RADIUS_CHECK_TIME if active
@@ -147,30 +144,12 @@ messages:
          }
       }
 
-      if piOldAreaEnchStyle
+      foreach i in plCurrentEnchantments
       {
-         foreach i in plCurrentEnchantments
+         if First(i) = who
          {
-            if Nth(i,8) = oRoom
-            {
-               if IsClass(who,&User)
-               {
-                  Send(who,@MsgSendUser,#message_rsc=radius_ench_old_style_aleady_cast);
-               }
-
-               return FALSE;
-            }
-         }
-      }
-      else
-      {
-         foreach i in plCurrentEnchantments
-         {
-            if Nth(i,1) = who
-            {
-               Send(self,@BreakTrance,#who=who,#event=EVENT_STEER);
-               return FALSE;
-            }
+            Send(self,@BreakTrance,#who=who,#event=EVENT_STEER);
+            return FALSE;
          }
       }
 
@@ -208,10 +187,7 @@ messages:
             {
                Send(oUser,@MsgSendUser,#message_rsc=radius_ench_cast);
 
-               if NOT piOldAreaEnchStyle
-               {
-                  Send(oUser,@SetFlickerFlag);
-               }
+               Send(oUser,@SetFlickerFlag);
             }
             else
             {
@@ -237,14 +213,6 @@ messages:
       if iRange = 0
       {
          iRange = Send(self,@CalculateRange,#iSpellPower=iSpellPower);
-      }
-
-      if iDuration = $
-      {
-         if piOldAreaEnchStyle
-         {
-            iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
-         }
       }
 
       oRoom = Send(source,@GetOwner);
@@ -291,14 +259,7 @@ messages:
          iRange = Nth(i,6);
          iDuration = Nth(i,7);
 
-         if piOldAreaEnchStyle
-         {
-            oRoom = Nth(i,8);
-         }
-         else
-         {
-            oRoom = Send(source,@GetOwner);
-         }
+         oRoom = Send(source,@GetOwner);
 
          if oRoom = $
             or NOT IsClass(oRoom,&Room)
@@ -314,8 +275,7 @@ messages:
             lSqDist = Send(source,@SquaredDistanceTo,#what=oObject);
 
             if (lEnchanted = $ OR FindListElem(lEnchanted,oObject) = 0)
-               AND ((lSqDist <> $ AND lSqDist <= (iRange * iRange))
-                  OR piOldAreaEnchStyle)
+               AND (lSqDist <> $ AND lSqDist <= (iRange * iRange))
             {
                if Send(self,@TargetIsValid,#target=oObject,#source=source)
                {
@@ -335,8 +295,7 @@ messages:
                lSqDist = Send(source,@SquaredDistanceTo,#what=oObject);
 
                if (lEnchanted = $ OR FindListElem(lEnchanted,oObject) = 0)
-                  AND ((lSqDist <> $ AND lSqDist <= (iRange * iRange))
-                     OR piOldAreaEnchStyle)
+                  AND (lSqDist <> $ AND lSqDist <= (iRange * iRange))
                {
                   if Send(self,@TargetIsValid,#target=oObject,#source=source)
                   {
@@ -351,13 +310,9 @@ messages:
          foreach oObject in lEnchanted
          {
             iDistance = Send(source,@SquaredDistanceTo,#what=oObject);
-            if ((iDistance = $
+            if (iDistance = $
                OR iDistance > (iRange * iRange))
-                  AND NOT piOldAreaEnchStyle)
                OR NOT Send(self,@TargetIsValid,#target=oObject,#source=source)
-               OR (piOldAreaEnchStyle
-                   AND (Send(oObject,@GetOwner) = $
-                        OR Send(oObject,@GetOwner) <> oRoom))
             {
                Send(self,@LeaveRadius,#what=oObject,#iPower=iPower,#source=source);
                lEnchanted = DelListElem(lEnchanted,oObject);
@@ -374,7 +329,6 @@ messages:
 
          if IsClass(source,&User)
             AND iDrain >= (viDrainTime / viManaDrain)
-            AND NOT piOldAreaEnchStyle
          {
             if Send(source,@GetMana) >= 1
             {
@@ -404,7 +358,6 @@ messages:
          }
 
          if IsClass(source,&User)
-            AND NOT piOldAreaEnchStyle
          {
             SetNth(i,2,iDrain + RADIUS_CHECK_TIME);
          }
@@ -651,7 +604,6 @@ messages:
          OR event = EVENT_DISRUPT
          OR event = EVENT_CAST
          OR event = EVENT_USE
-         OR piOldAreaEnchStyle
       {
          return FALSE;
       }
@@ -696,14 +648,7 @@ messages:
                Send(self,@LeaveRadius,#what=oObj,#iPower=iPower,#source=source);
             }
 
-            if piOldAreaEnchStyle
-            {
-               oRoom = Nth(i,8);
-            }
-            else
-            {
-               oRoom = Send(source,@GetOwner);
-            }
+            oRoom = Send(source,@GetOwner);
 
             if oRoom <> $
                AND IsClass(oRoom,&Room)
@@ -716,10 +661,7 @@ messages:
                   {
                      if oUser = source
                      {
-                        if NOT piOldAreaEnchStyle
-                        {
-                           Send(oUser,@RecalcFlickerFlag);
-                        }
+                        Send(oUser,@RecalcFlickerFlag);
                      }
                      else
                      {
@@ -783,11 +725,6 @@ messages:
       return viBaseLightIntensity;
    }
 
-   GetOldAreaEnchStyle()
-   {
-      return piOldAreaEnchStyle;
-   }
-
    GetDuration(iSpellPower=0)
    {
       return ((50 + iSpellpower)*1000);
@@ -818,11 +755,6 @@ messages:
    ModifySpellPower(who=$,state=$,oSpell=$,iSpellPower=0)
    {
       return iSpellPower;
-   }
-
-   TryRuinShot(who=$,iSpellPower=0)
-   {
-      return FALSE;
    }
 
    GetAlteredChance(chance=0,what=$,lRadiusState=0)

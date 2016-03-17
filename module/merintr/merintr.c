@@ -259,12 +259,12 @@ keymap interface_key_table[] = {
 
 { VK_SPACE,       KEY_ANY,              A_GO },
 { VK_RETURN,      KEY_ANY,              A_LOOK },
-{ VK_SINGLEQUOTE, KEY_ANY,              A_TEXTINSERT,   "say " },
-{ '1',            KEY_SHIFT,            A_TEXTINSERT,   "yell " },
-{ '3',            KEY_SHIFT,            A_TEXTINSERT,   "who" },
-{ VK_SEMICOLON,   KEY_ANY,              A_TEXTINSERT,   "emote " },
-{ VK_PERIOD,      KEY_ANY,              A_TEXTINSERT,   "tell " },
-{ VK_SLASH,       KEY_SHIFT,            A_TEXTINSERT,   "help" },
+{ VK_SINGLEQUOTE, KEY_ANY,              A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_SAY },
+{ '1',            KEY_SHIFT,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_YELL },
+{ '3',            KEY_SHIFT,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_WHO },
+{ VK_SEMICOLON,   KEY_ANY,              A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_EMOTE },
+{ VK_PERIOD,      KEY_ANY,              A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_TELL },
+{ VK_SLASH,       KEY_SHIFT,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_HELP },
 
 { VK_ADD,         KEY_ANY,              A_MAPZOOMIN },
 { VK_SUBTRACT,    KEY_ANY,              A_MAPZOOMOUT },
@@ -542,17 +542,17 @@ static action_label	gActionLabels[] =
 	{"tabforward",		A_TABFWD,			(void *)IDC_MAIN},
 	{"tabbackward",		A_TABBACK,			(void *)IDC_MAIN},
 
-	// chat
-	{"chat",			A_GOTOSAY,			NULL},
-	{"say",				A_TEXTINSERT,		"say "},
-	{"tell",			A_TEXTINSERT,		"tell "},
-	{"yell",			A_TEXTINSERT,		"yell "},
-	{"broadcast",		A_TEXTINSERT,		"broadcast "},
-	{"emote",			A_TEXTINSERT,		"emote "},
-	{"who",				A_WHO,				NULL},
+   // chat
+   {"chat",       A_GOTOSAY,                NULL},
+   {"say",        A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_SAY },
+   {"tell",       A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_TELL },
+   {"yell",       A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_YELL },
+   {"broadcast",  A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_BROADCAST },
+   {"emote",      A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_EMOTE },
+   {"who",        A_WHO,                    NULL},
 
-	// end
-	{"\0", -1, NULL},
+   // end
+   {"\0", -1, NULL},
 };
 
 // this keymap table has to match up exactly with the prior actionlabel table.  don't blame me.
@@ -599,14 +599,14 @@ keymap	gCustomKeys[] =
 	{(WORD)-1,				(WORD)-1,				A_TABFWD,			(void *)IDC_MAIN},
 	{(WORD)-1,				(WORD)-1,				A_TABBACK,			(void *)IDC_MAIN},
 
-	// chat
-	{(WORD)-1,				(WORD)-1,				A_GOTOSAY,			NULL},
-	{(WORD)-1,				(WORD)-1,				A_TEXTINSERT,		"say "},
-	{(WORD)-1,				(WORD)-1,				A_TEXTINSERT,		"tell "},
-	{(WORD)-1,				(WORD)-1,				A_TEXTINSERT,		"yell "},
-	{(WORD)-1,				(WORD)-1,				A_TEXTINSERT,		"broadcast "},
-	{(WORD)-1,				(WORD)-1,				A_TEXTINSERT,		"emote "},
-	{(WORD)-1,				(WORD)-1,				A_WHO,				NULL},
+   // chat
+   {(WORD)-1,           (WORD)-1,            A_GOTOSAY,                NULL},
+   {(WORD)-1,           (WORD)-1,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_SAY },
+   {(WORD)-1,           (WORD)-1,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_TELL },
+   {(WORD)-1,           (WORD)-1,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_YELL },
+   {(WORD)-1,           (WORD)-1,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_BROADCAST },
+   {(WORD)-1,           (WORD)-1,            A_TEXTINSERT_MERINTR_RSC, (void *)IDS_CHAT_EMOTE },
+   {(WORD)-1,           (WORD)-1,            A_WHO,                    NULL},
 
 	// aliases (fkey hotkeys)
 	{(WORD)-1,				(WORD)-1,				A_TEXTCOMMAND,		NULL},

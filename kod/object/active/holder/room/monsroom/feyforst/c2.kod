@@ -19,8 +19,8 @@ resources:
    include c2.lkod
 
    room_name_OutdoorsC2 = "The Vale of Sorrows"
-   room_OutdoorsC2 = C2.roo
-   OutdoorsC2_music = walk7.mp3
+   room_OutdoorsC2 = c2.roo
+   OutdoorsC2_music = walk7.ogg
 
    c2_elhai_win = \
       "~IVictorious, the elhai invite all of those pure of heart to drink "
@@ -28,7 +28,7 @@ resources:
    c2_dirhai_win = \
       "~ITriumphant in their dark victory, the dirhai invite any of similiar "
       "scruples to meld with the node."
-   waterfall_sound_outdoorsc2 = wfall2.wav
+   waterfall_sound_outdoorsc2 = wfall2.ogg
 
 classvars:
 

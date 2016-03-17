@@ -85,7 +85,7 @@ resources:
 
    spell_silenced_rsc = "Your words catch in your throat and you cannot speak."
 
-   spell_fail_wav = spelfail.wav
+   spell_fail_wav = spelfail.ogg
    spell_desc_rsc = "SCHOOL : %s         LEVEL : %i \n\n%s%s%s%r%r%r"
    spell_school_riija = "Riija"
    spell_school_shalille = "Shal'ille"
@@ -95,13 +95,13 @@ resources:
    spell_school_jala = "Jala"
    spell_intro_rsc = "One of the many mystical spells."
 
-   spell_sound_jala = lute_equip.wav
-   spell_sound_shalille = shalille.wav
-   spell_sound_qor = qor.wav
-   spell_sound_kraanan = kraanan.wav
-   spell_sound_faren = faren.wav
-   spell_sound_riija = riija.wav
-   spell_sound_dm_command = tranport.wav
+   spell_sound_jala = lute_equip.ogg
+   spell_sound_shalille = shalille.ogg
+   spell_sound_qor = qor.ogg
+   spell_sound_kraanan = kraanan.ogg
+   spell_sound_faren = faren.ogg
+   spell_sound_riija = riija.ogg
+   spell_sound_dm_command = tranport.ogg
 
    spell_gesture_third = \
       "%s%s murmurs something under %s breath and makes a mystical gesture."
@@ -122,7 +122,7 @@ resources:
    spell_trance_begin = "You focus your whole will on casting %s."
    spell_trance_break = \
       "Your concentration is broken and the %s spell fizzles."
-   spell_trance_break_sound = spelfail.wav
+   spell_trance_break_sound = spelfail.ogg
 
    spell_disabled = \
       "~g~BAn unseen force rips the words of the spell from your throat "
@@ -643,8 +643,7 @@ messages:
 
       % Make sure caster has enough magic
       if Send(who,@GetMana)
-            < Send(self,@GetManaCost,#who=who,#iSpellpower=iSpellpower,
-                    #lTargets=lTargets)
+            < Send(self,@GetManaCost,#who=who,#iSpellpower=iSpellpower)
       {
          iCrystalizeManaAbility = Send(who,@GetSpellAbility,
                                        #spell_num=SID_CRYSTALIZE_MANA);
@@ -655,8 +654,7 @@ messages:
             oCrystalizeMana = Send(SYS,@FindSpellByNum,#num=SID_CRYSTALIZE_MANA);
             Send(oCrystalizeMana,@DoManaSurge,#who=who,#triggered=TRUE);
             if Send(who,@GetMana)
-                  > Send(self,@GetManaCost,#who=who,#iSpellpower=iSpellpower,
-                          #lTargets=lTargets)
+                  > Send(self,@GetManaCost,#who=who,#iSpellpower=iSpellpower)
             {
                return TRUE;
             }
@@ -1232,6 +1230,13 @@ messages:
       return lGoodTargets;
    }
 
+   CanEnchantUser()
+   "Called by Room to check if a user can be enchanted by this spell."
+   "Room enchantments that shouldn't affect everyone can override this."
+   {
+      return TRUE;
+   }
+
    SpellFailed(who=$,iSpellpower=0)
    "Different spells can have different penalties for spell failure."
    "Standard penalty - half of spell's mana cost and half of exertion cost."
@@ -1701,7 +1706,7 @@ messages:
       return $;
    }
 
-   GetManaCost(who=$,iSpellPower=0,lTargets=$)
+   GetManaCost(who=$,iSpellPower=0)
    "Returns number of magic points needed to cast spell"
    {
       local iCost, oPrincessShield;
@@ -1735,8 +1740,7 @@ messages:
       oPrincessShield = Send(who,@FindUsing,#class=&PrincessShield);
       if oPrincessShield <> $
       {
-         iCost = iCost - Send(oPrincessShield,@GetSpellManaReduction,
-                               #lTargets=lTargets);
+         iCost = iCost - Send(oPrincessShield,@GetSpellManaReduction);
       }
       
       return bound(iCost,1,$);
@@ -2243,7 +2247,7 @@ messages:
       return;
    }
 
-   GetSpellPower(who=$,lTargets=$)
+   GetSpellPower(who=$)
    {
       local iSpellPower, i, iTerrain, oRoom, oModifierSpell, iAbilityLoss,
             iAbilityGain, iItemModifier, iBase, iPrimaryBonus, iSecondaryBonus,
@@ -2280,8 +2284,7 @@ messages:
       foreach i in Send(who,@GetPlayerUsing)
       {
          iItemModifier = iItemModifier + Send(i,@GetSpellModifier,
-                                              #oSpell=self,
-                                              #lTargets=lTargets);
+                                              #oSpell=self);
       }
    
       % Each school has a bonus for different things.
@@ -2388,20 +2391,25 @@ messages:
 
       iSpellPower = iPrimaryBonus + iSecondaryBonus + iPowerBonus + iBase;
 
-      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&AntiMagicAura);
-      if lRadiusState <> $
+      if Send(oRoom,@CheckRoomFlag,#flag=ROOM_ANTI_MAGIC)
       {
-         iSpellPower = Send(Nth(lRadiusState,1),@ModifySpellpower,#who=who,#oSpell=self,#state=lRadiusState,#iSpellPower=iSpellPower);
+         oModifierSpell = Send(SYS,@FindSpellByNum,#num=SID_ANTIMAGIC_AURA);
+         iSpellPower = Send(oModifierSpell,@ModifySpellPower,
+                              #who=who,#oRoom=oRoom,#oSpell=self,
+                              #iSpellPower=iSpellPower);
       }
 
-      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,#byClass=&ManaConvergence);
+      lRadiusState = Send(who,@GetMostPowerfulRadiusEnchantmentState,
+                           #byClass=&ManaConvergence);
       if lRadiusState <> $
       {
-         iSpellPower = Send(Nth(lRadiusState,1),@ModifySpellpower,#who=who,#oSpell=self,#state=lRadiusState,#iSpellPower=iSpellPower);
+         iSpellPower = Send(First(lRadiusState),@ModifySpellpower,#who=who,
+                              #oSpell=self,#state=lRadiusState,
+                              #iSpellPower=iSpellPower);
       }
 
       % Bound the lower end so that the stuff that follows is truly a bonus.
-      iSpellPower = bound(iSpellPower,0,$);
+      iSpellPower = Bound(iSpellPower,0,$);
 
       % This number is based on the number of shrines this god controls.
       iShrines = Send(SYS,@GetShrineBonus,#school=viSchool);
@@ -2599,6 +2607,15 @@ messages:
    {
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
+   }
+
+   HasConditionalEffect()
+   "Used by RoomEnchantment. Conditional effects are those applied by room "
+   "enchantments differently based on safety or other status of the room's "
+   "occupants which may need to be recalculated if any occupant has a change "
+   "in status."
+   {
+      return FALSE;
    }
 
 end

@@ -79,7 +79,7 @@ properties:
    piAdvancementRate = 100
 
    % The training points we grant players each day to reward them for logging on.
-   piLogonBonus = 200
+   piLogonBonus = 50
 
    % Multiplier for the amount of %s each mob you kill adds to your levelup chance.
    piHPGainMultiplier = 1
@@ -117,7 +117,7 @@ properties:
    piTeleportAttackDelaySec = 240
 
    % Rescue always takes at least this long to cast
-   piRescueBaseDelaySec = 15
+   piRescueBaseDelaySec = 5
 
    % Time in milliseconds that ghosts will last before taking a penalty
    piLogoffPenaltyGhostTime = 480 * 1000
@@ -208,7 +208,7 @@ properties:
    piIntrigueEnableHP = 50
    
    % If set to true, Resist Rings will lose durability upon taking an appropriate elemental hit.
-   piResistRingLoseDurability = FALSE
+   piResistRingLoseDurability = TRUE
 
    % If enabled, logoff penalties do not rise exponentially, and instead remain flat
    pbFlatPenalties = TRUE
@@ -217,7 +217,7 @@ properties:
    piLogonDelay = 2500
    
    % Length of time the temporary guardian angel lasts, in minutes
-   piTempSafeMinutes = 180
+   piTempSafeMinutes = 360
 
    % Revenant speed setting
    piRevSpeed = 18
@@ -226,7 +226,8 @@ properties:
    % is now possible for a flat fee (initially 1 million).
    piPardonIndulgenceCost = 1000000
 
-   % The divisor for all skill post-softcap imp rates. Higher means harder. One means softcaps don't matter at all.
+   % The divisor for all skill post-softcap imp rates. Higher means harder.
+   % One means softcaps don't matter at all.
    piSkillSoftcapPenalty = 5
 
    % The divisor for all spell post-softcap imp rates.
@@ -246,19 +247,19 @@ properties:
    piBroadcastManaPercent = 0
 
    % Jasper vault access
-   pbJasperVault = FALSE
+   pbJasperVault = TRUE
 
-   % chance for stormy weather
-   piStormChance = 25
-
-   % If this is set to true, soldier shields will give their specialized
-   % bonuses under all conditions. If it is false, they will only apply
-   % when attacking or being attacked by another soldier to prevent
-   % scenario overlap.
-   pbAlwaysApplySoldierBonus = TRUE
+   % Chance for stormy weather
+   piStormChance = 15
 
    % Setting to allow users to remove their own posts.
    pbCanUserRemoveOwnPosts = TRUE
+
+   % How many rods can be picked up at one time.
+   piRodMax = 5
+
+   % Do safe rooms recharge rods?
+   pbInnsRechargeRods = FALSE
 
 messages:
 
@@ -664,15 +665,20 @@ messages:
    {
       return piStormChance;
    }
-   
-   GetAlwaysApplySoldierBonus()
-   {
-      return pbAlwaysApplySoldierBonus;
-   }
 
    CanUsersRemoveOwnPosts()
    {
       return pbCanUserRemoveOwnPosts;
+   }
+
+   GetMaxNumRods()
+   {
+      return piRodMax;
+   }
+
+   CanInnsRechargeRods()
+   {
+      return pbInnsRechargeRods;
    }
 
 end

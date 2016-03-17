@@ -31,10 +31,10 @@ resources:
 
    fairy_fireball = feyball.bgf
 
-   fairy_sound_hit = god_atkh.wav
-   fairy_sound_miss = god_atkm.wav
-   fairy_sound_death = god_die.wav
-   fairy_sound_aware = god_awr.wav
+   fairy_sound_hit = god_atkh.ogg
+   fairy_sound_miss = god_atkm.ogg
+   fairy_sound_death = god_die.ogg
+   fairy_sound_aware = god_awr.ogg
 
 classvars:
    

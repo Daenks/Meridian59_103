@@ -136,9 +136,8 @@ properties:
    viObject_flags = OF_GETTABLE
    piHits_init = 0
    piHits = 0
-      
-   plItem_attributes = $
 
+   plItem_attributes = $
    piItem_flags = 0
 
    % List of enchantments applied by radius spells.
@@ -148,7 +147,7 @@ properties:
 
 messages:
 
-   Constructor(corpse=$)
+   Constructor(corpse=$, oDMCreator=$)
    {
       local iHits_average, oItemAtt;
 
@@ -160,15 +159,25 @@ messages:
          if Send(oItemAtt,@ReqAddToItem,#oItem=self)
          {
             Send(oItemAtt,@AddToItem,#oItem=self,#state1=corpse);
-         }            
+         }
       }
-      
+
       if viUnrevealedColor <> 0
          AND Send(self,@GetPaletteTranslation) = 0
       {
          Send(self,@SetPaletteTranslation,#translation=viUnrevealedColor);
       }
-      
+
+      if (oDMCreator <> $
+         AND NOT IsClass(self,&NumberItem))
+      {
+         oItemAtt = Send(SYS,@FindItemAttByNum,#num=IA_DM_CREATED);
+         if Send(oItemAtt,@ReqAddToItem,#oItem=self)
+         {
+            Send(oItemAtt,@AddToItem,#oItem=self,#state1=oDMCreator);
+         }
+      }
+
       propagate;
    }
 
@@ -800,7 +809,7 @@ messages:
       return;
    }
 
-   ShowDesc(bShowAll = FALSE)
+   ShowDesc(who=$,bShowAll = FALSE)
    {
       local bAlreadyBlind, bIdentified, oItemAtt, i, iNum;
 
@@ -847,7 +856,7 @@ messages:
             }
             else
             {
-               Send(oItemAtt,@AppendDesc,#oItem=self,#lData=i);
+               Send(oItemAtt,@AppendDesc,#oItem=self,#lData=i,#who=who);
             }
          }
       }
@@ -2063,12 +2072,11 @@ messages:
       return viSpell_modifier;
    }
 
-   GetSpellModifier(oSpell=$,lTargets=$)
+   GetSpellModifier(oSpell=$)
    {
       local oItemAtt, iModifier, i, iNum, oObjectAttribute;
 
-      iModifier = Send(self,@GetBaseSpellModifier,#oSpell=oSpell,
-                        #lTargets=lTargets);
+      iModifier = Send(self,@GetBaseSpellModifier,#oSpell=oSpell);
       foreach i in plItem_Attributes
       {
          iNum = Send(self,@GetNumFromCompound,#compound=First(i));
@@ -2695,6 +2703,54 @@ messages:
          AND IsClass(poOwner,&Player)
       {
          Send(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
+   }
+
+   ReportDMCreated()
+   {
+      local i, iNum;
+
+      foreach i in plItem_attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         if (iNum = IA_DM_CREATED)
+         {
+            if (poOwner = $)
+            {
+               Debug("Found item ",self,Send(self,@GetTrueName)," created by ",
+                     Send(Nth(i,3),@GetTrueName)," $ owner.");
+            }
+            else
+            {
+               Debug("Found item ",self,Send(self,@GetTrueName)," created by ",
+                     Send(Nth(i,3),@GetTrueName)," owned by ",
+                     Send(poOwner,@GetTrueName));
+            }
+
+            return;
+         }
+      }
+
+      return;
+   }
+
+   RemoveDMCreated()
+   {
+      local i, iNum;
+
+      foreach i in plItem_attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         if (iNum = IA_DM_CREATED)
+         {
+            GodLog("Removing DM created itematt from ",self,", ",
+                  Send(self,@GetTrueName));
+            Send(self,@RemoveItemAttIfPresent,#iNum=IA_DM_CREATED);
+
+            return;
+         }
       }
 
       return;

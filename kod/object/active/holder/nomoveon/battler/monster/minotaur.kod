@@ -27,10 +27,10 @@ resources:
    minotaur_dead_icon_rsc = minotaurX.bgf
    minotaur_dead_name_rsc = "dead minotaur"
 
-   minotaur_sound_hit = mino_atkh.wav
-   minotaur_sound_miss = mino_atkh.wav
-   minotaur_sound_death = mino_dth.wav
-   minotaur_sound_aware = mino_awr.wav
+   minotaur_sound_hit = mino_atkh.ogg
+   minotaur_sound_miss = mino_atkh.ogg
+   minotaur_sound_death = mino_dth.ogg
+   minotaur_sound_aware = mino_awr.ogg
 
 classvars:
 

@@ -29,10 +29,10 @@ resources:
    centipede_dead_icon_rsc = centipX.bgf
    centipede_dead_name_rsc = "dead centipede"
 
-   centipede_sound_hit = cnt_atkh.wav
-   centipede_sound_miss = cnt_atkm.wav
-   centipede_sound_death = cnt_dth.wav
-   centipede_sound_aware = cnt_awr.wav
+   centipede_sound_hit = cnt_atkh.ogg
+   centipede_sound_miss = cnt_atkm.ogg
+   centipede_sound_death = cnt_dth.ogg
+   centipede_sound_aware = cnt_awr.ogg
    
 classvars:
    vrKocName = centipede_koc_name_rsc

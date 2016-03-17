@@ -70,11 +70,11 @@ spell_school_kraanan = de "Kraanan"
 spell_school_jala = de "Jala"
 spell_intro_rsc = de "Einer der vielen magischen Zaubersprüche."
 spell_gesture_third = de \
-   "%s%s murmelt etwas %s vor sich hin und führt eine geheimnisvolle Geste "
+   "%s%s murmelt etwas %svor sich hin und führt eine geheimnisvolle Geste "
    "aus."
 spell_gesture_third_target = de \
    "%s%s murmelt etwas vor sich hin und deutet auf %s%s%s."
-spell_you = de "sich selbst"
+spell_you = de "dich"
 spell_resisted = de "%s%s widersteht deinem Zauber!"
 spell_forgot1 = de \
    "Du ... Du kannst Dich nicht so genau an den Zauberspruch erinnern."
@@ -93,10 +93,10 @@ spell_trance_break = de \
 spell_disabled = de \
    "~g~BEine unbekannte Kraft raubt Dir die Zauberworte aus der Kehle bevor "
    "Du sie ganz aussprechen kannst."
-spell_display_spellpower = de "Zauberkraft für %s ist ~b%i~n."
+spell_display_spellpower = de "Deine Zauberkraft für %s beträgt ~b%i% ~n."
 no_line_of_sight = de "Deine schlechte Sicht macht es noch schwerer zu Zaubern"
 spell_meditate_ratio_rsc = de \
-   "\n\nEs kostet dich %i Trainings Punkte um diesen Zauber zu verbessern."
+   "\n\nEs kostet dich %i Trainingspunkte um diesen Zauber zu verbessern."
 spell_Enchantment_type_default_rsc = de "Erzmagier"
 Spell_too_few_hp_rsc = de \
    "Du bist nicht stark genug um diesen Zauber zu benutzen."

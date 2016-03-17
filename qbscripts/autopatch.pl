@@ -7,17 +7,16 @@ use Pithub;
 use Data::Dumper;
 use Env;
 
-my $outdir="C:/patchfiles";
 my @changelists;
 my $build;
 my $buildid;
-my $lastbranch = "master";
 my $stacked = 0;
 my $pullsobject = Pithub::PullRequests->new;
 my $output;
 my $update;
 my $finalize = 0;
 my $token = $ENV{'TOKEN'};
+my $parentbranch;
 
 my @failed ;
 
@@ -26,7 +25,8 @@ GetOptions ("change=s" => \@changelists,
 			"stacked=s" => \$stacked,
 			"update=s" => \$update,
 			"finalize=s" => \$finalize,
-			"buildid=s" => \$buildid);
+			"buildid=s" => \$buildid,
+			"branch=s" => \$parentbranch);
 			
 print "AUTOBUILD: Options: Updating pre-existing branches\n" if ($update);
 print "AUTOBUILD: Options: Stacked Build ENABLED\n" if ($stacked);
@@ -53,8 +53,8 @@ foreach my $changelist (@changelists)
 														 }
 									 );
 
-	my $pullinfo = $p->get(user => 'Daenks',
-	                       repo => 'Meridian59_103',
+	my $pullinfo = $p->get(user  => 'OpenMeridian105',
+	                       repo  => 'Meridian59',
 						   pull_request_id => $changelist,);
 	
 	
@@ -83,14 +83,14 @@ foreach my $changelist (@changelists)
 	
 	if ($stacked)
 	{
-	  print "AUTOBUILD: Creating stacked branch $localbranch based from $lastbranch\n";
-	  $output =`git checkout -b $localbranch $lastbranch 2>&1`;
+	  print "AUTOBUILD: Creating stacked branch $localbranch based from $build-complete\n";
+	  $output =`git checkout -b $localbranch $build-complete 2>&1`;
 	  print $output . "\n";
 	}
 	else
 	{
-	  print "AUTOBUILD: Creating branch $localbranch based from master\n";
-	  $output =`git checkout -b $localbranch master 2>&1`;
+	  print "AUTOBUILD: Creating branch $localbranch based from $parentbranch\n";
+	  $output =`git checkout -b $localbranch $parentbranch 2>&1`;
 	  print $output . "\n";
 	}
 	
@@ -102,7 +102,7 @@ foreach my $changelist (@changelists)
 			die "AUTOBUILD: Couldn't create branch $localbranch:\n $output"; 
 		}
 		print "AUTOBUILD: Using pre-existing branch....\n";
-		$output =`git checkout $localbranch master 2>&1`; #switch to existing branch
+		$output =`git checkout $localbranch $parentbranch 2>&1`; #switch to existing branch
 		print $output . "\n";
 		$skip = 1;
 	}
@@ -119,10 +119,10 @@ foreach my $changelist (@changelists)
 		if ($output =~ /Automatic merge failed/)
 		{
 			print "AUTOBUILD: Merge failed. Resetting $localbranch...\n";
-			$output = `git reset --hard origin`;
+			$output = `git reset --hard origin/$parentbranch`;
 			print $output . "\n";
-			print   "AUTOBUILD: Checking out master branch...\n";
-			$output = `git checkout master`;
+			print   "AUTOBUILD: Checking out $parentbranch branch...\n";
+			$output = `git checkout $parentbranch`;
 			print $output . "\n";
 			print "AUTOBUILD: Deleting failed branch....\n";
 			$output = `git branch -D $localbranch`;
@@ -131,14 +131,14 @@ foreach my $changelist (@changelists)
 			print $output;
 			print "**********************************FAILURE***************************************\n";
 			print "Automatic Merge of $branch ($pullreq) failed.\n";
-			print "At this stage, what this usually means, is that the code in the above pull was not coded against a fresh version of Meridian59_103\\master.\n";
+			print "At this stage, what this usually means, is that the code in the above pull was not coded against a fresh version of Meridian59\\$parentbranch.\n";
 			print "TO RESOLVE: (https://help.github.com/articles/syncing-a-fork)\n";
 			print "1. Download updates to your repository....\n";
-			print "  a. run: \"git remote add upstream https://github.com/Daenks/Meridian59_103.git\" to add the main repository as a link to your own.\n";
+			print "  a. run: \"git remote add upstream https://github.com/OpenMeridian105/Meridian59.git\" to add the main repository as a link to your own.\n";
 			print "  b. run: \"git fetch upstream\" to pull the changes down.\n";
-			print "2. Merge updates into your master branch.....\n";
-			print "  a. run \"git checkout master\" to switch to your master branch\n";
-			print "  b. run \"git merge upstream/master\" to apply changes to your master branch\n";
+			print "2. Merge updates into your $parentbranch branch.....\n";
+			print "  a. run \"git checkout $parentbranch\" to switch to your $parentbranch branch\n";
+			print "  b. run \"git merge upstream/$parentbranch\" to apply changes to your $parentbranch branch\n";
 			print "3. Re-Test your code locally and push any changes to the pull request.....\n";
 			print "4. Re-Merge with this utility.\n";  
 			print "********************************************************************************\n";
@@ -154,13 +154,13 @@ foreach my $changelist (@changelists)
 														 }
 									 );
 			my $result   = $statuses->create(
-				user => 'Daenks',
-				repo => 'Meridian59_103',
+				user  => 'OpenMeridian105',
+				repo  => 'Meridian59',
 				sha => $sha,
 				data => {
 					state => 'error',
 					description => 'Merge failed!',
-					target_url => "http://build.openmeridian.org:8810/build/$buildid"
+					target_url => "http://127.0.0.1:8810/build/$buildid"
 				},
 			);
 			#print "AUTOBUILD: Status update result:\n" . Dumper(\$result);
@@ -169,7 +169,6 @@ foreach my $changelist (@changelists)
 		else
 		{
 			#we update the stack of previous merges only if successful, this prevents the rest of the merges from trying against a failed merge.
-			$lastbranch = $localbranch if ($stacked);
 			my $statuses = Pithub::Repos::Statuses->new(prepare_request => sub 
 	                                                     {
 														   my ($request) = @_;
@@ -177,13 +176,13 @@ foreach my $changelist (@changelists)
 														 }
 									 );
 			my $result   = $statuses->create(
-				user => 'Daenks',
-				repo => 'Meridian59_103',
+				user  => 'OpenMeridian105',
+				repo  => 'Meridian59',
 				sha => $sha,
 				data => {
 					state => 'success',
 					description => 'Merge succeded!',
-					target_url => "http://build.openmeridian.org:8810/build/$buildid"
+					target_url => "http://127.0.0.1:8810/build/$buildid"
 				},
 			);
 			#print "AUTOBUILD: Status update result:\n" . Dumper(\$result);
@@ -197,6 +196,9 @@ foreach my $changelist (@changelists)
 			print $output . "\n";
 			print "AUTOBUILD: merging $localbranch into $build-complete\n";
 			$output = `git merge $localbranch`;
+			print $output . "\n";
+			print "AUTOBUILD: deleting finished branch $localbranch\n";
+			$output = `git branch -D $localbranch`;
 			print $output . "\n";
 		}
 		

@@ -38,7 +38,7 @@ resources:
       "Kraanan Level 4: Forms a magical barrier around the target, protecting"
       "them from harm of magics that damage directly."
 
-   Deflect_sound = kdeflect.wav
+   Deflect_sound = kdeflect.ogg
 
    Deflect_success_to_victim = \
       "Your deflect enchantment bounces %s's spell back onto its caster!"
@@ -80,6 +80,11 @@ classvars:
    vrSucceed_wav = Deflect_sound
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 40
 
 messages:
 

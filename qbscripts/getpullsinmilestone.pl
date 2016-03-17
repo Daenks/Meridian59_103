@@ -18,8 +18,8 @@ if ($milestone =~ /^(\d*):(.*)$/)
 
 my $i = Pithub::Issues->new;
 my $result = $i->list(
-	repo => 'Meridian59_103',
-	user => 'Daenks',
+	repo  => 'Meridian59',
+	user  => 'OpenMeridian105',
 	params => {
 		milestone => $target,
 		state     => 'open',

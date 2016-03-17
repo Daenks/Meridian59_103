@@ -143,5 +143,10 @@ messages:
       return 2;
    }
 
+   GetResistanceModifiers()
+   {
+      return [ [-ATCK_SPELL_FIRE,-10] ];
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

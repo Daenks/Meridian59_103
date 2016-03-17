@@ -146,8 +146,6 @@ config_table_type config_table[] =
 { MEMORY_SIZE_PROPERTIES_NAME_HASH,F,"SizePropertiesNameHash", CONFIG_INT,   "499" },
 
 { AUTO_GROUP,             F, "[Auto]",        CONFIG_GROUP, "" },
-{ AUTO_GARBAGE_TIME,      F, "GarbageTime",   CONFIG_INT,   "90", }, /* minutes */
-{ AUTO_GARBAGE_PERIOD,    F, "GarbagePeriod", CONFIG_INT,   "180", }, /* minutes */
 { AUTO_SAVE_TIME,         F, "SaveTime",      CONFIG_INT,   "0", }, /* minutes */
 { AUTO_SAVE_PERIOD,       F, "SavePeriod",    CONFIG_INT,   "180", }, /* minutes */
 { AUTO_KOD_TIME,          F, "KodTime",       CONFIG_INT,   "0", },
@@ -158,15 +156,6 @@ config_table_type config_table[] =
 { AUTO_RESET_POOL_TIME,   F, "ResetPoolTime", CONFIG_INT,   "0", },
 { AUTO_RESET_POOL_PERIOD, F, "ResetPoolPeriod",CONFIG_INT,  "60", },
 
-{ EMAIL_GROUP,            F, "[Email]",       CONFIG_GROUP, "" },
-{ EMAIL_LISTEN,           F, "Listen",        CONFIG_BOOL,  "No" },
-{ EMAIL_PORT,             F, "Port",          CONFIG_INT,   "25" },
-{ EMAIL_ACCOUNT_CREATE_NAME, F, "AccountCreateName", CONFIG_STR, "account-create" },
-{ EMAIL_ACCOUNT_DELETE_NAME, F, "AccountDeleteName", CONFIG_STR, "account-delete" },
-{ EMAIL_LOCAL_MACHINE_NAME, T, "LocalMachineName", CONFIG_STR, "unknown" },
-{ EMAIL_HOST,			  F, "MailServer",    CONFIG_STR,	   "ms-camaro" },
-{ EMAIL_NAME,			  F, "PageAddress",    CONFIG_STR,	   "nobody@dev.null" },
-   
 { UPDATE_GROUP,           F, "[Update]",      CONFIG_GROUP, "" },
 { UPDATE_CLIENT_MACHINE,  T, "ClientMachine", CONFIG_STR,   "unknown" },
 { UPDATE_CLIENT_FILE,     T, "ClientFilename",CONFIG_STR,   "unknown" },
@@ -179,6 +168,7 @@ config_table_type config_table[] =
 { CONSOLE_GROUP,          F, "[Console]",     CONFIG_GROUP, "" },
 { CONSOLE_ADMINISTRATOR,  F, "Administrator", CONFIG_STR,   "Administrator" },
 { CONSOLE_CAPTION,        F, "Caption",       CONFIG_STR,   "BlakSton Server" },
+{ CONSOLE_LOCAL_MACHINE_NAME, T, "LocalMachineName", CONFIG_STR, "unknown" },
 
 { RIGHTS_GROUP,           F, "[Rights]",      CONFIG_GROUP, "" },
 { RIGHTS_GOROOM,          T, "GoRoom",        CONFIG_INT,   "2" },
@@ -192,7 +182,7 @@ config_table_type config_table[] =
    
 { ADVERTISE_GROUP,        F, "[Advertise]",   CONFIG_GROUP, "" },
 { ADVERTISE_FILE1,        T, "File1",         CONFIG_STR,   "ad1.avi" },
-{ ADVERTISE_URL1,         T, "Url1",          CONFIG_STR,   "http://openmeridian.org" },
+{ ADVERTISE_URL1,         T, "Url1",          CONFIG_STR,   "https://www.meridiannext.com/" },
 { ADVERTISE_FILE2,        T, "File2",         CONFIG_STR,   "ad2.avi" },
 { ADVERTISE_URL2,         T, "Url2",          CONFIG_STR,   "http://openmeridian.org/forums" },
 
@@ -286,6 +276,7 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
    case CONFIG_GROUP :
       break;
 
+#ifdef BLAK_PLATFORM_WINDOWS
    case CONFIG_PATH :
       len = strlen(s);
       
@@ -300,6 +291,22 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
       c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
       strcpy(c->config_str_value,s);
       break;
+#else
+    case CONFIG_PATH :
+        len = strlen(s);
+
+        if (s[len-1] == '/')
+            s[len-1] = 0;
+
+        if (stat(s,&file_stat) != 0 || !(file_stat.st_mode & S_IFDIR))
+            return "invalid path--not found";
+
+        if (s[len-1] != ':')
+            strcat(s,"/");
+            c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
+            strcpy(c->config_str_value,s);
+            break;
+#endif
 
    case CONFIG_INT :
       if (sscanf(s,"%i",&num) != 1)
@@ -730,7 +737,7 @@ int LoadConfigLine(char *line,int lineno,const char *filename,int current_group)
       }
    }
    
-   if (i == LEN_CONFIG_TABLE || config_table[i].config_type == CONFIG_GROUP)
+   if (i >= LEN_CONFIG_TABLE || config_table[i].config_type == CONFIG_GROUP)
       StartupPrintf("LoadConfig can't match value %s (%i)\n",filename,lineno);
 
    return current_group;

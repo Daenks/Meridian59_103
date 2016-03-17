@@ -32,7 +32,7 @@ resources:
    Cloak_already_enchanted_rsc = "You are already cloaked."
    Cloak_Succeed_rsc = "You wrap a magical cloak around %s%s."
 
-   Cloak_sound = qcloak.wav
+   Cloak_sound = qcloak.ogg
 
 classvars:
 
@@ -56,6 +56,11 @@ classvars:
    vrSucceed_wav = Cloak_sound
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 75
 
 messages:
 

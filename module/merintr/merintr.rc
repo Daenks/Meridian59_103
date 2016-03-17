@@ -325,6 +325,34 @@ END
 
 STRINGTABLE 
 BEGIN
+    246                     "Hilfe"
+    247                     "Rasten"
+    248                     "Aufstehen"
+    249                     "Neutral"
+    250                     "Glücklich"
+    251                     "Traurig"
+    252                     "Grimmig"
+    253                     "Winken"
+    254                     "Deuten"
+    255                     "Addgroup"
+    256                     "Mail"
+    257                     "Quit"
+    258                     "lachen=ego lacht.\0kichern=ego kichert.\0hail=tellguild Hail Gildenmitglieder!\0lachen=ego lacht.\0lachenüb=ego lacht über ~~!\0grinsen=ego grinst.\0grinsenüb=ego grinst über ~~.\0winken=ego winkt.\0winkenzu=ego winkt zu ~~.\0\0"
+END
+
+STRINGTABLE 
+BEGIN
+    259                     "sagen "
+    260                     "rufen "
+    261                     "wer spielt?"
+    262                     "ego "
+    263                     "telepathie "
+    264                     "mitteilen "
+    265                     "hilfe"
+END
+
+STRINGTABLE 
+BEGIN
     16                      "Niemand mit diesem Namen ist im Spiel."
     17                      "Dieser Name tritt häufiger auf."
     18                      "Der Name dieser Gruppe tritt häufiger auf."
@@ -997,6 +1025,34 @@ BEGIN
     IDS_TBSMILE             "Smile"
     IDS_TBFROWN             "Frown"
     IDS_DOCAST              "cast "
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ALIAS_HELP          "help"
+    IDS_ALIAS_REST          "rest"
+    IDS_ALIAS_STAND         "stand"
+    IDS_ALIAS_NEUTRAL       "neutral"
+    IDS_ALIAS_HAPPY         "happy"
+    IDS_ALIAS_SAD           "sad"
+    IDS_ALIAS_WRY           "wry"
+    IDS_ALIAS_WAVE          "wave"
+    IDS_ALIAS_POINT         "point"
+    IDS_ALIAS_ADDGRP        "addgroup"
+    IDS_ALIAS_MAIL          "mail"
+    IDS_ALIAS_QUIT          "quit"
+    IDS_VERB_ALIAS          "chuckle=emote chuckles.\0giggle=emote giggles.\0hail=tellguild Hail Guildmembers!\0laugh=emote laughs.\0laughat=emote laughs at ~~!\0smile=emote smiles.\0smileat=emote smiles at ~~.\0wink=emote winks.\0winkat=emote winks at ~~.\0\0"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_CHAT_SAY            "say "
+    IDS_CHAT_YELL           "yell "
+    IDS_CHAT_WHO            "who"
+    IDS_CHAT_EMOTE          "emote "
+    IDS_CHAT_TELL           "tell "
+    IDS_CHAT_BROADCAST      "broadcast "
+    IDS_CHAT_HELP           "help"
 END
 
 STRINGTABLE 

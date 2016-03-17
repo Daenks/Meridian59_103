@@ -37,10 +37,10 @@ resources:
    StoneTroll_dead_icon_rsc = TrollX.bgf
    StoneTroll_dead_name_rsc = "dead stonetroll"
 
-   StoneTroll_sound_hit = trl_atkh.wav
-   StoneTroll_sound_miss = trl_atkm.wav
-   StoneTroll_sound_death = trl_dth.wav
-   StoneTroll_sound_aware = trl_awr.wav
+   StoneTroll_sound_hit = trl_atkh.ogg
+   StoneTroll_sound_miss = trl_atkm.ogg
+   StoneTroll_sound_death = trl_dth.ogg
+   StoneTroll_sound_aware = trl_awr.ogg
 
 classvars:
 

@@ -1,13 +1,13 @@
 % Quest description.
-moxalscamtwoquest_name_rsc = de "Moxal's Investment Quest"
+moxalscamtwoquest_name_rsc = de "Moxal's Investieren Quest"
 moxalscamtwoquest_desc_rsc = de \
-   "Moxal ix'Hanak sagt, er habe eine geniale Idee, und hat versucht"
-   "ein paar Leute dafür zu gewinnen um Ihn zu unterstützen.  Wenn Du ihm hilst"
-   "jemanden zu finden der die Idee finanziert, wird er den Gewinn teilen 50/50/50."
+   "Moxal ix'Hanak sagt, er habe eine geniale Idee, und hat versucht,"
+   "ein paar Leute dafür zu gewinnen, um Ihn zu unterstützen. Wenn Du ihm hilfst"
+   "jemanden zu finden der die Idee finanziert, wird er den Gewinn teilen - 50/50/50."
 
 moxalscamtwoquest_nodetwo_rsc = de \
    "Moxal ix'Hanak sagt, er hat eine geniale Idee, und hat versucht "
-   " %s%s zu gewinnen um die Idee zu finanzieren.  Wenn Du %s dafür gewinnen kannst,"
+   "%s%s dazu zu gewinnen die Idee zu finanzieren.  Wenn Du %sihn dafür gewinnen kannst,"
    " wird Moxal den Gewinn wie folgt aufteilen 50/50/50."
 
 moxalscamtwoquest_nodethree_rsc = de \
@@ -51,5 +51,5 @@ moxalscam2_assign_5 = de \
    "ich bin NICHT INTERESSIERT."
 moxalscam2_success_5 = de \
    "*-Seufz-*  Ah, nun, %SOURCE_NPC's Bauchgefühl war nicht stark genug, "
-   "denke ich.  Ich denke nicht, dass DU 100,000 Schillinge in ein geringfügig "
+   "denke ich. Ich denke nicht, dass DU 100,000 Schillinge in ein geringfügig "
    "Risikoreiches Geschäft investieren willst?"

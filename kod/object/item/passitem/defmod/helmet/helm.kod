@@ -48,8 +48,11 @@ classvars:
    viInventory_group = 2
    viBroken_group = 3
 
-   viDefense_base = 25               % This is the default value for piDefense_bonus
-   viDamage_base = 1                % This is the default value for piDamage_reduce
+   // This is the default value for piDefense_bonus
+   viDefense_base = 25
+
+   // This is the default value for piDamage_reduce
+   viDamage_base = 1
 
 properties:
 
@@ -58,14 +61,14 @@ messages:
    NewUsed()
    {
       Send(poOwner,@RemoveHair,#what=self);
-      
+
       propagate;
    }
 
    NewUnused()
    {
       Send(poOwner,@ResetHair,#what=self);
-      
+
       propagate;
    }
 
@@ -80,18 +83,21 @@ messages:
       return FALSE;
    }
 
-   % these 3 called by player, for normal 3rd-person overlays on user.
-
+   // Called by player, for normal 3rd-person overlays on user.
    GetOverlay(animation = $)
    {
-      if send(poOwner,@GetGender) = GENDER_FEMALE
+      if Send(poOwner,@GetGender) = GENDER_FEMALE
       {
          return helm_icon_female_rsc;
       }
-      
-      return helm_icon_male_rsc; 
+
+      return helm_icon_male_rsc;
    }
 
+   GetHeatDamage()
+   {
+      return 1;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

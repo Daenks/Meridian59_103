@@ -39,10 +39,10 @@ resources:
    DeathSpider_dead_icon_rsc = spidmagX.bgf
    DeathSpider_dead_name_rsc = "dead spider"
 
-   DeathSpider_sound_hit = spd_atkh.wav
-   DeathSpider_sound_miss = spd_atkm.wav
-   DeathSpider_sound_death = spd_dth.wav
-   DeathSpider_sound_aware = spd_awr.wav
+   DeathSpider_sound_hit = spd_atkh.ogg
+   DeathSpider_sound_miss = spd_atkm.ogg
+   DeathSpider_sound_death = spd_dth.ogg
+   DeathSpider_sound_aware = spd_awr.ogg
 
 classvars:
    vrKocName = DeathSpider_koc_name_rsc

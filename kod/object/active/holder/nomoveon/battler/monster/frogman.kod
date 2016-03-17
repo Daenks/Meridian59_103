@@ -31,10 +31,10 @@ resources:
    frogman_dead_icon_rsc = frogmanX.bgf
    frogman_dead_name_rsc = "dead frogman"
 
-   frogman_sound_hit = frg_atkh.wav
-   frogman_sound_miss = frg_atkm.wav
-   frogman_sound_death = frg_dth.wav
-   frogman_sound_aware = frg_awr.wav
+   frogman_sound_hit = frg_atkh.ogg
+   frogman_sound_miss = frg_atkm.ogg
+   frogman_sound_death = frg_dth.ogg
+   frogman_sound_aware = frg_awr.ogg
 
 classvars:
  

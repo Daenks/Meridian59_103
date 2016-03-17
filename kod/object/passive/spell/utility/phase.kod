@@ -40,7 +40,7 @@ resources:
    Phase_penned_others_item = \
       "The violent currents seemed to have torn %s%s from %s's inventory."
    
-   Phase_penned_wav_rsc = logoffghost_poof.wav
+   Phase_penned_wav_rsc = logoffghost_poof.ogg
    
    Phase_lost_one_item = \
       "You lost %s skill points, %s spell points, and %s%s."
@@ -418,8 +418,7 @@ messages:
       local i, bLooped, LossCounter, BaseLossAmount, iHealth,
             LossAmount, iNumItemsInventory, numItemsLost, iLoops,
             iStart, lSpells, iSpellAbility, iAbilityNum, numSpellPointsLost,
-            lSkills, iSkillAbility, numSkillPointsLost, poGhostedPlayer,
-            oSoldierShield;
+            lSkills, iSkillAbility, numSkillPointsLost, poGhostedPlayer;
 
       if who = $
       {
@@ -628,15 +627,6 @@ messages:
          Send(poGhostedPlayer,@MsgSendUser,#message_rsc=penalties_inflicted_plural,
                #parm1=numItemsLost,#parm2=numSpellPointsLost,
                #parm3=numSkillPointsLost);
-      }
-
-      % Let the faction shield know of this person's naughtiness if we took a
-      %  penalty.
-      oSoldierShield = Send(poGhostedPlayer,@FindUsing,#class=&SoldierShield);
-      if oSoldierShield <> $
-      {
-         % Treat it like a death.
-         Send(oSoldierShield,@OwnerDied,#logoff=TRUE);
       }
 
       % Reset the time to avoid any funny business like potential double

@@ -60,16 +60,17 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,-10],
+      return [ [ATCK_WEAP_THRUST,15],
+               [ATCK_WEAP_SLASH,10],
+               [-ATCK_SPELL_FIRE,-10],
                [-ATCK_SPELL_SHOCK,-15]
              ];
    }
 
    GetHeatDamage()
    {
-      return 4;
+      return 5;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

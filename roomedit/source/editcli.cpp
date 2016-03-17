@@ -405,6 +405,11 @@ TEditorClient::TEditorClient (TWindow* parent, char *_levelName,
 		InitialScale = 20;
 	SetScale ((float) (1.0 / InitialScale));
 	CenterMapAroundCoords( (MapMinX + MapMaxX) / 2, (MapMinY + MapMaxY) / 2);
+
+	// If we're just opening the file to save it with new features uncomment
+	// this code to perform immediate save and exit after loading.
+	//SaveLevelData(LevelName);
+	//exit(0);
 }
 
 

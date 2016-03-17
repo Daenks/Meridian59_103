@@ -1,0 +1,163 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+AntiMagicAura is RoomEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   include antimag.lkod
+
+   AntiMagicAura_name_rsc = "anti-magic aura"
+   AntiMagicAura_icon_rsc = iantimag.bgf
+   AntiMagicAura_desc_rsc = \
+      "Sends a shock wave of magical energy coursing through the room which "
+      "reduces the spellpower of other spells cast for several minutes.  "
+      "More powerful mages are more effective at casting this spell.  "
+      "Requires two sapphires and a polished seraphym to cast."
+   
+   AntiMagicAura_unnecessary = \
+      "You cannot overcome the anti-magic field in effect."
+   AntiMagicAura_reinforced = \
+      "The mana field around you is fluctuating more wildly than it was before."
+
+   AntiMagicAura_on = "The mana field begins to fluctuate."
+   AntiMagicAura_off = "The mana field returns to normal."
+   AntiMagicAura_new_occupant = "The mana field is fluctuating here."
+
+   AntiMagicAura_sound = kantimag.ogg
+
+classvars:
+
+   vrIcon = AntiMagicAura_icon_rsc
+   vrDesc = AntiMagicAura_desc_rsc
+   vrName = AntiMagicAura_name_rsc
+   vrAlreadyEnchanted = AntiMagicAura_unnecessary
+   vrSucceed_wav = AntiMagicAura_sound
+
+   viSpell_num = SID_ANTIMAGIC_AURA
+   viSchool = SS_KRAANAN
+   viHarmful = TRUE
+   viNoNewbieOffense = TRUE
+   viMana = 15
+   viSpell_level = 6
+   viCast_time = 600
+   viChance_To_Increase = 10
+   viMeditate_ratio = 75
+
+properties:
+
+   // What percentage of AMA's spellpower is removed from the
+   // spellpower of any spells cast.
+   piAMAEffectPercent = 100
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Sapphire,2],plReagents);
+      plReagents = Cons([&PolishedSeraphym,1],plReagents);
+
+      return;
+   }
+
+   CastSpell(who = $, iSpellPower = 0)
+   "Initiation point for the spell."
+   {
+      local oRoom, iAbility;
+
+      oRoom = Send(who,@GetOwner);
+
+      // Global effects of the enchantment.
+      Send(oRoom,@SomeoneSaid,#type=SAY_MESSAGE,#string=AntiMagicAura_on,
+            #what=self);
+      Send(oRoom,@RoomStartEnchantment,#what=self,
+            #state=[iSpellPower, who],
+            #time=Send(self,@GetDuration,#iSpellPower=iSpellpower));
+
+      propagate;
+   }
+
+   StartEnchantmentNewOccupant(who = $)
+   "Called on new occupants of the enchanted room."
+   {
+      Send(who,@MsgSendUser,#message_rsc=AntiMagicAura_new_occupant);
+
+      return;
+   }
+
+   EndSpell(where = $, state = $, report = TRUE)
+   "Called when spell expires."
+   {
+      if report
+      {
+         Send(where,@SomeoneSaid,#type=SAY_MESSAGE,#string=AntiMagicAura_off,
+               #what=self);
+      }
+
+      propagate;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      local iDuration;
+
+      iDuration = 60 + iSpellPower;
+      iDuration = Random(iDuration/2,iDuration);
+
+      % Convert to ms.
+      iDuration = iDuration * 1000;
+
+      return iDuration;
+   }
+
+   ModifySpellPower(who=$,oSpell=$,oRoom=$,iSpellPower=0)
+   {
+      local state, oCaster;
+
+      if (oRoom = $
+         OR who = $
+         OR IsClass(oSpell,&ManaConvergence))
+      {
+         return iSpellPower;
+      }
+
+      // Get power of AMA
+      state = Send(oRoom,@GetEnchantedState,#what=self);
+      if (state = $)
+      {
+         return iSpellPower;
+      }
+
+      oCaster = Nth(state,2);
+
+      if (IsClass(oCaster,&User)
+         AND ((who = self AND NOT vbRoomEnchHitCaster)
+            OR NOT Send(oCaster,@AllowPlayerAttack,#victim=who,
+                        #stroke_obj=self)))
+      {
+         return iSpellPower;
+      }
+
+      // Subtract AMA's spellpower from the power of the spell being cast.
+      return iSpellPower - First(state) * piAMAEffectPercent / 100;
+   }
+
+   AffectsSpellPower()
+   {
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -31,7 +31,7 @@ resources:
    Eavesdrop_no_rooms = "There seem to be no nearby rooms you can listen to."
    Eavesdrop_Success_rsc = "You grant %s%s the ability to eavesdrop."
 
-   Eavesdrop_sound = riija.wav
+   Eavesdrop_sound = riija.ogg
 
 classvars:
 
@@ -59,6 +59,11 @@ classvars:
    vbCanCastOnOthers = FALSE
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 5
 
 messages:
 
@@ -157,9 +162,9 @@ messages:
       {
          Send(who,@MsgSendUser,#message_rsc=Eavesdrop_no_rooms);
       }
-      
+
       iLength = Random(1,iLength);
-      oRoom = Send(SYS,@FindRoomByNum,#num=nth(lRooms,iLength));
+      oRoom = Send(SYS,@FindRoomByNum,#num=Nth(lRooms,iLength));
 
       % Use "safe" t'port coords.
       iRow = Send(oRoom,@GetTeleportRow);
@@ -167,7 +172,7 @@ messages:
 
       oListener = Create(&Listener,#Enchanted=who,#iSpellpower=iSpellpower);
       Send(oRoom,@NewHold,#what=oListener,#new_row=iRow,#new_col=iCol);
-   
+
       return [Send(self,@GetDuration,#iSpellpower=iSpellpower),oListener];
    }
 
@@ -185,22 +190,34 @@ messages:
    GetYellList(who=$)
    "Returns a list of rooms in the yell zone of who's current location."
    {
-      local oRoom, lRooms;
+      local iNum, oRoom, lRooms;
 
-      %% Get yell list from current room and select a room to eavesdrop.
+      // Get yell list from current room and select a room to eavesdrop.
       oRoom = Send(who,@GetOwner);
-      lRooms = Send(oRoom,@GetYellZone);
-      
-      %% Eliminate the room we're in, unless there is no yell list.
-      if FindListElem(lRooms,Send(oRoom,@GetRoomNum))
+
+      if (oRoom = $)
       {
-         if lRooms = $ OR length(lRooms) < 2
+         return $;
+      }
+
+      iNum = Send(oRoom,@GetRoomNum);
+      lRooms = Send(oRoom,@GetYellZone);
+
+      if (lRooms = $)
+      {
+         return [iNum];
+      }
+
+      // Eliminate the room we're in, unless there is no yell list.
+      if (FindListElem(lRooms,iNum))
+      {
+         if (Length(lRooms) < 2)
          {
-            lRooms = [oRoom];
+            lRooms = [iNum];
          }
          else
          {
-            lRooms = DelListElem(lRooms,oRoom);
+            lRooms = DelListElem(lRooms,iNum);
          }
       }
 

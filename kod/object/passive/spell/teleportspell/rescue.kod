@@ -34,7 +34,7 @@ resources:
    Rescue_depart_to_destination = \
       "%s vanishes in a burst of protective light!"
    
-   rescue_sound = srescue.wav
+   rescue_sound = srescue.ogg
 
 classvars:
 
@@ -108,9 +108,9 @@ messages:
       iDelay = iDelay - (iSpellPower * iDelay) / 100 / 4;
 
       % Add a little delay in sometimes.
-      if random(1,2) = 1
+      if Random(1,2) = 1
       {
-         iDelay = iDelay + random(5000, 10000);
+         iDelay = iDelay + Random(2000, 4000);
       }
 
       Send(who,@StartRescueTimer,#time=iDelay);

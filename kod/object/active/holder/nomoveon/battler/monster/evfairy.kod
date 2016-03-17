@@ -33,10 +33,10 @@ resources:
    darkfairy_dead_icon_rsc = faerieXE.bgf
    darkfairy_dead_name_rsc = "dead fey"
 
-   darkfairy_sound_hit = evl_atkh.wav
-   darkfairy_sound_miss = evl_atkm.wav
-   darkfairy_sound_death = evl_die.wav
-   darkfairy_sound_aware = evl_awr.wav
+   darkfairy_sound_hit = evl_atkh.ogg
+   darkfairy_sound_miss = evl_atkm.ogg
+   darkfairy_sound_death = evl_die.ogg
+   darkfairy_sound_aware = evl_awr.ogg
 
 classvars:
 

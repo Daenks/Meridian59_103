@@ -30,10 +30,10 @@ resources:
    zombie_dead_icon_rsc = zombieX.bgf
    zombie_dead_name_rsc = "dead zombie"
 
-   zombie_sound_hit = zmb_atkh.wav
-   zombie_sound_miss = zmb_atkm.wav
-   zombie_sound_death = zmb_dth.wav
-   zombie_sound_aware = zmb_awr.wav
+   zombie_sound_hit = zmb_atkh.ogg
+   zombie_sound_miss = zmb_atkm.ogg
+   zombie_sound_death = zmb_dth.ogg
+   zombie_sound_aware = zmb_awr.ogg
 
 classvars:
 
@@ -48,6 +48,7 @@ classvars:
    viAttack_type = ATCK_WEAP_SLASH
    viDefault_behavior = AI_FIGHT_KARMA_AGGRESSIVE | AI_MOVE_FLEE_FRIGHTENERS
 
+   vbDementChance = 10 // 1 in x
    vbIsUndead = TRUE
    viDifficulty = 4
    viVisionDistance = 10
@@ -167,6 +168,27 @@ messages:
       }
 
       propagate;
+   }
+
+   HitSideEffect(what = $, who = $)
+   {
+      local oSpell;
+
+      oSpell = Send(SYS,@FindSpellByNum,#num=SID_DEMENT);
+      if NOT Send(what,@IsEnchanted,#what=oSpell)
+         AND Random(1,vbDementChance) = 1
+      {
+         if who <> $
+         {
+            Send(oSpell,@CastSpell,#who=who,#lTargets=[what],#iSpellPower=15);
+         }
+         else
+         {
+            Send(oSpell,@DoSpell,#what=self,#oTarget=what,#iSpellPower=15);
+         }
+      }
+
+      return;
    }
 
 end

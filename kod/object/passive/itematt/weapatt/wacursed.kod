@@ -80,14 +80,14 @@ messages:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
    ModifyDamage(damage=0,target=$,wielder=$,lData=$)
-   "Wielder gets a -2*bonus to damage."
+   "Wielder gets a -2*bonus to hitroll."
    {
       local iPower;
 
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherDamageFromPower,#iPower=iPower);
 
-      return (damage - (2*iPower));
+      return (damage - (2 * iPower));
    }
 
    ModifyHitRoll(hitroll=0,target=$,wielder=$,lData=$)
@@ -98,16 +98,16 @@ messages:
       iPower = Send(self,@TranslatePowerFromCompound,#iCompound=First(lData));
       iPower = Send(self,@DecipherHitrollFromPower,#iPower=iPower);
 
-      return (hitroll - (2*iPower));
+      return (hitroll - (2 * iPower));
    }
 
    ItemReqUnuse(oItem=$)
    "You may not unuse this weapon once you've used it."
    {
-      Send(Send(oItem,@GetOwner),@MsgSendUser,#message_rsc = cursedweapon_fail_unuse,
-           #parm1=Send(oItem,@GetCapDef),#parm2=Send(oItem,@GetName));
+      Send(Send(oItem,@GetOwner),@MsgSendUser,#message_rsc=cursedweapon_fail_unuse,
+            #parm1=Send(oItem,@GetCapDef),#parm2=Send(oItem,@GetName));
 
-      return FALSE; 
+      return FALSE;
    }
 
    ItemReqLeaveOwner(oItem=$)
@@ -116,16 +116,16 @@ messages:
       local i, oOwner;
 
       oOwner = Send(oItem,@GetOwner);
-      if IsClass(oOwner,&player)
+      if IsClass(oOwner,&User)
       {
-         foreach i in Send(oOwner,@getplayerusing)
+         foreach i in Send(oOwner,@GetPlayerUsing)
          {
             if i = oItem
             {
-               Send(Send(oItem,@GetOwner),@MsgSendUser,#message_rsc = cursedweapon_fail_unuse,
+               Send(Send(oItem,@GetOwner),@MsgSendUser,#message_rsc=cursedweapon_fail_unuse,
                      #parm1=Send(oItem,@GetCapDef),#parm2=Send(oItem,@GetName));
 
-               return FALSE; 
+               return FALSE;
             }
          }
       }
@@ -138,7 +138,6 @@ messages:
       return TRUE;
    }
 
-
    AddToTreasureTable()
    {
       %% 10% chance at every level of getting a cursed weapon
@@ -147,8 +146,9 @@ messages:
       i = 1;
       while i < 11
       {
-         Send(SYS,@AddToItemAttTreasureTable,#diff=i,#percent=10,#iItemAtt=viItem_Att_Num);
-         i=i+1;
+         Send(SYS,@AddToItemAttTreasureTable,#diff=i,#percent=10,
+               #iItemAtt=viItem_Att_Num);
+         ++i;
       }
 
       return;
@@ -168,7 +168,7 @@ messages:
 
    HasTimer(lData=$)
    {
-      if length(lData) > 1
+      if Length(lData) > 1
       {
          return TRUE;
       }
@@ -189,10 +189,13 @@ messages:
       local oPlayer;
 
       oPlayer = Send(oItem,@GetOwner);
-      if oPlayer<> $ and IsClass(oPlayer,&player)
+      if oPlayer <> $
+         AND IsClass(oPlayer,&User)
       {
          Send(oPlayer,@MsgSendUser,#message_rsc = wacursed_gone,
                #parm1=Send(oItem,@GetName));
+         
+         Post(oPlayer,@DrawOffense);
       }
 
       propagate;

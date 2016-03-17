@@ -1,8 +1,12 @@
 RingOfFlames_name_rsc = de "Flammenring"
 RingOfFlames_desc_rsc = de \
-   "Erschafft einen Ring aus Flammen um den Zaubernden. Benötigt rote Pilze, "
-   "Feuersand und ungeschliffenen Seraph. Die Anwendung dieses Zaubers kann "
-   "dazu führen, daß Du zum Gesetzlosen erklärt wirst."
+   "Erschafft einen Ring aus Flammen um den Zaubernden. "
+   "Benötigt Rote Pilze und Feuersand. "
+   "HINWEIS: Wenn deine Sicherheit an ist, wird dieser "
+   "Zauber keine Unschuldigen verletzen. Sollte allerdings "
+   "deine Sicherheit aus sein, wirst du gesetzlos, wenn andere "
+   "Spieler dadurch verletzt werden. Oder sogar zum Mörder, "
+   "wenn du jemanden dadurch tötest."
 RingOfFlames_caster = de \
    "Ein glühend heißer Ring aus Flammen erscheint vor %s%q."
 RingOfFlames_target = de \

@@ -29,7 +29,7 @@ resources:
    skill_too_tired = "You are too tired to use your %s skill!"
    skill_failed_by_chance = "Your %s attempt was unsuccessful."
    
-   skill_sound_fail = spelfail.wav
+   skill_sound_fail = spelfail.ogg
 
    skill_desc_rsc = "SCHOOL : %s         LEVEL : %i \n\n%s%r%r"
    skill_school_fencing = "Weaponcraft"

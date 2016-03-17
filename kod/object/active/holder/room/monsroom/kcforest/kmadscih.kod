@@ -18,10 +18,10 @@ resources:
 
    include kmadscih.lkod
    room_name_MadScientistHut = "Hut of the Mad Scientist"
-   room_MadScientistHut = KC5a.roo
-   MadScientistHut_music = madsci.mp3
+   room_MadScientistHut = kc5a.roo
+   MadScientistHut_music = madsci.ogg
 
-   fire_sound_madscientist = fireplac.wav
+   fire_sound_madscientist = fireplac.ogg
 
 classvars:
 

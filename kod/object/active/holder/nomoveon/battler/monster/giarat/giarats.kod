@@ -28,10 +28,10 @@ resources:
    giantratsdead_icon_rsc = ratsoldX.bgf
    giantratsdead_name_rsc = "dead rat soldier"
 
-   giantratssound_hit = rat_atkh.wav
-   giantratssound_miss = rat_atkm.wav
-   giantratssound_death = rat_dth.wav
-   giantratssound_aware = rat_awr.wav
+   giantratssound_hit = rat_atkh.ogg
+   giantratssound_miss = rat_atkm.ogg
+   giantratssound_death = rat_dth.ogg
+   giantratssound_aware = rat_awr.ogg
 
 classvars:
 

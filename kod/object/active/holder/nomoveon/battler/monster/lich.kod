@@ -46,12 +46,12 @@ resources:
    lich_dead_icon_rsc = lichbx.bgf
    lich_dead_name_rsc = "The ghost of Queen Venya'cyr"
 
-   lich_sound_miss = lich_atk.wav
-   lich_sound_death = lich_dth.wav
-   lich_sound_aware = lich_awr.wav
+   lich_sound_miss = lich_atk.ogg
+   lich_sound_death = lich_dth.ogg
+   lich_sound_aware = lich_awr.ogg
 
    lich_cast_spell = "The lich queen summons forth the darkness!!"
-   lich_cast_sound = necro01.wav
+   lich_cast_sound = necro01.ogg
 
    lich_death_blow = \
       "Your final blow has banished the foul Queen Venya'cyr from this "

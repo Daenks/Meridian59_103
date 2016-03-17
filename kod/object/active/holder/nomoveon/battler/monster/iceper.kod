@@ -35,10 +35,10 @@ resources:
    iceperson_dead_icon_rsc = blank.bgf
    iceperson_dead_name_rsc = "melting ice"
 
-   iceperson_sound_hit = ice_atkh.wav
-   iceperson_sound_miss = ice_atkm.wav
-   iceperson_sound_death = ice_dth.wav
-   iceperson_sound_aware = ice_awr.wav
+   iceperson_sound_hit = ice_atkh.ogg
+   iceperson_sound_miss = ice_atkm.ogg
+   iceperson_sound_death = ice_dth.ogg
+   iceperson_sound_aware = ice_awr.ogg
 
 classvars:
 

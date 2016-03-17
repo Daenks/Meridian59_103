@@ -21,30 +21,27 @@ resources:
    vampireRod_name_rsc = "rod of vampiric shock"
    vampireRod_icon_rsc = wand3.bgf
    vampireRod_desc_rsc = \
-   "This ancient rod is cold to the touch.  Its dark, smooth surface seems to "
-   "draw in all of the life force around it. "
-   "You sense that this wand cannot be charged by places of safety, and is "
-   "instead fed by the energy of good souls slain in battle."
-   vampireRod_success_wav_rsc = vamp_wand.wav
-
+      "This ancient rod is cold to the touch.  Its dark, smooth surface seems "
+      "to draw in all of the life force around it. You sense that this wand "
+      "cannot be charged by places of safety, and is instead fed by the "
+      "energy of good souls slain in battle."
    vampireRod_success_rsc = \
-   "You shiver uncontrollably as you gleefully consume slivers of raw soul "
-   "energy! Your black feast darkens your karma."
+      "You shiver uncontrollably as you gleefully consume slivers of raw soul "
+      "energy! Your black feast darkens your karma."
+   vampireRod_success_wav_rsc = vamp_wand.ogg
 
 classvars:
 
    vrName = vampireRod_name_rsc
    vrIcon = vampireRod_icon_rsc
+   vrGoodDesc = vampireRod_desc_rsc
+   vrSuccess = vampireRod_success_rsc
+   vrSuccessSound = vampireRod_success_wav_rsc
 
    viBulk = 25
    viWeight = 25
    viValue_average = 200
    viGround_group = 2
-   
-   vrGoodDesc = vampireRod_desc_rsc
-   
-   use_success_wav = vampireRod_success_wav_rsc
-   use_success_msg = vampireRod_success_rsc
 
 properties:
 
@@ -83,8 +80,6 @@ messages:
       % Can only be charged by kills.
       return FALSE;
    }
-   
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

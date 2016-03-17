@@ -637,7 +637,7 @@ void RenumberObject(object_node *o)
 
 void RenumberBlockerObjects(room_node *r)
 {
-   Blocker *b;
+   BlockerNode *b;
 
    b = r->data.Blocker;
    while (b)

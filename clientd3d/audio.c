@@ -6,7 +6,7 @@
 //
 // Meridian is a registered trademark.
 /*
-* audio.c:  Deals with playing WAV (sound) and MP3 (music).
+* audio.c:  Deals with playing WAV (sound) and MP3/OGG (music).
 *           Uses the irrklang audio library (free for non-commercial use).
 *           irrklang is capabale of playing 3D sound as well as 2D.
 */
@@ -26,7 +26,7 @@ typedef struct
 /*********************************************************************/
 
 #define MAXSOUNDS 24                  // maximum simutaneously played sounds
-#define AUDIODIR  "resource"          // folder with wav and mp3 files
+#define AUDIODIR  "resource"          // folder with wav and mp3/ogg files
 #define ROLLOFF   0.00016f            // sets how volume decreases with distance
 #define MAXDIST   (FINENESS * 32.0f)  // beyond this distance, volume is always 0
 

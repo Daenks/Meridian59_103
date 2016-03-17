@@ -24,19 +24,14 @@ resources:
       "The magical force of Qor burns the target's eyes, "
       "taking away all sight for a brief period.  "
       "Requires two entroot berries and a purple mushroom to cast."
-
    blind_caster = "%s%s is now blind."
    blind_already_enchanted = "%s%s is already blind."
-
    blind_on = \
       "Something burns in your eyes, causing excruciating pain and a loss "
       "of vision."
    blind_off = "Your eyes begin to function again."
 
-   blind_sound = qblind.wav
-   
-   blind_break_rod_active = \
-      "Illuminating energies dissipate your spell before you even begin!"
+   blind_sound = qblind.ogg
 
 classvars:
 
@@ -62,13 +57,13 @@ classvars:
 
 properties:
 
-   piBaseDuration = 5000 % Recommended value 4000.
-   piSpellPowerModifier = 151 % Recommended value 60.
-   piDeviation = 50 % Recommended value 10%.
+   piBaseDuration = 4000 // 103 value 5000
+   piSpellPowerModifier = 60 // 103 value 151
+   piDeviation = 10 // 103 value 50%
 
-   % Min and max values for Dazzle duration.
-   piMinBlind = 3000 % Recommended value 4000.
-   piMaxBlind = 20000 % Recommended value 12000.
+   // Min and max values for Blind duration.
+   piMinBlind = 4000 // 103 value 3000
+   piMaxBlind = 12000// 103 value 20000
 
 messages:
 
@@ -83,59 +78,14 @@ messages:
 
    SetSpellPlayerFlag(who = $)
    {
-      if NOT (IsClass(who,&DM) AND Send(who,@PlayerIsImmortal))
+      if NOT (IsClass(who,&DM)
+         AND Send(who,@PlayerIsImmortal))
       {
          Send(who,@SetPlayerFlag,#flag=PFLAG_NO_FIGHT,#value=TRUE);
          Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MAGIC,#value=TRUE);
       }
-      
+
       return;
-   }
-
-   CanPayCosts(who=$,lTargets=$,bItemCast=FALSE)
-   {
-      local target, i;
-
-      % Can cast spell if the 1 target item is a user
-      if Length(lTargets) <> 1
-      {
-         return FALSE;
-      }
-
-      target = First(lTargets);
-
-      % TODO: this is not an ideal implementation of blind/hold resistance.
-      % These should be enchantments themselves, rather than requiring
-      % multiple checks of every item in the target's inventory.
-      if IsClass(target,&Player)
-      {
-         foreach i in Send(target,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodBlind)
-               AND Send(i,@IsActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=blind_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-
-      if IsClass(who,&Player)
-      {
-         foreach i in Send(who,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodBlind)
-               AND Send(i,@IsSecondaryActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=blind_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-
-      propagate;
    }
 
    CastSpell(who=$,lTargets=$,iSpellPower=0)
@@ -170,7 +120,7 @@ messages:
       % Re-check the bound on duration.
       iDuration = Bound(iDuration,piMinBlind,piMaxBlind);
 
-      if IsClass(oTarget,&Player)
+      if IsClass(oTarget,&User)
       {
          if NOT (IsClass(oTarget,&DM) AND Send(oTarget,@PlayerIsImmortal))
          {
@@ -203,7 +153,7 @@ messages:
 
    EndEnchantment(who=$,report=TRUE)
    {
-      if IsClass(who,&Player)
+      if IsClass(who,&User)
       {
          Send(who,@EffectSendUser,#what=self,#effect=EFFECT_BLIND_OFF);
          if report

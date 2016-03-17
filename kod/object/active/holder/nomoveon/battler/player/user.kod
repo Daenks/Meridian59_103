@@ -72,13 +72,13 @@ resources:
 
    user_garbage_collecting = "System is saving; please wait."
    user_garbage_collecting_done = "System save completed; resume play."
-   user_saving_wav_rsc = system_save.wav
+   user_saving_wav_rsc = system_save.ogg
 
    user_err_get_unk = "You can't pick up %s%s; it is no longer accessible."
    user_err_get_dist = "You can't pick up %s%s; it's too far away."
    user_disallow_get = "You're unable to pick up %s%s."
    user_got_some = "You can't pick up all the %s."
-   user_cant_pickup_item_wav_rsc = player_cannot_carry.wav
+   user_cant_pickup_item_wav_rsc = player_cannot_carry.ogg
    user_disallow_drop = "You are unable to drop %s%s."
    user_err_drop = "You're not holding that."
    user_err_put = "You can't put %s%s in %s%s; %s%s can't hold things!"
@@ -270,7 +270,7 @@ resources:
    user_autoloot_off = "You stop picking up treasure as it drops."
 
    user_cant_go = "You are unable to go anywhere."
-   user_cant_go_wav_rsc = cant_go_anywhere_louder.wav
+   user_cant_go_wav_rsc = cant_go_anywhere_louder.ogg
    user_blocked_send = "%s is ignoring messages from you."
 
    user_cant_suicide = \
@@ -336,10 +336,10 @@ resources:
    user_doesnt_know_stroke = "You do not know how to %s!"
    user_doesnt_know_spell = "You have not yet learned the spell '%s'!"
 
-   user_wave_welcome = welcome.wav
-   user_wave_killed = killed.wav
+   user_wave_welcome = welcome.ogg
+   user_wave_killed = killed1.ogg
 
-   user_midi_killed = killed.mp3
+   user_midi_killed = killed1.ogg
 
    user_interface_module = merintr.dll
    user_mailnews_module = mailnews.dll
@@ -373,10 +373,10 @@ resources:
    user_guild_rsc = "guild"
    user_guildofficer_rsc = "guildofficer"
 
-   user_default_url = "http://openmeridian.org/"
+   user_default_url = "https://www.Meridian59.de/"
 
-   user_safety_on_wav_rsc = safety_on.wav
-   user_safety_off_wav_rsc = safety_off.wav
+   user_safety_on_wav_rsc = safety_on.ogg
+   user_safety_off_wav_rsc = safety_off.ogg
 
    % Guild MOTD user say commands.
    user_say_guild_motd = "motd"
@@ -460,7 +460,7 @@ resources:
    user_time_string =  \
    "The time in Meridian is %i:00.  It is the %q day of the year %i."
 
-   user_tell_wav = imp.wav
+   user_tell_wav = imp.ogg
 
 classvars:
 
@@ -969,7 +969,7 @@ messages:
          {
             Send(self,@LoseMana,#amount=(piMana/2));
             Send(Send(SYS,@FindSpellByNum,#num=SID_PURGE),@DoPurge,
-                  #who=self,#iChance=100);
+                  #who=self,#iSpellPower=$);
          }
       }
 
@@ -6226,8 +6226,7 @@ messages:
       }
 
       % Get the spell power
-      iSpellPower = Send(oSpell,@GetSpellPower,#who=self,
-                          #lTargets=lFinalTargets);
+      iSpellPower = Send(oSpell,@GetSpellPower,#who=self);
 
       % First make sure user has enough magic points, reagents, etc.
       if NOT Send(oSpell,@CanPayCosts,#who=self,#lTargets=lFinalTargets,
@@ -7602,7 +7601,10 @@ messages:
                piLastSafeRoom = Send(poOwner,@GetRoomNum);
 
                % Recharge user's rods.
-               Send(self,@RechargeAllRods);
+               if (Send(SETTINGS_OBJECT,@CanInnsRechargeRods))
+               {
+                  Send(self,@RechargeAllRods);
+               }
             }
 
             % If this player has created any evil twins, delete them.
@@ -8976,6 +8978,8 @@ messages:
 
    WeatherChanged()
    {
+      local oSpell;
+
       if pbLogged_on
       {
          % First clear whichever effect we have.
@@ -8984,8 +8988,8 @@ messages:
 
          % If we came from a room with a sandstorm weather effect we
          % clear it here, unless we're affected by the Sandstorm spell.
-         if NOT Send(self,@IsAffectedByRadiusEnchantment,
-                     #byClass=&Sandstorm)
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SANDSTORM);
+         if (Send(poOwner,@GetEnchantedState,#what=oSpell) = $)
          {
             AddPacket(1,BP_EFFECT,2,EFFECT_CLEARSAND);
             SendPacket(poSession);

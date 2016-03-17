@@ -202,7 +202,7 @@ resources:
       "~I~BYou feel your guardian angel has departed once more."
 
    player_improved = "~I~BYou have improved in the art of %s."
-   player_improved_wav_rsc = imp.wav
+   player_improved_wav_rsc = imp.ogg
    player_aggressor = "Shal'ille frowns upon your unprovoked attack."
    player_aggressor_minion = \
       "Shal'ille frowns upon your unprovoked attack on %s%s's minion."
@@ -221,8 +221,8 @@ resources:
       "~kRoq tells you, \"~IA new Assassin's Circle shall be initiated "
       "shortly.\""
 
-   player_tougher_wav_rsc = tougher.wav
-   player_missed_something_wave_rsc = swordmis.wav
+   player_tougher_wav_rsc = tougher.ogg
+   player_missed_something_wave_rsc = swordmis.ogg
    player_killed_something = "You killed %s%s."
    player_killed_player = \
       "You have killed another player and have been branded a murderer."
@@ -302,9 +302,9 @@ resources:
 
    player_cant_apply = "You can't use %s%s on other things."
    
-   player_wave_hit = hit.wav
+   player_wave_hit = hit.ogg
    
-   player_level_music = perc2.mp3
+   player_level_music = perc2.ogg
    
    % These are now old resources..... here in case we want to de-hack...
    player_desc_guild = "%q of %s%q."
@@ -392,8 +392,8 @@ resources:
    player_dead_male_name_rsc = "dead male body"
    player_dead_female_name_rsc = "dead female body"
    
-   playerm_death_wav = pdeath.wav
-   playerf_death_wav = pdeathf.wav
+   playerm_death_wav = pdeath.ogg
+   playerf_death_wav = pdeathf.ogg
 
    player_token_death = \
       "As you die, the token pulsates, and you feel an odd sensation..."
@@ -438,7 +438,7 @@ resources:
    % hair for Rob
    player_toupee_q_rsc = ptq.bgf
 
-   player_sound_learn_spell = splearn.wav
+   player_sound_learn_spell = splearn.ogg
 
    player_angel = "Your guardian angel"
    intrigue_ambassador = "Baron Springer of Cor Noth Township"
@@ -714,36 +714,36 @@ resources:
    player_Debug_nokarma = "%s cannot learn %s due to karma restrictions."
    player_Debug_noway = "It is impossible for %s to ever get the %s spell."
 
-   player_sound_sword1 = sword1.wav
-   player_sound_sword2 = sword2.wav
-   player_sound_sword3 = sword3.wav
+   player_sound_sword1 = sword1.ogg
+   player_sound_sword2 = sword2.ogg
+   player_sound_sword3 = sword3.ogg
 
-   player_sound_metal1 = swrdmtl1.wav
-   player_sound_metal2 = swrdmtl2.wav
-   player_sound_metal3 = swrdmtl3.wav
+   player_sound_metal1 = swrdmtl1.ogg
+   player_sound_metal2 = swrdmtl2.ogg
+   player_sound_metal3 = swrdmtl3.ogg
 
-   player_sound_hit_monster_flesh1 = fhit1b.wav
-   player_sound_hit_monster_flesh2 = fhit2b.wav
-   player_sound_hit_monster_flesh3 = fhit3b.wav
+   player_sound_hit_monster_flesh1 = fhit1b.ogg
+   player_sound_hit_monster_flesh2 = fhit2b.ogg
+   player_sound_hit_monster_flesh3 = fhit3b.ogg
 
-   player_sound_hit_monster_leather1 = lhit1b.wav
-   player_sound_hit_monster_leather2 = lhit2b.wav
-   player_sound_hit_monster_leather3 = lhit3b.wav
+   player_sound_hit_monster_leather1 = lhit1b.ogg
+   player_sound_hit_monster_leather2 = lhit2b.ogg
+   player_sound_hit_monster_leather3 = lhit3b.ogg
 
-   player_sound_hit_monster_metal1 = mhit1b.wav
-   player_sound_hit_monster_metal2 = mhit2b.wav
-   player_sound_hit_monster_metal3 = mhit3b.wav
+   player_sound_hit_monster_metal1 = mhit1b.ogg
+   player_sound_hit_monster_metal2 = mhit2b.ogg
+   player_sound_hit_monster_metal3 = mhit3b.ogg
 
    % in increasing order of agony
-   player_sound_male_ouch1 = ouchm1.wav
-   player_sound_male_ouch2 = ouchm2.wav
-   player_sound_male_ouch3 = ouchm3.wav
-   player_sound_male_ouch4 = ouchm4.wav
+   player_sound_male_ouch1 = ouchm1.ogg
+   player_sound_male_ouch2 = ouchm2.ogg
+   player_sound_male_ouch3 = ouchm3.ogg
+   player_sound_male_ouch4 = ouchm4.ogg
 
-   player_sound_female_ouch1 = ouchf1.wav
-   player_sound_female_ouch2 = ouchf2.wav
-   player_sound_female_ouch3 = ouchf3.wav
-   player_sound_female_ouch4 = ouchf4.wav
+   player_sound_female_ouch1 = ouchf1.ogg
+   player_sound_female_ouch2 = ouchf2.ogg
+   player_sound_female_ouch3 = ouchf3.ogg
+   player_sound_female_ouch4 = ouchf4.ogg
 
    player_eavesdrop_login_str = "~B~g[~n%s has logged in.~B~g]"
    player_eavesdrop_str = "~B~g[~n%s tells %s, \"%q~n\"~B~g]"
@@ -756,8 +756,8 @@ resources:
    player_admin_modified_skill = "Skill modified."
    player_admin_removed_skill = "Skill removed."
 
-   player_logged_on_wav_rsc = player_login_or_out.wav
-   player_logged_off_wav_rsc = player_logout2.wav
+   player_logged_on_wav_rsc = player_login_or_out.ogg
+   player_logged_off_wav_rsc = player_logout2.ogg
 
    death_rift_stayed_too_long = \
       "Having lingered too long while still alive, you find "
@@ -778,7 +778,7 @@ resources:
    rod_gained_charge_msg = \
       "You sense that at least one of your magic items gained a "
       "charge from the released energy of your kill."
-   rods_fully_recharged_by_safe_place_msg = \
+   rods_recharged_by_safe_place_msg = \
       "This place of safety has recharged your magical rods."
 
    player_truced = "Shal'ille's magic compels you to respect the truce."
@@ -803,7 +803,7 @@ resources:
       "Your hindered line of sight makes a successful hit more difficult."
 
       
-   pvp_notify_wav = gong.wav
+   pvp_notify_wav = gong.ogg
 
 classvars:
 
@@ -1001,8 +1001,8 @@ properties:
 
    prHead = charinfo_head_ax_icon
    prEyes = charinfo_eyes_ax_icon
-   prMouth = charinfo_nose_ax_icon
-   prNose = charinfo_mouth_ax_icon
+   prMouth = charinfo_mouth_ax_icon
+   prNose = charinfo_nose_ax_icon
    prToupee = charinfo_hair_cd_icon
 
    % Animation type.  If none, then use piAction
@@ -3174,7 +3174,6 @@ messages:
          if First(i) = timer
          {
             if Length(i) >= ENCHANTMENT_LIST_STATE
-               OR IsClass(Nth(i,2),&Boon)
             {
                Send(Nth(i,2),@EndEnchantment,#who=self,#state=Nth(i,3));
             }
@@ -3268,16 +3267,13 @@ messages:
       {
          oTimer = $;
       }
+      else if lastcall
+      {
+         oTimer = CreateTimer(self,@EnchantmentTimer,time);
+      }
       else
       {
-         if lastcall
-         {
-            oTimer = CreateTimer(self,@EnchantmentTimer,time);
-         }
-         else
-         {
-            oTimer = CreateTimer(self,@PeriodicEnchantmentTimer,time);
-         }
+         oTimer = CreateTimer(self,@PeriodicEnchantmentTimer,time);
       }
 
       if state = $
@@ -3575,11 +3571,10 @@ messages:
                   {
                      DeleteTimer(First(i));
                   }
-                  SetNth(i,1,$);
+                  SetFirst(i,$);
                }
             }
             if Length(i) >= ENCHANTMENT_LIST_STATE
-               OR IsClass(what,&Boon)
             {
                state = Nth(i,3);
             }
@@ -4173,7 +4168,7 @@ messages:
    "Will not let a person attack someone who isn't pkill_enabled."
    "Will not let a person who isn't pkill_enabled attack another person."
    {
-      local oRoom, oGuild, oVictimGuild;
+      local oRoom, oGuild, oSpell, oVictimGuild;
 
       % Default location to check is where we are.
       oRoom = poOwner;
@@ -4202,12 +4197,6 @@ messages:
 
       % Can always attack Escaped Convict regardless of room
       if IsClass(victim,&EscapedConvict)
-      {
-         return TRUE;
-      }
-
-      % But Escaped Convict can also fight back!
-      if IsClass(self,&EscapedConvict)
       {
          return TRUE;
       }
@@ -4335,6 +4324,17 @@ messages:
 
       if IsClass(victim,&Monster)
       {
+         /*oSpell = Send(SYS,@FindSpellByNum,#num=SID_TRUCE);
+         if (Send(oRoom,@GetEnchantedState,#what=oSpell) <> $)
+         {
+            if report
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_truced);
+            }
+
+            return FALSE;
+         }*/
+
          if IsClass(victim,&Reflection)
             OR IsClass(victim,&EvilTwin)
             OR Send(victim,@GetMaster) <> $
@@ -4470,34 +4470,6 @@ messages:
          return TRUE;
       }
 
-      % Truce itself returns TRUE, not counting as an attack. 
-      % Truce will only block actual attacks between two players who 
-      % are both Truced.
-      if stroke_obj <> $
-         AND IsClass(stroke_obj,&Truce)
-      {
-         return TRUE;
-      }
-      else
-      {
-         if (Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Truce))
-         {
-            if (IsClass(victim,&Monster)
-               OR (IsClass(victim,&User)
-                  AND Send(victim,@IsAffectedByRadiusEnchantment,
-                           #byClass=&Truce)))
-               AND actual
-            {
-               if report
-               {
-                  Send(self,@MsgSendUser,#message_rsc=player_truced);
-               }
-
-               return FALSE;
-            }
-         }
-      }
-
       % Finally, check status and safety.
       if NOT Send(self,@CheckStatusAndSafety,#victim=victim,
                   #report=report,#actual=actual,#minion=minion)
@@ -4568,8 +4540,7 @@ messages:
             AND oEnemyGuild <> $
             AND Send(poGuild,@IsMutualEnemy,#otherguild=oEnemyGuild))
          OR (oSoldierShield <> $
-            AND Send(oSoldierShield,@IsEnemyAttack,#who=victim,#what=self,
-                      #damage=FALSE))
+            AND Send(oSoldierShield,@IsEnemyAttack,#what=victim))
       {
          % Okay, attack is against a player, so record the time
          if actual = TRUE
@@ -4750,7 +4721,7 @@ messages:
 
    TryAttack(what = $,use_weapon = $,stroke_obj=$)
    {
-      local i, iRange, lWindsState, lSandstormState;
+      local i, iRange, oSpell, state;
 
       % Can't target self.
       if what = self
@@ -4895,21 +4866,18 @@ messages:
       %  Do this after paying the costs so that the arrow is used.
       if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
       {
-         lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                              #byClass=&Winds);
-         lSandStormState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
-                                 #byClass=&SandStorm);
-
-         if lWindsState <> $
-            AND Send(Nth(lWindsState,1),@TryRuinShot,#who=self,
-                     #iSpellPower=Nth(lWindsState,2))
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_WINDS);
+         state = Send(poOwner,@GetEnchantedState,#what=oSpell);
+         if (state <> $
+            AND Send(oSpell,@TryRuinShot,#who=self,#state=state))
          {
             return FALSE;
          }
 
-         if lSandStormState <> $
-            AND Send(Nth(lSandStormState,1),@TryRuinShot,#who=self,
-                     #iSpellPower=Nth(lSandStormState,2))
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SANDSTORM);
+         state = Send(poOwner,@GetEnchantedState,#what=oSpell);
+         if (state <> $
+            AND Send(oSpell,@TryRuinShot,#who=self,#state=state))
          {
             return FALSE;
          }
@@ -5383,7 +5351,7 @@ messages:
       return Send(oWeapon,@GetAttackSpell);
    }
 
-   AssessHit(what = $, stroke_obj = $, damage = $)
+   AssessHit(what = $, stroke_obj = $, damage = $, use_weapon = $)
    {
       local oMonster;
 
@@ -5402,7 +5370,9 @@ messages:
          Send(oMonster,@HitSideEffect,#what=what,#who=self);
       }
 
-      Send(self,@DoHitMessageSound,#what=what,#damage=damage,#stroke_obj=stroke_obj);
+      
+      Send(self,@DoHitMessageSound,#what=what,#damage=damage,
+            #stroke_obj=stroke_obj,#use_weapon=use_weapon);
 
       propagate;
    }
@@ -5422,8 +5392,7 @@ messages:
       precision=FALSE)
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
-            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
-            bAttackerEmpowered, bShielded;
+            iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken;
 
       if NOT precision
       {
@@ -5553,10 +5522,9 @@ messages:
       % Faction enemies an extra 15% damage to each other, above caps.
       if what <> $ AND IsClass(what,&Player)
       {
-         oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
+         oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield,#damage=TRUE);
          if oSoldierShield <> $
-            AND Send(oSoldierShield,@IsEnemyAttack,#who=self,#what=what,
-                      #damage=TRUE)
+            AND Send(oSoldierShield,@IsEnemyAttack,#what=self,#damage=TRUE)
          {
             damage = (damage * 115)/100;
          }
@@ -5583,49 +5551,6 @@ messages:
             RecordStat(STAT_ASSESS_DAM,Send(self,@GetTrueName),
                Send(what,@GetTrueName),aspell,atype,damage/100,origdamage,
                player_no_weapon_string);
-         }
-      }
-
-      % Increase final damage by 35 percent if attacker damage rod is active
-      bAttackerEmpowered = FALSE;
-      if what <> $
-         AND IsClass(what,&Player)
-      {
-         foreach i in Send(what,@GetHolderPassive)
-         {
-            if IsClass(i,&DamageRod)
-               AND Send(i,@IsActive)
-            {
-               bAttackerEmpowered = TRUE;
-            }
-         }
-      }
-      
-      if bAttackerEmpowered
-      {
-         damage = damage * 135 / 100;
-      }
-
-      % Look for active shield rods in inventory, reduce final damage to 1 if any active
-      bShielded = FALSE;
-      foreach i in plPassive
-      {
-         if IsClass(i,&ShieldRod)
-            AND Send(i,@IsActive)
-         {
-            bShielded = TRUE;
-         }
-      }
-
-      if bShielded
-      {
-         if precision
-         {
-            damage = 100;
-         }
-         else
-         {
-            damage = 1;
          }
       }
 
@@ -5931,8 +5856,8 @@ messages:
                    OR oEnemyGuild = $
                    OR NOT Send(poGuild,@IsMutualEnemy,#otherguild=oEnemyGuild))
                   AND (oSoldierShield = $
-                       OR NOT Send(oSoldierShield,@IsEnemyAttack,#who=what,
-                                    #what=self,#damage=TRUE))
+                       OR NOT Send(oSoldierShield,@IsEnemyAttack,
+                                    #what=what,#damage=TRUE))
                {
                   % SUBTLE BUG: Somehow, the faction check is missed when you
                   % kill something. We check it here, but only for players.
@@ -6201,12 +6126,21 @@ messages:
       return oChance;
    }
 
-   DoHitMessageSound(what = $,damage = 0,stroke_obj = $)
+   DoHitMessageSound(what = $,damage = 0,stroke_obj = $, use_weapon = $)
    {
       local iRoll,rSound;
 
       if (stroke_obj = $)
       {
+         // Play a hurt sound for attack spells.
+         if (use_weapon <> $
+            AND IsClass(use_weapon,&AttackSpell)
+            AND IsClass(what,&User))
+         {
+            Send(poOwner,@SomethingWaveRoom,#what=what,
+                  #wave_rsc=Send(what,@GetOuchSound));
+         }
+
          return;
       }
 
@@ -6214,7 +6148,7 @@ messages:
       {
          rSound = Send(stroke_obj,@GetHitSound);
          Send(poOwner,@SomethingWaveRoom,#what=self,#wave_rsc=rSound);
-         if IsClass(what,&Player)
+         if IsClass(what,&User)
          {
             Send(poOwner,@SomethingWaveRoom,#what=what,
                   #wave_rsc=Send(what,@GetOuchSound));
@@ -9055,7 +8989,7 @@ messages:
    "FALSE otherwise.  The iLevel parameter has the player's base max HP "
    "taken from it, then divided by 5 before being bound between 1 and 10."
    {
-      local iRandom, iNumber, oShrunken;
+      local iRandom, iNumber, oShrunken, iApparentStamina;
 
       if iLevel = $
       {
@@ -9099,6 +9033,24 @@ messages:
             {
                Send(oShrunken,@Tougher,#hp=pibase_max_health);
             }
+         }
+
+         // If they are at max HP, award some training points instead.
+         // Awards the TP when the player hits max HP also (reward!).
+         if (piStaminaMod >= 0)
+         {
+            iApparentStamina = Send(self,@GetStamina);
+         }
+         else
+         {
+            iApparentStamina = Send(self,@GetRawStamina);
+         }
+
+         if (piBase_max_health = 100 + iApparentStamina
+            OR piBase_max_health >= 150)
+         {
+            Send(self,@AddTrainingPoints,#points=piBase_max_health * 3,
+                  #bCap=FALSE);
          }
 
          piGain_chance = -(piBase_Max_health / 2);
@@ -11633,7 +11585,6 @@ messages:
       foreach i in plRadiusEnchantments
       {
          if Nth(i,3) = self
-            AND NOT Send(First(i),@GetOldAreaEnchStyle)
          {
             piDrawEffectFlag = piDrawEffectFlag | OF_FLICKERING;
 
@@ -12516,6 +12467,12 @@ messages:
       if (piFlags & PFLAG_PKILL_LOCK)
       {
          return FALSE;
+      }
+
+      // Tell the room that our status changed, recalc enchantments.
+      if (poOwner <> $)
+      {
+         Post(poOwner,@EnchantPlayerStatusChanged,#who=self);
       }
 
       if (piFlags & PFLAG_PKILL_ENABLE)
@@ -14231,10 +14188,6 @@ messages:
          if Nth(i,3) = self
          {
             oLightObject = First(i);
-            if Send(oLightObject,@GetOldAreaEnchStyle)
-            {
-               continue;
-            }
 
             if Send(oLightObject,@GetLightIntensity) >= iIntensity
             {
@@ -14581,7 +14534,7 @@ messages:
 
       if bGainedCharges
       {
-         Send(self,@MsgSendUser,#message_rsc=rods_fully_recharged_by_safe_place_msg);
+         Send(self,@MsgSendUser,#message_rsc=rods_recharged_by_safe_place_msg);
       }
 
       return;
@@ -14915,6 +14868,19 @@ messages:
       }
 
       propagate;
+   }
+
+   FixDefaultResources()
+   "Temporary message to clear up some issues with default resources."
+   {
+      if (prMouth = charinfo_nose_ax_icon
+         OR prNose = charinfo_mouth_ax_icon)
+      {
+         prNose = charinfo_nose_ax_icon;
+         prMouth = charinfo_mouth_ax_icon;
+      }
+
+      return;
    }
 
 end

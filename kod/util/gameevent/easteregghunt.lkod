@@ -1,2 +1,18 @@
-egghunt_start_msg = de "Easter Egg Hunt Started."
-egghunt_end_msg = de "Easter Egg Hunt Ended."
+egghunt_start_msg = de \
+      "~B~k[Event]~n ~B~vDie feierliche Suche nach den Ostereiern hat begonnen.! %i Ostereier "
+      "wurden in ganz Meridian versteckt - Geh jetzt und finde so viele du kannst!"
+egghunt_end_msg = de \
+      "~B~k[Event]~n ~B~vDie feierliche Suche nach den Ostereiern ist nun beendet. Es ist "
+      "Zeit all die Schokolade zu genießen!"
+egghunt_continues_msg = de \
+      "~B~k[Event]~n ~B~vEs sind noch immer %i Ostereier nicht gefunden!"
+egghunt_oneleft_msg = de \
+      "~B~k[Event]~n ~B~vJetzt fehlt nurnoch ein einziges Osterei!"
+egghunt_allfound_msg = de \
+      "~B~k[Event]~n ~B~vAlle Ostereier wurden gefunden!"
+egghunt_scores_msg = de \
+      "~B~k[Event]~n ~B~vWer hat die meisten Ostereier gefunden? Hier ist das Ergebnis:"
+egghunt_score_eggs_msg = de \
+   "~B~k[Event]~n ~B~y%q hat %i Ostereier gefunden!"
+egghunt_score_egg_msg = de \
+   "~B~k[Event]~n ~B~y%q hat %i Osterei gefunden!"
