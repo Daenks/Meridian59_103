@@ -2608,6 +2608,15 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER1,#class=&DesertRiver1);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER2,#class=&DesertRiver2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTBRIDGE,#class=&DesertBridge);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTCAVERAFT,#class=&DesertCaveRaft);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON1,#class=&ElementalDungeon1);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON2,#class=&ElementalDungeon2);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON3,#class=&ElementalDungeon3);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTSANDBAR,#class=&DesertSandbar);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES,#class=&DesertAfterlifeDunes);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES2E,#class=&DesertAfterlifeDunes2East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES3E,#class=&DesertAfterlifeDunes3East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES4E,#class=&DesertAfterlifeDunes4East);
 
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.

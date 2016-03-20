@@ -1,0 +1,274 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalDungeon2 is MonsterRoom
+
+% Platforms appear as players approach, disappear as they move.
+% Falling boots you (the essence of lightning catches you).
+% Air xeo'chicatls do spawn and attack, but the boss isdead.
+% Items that drop fall and are gone forever.
+
+constants:
+
+   include blakston.khd
+   
+   START_SECTOR = 1
+   ESCAPE_SECTOR = 36
+
+resources:
+
+   room_name_elementaldungeon2 = "Prism of Lightning"
+   room_elementaldungeon2 = elementaldungeon2.roo
+   elementaldungeon2_music = cave.mp3
+   
+   item_dropped_msg = \
+      "The %s falls into endless eternities of air!"
+
+classvars:
+
+   vrName = room_name_elementaldungeon2
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+
+properties:
+
+   prRoom = room_elementaldungeon2
+   piRoom_num = RID_ELEMENTAL_DUNGEON2
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prMusic = elementaldungeon2_music
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+   
+   piDropPlatformTime = 4000
+   plDropPlatforms = $
+   
+   piCheckForFallsTime = 250
+   ptCheckForFallsTimer = $
+
+messages:
+
+   Constructed()
+   {
+      local iPlatformNum;
+
+      plMonsters = [ [&XeoAir, 100] ];
+
+      plGenerators = [ [22, 24], [61, 20], [47, 68], [15, 37], [12,61],
+                       [31, 52], [64, 46], [33, 34], [35, 18] ];
+                       
+      iPlatformNum = 2;
+      while iPlatformNum <= 35
+      {
+         Send(self,@SetSector,#sector=iPlatformNum,
+               #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+         iPlatformNum++;
+      }
+      
+      propagate;
+   }
+ 
+   DropPlatform(timer=$)
+   {
+      local i;
+      
+      foreach i in plDropPlatforms
+      {
+         if Nth(i,2) = timer
+         {
+            SetNth(i,2,$);
+            Send(self,@SetSector,#sector=First(i),
+                  #animation=ANIMATE_FLOOR_LIFT,#height=0,#speed=0);
+            plDropPlatforms = DelListElem(plDropPlatforms,i);
+         }
+      }
+      return;
+   }
+
+   FirstUserEntered()
+   {
+      ptCheckForFallsTimer = CreateTimer(self,@CheckForFalls,
+                                   piCheckForFallsTime);
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      if ptCheckForFallsTimer <> $
+      {
+         DeleteTimer(ptCheckForFallsTimer);
+         ptCheckForFallsTimer = $;
+      }
+      propagate;
+   }
+
+   CheckForFalls()
+   {
+      local i, iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID,
+            cur_row, cur_col, fine_row, fine_col;
+
+      ptCheckForFallsTimer = $;
+      ptCheckForFallsTimer = CreateTimer(self,@CheckForFalls,
+                                   piCheckForFallsTime);
+
+      foreach i in plActive
+      {
+         if IsClass(First(i),&User)
+         {
+            iQflags = LIQ_GET_SECTORINFO;
+
+            cur_row = Send(First(i),@GetRow);
+            cur_col = Send(First(i),@GetCol);
+            fine_row = Send(First(i),@GetFineRow);
+            fine_col = Send(First(i),@GetFineCol);
+            if GetLocationInfoBSP(
+                      prmRoom, iQflags, cur_row, cur_col, fine_row, fine_col,
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+            {
+               if iServerID = 80
+                  OR Send(First(i),@GetHeightAtObject) = 0
+               {
+                  Send(self,@BootPlayer,#who=First(i));
+               }
+            }
+         }
+      }
+      return;
+   }
+
+   BootPlayer(who=$)
+   {
+      Send(who,@AdminGoToSafety);
+      return;
+   }
+
+   Delete()
+   {
+      local i;
+      
+      foreach i in plDropPlatforms
+      {
+         DeleteTimer(Nth(i,2));
+         SetNth(i,2,$);
+         plDropPlatforms = DelListElem(plDropPlatforms,i);
+      }
+      if ptCheckForFallsTimer <> $
+      {
+         DeleteTimer(ptCheckForFallsTimer);
+         ptCheckForFallsTimer = $;
+      }
+      propagate;
+   }
+
+   NewHold(what = $)
+   {
+      local i, each_obj;
+
+      % Anything you drop is lost forever!
+      if IsClass(what,&Item)
+      {
+         foreach i in plActive
+         {
+            each_obj = Send(self,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&Player)
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=item_dropped_msg,
+                     #parm1=Send(what,@GetName));
+            }
+         }
+         Post(what,@Delete);
+      }
+      propagate;
+   }
+
+   SomethingMoved(what=$,new_row=0,new_col=0,fine_row=0,fine_col=0)
+   {
+      local iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID, i,
+            bFound;
+
+      if NOT IsClass(what,&Player)
+      {
+         propagate;
+      }
+
+      iQflags = LIQ_GET_SECTORINFO;
+
+      if GetLocationInfoBSP(
+                      prmRoom, iQflags, new_row, new_col, fine_row, fine_col,
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+      {
+         if iServerID > 2
+         {
+            Send(self,@SetSector,#sector=iServerID-1,
+                  #animation=ANIMATE_FLOOR_LIFT,#height=5500,#speed=0);
+            bFound = FALSE;
+            foreach i in plDropPlatforms
+            {
+               if First(i) = iServerID-1
+               {
+                  bFound = TRUE;
+               }
+            }
+            
+            if NOT bFound
+            {
+               plDropPlatforms = Cons([iServerID-1,
+                     CreateTimer(self,@DropPlatform,piDropPlatformTime)],
+                     plDropPlatforms);
+            }
+         }
+
+         if iServerID < 35
+         {
+            Send(self,@SetSector,#sector=iServerID+1,
+                  #animation=ANIMATE_FLOOR_LIFT,#height=5500,#speed=0);
+            bFound = FALSE;
+            foreach i in plDropPlatforms
+            {
+               if First(i) = iServerID+1
+               {
+                  bFound = TRUE;
+               }
+            }
+            
+            if NOT bFound
+            {
+               plDropPlatforms = Cons([iServerID+1,
+                     CreateTimer(self,@DropPlatform,piDropPlatformTime)],
+                     plDropPlatforms);
+            }
+         }
+         
+         if iServerID = 36
+         {
+            Send(self,@ReachedExit,#who=what);
+         }
+      }
+
+      propagate;
+   }
+
+   ReachedExit(who=$)
+   {
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

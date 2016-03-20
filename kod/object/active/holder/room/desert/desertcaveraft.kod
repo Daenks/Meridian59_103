@@ -1,0 +1,52 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertCaveRaft is DesertRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertcaveraft = desertcaveraft.roo
+   room_name_desertcaveraft = "Underground River"
+
+classvars:
+
+   vrName = room_name_desertcaveraft
+
+   viTeleport_row = 18
+   viTeleport_col = 5
+   
+   vbDoAcidRain = FALSE
+   vbDoBlizzard = FALSE
+   vbDoHeat = FALSE
+
+   viTerrain_type = TERRAIN_CAVES
+
+properties:
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prRoom = room_desertcaveraft
+   piRoom_num = RID_DESERTCAVERAFT
+
+messages:
+
+   RecalcLightAndWeather()
+   {
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

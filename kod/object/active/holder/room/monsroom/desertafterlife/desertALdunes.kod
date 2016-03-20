@@ -8,7 +8,13 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DesertDunes is DesertRoom
+DesertAfterlifeDunes is DesertAfterlife
+
+% This room is free of monsters.
+% Players may walk east (brighter) toward the Prism of Life.
+% They may also walk west (darker) toward the Prism of Death.
+% The souls of centuries of dead nomads who could not afford a deal with
+%  Xaerdun wander here. They can be found all over the other afterlife rooms.
 
 constants:
 
@@ -16,17 +22,20 @@ constants:
 
 resources:
 
-   include desertdunes.lkod
-
-   room_desertdunes = desertdunes.roo
-   room_name_desertdunes = "Desolate Dunes"
+   room_desertALdunes = desertaldunes.roo
+   room_name_desertALdunes = "Eternal Wastes"
+   
+   brighter_going_east_msg = \
+      "It seems slightly brighter in this direction somehow."
+   darker_going_west_msg = \
+      "It seems slightly darker in this direction somehow."
 
 classvars:
 
-   vrName = room_name_desertdunes
+   vrName = room_name_desertALdunes
 
-   viTeleport_row = 60
-   viTeleport_col = 102
+   viTeleport_row = 37
+   viTeleport_col = 140
 
 properties:
 
@@ -35,17 +44,37 @@ properties:
 
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
 
-   prRoom = room_desertdunes
-   piRoom_num = RID_DESERTDUNES
+   prRoom = room_desertALdunes
+   piRoom_num = RID_DESERTALDUNES
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
 
 messages:
+
+   CreateStandardObjects()
+   {
+      Send(self,@NewHold,#what=Create(&XaerdunAfterlife),
+            #new_row=56,#new_col=105,#fine_row=22, #fine_col=55,
+            #new_angle=ANGLE_WEST);
+      return;
+   }
 
    SomethingMoved(what = $,new_row = $, new_col = $)
    {
       if new_col > (Send(self,@GetRoomCols)-2)
       {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=brighter_going_east_msg);
+         }
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTCLIFFACCESS),
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES2E),
               #new_row=Send(what,@GetRow),
               #new_col=3,
               #fine_row=Send(what,@GetFineRow),
@@ -57,7 +86,7 @@ messages:
       if new_col < 2
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTSHORE1),
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
               #new_row=Send(what,@GetRow),
               #new_col=Send(self,@GetRoomCols)-3,
               #fine_row=0,
@@ -69,7 +98,7 @@ messages:
       if new_row < 2
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTDUNES),
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
               #new_row=Send(self,@GetRoomRows)-3,
               #new_col=Send(what,@GetCol),
               #fine_row=0,
@@ -81,7 +110,7 @@ messages:
       if new_row > (Send(self,@GetRoomRows)-2)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTDUNES),
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
               #new_row=3,
               #new_col=Send(what,@GetCol),
               #fine_row=0,

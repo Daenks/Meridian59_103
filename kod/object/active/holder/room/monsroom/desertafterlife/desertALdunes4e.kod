@@ -1,0 +1,143 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertAfterlifeDunes4East is DesertAfterlife
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertALdunes4e = desertaldunes2.roo
+   room_name_desertALdunes4e = "Eternal Wastes"
+
+classvars:
+
+   vrName = room_name_desertALdunes4e
+
+   viTeleport_row = 37
+   viTeleport_col = 140
+
+properties:
+
+   piBaseLight = LIGHT_MAX
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertALdunes4e
+   piRoom_num = RID_DESERTALDUNES4E
+
+   piGen_time = 30000
+   piGen_percent = 100
+
+   piInit_count_min = 25
+   piInit_count_max = 25
+
+   piMonster_count_max = 25
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&LostSoul, 100] ];
+      % 120 by 204
+      plGenerators = [ [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)],
+                       [ Random(3,117), Random(3,201)]
+                     ];
+
+      propagate;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES4E),
+              #new_row=Send(what,@GetRow),
+              #new_col=3,
+              #fine_row=Send(what,@GetFineRow),
+              #fine_col=0,
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_col < 2
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=darker_going_west_msg);
+         }
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES3E),
+              #new_row=Send(what,@GetRow),
+              #new_col=Send(self,@GetRoomCols)-3,
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_row < 2
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES4E),
+              #new_row=Send(self,@GetRoomRows)-3,
+              #new_col=Send(what,@GetCol),
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-2)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES4E),
+              #new_row=3,
+              #new_col=Send(what,@GetCol),
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

@@ -1311,7 +1311,7 @@ messages:
    {
       return FALSE;
    }
-   
+
    ReqSpellCast(oSpell=$,who=$)
    {
       % Cannot conveyance inside a hall.
@@ -1326,6 +1326,11 @@ messages:
       }
 
       propagate;
+   }
+
+   FoyerDissipatesWallElements()
+   {
+      return TRUE;
    }
 
 end

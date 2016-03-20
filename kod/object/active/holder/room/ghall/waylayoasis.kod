@@ -1,0 +1,731 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WaylayOasis is GuildHall
+
+% Waylay Oasis is the central location for most desert activities.
+% It's the region rescue spot, hosts a variety of NPCs, is safe from
+% elemental storms and threats, and is also a guild hall.
+% Special consideration has been made for certain hall features. Most players
+% won't realize it's a hall until they're being attacked from the ledges.
+%
+% Those on the ledges of the hall can hit and be hit from outside,
+% but area attacks like Earthquake will not cross.
+%
+% Wall spells ARE allowed in the 'foyer' (which is everywhere but the hall)
+% so players can leave ambushes and blockages in the narrow passages.
+%
+% The water also changes depth with rain and snow,
+% so fights here will often be physically different.
+%
+% Players are not safe when they rescue in. That's part of the desert's danger.
+% Enemies may wait at Waylay Oasis' blink/rescue spot, but of course others
+% will easily find those enemies, too. Meant to be hotly contested sometimes,
+% and uneasy peaceful by mutual consent at other times. For example,
+% all players benefit from the defeat of an Elemental Prism, so teaming up
+% with enemies might happen (since the dungeons are crazy hard).
+%
+%
+% Waylay Oasis is balanced at just the right spot between Prism energies
+% to avoid storms and threats. Mostly because it would be annoying,
+% but also because we want clean and non-laggy PvP.
+
+constants:
+
+   include blakston.khd
+
+   LIFT_DELAY = 10000
+   ENTRANCE_SECTOR1 = 20
+   ENTRANCE_SECTOR2 = 21
+   
+   HALL_SECTORS_SOUTH = 22
+   LEDGE_SECTORS = 23
+   HALL_SECTORS_NORTH = 24
+   CHEST_PASSAGE_SECTOR = 25
+   
+   AREA_OUTSIDE = 0
+   AREA_INSIDE = 1
+   AREA_LEDGES = 2
+   
+   InsideAreaSouthMinRow = 55
+   InsideAreaSouthMinFineRow = 6
+   InsideAreaSouthMaxRow = 79
+   InsideAreaSouthMaxFineRow = 20
+   InsideAreaSouthMinCol = 76
+   InsideAreaSouthMinFineCol = 10 
+   InsideAreaSouthMaxCol = 107
+   InsideAreaSouthMaxFineCol = 18
+   
+   InsideAreaSouthHallwayMinRow = 50
+   InsideAreaSouthHallwayMaxRow = 55
+   InsideAreaSouthHallwayMinCol = 100
+   InsideAreaSouthHallwayMaxCol = 62
+   
+   InsideAreaNorthMinRow = 10
+   InsideAreaNorthMinFineRow = 30
+   InsideAreaNorthMaxRow = 38
+   InsideAreaNorthMaxFineRow = 63
+   InsideAreaNorthMinCol = 78
+   InsideAreaNorthMinFineCol = 32 
+   InsideAreaNorthMaxCol = 106
+   InsideAreaNorthMaxFineCol = 52
+
+resources:
+
+   include waylayoasis.lkod
+
+   room_waylayoasis = waylayoasis.roo
+   room_name_waylayoasis = "Waylay Oasis"
+
+   waylayoasis_music = desertheat.mp3
+   waylayoasis_music_snow = desertsnow.mp3
+   waylayoasis_music_acid_rain = desertrain.mp3
+   waylayoasis_music_static_shock = desertdawn.mp3
+   
+   waterfall_sound_oasis = wfall2.wav
+
+classvars:
+
+   vrName = room_name_waylayoasis
+
+   viTerrain_type = TERRAIN_BADLANDS | TERRAIN_TEMPLE
+
+   viTeleport_row = 58
+   viTeleport_col = 51
+
+   viInner_teleport_row = 68
+   viInner_teleport_col = 97
+
+   viNews_row = 71
+   viNews_col = 76
+   viNews_finerow = 5
+   viNews_finecol = 61
+
+   viFoyer_north = 1
+   viFoyer_south = 1
+   viFoyer_west = 1
+   viFoyer_east = 1
+
+   viLever_row = 39
+   viLever_col = 94
+   viLever_fine_row = 11
+   viLever_fine_col = 39
+
+   viQuality = 9
+
+   viSeconds_til_close = 8
+
+   viWeatherZone = WEATHER_ZONE_DESERT
+
+properties:
+
+   vrWading_Sound = water_wading_sound
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_waylayoasis
+   piRoom_num = RID_WAYLAYOASIS
+
+   ptSecret = $
+   ptEntrance = $
+   plInside_doors = $
+
+   prMusic = waylayoasis_music
+
+   pbSnowGroundTexture = TRUE
+   piPreviousPhase = 0
+
+messages:
+
+   Constructor()
+   {
+      plGuild_doors = [ [68,106], [69,106], [70,106], [71,106], [72,106],
+                        [68,111], [69,111], [70,111], [71,111], [72,111]];
+      
+      plInside_doors = [ [68,106], [69,106], [70,106], [71,106], [72,106]];
+
+      % This is a box containing the guild door, used
+      % for removing players from it when it closes.
+      plEntrance = [ 6850, 7250, 10650, 11100 ];
+
+      propagate;
+   }
+
+   Constructed()
+   {
+      plLooping_sounds = [[ waterfall_sound_oasis, 21, 40, 65, 100 ]];
+
+      propagate;
+   }
+ 
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([ LEAVE_WEST, RID_DESERTPATH1, 11, 58, ROTATE_NONE ],plEdge_Exits);
+
+      propagate;
+   }
+
+   RecalcLightAndWeather()
+   {
+      local SysDayPhase, i;
+
+      SysDayPhase = Send(SYS,@GetDayPhase);
+
+      % We're crossing over into a new quarter.
+      % Waylay Oasis does not experience storms and threats.
+      % It does simulate rain and snow, though.
+      if piPreviousPhase <> SysDayPhase
+      {
+         Send(self,@DoPhaseWeather);
+         prMusic = Send(self,@GetPhaseMusic);
+         foreach i in plActive
+         {
+            if IsClass(First(i),&User)
+            {
+               Send(First(i),@SendRoomMusic,#music_rsc=prMusic);
+            }
+         }
+      }
+
+      piPreviousPhase = SysDayPhase;
+      propagate;
+   }
+
+   DoPhaseWeather()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@EndSnow);
+            }
+            break;
+         case DAY_PHASE_DAY:
+            break;
+         case DAY_PHASE_DUSK:
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@StartRain);
+            }
+            break;
+         case DAY_PHASE_NIGHT:
+            if Send(self,@CheckRoomFlag,#flag=ROOM_RAINING)
+            {
+               Send(self,@EndRain);
+            }
+            if NOT Send(self,@CheckRoomFlag,#flag=ROOM_SNOWING)
+            {
+               Send(self,@StartSnow);
+            }
+            break;
+      }
+      return;
+   }
+
+   GetPhaseMusic()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            return waylayoasis_music_static_shock;
+         case DAY_PHASE_DAY:
+            return waylayoasis_music;
+         case DAY_PHASE_DUSK:
+            return waylayoasis_music_acid_rain;
+         case DAY_PHASE_NIGHT:
+            return waylayoasis_music_snow;
+      }
+      return desert_music;
+   }
+
+   SomethingTryGo(what=$, row=$,  col = $)
+   {
+      local i;
+      
+      foreach i in plInside_doors
+      {
+         if row = First(i)
+            AND col = Nth(i,2)
+         {
+            Send(self,@OpenEntrancedoor);
+
+            return TRUE;
+         }
+      }
+
+      propagate;
+   }
+
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)
+   "Conversation on ledges can be heard anywhere. "
+   "Also, chest only opens from inside areas (not ledges)."
+   {
+      local i, each_obj, iSpeakerSection, iEachObjSection;
+
+      if what = $
+      {
+         propagate;
+      }
+
+      if IsClass(what,&Admin) AND stringEqual(string,"shatterlock")
+      {
+         Send(self,@OpenEntranceDoor);
+
+         propagate;
+      }
+
+      if type = SAY_YELL OR NOT IsClass(what,&Player)
+      {
+         propagate;
+      }
+
+      iSpeakerSection = Send(self,@GetSection,#who=what,
+                              #iRow=Send(what,@GetRow),
+                              #iCol=Send(what,@GetCol),
+                              #iFineRow=Send(what,@GetFineRow),
+                              #iFineCol=Send(what,@GetFineCol));
+
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+
+         if Send(self,@SayRangeCheck,#talker=what,#hearer=each_obj)
+         {
+            iEachObjSection = Send(self,@GetSection,#who=each_obj,
+                                    #iRow=Send(each_obj,@GetRow),
+                                    #iCol=Send(each_obj,@GetCol),
+                                    #iFineRow=Send(each_obj,@GetFineRow),
+                                    #iFineCol=Send(each_obj,@GetFineCol));
+
+            if iSpeakerSection = iEachObjSection
+               OR iSpeakerSection = AREA_LEDGES
+            {
+               Send(each_obj,@SomeoneSaid,#what=what,#type=type,#string=string,
+                     #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
+                     #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
+            }
+            else
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=guildhall_muffled);
+            }
+         }
+      }
+
+      if poGuild_owner <> $
+         AND StringEqual(string,Send(poGuild_owner,@GetPassword))
+         AND iSpeakerSection = AREA_INSIDE
+         AND NOT pbSecretDoorOpen
+         AND type <> SAY_EMOTE
+      {
+         Send(self,@OpenSecretDoor);
+      }
+
+      return;
+   }
+
+   ValidEntry(what=$)
+   {
+      % If they can't open the door, make sure they're outside the foyer
+      if NOT Send(self,@CanEnter,#who=what)
+         AND NOT Send(self,@InFoyer,#who=what)
+      {
+         Send(self,@Teleport,#what=what,#foyer=TRUE);
+      }
+
+      return;
+   }
+
+   InFoyer(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
+   {
+      if who <> $
+      {
+         iRow = Send(who,@GetRow);
+         iCol = Send(who,@GetCol);
+         iFineRow = Send(who,@GetFineRow);
+         iFineCol = Send(who,@GetFineCol);
+      }
+
+      if Send(self,@GetSection,#who=who,#iRow=iRow,#iCol=iCol,
+            #iFineRow=iFineRow,#iFineCol=iFineCol) = AREA_OUTSIDE
+      {
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   GetSection(who=$,iRow=$,iCol=$,iFineRow=$,iFineCol=$)
+   {
+      local iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID;
+      
+      if iRow = $
+         OR iCol = $
+         OR iFineRow = $
+         OR iFineCol = $
+      {
+         return AREA_OUTSIDE;
+      }
+
+      iQflags = LIQ_GET_SECTORINFO;
+
+      if GetLocationInfoBSP(
+                      prmRoom, iQflags, iRow, iCol, iFineRow, iFineCol,
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+      {
+         if iServerID = CHEST_PASSAGE_SECTOR
+            OR iServerID = HALL_SECTORS_SOUTH
+            OR iServerID = HALL_SECTORS_NORTH
+         {
+            return AREA_INSIDE;
+         }
+         
+         if iServerID = LEDGE_SECTORS
+         {
+            return AREA_LEDGES;
+         }
+      }
+
+      return AREA_OUTSIDE;
+   }
+
+   ReqSomethingAttack(what = $,victim = $)
+   "No one may attack through the door if it's closed."
+   {
+      local iVictimSection, iAttackerSection;
+
+      if (what = $) or (victim = $)
+      {
+         propagate;
+      }
+
+      iVictimSection = Send(self,@GetSection,#who=victim,
+                             #iRow=Send(victim,@GetRow),
+                             #iCol=Send(victim,@GetCol),
+                             #iFineRow=Send(victim,@GetFineRow),
+                             #iFineCol=Send(victim,@GetFineCol));
+      iAttackerSection = Send(self,@GetSection,#who=what,
+                             #iRow=Send(what,@GetRow),
+                             #iCol=Send(what,@GetCol),
+                             #iFineRow=Send(what,@GetFineRow),
+                             #iFineCol=Send(what,@GetFineCol));
+
+      % The ledges are not protected from direct attacks from outside.
+      % Ledges will not get hit by earthquakes and other area attacks, though,
+      % and vice versa (no quaking from ledges)
+      if iAttackerSection = AREA_OUTSIDE
+      {
+         if iVictimSection = AREA_LEDGES
+         {
+            return TRUE;
+         }
+      }
+      if iVictimSection = AREA_OUTSIDE
+      {
+         if iAttackerSection = AREA_LEDGES
+         {
+            return TRUE;
+         }
+      }
+
+      propagate;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTBRIDGE),
+              #new_row=3,#new_col=3,#fine_row=50,#fine_col=9,
+              #new_angle=ANGLE_EAST);
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-1) and (new_col < 30)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
+              #new_row=5,#new_col=7,#new_angle=ANGLE_SOUTH_EAST);
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-1) and (new_col > 50)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER1),
+              #new_row=3,#new_col=33,#fine_col=44,#new_angle=ANGLE_SOUTH);
+              
+         return;
+      }
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      local i, o;
+
+      foreach i in [
+
+         [ 32, 111, 46,  14, OO_BONES ]
+
+      ]
+      {
+         o = create(&OrnamentalObject,#type=nth(i,5));
+         send(self,@NewHold,#what=o,
+            #new_row=nth(i,1),#new_col=nth(i,2),
+            #fine_row=nth(i,3),#fine_col=nth(i,4));
+      }
+
+      % southeast hermit
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=52,#new_col=114,#fine_row=59,#fine_col=35);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=52,#new_col=115,#fine_row=33, #fine_col=52,
+            #new_angle=ANGLE_WEST);
+
+      % northeast cave
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=31,#new_col=116,#fine_row=59,#fine_col=25);
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=36,#new_col=122,#fine_row=50,#fine_col=5);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=37,#new_col=123,#fine_row=42, #fine_col=49,
+            #new_angle=ANGLE_WEST);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=37,#new_col=119,#fine_row=46, #fine_col=44,
+            #new_angle=ANGLE_WEST);
+      
+      % north cave
+      Send(self,@NewHold,#what=Create(&Firepit,#iSoundRadius=0),
+            #new_row=14,#new_col=106,#fine_row=59,#fine_col=55);
+      Send(self,@NewHold,#what=Create(&NomadWiseMan),
+            #new_row=14,#new_col=107,#fine_row=7, #fine_col=22,
+            #new_angle=ANGLE_WEST);
+
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=98,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=99,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=100,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=101,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=102,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=103,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=104,
+            #fine_row=15,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=28,#new_col=105,
+            #fine_row=15,#fine_col=7);
+
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=98,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=99,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=100,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=101,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=102,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=103,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=104,
+            #fine_row=48,#fine_col=7);
+      Send(self,@NewHold,#what=Create(&Pillar),#new_row=24,#new_col=105,
+            #fine_row=48,#fine_col=7);
+            
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=67,#new_col=104,
+            #fine_row=32,#fine_col=32);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=68,#new_col=96,
+            #fine_row=57,#fine_col=58);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=71,#new_col=81,
+            #fine_row=22,#fine_col=40);
+
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=19,#new_col=88,
+            #fine_row=37,#fine_col=35);
+            
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=28,#new_col=106,
+            #fine_row=15,#fine_col=19);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=24,#new_col=106,
+            #fine_row=48,#fine_col=19);
+
+      % Chest room
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=16,#new_col=79,
+            #fine_row=16,#fine_col=48);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=17,#new_col=80,
+            #fine_row=61,#fine_col=9,#new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=20,#new_col=80,
+            #fine_row=37,#fine_col=9,#new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Chest),#new_row=22,#new_col=80,
+            #fine_row=46,#fine_col=9,#new_angle=ANGLE_EAST);
+
+      propagate;
+   }
+
+   OpenEntranceDoor()
+   {
+      if ptEntrance = $
+      {
+         Send(self,@TimeStampDoor);
+         Send(self,@SetSector,#sector=ENTRANCE_SECTOR2,
+               #animation=ANIMATE_CEILING_LIFT,#height=80,#speed=40);
+         ptEntrance = CreateTimer(self,@CloseEntranceDoor,LIFT_DELAY);
+         Send(self,@OpenEntranceDoorSound);
+      }
+
+      return;
+   }
+
+   CloseEntranceDoor()
+   {
+      Send(self,@SetSector,#sector=ENTRANCE_SECTOR2,
+            #animation=ANIMATE_CEILING_LIFT,#height=0,#speed=40);
+      Send(self,@CloseEntranceDoorSound);
+
+      % We now propagate this to handle removing players from the door,
+      % and so the door can still be entered while it is closing.
+      propagate;
+   }
+
+   OpenSecretDoor()
+   {
+      if ptSecret = $
+      {
+         Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+               #animation=ANIMATE_FLOOR_LIFT,#height=290,#speed=16);
+         Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+               #animation=ANIMATE_FLOOR_LIFT,#height=290,#speed=16);
+         ptSecret = CreateTimer(self,@CloseSecretDoor,LIFT_DELAY);
+         Send(self,@OpenSecretDoorSound);
+      }
+
+      return;
+   }
+
+   CloseSecretDoor()
+   {
+      ptSecret = $;
+      Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+            #animation=ANIMATE_FLOOR_LIFT,#height=350,#speed=16);
+      Send(self,@SetSector,#sector=CHEST_PASSAGE_SECTOR,
+            #animation=ANIMATE_FLOOR_LIFT,#height=350,#speed=16);
+      Send(self,@CloseSecretDoorSound);
+
+      return;
+   }
+   
+   FoyerDissipatesWallElements()
+   {
+      return FALSE;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Turn any water to ice. Water tagged as ID 13.
+            % Water sidedefs tagged as ID 14.
+            Send(self,@ChangeTexture,#id=13,#new_texture=61017,
+                  #flags=CTF_FLOOR);
+            % Stop vertically scrolling water from animating.
+            Send(self,@AnimateWall,#wall=14,#animation=ANIMATE_NONE,
+                  #first_group=1,#second_group=1,#end_group=1);
+            % Change texture.
+            Send(self,@ChangeTexture,#id=14,#new_texture=61017,
+                  #flags=CTF_NORMALWALL);
+            % Stop water scroll effect and remove depth.
+            Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH0,
+                  #scrollSpeed=SCROLL_NONE);
+
+
+            % Give snow some depth and walking sounds.
+            Send(self,@SetSectorFlags,#sector=0,#depth=SF_DEPTH1,
+                  #scrollSpeed=SCROLL_NONE);
+            vrWading_Sound = snow_walk_sound;
+            % Remove waterfall sound.
+            Send(self,@RemoveLoopingSound,#sound_rsc=waterfall_sound_oasis);
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   "Use override if rooms have manually placed textures."
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove sludge water textures.
+         Send(self,@RemoveTextureChange,#id=13);
+         % Remove sludge water sides.
+         Send(self,@RemoveTextureChange,#id=14);
+         Send(self,@RemoveAnimateWallChange,#wall=14);
+         % Reset sector flag changes to sludge water.
+         Send(self,@RemoveSectorFlagChange,#id=13);
+
+         % Remove snow depth and walking sounds.
+         Send(self,@RemoveSectorFlagChange,#id=0);
+         vrWading_Sound = water_wading_sound;
+
+         % Begin waterfall sound.
+         Send(self,@AddLoopingSound,
+            #lSoundData=[waterfall_sound_oasis, 21, 40, 65, 100]);
+      }
+
+      propagate;
+   }
+
+   StartRain()
+   {
+      % Acid rain darkens the sand and pock marks rock.
+      Send(self,@ChangeTexture,#id=0,#new_texture=09080,#flags=CTF_FLOOR);
+      % Acid rain makes the water gross.
+      Send(self,@ChangeTexture,#id=13,#new_texture=09363,
+            #flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=14,#new_texture=09363,
+            #flags=CTF_NORMALWALL);
+      Send(self,@SetSectorFlags,#sector=13,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_SLOW);
+      propagate;
+   }
+   
+   EndRain()
+   {
+      % Remove gross sand.
+      Send(self,@RemoveTextureChange,#id=0);
+      % Remove sludge water textures.
+      Send(self,@RemoveTextureChange,#id=13);
+      % Remove sludge water sides.
+      Send(self,@RemoveTextureChange,#id=14);
+      % Reset sector flag changes to sludge water.
+      Send(self,@RemoveSectorFlagChange,#id=13);
+      propagate;
+   }
+
+   GetRegion()
+   {
+      return RID_DESERT;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
