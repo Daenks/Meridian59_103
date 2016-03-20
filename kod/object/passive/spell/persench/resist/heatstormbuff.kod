@@ -1,0 +1,76 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HeatStormBuff is ResistanceEnchantment
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   HeatStormBuff_name_rsc = "searing heat"
+   HeatStormBuff_icon_rsc = iresfire.bgf
+   HeatStormBuff_desc_rsc = \
+      "Strange searing energies race around you, protecting you from fire."
+
+   HeatStormBuff_already_enchanted = \
+      "You are already resistant to fire spells."
+
+   HeatStormBuff_on = \
+      "Fiery energies race around your body."
+   HeatStormBuff_off = \
+      "The fiery energies leave your body."
+
+   HeatStormBuff_sound = faren.wav
+
+classvars:
+
+   vrName = HeatStormBuff_name_rsc
+   vrIcon = HeatStormBuff_icon_rsc
+   vrDesc = HeatStormBuff_desc_rsc
+   vrSucceed_wav = HeatStormBuff_sound
+
+   viSpell_num = SID_HEAT_STORM_BUFF
+   viSchool = SS_FAREN
+   viSpell_level = 2
+   viMana = 9
+
+   viPersonal_ench = True
+   viChance_To_Increase = 30
+   viMeditate_ratio = 0
+
+   viFlash = FLASH_GOOD_SELF
+
+   viResistanceType = -ATCK_SPELL_FIRE
+   vrAlreadyEnchanted = HeatStormBuff_already_enchanted
+   vrEnchantment_On = HeatStormBuff_on
+   vrEnchantment_Off = HeatStormBuff_off
+
+properties:
+
+messages:
+
+   GetResistanceStrength(iSpellpower = 0)
+   {
+      %% strength varies from 1 to 99
+      return iSpellPower;
+   }
+
+   GetDuration(iSpellPower = 0)
+   {
+      local iDuration;	   %%% 60 to 120 seconds
+      iDuration = 60000 + (iSpellPower+1)*600;
+      return iDuration;
+   }
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

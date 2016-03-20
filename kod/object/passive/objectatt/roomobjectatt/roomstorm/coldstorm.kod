@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ColdStorm is RoomStorm 
+
+% When the Prism of Ice is defeated, this storm occurs instead of cold
+% damage during the desert's night phase. It gives a cold resistance buff
+% and also heals vigor.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   cold_storm_name_rsc = "freezing winds"
+   cold_storm_icon_rsc = iexfrost.bgf
+   cold_storm_desc_rsc = \
+      "Icy winds and bursts of cold erupt from seemingly nowhere. Strangely, "
+      "the effects don't seem to be dangerous..."
+
+   cold_storm_begin_msg = \
+      "Freezing breezes blow through the area."
+   cold_storm_end_msg = \
+      "The chill winds depart the area."
+
+classvars:
+
+   vrName = cold_storm_name_rsc
+   vrIcon = cold_storm_icon_rsc
+   vrDesc = cold_storm_desc_rsc
+
+   viStormBeginMsg = cold_storm_begin_msg
+   viStormEndMsg = cold_storm_end_msg
+
+properties:
+
+   % What buff does the storm apply? What spellpower?
+   piSpellID = SID_COLD_STORM_BUFF
+   piSpellPower = 50
+   
+   % How long does the storm last? (ms)
+   % Send iDuration to constructor to change
+   % $ means indefinite
+   piStormTime = 3 * 60 * 1000
+   ptStormTimer = $
+
+   % How many magical bubbles do we have max at one time?
+   piBubblesMax = 15
+   % How long does each bubble last? (ms) (coordinate with any sounds used)
+   piBubblesDuration = 7000
+   % How big are the bubbles?
+   piBubblesRadiusFine = 5 * 64
+   % How often do we spawn bubbles?
+   piBubblesTime = 1000
+   ptBubblesTimer = $
+   
+   % What is the start and end brightness of our bubbles?
+   piIntensityMin = 0
+   piIntensityMax = 255
+   % What color are our bubbles?
+   piColor = LIGHT_BBLUE
+
+   pbPlayBubbleSound = TRUE
+   pbPlayBubbleExpireSound = TRUE
+
+messages:
+
+   Constructed()
+   {
+      Send(poHostObject,@StartSnow);
+      propagate;
+   }
+
+   Delete()
+   {
+      Send(poHostObject,@EndSnow);
+      propagate;
+   }
+   
+   ApplyDirectEffect(who=$)
+   {
+      Send(who,@AddExertion,#amount=-10000);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

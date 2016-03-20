@@ -1,0 +1,113 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HeatThreat is RoomThreat 
+
+% Heat deals damage if players are wearing body armor of any type.
+% Exempt if not wearing any, or resist fire ring / buff.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   heat_threat_name_rsc = "elemental heat"
+   heat_threat_icon_rsc = iblfire.bgf
+   heat_threat_desc_rsc = \
+      "The heat here is unnatural and vicious. The only protections against "
+      "this kind of danger are dressing down or the appropriate resistance "
+      "magics."
+
+   heat_threat_begin_msg = \
+      "The sun seems to bear down on you with particular ferocity."
+   heat_threat_end_msg = \
+      "The sun passes behind ominous clouds."
+   heat_threat_damage_msg = \
+      "The intense heat makes you sweat profusely under your heavy gear."
+
+   heat_good_item_use_msg = \
+      "And, out here, the sun might just be the most dangerous enemy of all."
+   heat_good_spell_use_msg = \
+      "Faren's chill banishes the sun's heat."
+
+   heat_death_msg = \
+      "~B~U~k[###]~n ~B~v%s succumbed to the heat of the sun."
+
+classvars:
+
+   vrName = heat_threat_name_rsc
+   vrIcon = heat_threat_icon_rsc
+   vrDesc = heat_threat_desc_rsc
+
+   viThreatBeginMsg = heat_threat_begin_msg
+   viThreatEndMsg = heat_threat_end_msg
+   viThreatDamageMsg = heat_threat_damage_msg
+   viGoodItemUseMsg = heat_good_item_use_msg
+   viGoodSpellUseMsg = heat_good_spell_use_msg
+   
+   viDeathMsg = heat_death_msg
+
+properties:
+
+   % What type of damage do we do?
+   piDamageTypeAttack = 0
+   piDamageTypeSpell = ATCK_SPELL_FIRE
+
+   % How much damage do we do?
+   piDamageMin = 8
+   piDamageMax = 17
+   
+   % How often do we deal damage?
+   piDamageTime = 5000
+   ptDamageTimer = $
+   
+   % How long does the threat last?
+   piThreatTime = 10 * 60 * 1000
+   ptThreatTimer = $
+
+   % Do we report the damage?
+   piReport = FALSE
+
+   % This threat drains vigor.
+   piVigorDrop = 30000
+
+messages:
+
+   Constructor()
+   {
+%      plSpecialItemClasses = [&FireRing];
+%      plSpecialExemptItemClasses = [&RingOfLethargy];
+%      plSpecialSpellClasses = [&ResistFire];
+
+      propagate;
+   }
+
+   ReqDealDamage(who=$)
+   {
+      % If they take off their armor, they'll be fine.
+      if NOT Send(who,@IsUsingA,#class=&Armor)
+%         OR Send(who,@IsEnchanted,#byClass=&ResistFire)
+%         OR Send(who,@IsUsingA,#class=&FireRing)
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
+   ApplyDirectEffect(who=$)
+   {
+      Send(who,@AddExertion,#amount=piVigorDrop);
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

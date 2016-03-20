@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PhaseThreat is RoomThreat 
+
+% Players cannot phase out here except under special conditions.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   phase_threat_name_rsc = "reality disturbance"
+   phase_threat_icon_rsc = iphase.bgf
+   phase_threat_desc_rsc = \
+      "The fabric of reality has been torn asunder. Phasing is possible only "
+      "under certain conditions."
+
+   phase_threat_begin_msg = \
+      "Reality begins to fluctuate chaotically."
+   phase_threat_end_msg = \
+      "The fluctuations in the fabric of reality here fade."
+
+   cannot_phase_here = \
+      "The fabric of reality here rages chaotically around the epicenter of a "
+      "rupture. You cannot risk phasing out unless you can manage to reach "
+      "the convergence itself."
+   phase_success = \
+      "You phase out of this plane of existence - and directly into another!"
+
+classvars:
+
+   vrName = phase_threat_name_rsc
+   vrIcon = phase_threat_icon_rsc
+   vrDesc = phase_threat_desc_rsc
+
+   viThreatBeginMsg = phase_threat_begin_msg
+   viThreatEndMsg = phase_threat_end_msg
+
+properties:
+
+   pbDealDamage = FALSE
+
+messages:
+
+   ReqSpellCast(who = $, oSpell = $)
+   {
+      local iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID;
+
+      if IsClass(oSpell,&Phase)
+      {
+         if NOT IsClass(who,&Player)
+         {
+            return TRUE;
+         }
+
+         iQflags = LIQ_GET_SECTORINFO;
+
+         if GetLocationInfoBSP(
+                      Send(poHostObject,@GetRoomData), iQflags, Send(who,@GetRow),
+                      Send(who,@GetCol),
+                      Send(who,@GetFineRow),
+                      Send(who,@GetFineCol),
+                      *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
+         {
+            if Send(poHostObject,@SpecialPhaseConditionsSatisfied,
+                  #sector=iServerID)
+            {
+               Post(who,@MsgSendUser,#message_rsc=phase_success);
+%               Post(Send(SYS,@FindRoomByNum,#num=RID_ELEMENTAL_DUNGEON1),
+%                     @Teleport,#what=who);
+               Post(who,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,
+                     #duration=1250);
+               return FALSE;
+            }
+            else
+            {
+               Send(who,@MsgSendUser,#message_rsc=cannot_phase_here);
+               return FALSE;
+            }
+         }
+      }
+
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

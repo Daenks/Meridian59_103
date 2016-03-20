@@ -1,0 +1,95 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+HeatStorm is RoomStorm 
+
+% When the Prism of Fire is defeated, this storm occurs instead of heat
+% damage during the desert's day phase. It heals and gives a fire res buff.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   heat_storm_name_rsc = "searing storm"
+   heat_storm_icon_rsc = iwalfire.bgf
+   heat_storm_desc_rsc = \
+      "Heated winds and spouts of flame burst from elsewhere. Strangely, "
+      "the effects don't seem to be dangerous..."
+
+   heat_storm_begin_msg = \
+      "A searing wind blows through the area."
+   heat_storm_end_msg = \
+      "The heated winds depart the area."
+
+classvars:
+
+   vrName = heat_storm_name_rsc
+   vrIcon = heat_storm_icon_rsc
+   vrDesc = heat_storm_desc_rsc
+
+   viStormBeginMsg = heat_storm_begin_msg
+   viStormEndMsg = heat_storm_end_msg
+
+properties:
+
+   % What buff does the storm apply? What spellpower?
+   piSpellID = SID_HEAT_STORM_BUFF
+   piSpellPower = 50
+   
+   % How long does the storm last? (ms)
+   % Send iDuration to constructor to change
+   % $ means indefinite
+   piStormTime = 3 * 60 * 1000
+   ptStormTimer = $
+
+   % How many magical bubbles do we have max at one time?
+   piBubblesMax = 15
+   % How long does each bubble last? (ms) (coordinate with any sounds used)
+   piBubblesDuration = 7000
+   % How big are the bubbles?
+   piBubblesRadiusFine = 5 * 64
+   % How often do we spawn bubbles?
+   piBubblesTime = 1000
+   ptBubblesTimer = $
+   
+   % What is the start and end brightness of our bubbles?
+   piIntensityMin = 0
+   piIntensityMax = 255
+   % What color are our bubbles?
+   piColor = LIGHT_BRED
+
+   pbPlayBubbleSound = TRUE
+   pbPlayBubbleExpireSound = TRUE
+
+messages:
+   
+   ApplyDirectEffect(who=$)
+   {
+      % Can supercharge health, but only sometimes. Volatile.
+      % Done this way so that players notice the health effects.
+      % It's likely they'll first encounter this storm with full health,
+      % so they'd have no idea otherwise.
+      
+      if Random(1,3) = 1
+      {
+         Send(who,@GainHealth,#amount=1);
+      }
+      else
+      {
+         Send(who,@GainHealthNormal,#amount=1);
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
