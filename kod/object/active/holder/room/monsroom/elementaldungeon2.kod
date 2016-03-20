@@ -1,0 +1,71 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalDungeon2 is MonsterRoom
+
+% Platforms appear as players approach, disappear as they move.
+% Falling boots you (the essence of lightning catches you).
+% Air xeo'chicatls do spawn and attack, but the boss isdead.
+% Items that drop fall and are gone forever.
+
+constants:
+
+   include blakston.khd
+   
+   START_SECTOR = 1
+   ESCAPE_SECTOR = 36
+
+resources:
+
+   room_name_elementaldungeon2 = "Prism of Lightning"
+   room_elementaldungeon2 = elementaldungeon2.roo
+   elementaldungeon2_music = cave.mp3
+   
+   item_dropped_msg = \
+      "The %s falls into endless eternities of air!"
+
+classvars:
+
+   vrName = room_name_elementaldungeon2
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+
+properties:
+
+   prRoom = room_elementaldungeon2
+   piRoom_num = RID_ELEMENTAL_DUNGEON2
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prMusic = elementaldungeon2_music
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+   
+   piDropPlatformTime = 4000
+   plDropPlatforms = $
+   
+   piCheckForFallsTime = 250
+   ptCheckForFallsTimer = $
+
+messages:
+
+   % This is a stub file
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

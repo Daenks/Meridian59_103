@@ -1,0 +1,85 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertAfterlife is MonsterRoom
+
+% The desert is extremely far away from Meridian.
+% So far, in fact, that they do not have the same afterlife.
+%
+% This afterlife contains some interesting things:
+% - The demon Xaerdun, who will recover your items and send you back for a fee.
+%    Being the demon of Greed, he charges exorbitant prices, but he's also
+%    addicted to making a sale. The longer a player waits, the less he'll
+%    charge. (His corpse recovery also is the only way to get your items out
+%    of certain deathtraps like the Abyssal Bore.)
+%    Subtly, Xaerdun's item recovery brings those items to you while you
+%    are still in the afterlife, enabling you to adventure therein.
+%    Xaerdun takes from your bank account(s). If a player has absolutely 
+%    no money, he/she is trapped in the afterlife until someone defeats
+%    a certain dungeon (or if the dungeon is already defeated, resurrection
+%    is free).
+%
+% - The wastes contain strange undying monsters.
+%
+% - The Prism of Life (holy) to the east (sunrise). Defeating the Prism of 
+%    Life frees all trapped souls, players and NPCs alike.
+%
+% - The Prism of Death (unholy) to the west (sunset). Plays an important
+%    role in restoring balance (in this case, the Arbiter of the Prism of
+%    Life seeks to give all living beings immortality, which would be a
+%    disaster. They are not immune to wounds, they just can't die). The
+%    Prism of Death and its Arbiter are not enemies; very helpful to players
+%    and they explain the situation at large and why the Prism of Life
+%    must be defeated.
+%
+% - The lost heroine who defeated the Lightning Prism wanders here,
+%   unable to rest or escape. Defeating the Prism of Life allows her to
+%   resurrect.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   cannot_teleport_in_afterlife = \
+      "Lacking the proper physical and vital bonds, your "
+      "teleportation spell falters."
+   cannot_alter_death_in_afterlife = \
+      "This type of death is beyond your ability to master."
+   cannot_eye_buff_in_afterlife = \
+      "This place has neither Sun nor light. The manner in which you "
+      "are currently perceiving your surroundings is beyond the scope "
+      "of any vision spell."
+   cannot_blind_dazzle_in_afterlife = \
+      "The manner in which your enemy is currently perceiving existence "
+      "is beyond the scope of any vision spell."
+   cannot_conveyance_in_afterlife = \
+      "If you knew how to send items to your vault from this place, you would "
+      "be truly wise indeed."
+
+classvars:
+
+   viTerrain_type = TERRAIN_BADLANDS
+
+   % No pens or PKing in afterlife. Everyone's already dead!
+   viPermanent_flags = ROOM_SAFELOGOFF | ROOM_NO_PK
+
+properties:
+
+   pbSnowGroundTexture = FALSE
+
+messages:
+
+   % This is a stub file
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

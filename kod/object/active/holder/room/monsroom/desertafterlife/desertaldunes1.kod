@@ -1,0 +1,64 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertAfterlifeDunes is DesertAfterlife
+
+% This room is free of monsters.
+% Players may walk east (brighter) toward the Prism of Life.
+% They may also walk west (darker) toward the Prism of Death.
+% The souls of centuries of dead nomads who could not afford a deal with
+%  Xaerdun wander here. They can be found all over the other afterlife rooms.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertaldunes = desertaldunes1.roo
+   room_name_desertaldunes = "Eternal Wastes"
+   
+   brighter_going_east_msg = \
+      "It seems slightly brighter in this direction somehow."
+   darker_going_west_msg = \
+      "It seems slightly darker in this direction somehow."
+
+classvars:
+
+   vrName = room_name_desertaldunes
+
+   viTeleport_row = 37
+   viTeleport_col = 140
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertaldunes
+   piRoom_num = RID_DESERTALDUNES
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+
+messages:
+
+   % This is a stub file
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

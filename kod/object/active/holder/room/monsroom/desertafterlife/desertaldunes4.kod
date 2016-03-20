@@ -1,0 +1,53 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertAfterlifeDunes4East is DesertAfterlife
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertALdunes4e = desertaldunes2.roo
+   room_name_desertALdunes4e = "Eternal Wastes"
+
+classvars:
+
+   vrName = room_name_desertALdunes4e
+
+   viTeleport_row = 37
+   viTeleport_col = 140
+
+properties:
+
+   piBaseLight = LIGHT_MAX
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertALdunes4e
+   piRoom_num = RID_DESERTALDUNES4E
+
+   piGen_time = 30000
+   piGen_percent = 100
+
+   piInit_count_min = 25
+   piInit_count_max = 25
+
+   piMonster_count_max = 25
+
+messages:
+
+   % This is a stub file
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
