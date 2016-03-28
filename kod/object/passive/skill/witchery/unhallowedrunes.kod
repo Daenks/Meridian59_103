@@ -1,0 +1,91 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+UnhallowedRunes is WitcherySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   unhallowed_runes_name_rsc = "unhallowed runes"
+   unhallowed_runes_icon_rsc = slashico.bgf
+   unhallowed_runes_desc_rsc = \
+      "The use of demonic runes can increase the power of a hex."
+
+   unhallowed_runes_increase = \
+      "You employ unhallowed runes to increase the effectiveness of your hex."
+
+classvars:
+
+   vrName = unhallowed_runes_name_rsc
+   vrIcon = unhallowed_runes_icon_rsc
+   vrDesc = unhallowed_runes_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_Num = SKID_UNHALLOWED_RUNES
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSkill_level = 5
+   viChance_to_increase = 13
+   viMeditate_ratio = 66
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+   
+   piIncHexEffectiveness = 15
+
+messages:
+
+   GetRequisiteStat(who=$)
+   "Varies from skill to skill and spell to spell."
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   GetIncHexEffectiveness(who=$)
+   {
+      local iAbility, iStat, iTotalIncrease;
+      
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iTotalIncrease = piIncHexEffectiveness;
+      
+      iTotalIncrease = iTotalIncrease + iStat/10 + 
+                        ((iTotalIncrease * (iAbility+1))/100);
+
+      return iTotalIncrease;
+   }
+
+   DoSkill(who=$)
+   {
+      local iAbility, iStat;
+      
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      if bound(iAbility-6,1,93) + iStat/10 <= Random(1,100)
+      {
+         return FALSE;
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=unhallowed_runes_increase);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

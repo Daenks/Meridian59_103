@@ -1,0 +1,82 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Conductivity is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   conductivity_cast_rsc = \
+      "%s%s becomes surrounded by minor lightning demons."
+   conductivity_already_enchanted = \
+      "That poor soul is already afflicted by conductivity."
+   conductivity_start = "Minor lightning demons surround you."
+   conductivity_stop  = "The minor lightning demons depart."
+   has_been_hexed_conductivity = \
+      "%s%s becomes surrounded by minor lightning demons!"
+
+   conductivity_name_rsc = "conductivity"
+   conductivity_icon_rsc = ienfeebl.bgf
+   conductivity_desc_rsc = \
+      "Summons minor lightning gremlins to empower shock attacks "
+      "against your victim. "
+      "This hex requires two orc teeth to cast."
+
+   conductivity_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = conductivity_name_rsc
+   vrIcon = conductivity_icon_rsc
+   vrDesc = conductivity_desc_rsc
+
+   vrAlreadyEnchanted = conductivity_already_enchanted
+   vrEnchantment_On = conductivity_start
+   vrEnchantment_Off = conductivity_stop
+   vrSuccess = conductivity_cast_rsc
+   vrInformRoom = has_been_hexed_conductivity
+
+   viSpell_num = SID_HEX_CONDUCTIVITY
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_NEQUZON
+   viSpell_level = 4
+   viMana = 30
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = conductivity_sound
+   viChance_To_Increase = 18
+   viMeditate_ratio = 40
+
+   viResistanceType = -ATCK_SPELL_SHOCK
+
+properties:
+
+   % Effectively reduces shock resistance by this percent base
+   piBaseEffect = 40
+
+   piFlatDuration = 18000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

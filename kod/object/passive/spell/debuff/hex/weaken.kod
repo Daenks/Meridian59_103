@@ -1,0 +1,101 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Weaken is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   weaken_cast_rsc = \
+      "%s%s suddenly seems weaker somehow."
+   weaken_already_enchanted = \
+      "That poor soul is already afflicted by weaken."
+   weaken_start = "Your limbs feel weak."
+   weaken_stop = \
+     "Your limbs regain their old strength."
+   has_been_hexed_weaken = \
+      "%s%s suddenly seems weaker somehow."
+
+   weaken_name_rsc = "weaken"
+   weaken_icon_rsc = ienfeebl.bgf
+   weaken_desc_rsc = \
+      "Weakens the victim's muscles, hampering their ability to land damaging "
+      "melee strikes. "
+      "This hex requires two orc teeth to cast."
+
+   weaken_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = weaken_name_rsc
+   vrIcon = weaken_icon_rsc
+   vrDesc = weaken_desc_rsc
+
+   vrAlreadyEnchanted = weaken_already_enchanted
+   vrEnchantment_On = weaken_start
+   vrEnchantment_Off = weaken_stop
+   vrSuccess = weaken_cast_rsc
+   vrInformRoom = has_been_hexed_weaken
+
+   viSpell_num = SID_HEX_WEAKEN
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_IWODACH
+   viSpell_level = 1
+   viMana = 15
+   viSpell_Exertion = 20
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = weaken_sound
+   viChance_To_Increase = 25
+   viMeditate_ratio = 30
+
+properties:
+
+   % Weaken outgoing melee damage by up to this percent
+   piBaseEffect = 20
+
+   piFlatDuration = 60000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,3],plReagents);
+
+      return;
+   }
+
+   ModifyDamage(who=$,what=$,damage=$,state=0)
+   {
+      local oWeapon;
+
+      oWeapon = $;
+      if IsClass(who,&Player)
+      {
+         oWeapon = Send(who,@GetWeapon);
+      }
+
+      if IsClass(who,&Monster)
+         OR (oWeapon <> $
+         AND NOT IsClass(oWeapon,&RangedWeapon))
+      {
+         return (damage * (100 - ((piBaseEffect * state)/100)))/100;
+      }
+      
+      return damage;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

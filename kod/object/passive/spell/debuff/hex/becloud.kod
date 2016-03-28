@@ -1,0 +1,92 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Becloud is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   becloud_cast_rsc = "%s%s seems to be having trouble seeing clearly."
+   becloud_already_enchanted = \
+      "That poor soul is already afflicted by becloud."
+   becloud_start = "You suddenly have trouble seeing clearly."
+   becloud_stop  = "Your vision sharpens."
+   has_been_hexed_becloud = \
+      "%s%s seems to be having trouble seeing clearly!"
+
+   becloud_name_rsc = "becloud"
+   becloud_icon_rsc = ienfeebl.bgf
+   becloud_desc_rsc = \
+      "Clouds your victim's vision, lowering their offense. "
+      "This hex requires two orc teeth to cast."
+
+   becloud_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = becloud_name_rsc
+   vrIcon = becloud_icon_rsc
+   vrDesc = becloud_desc_rsc
+
+   vrAlreadyEnchanted = becloud_already_enchanted
+   vrEnchantment_On = becloud_start
+   vrEnchantment_Off = becloud_stop
+   vrSuccess = becloud_cast_rsc
+   vrInformRoom = has_been_hexed_becloud
+
+   viSpell_num = SID_HEX_BECLOUD
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 4
+   viMana = 12
+   viSpell_Exertion = 22
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = becloud_sound
+   viChance_To_Increase = 15
+   viMeditate_ratio = 70
+
+properties:
+
+   % Lower this percentage of offense
+   piBaseEffect = 7
+
+   piFlatDuration = 25000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+   ModifyHitRoll(who=$,what=$,hit_roll=$,state=0)
+   {
+      local oWeapon;
+      
+      oWeapon = Send(who,@GetWeapon);
+      if oWeapon <> $
+         AND IsClass(oWeapon,&RangedWeapon)
+      {
+         return (hit_roll * (100 - ((piBaseEffect * state)/100)))/100;
+      }
+      
+      return hit_roll;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

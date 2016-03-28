@@ -23,7 +23,7 @@ resources:
 classvars:
 
    viForget_school = SS_WITCHERY
-   viForget_subschool = SS_WITCHERY_XAERDUN
+   viForget_subschool = SSS_WITCHERY_XAERDUN
    vrDesc = forgetpotionXaerdunWitchery_desc_rsc
 
 properties:
@@ -44,7 +44,7 @@ messages:
          oSpell = send(SYS,@FindSpellByNum,#num=iSpellNum);
 
          if Send(oSpell,@GetSchool) = viForget_school
-        %    AND Send(oSpell,@GetSubSchool) = viForget_subschool
+            AND Send(oSpell,@GetSubSchool) = viForget_subschool
             AND Send(oSpell,@CanForget)
          {
             send(poApply_target,@RemoveSpell,#num=iSpellNum);

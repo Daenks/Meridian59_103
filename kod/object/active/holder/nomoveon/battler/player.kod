@@ -1556,7 +1556,7 @@ messages:
 
    AddExertion(amount = 0, SetToThreshold = FALSE)
    {
-      local iExertionAdded, iPercentReduced, iVigorLost;
+      local iExertionAdded, iPercentReduced, iVigorLost, i;
 
       % If we cannot gain vigor due to Second Wind, return out if trying
       % to take away exertion
@@ -1569,6 +1569,12 @@ messages:
 
       if iExertionAdded > 0
       {
+         foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+         {
+            iExertionAdded = Send(Nth(i,2),@ModifyExertion,
+                                    #state=Nth(i,3),#amount=iExertionAdded);
+         }
+
          % Parliament adjustment for exertion reduction.  Remove a % from
          % the amount added.
          iPercentReduced = Send(Send(SYS,@GetParliament),@GetFactionVigorBonus,#who=self);
@@ -3204,10 +3210,23 @@ messages:
 
    HealthTimer()
    {
-      local iDifference;
+      local iDifference, i;
       
       iDifference = bound(piMax_Health*100 - piHealth,-100,100);
       ptHealth = $;
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDifference = Send(Nth(i,2),@ModifyRegenAmount,
+                                 #state=Nth(i,3),#regen=iDifference);
+      }
+
+      % Don't regen below zero.
+      if iDifference < 0
+         AND piHealth <= 100
+      {
+         iDifference = 0;
+      }
 
       if iDifference > 0
       {
@@ -5264,6 +5283,13 @@ messages:
          iOffense = iOffense / 2;
       }
 
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iOffense = Send(Nth(i,2),@ModifyHitRoll,
+                                  #who=self,#what=what,#hit_roll=iOffense,
+                                  #state=Nth(i,3));
+      }
+
       if Send(self,@GetStance) <> $
       {
          iOffense = Send(Send(self,@GetStance),@LastPriorityModifyHitRoll,
@@ -5335,6 +5361,13 @@ messages:
          iDefense = iDefense - (iShocked * Send(SETTINGS_OBJECT,
                                                 @GetElementalMultiple,
                                                 #type=STATUS_SHOCKED));
+      }
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDefense = Send(Nth(i,2),@ModifyDefensePower,
+                                 #who=self,#what=what,#defense_power=iDefense,
+                                 #state=Nth(i,3));
       }
 
       if Send(self,@GetStance) <> $
@@ -5499,6 +5532,13 @@ messages:
       % Convert to high precision. Super dirty, will be cleaned up shortly.
       iDamageBonus = iDamageBonus*100;
 
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDamage = Send(Nth(i,2),@ModifyDamage,
+                                 #who=self,#what=what,#damage=iDamage,
+                                 #state=Nth(i,3));
+      }
+
       iDamage = iDamage + iDamageBonus;
 
       return iDamage;
@@ -5646,6 +5686,12 @@ messages:
             iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
             bAttackerEmpowered, bShielded, iCorrode, iCorrodeMultiple,
             iCorrodeReduction, iDamagePreArmor;
+
+      % Check for stat steals
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&DrainHex)
+      {
+         Send(Nth(i,2),@StealStat,#who=what,#what=self,#state=Nth(i,3));
+      }
 
       if NOT precision
       {
@@ -6668,7 +6714,7 @@ messages:
    "Have we waited long enough since the last attack/spell? Sets new "
    "valid attack time (time in msec, default 1 second)."
    {
-      local i, iChilled, iChilledMultiple, iChilledTotal;
+      local i, n, iChilled, iChilledMultiple, iChilledTotal;
 
       if ptAttackTimer <> $
       {
@@ -6682,6 +6728,12 @@ messages:
       else
       {
          i = time;
+      }
+
+      foreach n in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         i = Send(Nth(n,2),@ModifyDelay,
+                           #state=Nth(n,3),#iDelay=i);
       }
 
       if i > 0
@@ -16031,6 +16083,57 @@ messages:
       }
       
       return $;
+   }
+
+   GetHexIncEffect(iSpellPower=0)
+   {
+      local iRunesEff, oRunes;
+
+      iRunesEff = 0;
+      oRunes = Send(SYS,@FindSkillByNum,#num=SKID_UNHALLOWED_RUNES);
+
+      if oRunes <> $
+         AND Send(self,@GetSkillAbility,#Skill_num=SKID_UNHALLOWED_RUNES) > 0
+         AND Send(oRunes,@DoSkill,#who=self)
+      {
+         iRunesEff = Send(oRunes,@GetIncHexEffectiveness,#who=self);
+      }
+      
+      return iSpellPower + 1 + iRunesEff;
+   }
+
+   GetHexResistance()
+   {
+      local iArcaneKnowledgeRes, oKnowledge;
+      
+      iArcaneKnowledgeRes = 0;
+      oKnowledge = Send(SYS,@FindSkillByNum,#num=SKID_ARCANE_KNOWLEDGE);
+
+      if oKnowledge <> $
+         AND Send(self,@GetSkillAbility,#Skill_num=SKID_ARCANE_KNOWLEDGE) > 0
+         AND Send(oKnowledge,@DoSkill,#who=self)
+      {
+         iArcaneKnowledgeRes = Send(oKnowledge,@GetHexResistance,#who=self);
+      }
+      
+      return bound(piHexResistance+iArcaneKnowledgeRes,-100,100);
+   }
+
+   GetCasterMaxHexes()
+   {
+      local iHexesMax, oRunes;
+
+      iHexesMax = Send(SETTINGS_OBJECT,@GetHexesMax);
+      oRunes = Send(SYS,@FindSkillByNum,#num=SKID_BLOOD_RUNES);
+
+      if oRunes <> $
+         AND Send(self,@GetSkillAbility,#Skill_num=SKID_BLOOD_RUNES) > 0
+         AND Send(oRunes,@DoSkill,#who=self)
+      {
+         iHexesMax = iHexesMax + Send(oRunes,@GetMaxHexesIncrease);
+      }
+                  
+      return iHexesMax;
    }
 
 end

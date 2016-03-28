@@ -3422,6 +3422,25 @@ messages:
 
       Send(self,@CreateOneSpellIfNew,#num=SID_BATTLE_CONTROL,#class=&BattleControl);
 
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_VULNERABILITY,#class=&Vulnerability);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_SLOW,#class=&Slow);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BARBS,#class=&Barbs);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_LEECHES,#class=&Leeches);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FRAILTY,#class=&Frailty);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_HUMILITY,#class=&Humility);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CORRUPTION,#class=&Corruption);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FLAMMABILITY,#class=&Flammability);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CONDUCTIVITY,#class=&Conductivity);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_ALGIDITY,#class=&Algidity);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_CORROSION,#class=&Corrosion);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_FESTER,#class=&Fester);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_MUTE,#class=&Mute);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_WEAKEN,#class=&Weaken);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_SAP,#class=&Sap);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BESTILL,#class=&Bestill);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BECLOUD,#class=&Becloud);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEX_BLACK_MANTLE,#class=&BlackMantle);
+
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);
 
@@ -3644,7 +3663,15 @@ messages:
 
        Send(self,@CreateOneSKillIfNew,#num=SKID_SECOND_WIND,#class=&SecondWind);
        Send(self,@CreateOneSKillIfNew,#num=SKID_DISARM,#class=&Disarm);
-       
+
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ARCANE_KNOWLEDGE,#class=&ArcaneKnowledge);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ROTE_MEMORIZATION,#class=&RoteMemorization);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EFFICIENT_CASTING,#class=&EfficientCasting);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ANCIENT_PACT,#class=&AncientPact);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_UNHALLOWED_RUNES,#class=&UnhallowedRunes);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_RUNES,#class=&BloodRunes);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_OSTRACIZATION,#class=&Ostracization);
+
        Send(self,@CreateOneSKillIfNew,#num=SKID_AWARENESS,#class=&Awareness);
        Send(self,@CreateOneSKillIfNew,#num=SKID_LIGHT_FEET,#class=&LightFeet);
        Send(self,@CreateOneSKillIfNew,#num=SKID_STAB,#class=&Stab);

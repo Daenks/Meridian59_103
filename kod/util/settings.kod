@@ -295,9 +295,16 @@ properties:
    piPostMaxHPBuildingSystem = POST_MAX_HP_SYSTEM_MASTERY_POINTS
 
    % Expansion modules
-   bSorcerySchoolExpansion = TRUE
+   pbSorcerySchoolExpansion = TRUE
    % Are Sorcery's reserved buffs purgeable?
-   bReservedSpellsPurgeable = FALSE
+   pbReservedSpellsPurgeable = FALSE
+   
+   pbWitcherySchoolExpansion = TRUE
+   % How many hexes can a player or mob have at most? General case.
+   piMaxHexesOnVictim = 1
+
+   % Do hexes replace each other when at the limit? Or just fail?
+   pbHexesReplace = TRUE
 
 messages:
 
@@ -780,12 +787,22 @@ messages:
 
    GetSorcerySchoolExpansion()
    {
-      return bSorcerySchoolExpansion;
+      return pbSorcerySchoolExpansion;
    }
    
    GetReservedSpellsPurgeable()
    {
-      return bReservedSpellsPurgeable;
+      return pbReservedSpellsPurgeable;
+   }
+
+   GetHexesMax()
+   {
+      return piMaxHexesOnVictim;
+   }
+
+   GetHexesReplace()
+   {
+      return pbHexesReplace;
    }
 
 end

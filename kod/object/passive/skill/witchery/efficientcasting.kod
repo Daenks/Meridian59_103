@@ -1,0 +1,93 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+EfficientCasting is WitcherySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   efficient_casting_name_rsc = "efficient casting"
+   efficient_casting_icon_rsc = slashico.bgf
+   efficient_casting_desc_rsc = \
+      "Intelligent adaption enables the casting of hexes while expending "
+      "less physical energy."
+
+   efficient_casting_reduction = \
+      "You perform your hex efficiently."
+
+classvars:
+
+   vrName = efficient_casting_name_rsc
+   vrIcon = efficient_casting_icon_rsc
+   vrDesc = efficient_casting_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_Num = SKID_EFFICIENT_CASTING
+   viSubSchool = SSS_WITCHERY_IWODACH
+   viSkill_level = 4
+   viChance_to_increase = 14
+   viMeditate_ratio = 55
+
+properties:
+
+   plPrerequisites = $
+
+   piChanceToIncrease = 100
+
+   % Reduces costs by this percent
+   piCostReduction = 25
+
+messages:
+
+   GetRequisiteStat(who=$)
+   "Varies from skill to skill and spell to spell."
+   {
+      return Send(who,@GetIntellect);
+   }
+
+   GetCostReduction(who=$)
+   {
+      local iAbility, iStat, iTotalReduction;
+      
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iTotalReduction = piCostReduction;
+      
+      iTotalReduction = iTotalReduction + iStat/10 + 
+                        ((iTotalReduction * (iAbility+1))/100);
+
+      return iTotalReduction;
+   }
+
+   DoSkill(who=$)
+   {
+      local iAbility, iStat;
+      
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      if bound(iAbility-6,1,93) + iStat/10 <= Random(1,100)
+      {
+         return FALSE;
+      }
+
+      Send(who,@MsgSendUser,#message_rsc=efficient_casting_reduction);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,86 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Fester is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   fester_cast_rsc = \
+      "%s%s begins to fester and reek."
+   fester_already_enchanted = \
+      "That poor soul is already afflicted by fester."
+   fester_start = "You begin to fester and reek."
+   fester_stop  = "The strange affliction fades, and you begin healing normally."
+   has_been_hexed_fester = \
+      "%s%s begins to fester and reek!"
+
+   fester_name_rsc = "fester"
+   fester_icon_rsc = ienfeebl.bgf
+   fester_desc_rsc = \
+      "Afflicts your victim with festering rot, slowing physical "
+      "regenerations. "
+      "This hex requires one orc tooth to cast."
+
+   fester_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = fester_name_rsc
+   vrIcon = fester_icon_rsc
+   vrDesc = fester_desc_rsc
+
+   vrAlreadyEnchanted = fester_already_enchanted
+   vrEnchantment_On = fester_start
+   vrEnchantment_Off = fester_stop
+   vrSuccess = fester_cast_rsc
+   vrInformRoom = has_been_hexed_fester
+
+   viSpell_num = SID_HEX_FESTER
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 1
+   viMana = 10
+   viSpell_Exertion = 20
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = fester_sound
+   viChance_To_Increase = 25
+   viMeditate_ratio = 30
+
+properties:
+
+   % Reduce regenerations by this percentage minus state
+   piBaseEffect = 50
+
+   piFlatDuration = 120000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,1],plReagents);
+
+      return;
+   }
+
+   ModifyRegenAmount(state=0,regen=0)
+   {
+      regen = regen * (piBaseEffect-state) / 100;
+      return regen;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

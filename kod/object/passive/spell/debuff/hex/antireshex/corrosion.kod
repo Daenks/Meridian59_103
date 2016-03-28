@@ -1,0 +1,81 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Corrosion is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   corrosion_cast_rsc = \
+      "%s%s begins smoking from corrosion."
+   corrosion_already_enchanted = \
+      "That poor soul is already afflicted by corrosion."
+   corrosion_start = "You begin to smoke from corrosion."
+   corrosion_stop  = "You stop corroding."
+   has_been_hexed_corrosion = \
+      "%s%s begins smoking from corrosion!"
+
+   corrosion_name_rsc = "corrosion"
+   corrosion_icon_rsc = ienfeebl.bgf
+   corrosion_desc_rsc = \
+      "Corrodes your victim, empowering acid attacks against them."
+      " This hex requires two orc teeth to cast."
+
+   corrosion_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = corrosion_name_rsc
+   vrIcon = corrosion_icon_rsc
+   vrDesc = corrosion_desc_rsc
+
+   vrAlreadyEnchanted = corrosion_already_enchanted
+   vrEnchantment_On = corrosion_start
+   vrEnchantment_Off = corrosion_stop
+   vrSuccess = corrosion_cast_rsc
+   vrInformRoom = has_been_hexed_corrosion
+
+   viSpell_num = SID_HEX_CORROSION
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_NEQUZON
+   viSpell_level = 2
+   viMana = 30
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = corrosion_sound
+   viChance_To_Increase = 20
+   viMeditate_ratio = 30
+
+   viResistanceType = -ATCK_SPELL_ACID
+
+properties:
+
+   % Effectively reduces acid resistance by this percent base
+   piBaseEffect = 30
+
+   piFlatDuration = 18000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

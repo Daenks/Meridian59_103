@@ -214,6 +214,10 @@ properties:
    plStatusEffects = $
    ptStatusEffectTimer = $
 
+   % Negative values mean more vulnerable to hexes, positive values resist
+   % -100 is doubled effect, 100 is total immunity
+   piHexResistance = 0
+
 messages:
 
    % The first lump of code here deals with resistances and immunities/etc.
@@ -2234,6 +2238,75 @@ messages:
    IsDrainImmune()
    {
       return FALSE;
+   }
+
+   GetHexes()
+   {
+      local oEnch, lHexes;
+
+      lHexes = $;
+      foreach oEnch in plEnchantments
+      {
+         if Send(Nth(oEnch,2),@UseHexBehavior)
+         {
+            lHexes = Cons(Nth(oEnch,2),lHexes);
+         }
+      }
+
+      return lHexes;
+   }
+
+   GetNumHexes()
+   {
+      local oEnch, iNumHexes;
+
+      iNumHexes = 0;
+      foreach oEnch in plEnchantments
+      {
+         if Send(Nth(oEnch,2),@UseHexBehavior)
+         {
+            iNumHexes = iNumHexes + 1;
+         }
+      }
+
+      return iNumHexes;
+   }
+
+   RemoveRandomHex(exempt=$)
+   {
+      local lHexes;
+
+      lHexes = Send(self,@GetHexes);
+      if exempt <> $
+         AND lHexes <> $
+         AND FindListElem(lHexes,exempt) <> 0
+      {
+         lHexes = DelListElem(lHexes,exempt);
+      }
+
+      if lHexes <> $
+         AND Length(lHexes) > 0
+      {
+         Send(self,@RemoveEnchantment,
+              #what=Nth(lHexes,Random(1,Length(lHexes))));
+      }
+
+      return;
+   }
+   
+   GetHexResistance()
+   {
+      return bound(piHexResistance,-100,100);
+   }
+   
+   GetHexIncEffect(iSpellPower=0)
+   {
+      return iSpellPower+1;
+   }
+
+   GetCasterMaxHexes()
+   {
+      return Send(SETTINGS_OBJECT,@GetHexesMax);
    }
 
 end

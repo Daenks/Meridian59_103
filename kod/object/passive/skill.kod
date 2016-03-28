@@ -41,6 +41,9 @@ resources:
    skill_school_qor = "Qor"
    skill_school_jala = "Jala"
    skill_school_sorcery = "Sorcery"
+   skill_school_witchery_xaerdun = "Witchery, through Xaerdun"
+   skill_school_witchery_nequzon = "Witchery, through Nequzon"
+   skill_school_witchery_iwodach = "Witchery, through Iwodach"
 
    skill_meditate_ratio_rsc = \
       "\n\nIt will cost you %i training points to improve in this skill."
@@ -61,6 +64,7 @@ classvars:
 
    viSkill_num = $
    viSchool = $
+   viSubSchool = $
 
    viSkill_level = 1
 
@@ -150,6 +154,22 @@ messages:
          oSchool = skill_school_jala;
       }
 
+      if viSchool = SS_WITCHERY
+      {
+         if viSubSchool = SSS_WITCHERY_XAERDUN
+         {
+            oSchool = skill_school_witchery_xaerdun;
+         }
+         if viSubSchool = SSS_WITCHERY_NEQUZON
+         {
+            oSchool = skill_school_witchery_nequzon;
+         }
+         if viSubSchool = SSS_WITCHERY_IWODACH
+         {
+            oSchool = skill_school_witchery_iwodach;
+         }
+      }
+
       return oSchool;
    }
 
@@ -197,6 +217,22 @@ messages:
       if viSchool = SS_JALA
       {
          rSchool = skill_school_jala;
+      }
+
+      if viSchool = SS_WITCHERY
+      {
+         if viSubSchool = SSS_WITCHERY_XAERDUN
+         {
+            rSchool = skill_school_witchery_xaerdun;
+         }
+         if viSubSchool = SSS_WITCHERY_NEQUZON
+         {
+            rSchool = skill_school_witchery_nequzon;
+         }
+         if viSubSchool = SSS_WITCHERY_IWODACH
+         {
+            rSchool = skill_school_witchery_iwodach;
+         }
       }
 
       % Base description.

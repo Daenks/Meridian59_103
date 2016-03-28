@@ -2122,7 +2122,7 @@ messages:
    GetOffense(what = $, stroke_obj=$)
    "This returns the battler's ability to-hit.  Ranges from 1 to 2000."
    {
-      local iAttack;
+      local iAttack, i;
 
       if piOffense = $
       {
@@ -2132,7 +2132,7 @@ messages:
       {
          iAttack = piOffense;
       }
-      
+
       if piChampionStatus = CHAMPION_DEADLY
          OR piChampionStatus = CHAMPION_INDOMITABLE
       {
@@ -2149,6 +2149,13 @@ messages:
          iAttack = iAttack * 3 / 4;
       }
 
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iAttack = Send(Nth(i,2),@ModifyHitRoll,
+                                  #who=self,#what=what,#hit_roll=iAttack,
+                                  #state=Nth(i,3));
+      }
+
       return Bound(iAttack,1,2000);
    }
 
@@ -2156,7 +2163,7 @@ messages:
    "This returns the battler's ability to avoid being hit.  Ranges from "
    "1 to 2000."
    {
-      local iDefense, iShocked;
+      local iDefense, iShocked, i;
 
       if piDefense = $
       {
@@ -2166,7 +2173,14 @@ messages:
       {
          iDefense = piDefense;
       }
-      
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDefense = Send(Nth(i,2),@ModifyDefensePower,
+                                 #who=self,#what=what,#defense_power=iDefense,
+                                 #state=Nth(i,3));
+      }
+
       if piChampionStatus = CHAMPION_TOUGH
          OR piChampionStatus = CHAMPION_INDOMITABLE
       {
@@ -2207,7 +2221,7 @@ messages:
    % This returns the damage done to target "what"
    GetDamage(what = $, stroke_obj=$)
    {
-      local iDamage, iMultiplier;
+      local iDamage, iMultiplier, i;
 
       iMultiplier = 1;
 
@@ -2243,7 +2257,14 @@ messages:
       {
          iMultiplier = 3;
       }
-      
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iDamage = Send(Nth(i,2),@ModifyDamage,
+                                 #who=self,#what=what,#damage=iDamage,
+                                 #state=Nth(i,3));
+      }
+
       return Bound(iDamage,0,$) * iMultiplier;
    }
 
@@ -2289,6 +2310,12 @@ messages:
    {
       local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered,
             oSpell, iCorrode, iCorrodeMultiple, iCorrodeReduction;
+
+      % Check for stat steals
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&DrainHex)
+      {
+         Send(Nth(i,2),@StealStat,#who=what,#what=self,#state=Nth(i,3));
+      }
 
       if NOT precision
       {
@@ -5223,16 +5250,32 @@ messages:
 
    HealHitPoint()
    {
-      local iPercentClass, i, each_obj;
+      local iPercentClass, i, each_obj, iModifiedGain;
 
       if piHit_points >= piMax_Hit_points * 100
       {
          return;
       }
 
+      % Start with full 100% of hit point
+      iModifiedGain = 100;
+
+      foreach i in Send(self,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iModifiedGain = Send(Nth(i,2),@ModifyRegenAmount,
+                                 #state=Nth(i,3),#regen=iModifiedGain);
+      }
+
+      % Don't drain below zero
+      if iModifiedGain < 0
+         AND piHit_points <= 100
+      {
+         iModifiedGain = 0;
+      }
+
       % We set a mark to see if the healing changes our threshold
       iPercentClass = piHit_points / (piMax_Hit_points * 20);
-      piHit_points = piHit_points + 100;
+      piHit_points = piHit_points + iModifiedGain;
       if iPercentClass <> (piHit_points / (piMax_Hit_points * 20))
       {
          Send(self,@HitPointThresholdHeal);

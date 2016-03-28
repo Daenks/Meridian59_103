@@ -26,6 +26,13 @@ resources:
       "another good soul.  "
       "Requires three herbs to cast."
 
+   hospice_heal_harm_rsc = \
+      "%s%s's corrupted spell harms you for ~r~B%i~B~n hitpoints!"
+   hospice_heal_harm_self_rsc = \
+      "Your corrupted spell harms you for ~r~B%i~B~n hitpoints!"
+   hospice_heal_harm_other_rsc = \
+      "Your corrupted heal harms %s%s for ~r~B%i~B~n hitpoints!"
+
    hospice_cast_rsc = \
       "%s%s's spell rejuvenates you, restoring ~g~B%i~B~n hitpoints."
    hospice_cast_self = \
@@ -109,14 +116,54 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0)
    {
-      local iHeal, oTarget;
+      local iHeal, oTarget, i;
 
       oTarget = First(lTargets);
 
       iHeal = Random(-300,300) + iSpellPower*20 + Send(oTarget,@GetKarma)*10;
       iHeal = Bound(iHeal,0,2500);
 
-      iHeal = Send(oTarget,@GainHealthNormal,#amount=iHeal,#precision=TRUE);
+      foreach i in Send(oTarget,@GetEnchantmentsByClass,#enchClass=&Hex)
+      {
+         iHeal = Send(Nth(i,2),@ModifyHeal,#amount=iHeal,#state=Nth(i,3));
+      }
+
+      if iHeal < 0
+         AND Send(who,@AllowPlayerAttack,#victim=oTarget)
+      {
+         if who <> oTarget
+         {
+            Send(who,@MsgSendUser,#message_rsc=hospice_heal_harm_other_rsc,
+                                  #parm1=Send(oTarget,@GetDef),
+                                  #parm2=Send(oTarget,@GetName),
+                                  #parm3=-iHeal/100);
+            Send(oTarget,@MsgSendUser,#message_rsc=hospice_heal_harm_rsc,
+                                      #parm1=Send(who,@GetCapDef),
+                                      #parm2=Send(who,@GetName),
+                                      #parm3=-iHeal/100);
+            Send(oTarget,@AssessDamage,#what=who,
+                                       #damage=-iHeal,
+                                       #aspell=ATCK_SPELL_ALL+ATCK_SPELL_HOLY,
+                                       #precision=TRUE);         
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=hospice_heal_harm_self_rsc,
+                                  #parm1=Send(who,@GetCapDef),
+                                  #parm2=Send(who,@GetName),
+                                  #parm3=-iHeal/100);
+            Send(who,@AssessDamage,#what=who,
+                                   #damage=-iHeal,
+                                   #aspell=ATCK_SPELL_ALL+ATCK_SPELL_HOLY,
+                                   #precision=TRUE);
+         }
+         propagate;
+      }
+      else
+      {
+         iHeal = Send(oTarget,@GainHealthNormal,#amount=iHeal,#precision=TRUE);
+      }
+
       if who <> oTarget 
       {
          Send(who,@MsgSendUser,#message_rsc=hospice_cast_on_other,

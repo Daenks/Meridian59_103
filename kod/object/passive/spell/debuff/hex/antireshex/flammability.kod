@@ -1,0 +1,80 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Flammability is AntiResistanceHex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   flammability_cast_rsc = \
+      "%s%s becomes surrounded by tiny dancing flames."
+   flammability_already_enchanted = \
+      "That poor soul is already afflicted by flammability."
+   flammability_start = "Tiny dancing flames surround you."
+   flammability_stop  = "The tiny dancing flames depart."
+   has_been_hexed_flammability = \
+      "%s%s becomes surrounded by tiny dancing flames!"
+
+   flammability_name_rsc = "flammability"
+   flammability_icon_rsc = ienfeebl.bgf
+   flammability_desc_rsc = \
+      "Summons minor flame elementals to empower fire attacks against your victim."
+      " This hex requires two orc teeth to cast."
+
+   flammability_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = flammability_name_rsc
+   vrIcon = flammability_icon_rsc
+   vrDesc = flammability_desc_rsc
+
+   vrAlreadyEnchanted = flammability_already_enchanted
+   vrEnchantment_On = flammability_start
+   vrEnchantment_Off = flammability_stop
+   vrSuccess = flammability_cast_rsc
+   vrInformRoom = has_been_hexed_flammability
+
+   viSpell_num = SID_HEX_FLAMMABILITY
+   viSchool = SS_WITCHERY
+   viSpell_level = 4
+   viMana = 30
+   viSpell_Exertion = 15
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = flammability_sound
+   viChance_To_Increase = 18
+   viMeditate_ratio = 40
+
+   viResistanceType = -ATCK_SPELL_FIRE
+
+properties:
+
+   % Effectively reduces fire resistance by this percent base
+   piBaseEffect = 40
+
+   piFlatDuration = 18000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

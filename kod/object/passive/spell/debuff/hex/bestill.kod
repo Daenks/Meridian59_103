@@ -1,0 +1,89 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Bestill is Hex
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   bestill_cast_rsc = "%s%s begins responding to attacks more slowly."
+   bestill_already_enchanted = \
+      "That poor soul is already afflicted by bestill."
+   bestill_start = "You begin responding to attacks more slowly!"
+   bestill_stop  = "You feel your reflexes returning to normal."
+   has_been_hexed_bestill = \
+      "%s%s begins responding to attacks more slowly!"
+
+   bestill_name_rsc = "bestill"
+   bestill_icon_rsc = ienfeebl.bgf
+   bestill_desc_rsc = \
+      "Slows your victim's reflexes, lowering their defense. "
+      "This hex requires two orc teeth to cast."
+
+   bestill_sound = qenfeebl.wav
+
+classvars:
+
+   vrName = bestill_name_rsc
+   vrIcon = bestill_icon_rsc
+   vrDesc = bestill_desc_rsc
+
+   vrAlreadyEnchanted = bestill_already_enchanted
+   vrEnchantment_On = bestill_start
+   vrEnchantment_Off = bestill_stop
+   vrSuccess = bestill_cast_rsc
+   vrInformRoom = has_been_hexed_bestill
+
+   viSpell_num = SID_HEX_BESTILL
+   viSchool = SS_WITCHERY
+   viSubSchool = SSS_WITCHERY_XAERDUN
+   viSpell_level = 3
+   viMana = 10
+   viSpell_Exertion = 30
+
+   viFlash = FLASH_BAD
+
+   vrSucceed_wav = bestill_sound
+   viChance_To_Increase = 20
+   viMeditate_ratio = 40
+
+properties:
+
+   % Reduce defense by this base percentage
+   piBaseEffect = 7
+
+   piFlatDuration = 25000
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&OrcTooth,2],plReagents);
+
+      return;
+   }
+
+   CastSpell(who=$,lTargets=$,iSpellPower=0)
+   {
+      Post(who,@DrawDefense);
+      propagate;
+   }
+
+   ModifyDefensePower(who=$,what=$,defense_power=0,state=0)
+   {
+      return (defense_power * (100 - ((piBaseEffect * state)/100)))/100;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
