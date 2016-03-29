@@ -1,0 +1,92 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShalRing is Ring
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   ShalRing_name_rsc = "ring of Shal'ille"
+   ShalRing_icon_rsc = ring02.bgf
+   ShalRing_desc_rsc = \
+      "This ring is beautiful and calming.  "
+      "A message inscribed on the inside of this magical "
+      "device reads \"May you live a long life.\""
+
+      ShalRing_cant = "You are not worthy to wear the ring of Shal'ille"
+
+classvars:
+
+   viValue_average = 350
+   viWeight = 10
+   viBulk = 5
+
+   viUse_amount = 1
+
+   viGround_group = 1
+   viInventory_group = 1
+
+properties:
+
+   piHealth_change = 0
+
+   vrName = ShalRing_name_rsc
+   vrIcon = ShalRing_icon_rsc
+   vrDesc = ShalRing_desc_rsc
+
+messages:
+
+   NewUsed()
+   {
+      local iHealthMod;
+
+      iHealthMod = 10;
+      piHealth_change = Send(poOwner,@GainMaxHealth,#amount=iHealthMod);
+
+      propagate;
+   }
+
+   GetHealthChange()
+   {
+      return piHealth_change;
+   }
+
+   NewUnused()
+   {
+      Send(poOwner,@GainMaxHealth,#amount=-piHealth_change);
+
+      piHealth_change = 0;
+
+      propagate;
+   }
+
+   ReqUse()
+   {
+      if Send(poOwner,@GetKarma) > 30
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=ShalRing_cant);
+
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   AdjustsMaxHealth()
+   {
+      return TRUE;
+   }
+
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

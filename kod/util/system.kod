@@ -5658,6 +5658,7 @@ messages:
       plItemTemplates = cons(create(&RingInvisibility),plItemTemplates);
       plItemTemplates = cons(create(&BerserkerRing),plItemTemplates);
       plItemTemplates = cons(create(&RingOfLethargy),plItemTemplates);
+      plItemTemplates = cons(create(&ShalRing),plItemTemplates);
 
       plItemTemplates = cons(create(&AcidRing),plItemTemplates);
       plItemTemplates = cons(create(&ShockRing),plItemTemplates);
