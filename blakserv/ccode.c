@@ -1401,172 +1401,169 @@ bool FuzzyBufferEqual(const char *s1,int len1,const char *s2,int len2)
 //	Substitute first occurrence of string1 in string0 with string2
 //	Returns 1 if substituted, 0 if not found, NIL if error
 int C_StringSubstitute(int object_id,local_var_type *local_vars,
-					   int num_normal_parms,parm_node normal_parm_array[],
-					   int num_name_parms,parm_node name_parm_array[])
+                       int num_normal_parms,parm_node normal_parm_array[],
+                       int num_name_parms,parm_node name_parm_array[])
 {
-	val_type s0_val, s1_val, s2_val, r_val;
-	string_node *snod0, *snod1;
-	char buf0[LEN_MAX_CLIENT_MSG+1], buf1[LEN_MAX_CLIENT_MSG+1];
-	char *s0, *copyspot;
-   const char *s1, *s2, *subspot;
-	int len1, len2, new_len;
-	
-	s0 = buf0;
-	s1 = buf1;
-	s2 = subspot = copyspot = NULL;
-	
-	s0_val = RetrieveValue( object_id, local_vars, normal_parm_array[0].type,
-		normal_parm_array[0].value);
-	snod0 = NULL;
-	if (s0_val.v.tag == TAG_STRING)
-		snod0 = GetStringByID(s0_val.v.data);
-	else if (s0_val.v.tag == TAG_TEMP_STRING)
-		snod0 = GetTempString();
-	
-	if (snod0 == NULL)
-	{
-		bprintf( "C_StringSub can't modify first argument non-string %i,%i\n",
-			s0_val.v.tag, s0_val.v.data );
-		return NIL;
-	}
-	
-	s1_val = RetrieveValue( object_id, local_vars, normal_parm_array[1].type,
-		normal_parm_array[1].value );
-	
-	switch(s1_val.v.tag)
-	{
-	case TAG_STRING :
-		snod1 = GetStringByID( s1_val.v.data);
-		if( snod1 == NULL )
-		{
-			bprintf( "C_StringSub can't sub for invalid string %i,%i\n",
-				s1_val.v.tag, s1_val.v.data );
-			return NIL;
-		}
-		
-		// make a zero-terminated scratch copy of string1
-		len1 = snod1->len_data;
-		memcpy( buf1, snod1->data, len1 );
-		buf1[len1+1] = 0x0;
-		break;
-		
-	case TAG_TEMP_STRING :
-		snod1 = GetTempString();
-		
-		// make a zero-terminated scratch copy of string1
-		len1 = snod1->len_data;
-		memcpy( buf1, snod1->data, len1 );
-		buf1[len1+1] = 0x0;
-		break;
-		
-	case TAG_RESOURCE :
+   val_type s0_val; // TAG_STRING or temp string.
+   val_type s1_val; // Value we're subbing out.
+   val_type s2_val; // Replacement string.
+   val_type ret_val;
+   string_node *snod0; // String we replace into.
+   string_node *snod1; // String we're subbing out.
+   char buf0[LEN_MAX_CLIENT_MSG + 1]; // Array for s0 (used for string we're modifying).
+   char buf1[LEN_MAX_CLIENT_MSG + 1]; // Array for s1
+   char *s0; // Pointer for buf0 (used for string we're modifying).
+   const char *s1; // Pointer for string to remove.
+   const char *s2; // Pointer for string to add.
+   const char *subspot; // Pointer to the position in s0 to add substitute str.
+   int len1; // Length of string we're subbing out.
+   int len2; // Length of string we're adding.
+   int new_len; // Length of the final string.
+
+   s0 = buf0;
+   s1 = buf1;
+   s2 = subspot = NULL;
+
+   s0_val = RetrieveValue( object_id, local_vars, normal_parm_array[0].type,
+      normal_parm_array[0].value);
+
+   if (s0_val.v.tag == TAG_STRING)
+      snod0 = GetStringByID(s0_val.v.data);
+   else if (s0_val.v.tag == TAG_TEMP_STRING)
+      snod0 = GetTempString();
+   else
+      snod0 = NULL;
+
+   if (!snod0)
+   {
+      bprintf("C_StringSub can't modify first argument non-string %i,%i\n",
+         s0_val.v.tag, s0_val.v.data);
+      return NIL;
+   }
+
+   s1_val = RetrieveValue(object_id, local_vars, normal_parm_array[1].type,
+      normal_parm_array[1].value);
+
+   switch(s1_val.v.tag)
+   {
+   case TAG_STRING :
+      snod1 = GetStringByID(s1_val.v.data);
+      if (!snod1)
+      {
+         bprintf( "C_StringSub can't sub for invalid string %i,%i\n",
+            s1_val.v.tag, s1_val.v.data );
+         return NIL;
+      }
+
+      // Make a zero-terminated scratch copy of string1.
+      len1 = snod1->len_data;
+      memcpy(buf1, snod1->data, len1);
+      buf1[len1] = 0;
+      break;
+
+   case TAG_TEMP_STRING :
+      snod1 = GetTempString();
+
+      // Make a zero-terminated scratch copy of string1.
+      len1 = snod1->len_data;
+      memcpy(buf1, snod1->data, len1);
+      buf1[len1] = 0;
+      break;
+
+   case TAG_RESOURCE :
       s1 = GetResourceStrByLanguageID(s1_val.v.data, ConfigInt(RESOURCE_LANGUAGE));
-      if (s1 == NULL)
-		{
-			bprintf( "C_StringSub can't sub for invalid resource %i\n", s1_val.v.data );
-			return NIL;
-		}
-		len1 = strlen(s1);
-		break;
-		
-	case TAG_DEBUGSTR :
-		{
-			kod_statistics *kstat;
-			class_node *c;
-			
-			kstat = GetKodStats();
-			
-			c = GetClassByID(kstat->interpreting_class);
-			if (c == NULL)
-			{
-				bprintf("C_StringSub can't find class %i, can't get debug str\n",
-					kstat->interpreting_class);
-				return NIL;
-			}
-			s1 = GetClassDebugStr(c,s1_val.v.data);
-			len1 = 0;
-			if (s1 != NULL)
-				len1 = strlen(s1);
-			break;
-		}
-		
-	case TAG_NIL :
-		bprintf( "C_StringSub can't sub for nil\n" );
-		return NIL;
-		
-	default :
-		bprintf( "C_StringSub can't sub for non-string thing %i,%i\n",
-			s1_val.v.tag, s1_val.v.data );
-		return NIL;
-	}
-	
-	if( ( len1 < 1 ) || ( len1 > LEN_MAX_CLIENT_MSG ) )
-	{
-		bprintf( "C_StringSub can't sub for null string %i,%i\n",
-			s1_val.v.tag, s1_val.v.data );
-		return NIL;
-	}
-	
-	s2_val = RetrieveValue( object_id, local_vars, normal_parm_array[2].type,
-		normal_parm_array[2].value );
+      if (!s1)
+      {
+         bprintf( "C_StringSub can't sub for invalid resource %i\n", s1_val.v.data );
+         return NIL;
+      }
+      len1 = strlen(s1);
+      break;
+
+   case TAG_DEBUGSTR :
+      kod_statistics *kstat;
+      class_node *c;
+
+      kstat = GetKodStats();
+
+      c = GetClassByID(kstat->interpreting_class);
+      if (c == NULL)
+      {
+         bprintf("C_StringSub can't find class %i, can't get debug str\n",
+            kstat->interpreting_class);
+         return NIL;
+      }
+      s1 = GetClassDebugStr(c,s1_val.v.data);
+      len1 = 0;
+      if (s1)
+         len1 = strlen(s1);
+      break;
+
+   case TAG_NIL :
+      bprintf( "C_StringSub can't sub for nil\n" );
+      return NIL;
+
+   default :
+      bprintf( "C_StringSub can't sub for non-string thing %i,%i\n",
+         s1_val.v.tag, s1_val.v.data );
+      return NIL;
+   }
+
+   if (len1 < 1 || len1 > LEN_MAX_CLIENT_MSG)
+   {
+      bprintf( "C_StringSub can't sub for null string %i,%i\n",
+         s1_val.v.tag, s1_val.v.data );
+      return NIL;
+   }
+
+   s2_val = RetrieveValue( object_id, local_vars, normal_parm_array[2].type,
+      normal_parm_array[2].value );
 
    if (!LookupString(s2_val, "C_StringSub", &s2, &len2))
       return NIL;
-	
-	new_len = snod0->len_data - len1 + len2;
-	if( new_len > LEN_MAX_CLIENT_MSG )
-	{
-		bprintf("C_StringSub can't sub, string too long.");
-		return NIL;
-	}
-	
-	// now make a zero-terminated scratch copy of string0
-	memcpy( s0, snod0->data, snod0->len_data );
-	s0[snod0->len_data+1] = 0x0;
-	
-	// so we can use stristr to do the work
-	subspot = stristr( s0, s1 );
-	
-    r_val.v.tag = TAG_INT;
-    r_val.v.data = 0;
-	
-	if( subspot != NULL )	// only substitute if string1 is found in string0
-	{
-		char* source;
-		int source_len;
-		
-		source_len = snod0->len_data;
-		source = (char *)AllocateMemory(MALLOC_ID_STRING, source_len+1);
-		memcpy(source, snod0->data, source_len);
-		source[source_len] = '\0';
-		
-		if (snod0 != GetTempString())
-		{
-			// free the old string0 and allocate a new (possibly longer) string0
-			FreeMemory(MALLOC_ID_STRING,snod0->data,snod0->len_data);
-			snod0->data = (char *) AllocateMemory( MALLOC_ID_STRING, new_len+1);
-		}
-		
-		// copy the piece before string1
-		copyspot = snod0->data;
-		memcpy( copyspot, s0, subspot - s0 );
-		
-		// copy string2
-		copyspot += ( subspot - s0 );
-		memcpy( copyspot, s2, len2 );
-		
-		// copy the piece after string1
-		copyspot += len2;
-		memcpy( copyspot, subspot + len1, new_len - (subspot - s0) - len2 );
-		snod0->len_data = new_len;
-		snod0->data[snod0->len_data] = '\0';
-		
-		FreeMemory(MALLOC_ID_STRING,source,source_len+1);
-		
-		r_val.v.data = 1;
-	}
-	
-	return r_val.int_val;
+
+   new_len = snod0->len_data - len1 + len2;
+   if (new_len > LEN_MAX_CLIENT_MSG)
+   {
+      bprintf("C_StringSub can't sub, string too long.");
+      return NIL;
+   }
+
+   ret_val.v.tag = TAG_INT;
+   ret_val.v.data = 0;
+
+   // Make a zero-terminated scratch copy of string0 so we can use stristr
+   // to find the location in s0 where s1 starts. If we don't find it,
+   // stristr will be NULL.
+   memcpy(s0, snod0->data, snod0->len_data);
+   s0[snod0->len_data] = 0;
+   subspot = stristr(s0, s1);
+
+   if (subspot) // only substitute if string1 is found in string0
+   {
+      if (snod0 != GetTempString())
+      {
+         // free the old string0 and allocate a new (possibly longer) string0
+         FreeMemory(MALLOC_ID_STRING, snod0->data, snod0->len_data);
+         snod0->data = (char *)AllocateMemory(MALLOC_ID_STRING, new_len + 1);
+      }
+
+      // Copy the before and after pieces of the original string back from s0,
+      // which is a duplicate of the original.
+
+      // Copy the piece of original string before the sub point.
+      memcpy(snod0->data, s0, subspot - s0);
+      // Add the new part (string2).
+      memcpy(snod0->data + (subspot - s0), s2, len2);
+      // Copy the piece after the end of string1 (the subbed out string).
+      memcpy(snod0->data + (subspot - s0) + len2, subspot + len1, new_len - (subspot - s0) - len2);
+      snod0->len_data = new_len;
+      snod0->data[snod0->len_data] = '\0';
+
+      ret_val.v.data = 1;
+   }
+
+   return ret_val.int_val;
 }
 
 int C_StringContain(int object_id,local_var_type *local_vars,
