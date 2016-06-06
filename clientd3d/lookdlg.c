@@ -50,7 +50,7 @@ void LookListSetContents(HWND hwndListBox, list_type contents, int flags)
    
    /* In single selection box, make 1st item default.  In multiple selection,
     * only highlight 1st item if there is just 1 item AND item doesn't need an amount */
-   if ((flags & LD_MULTIPLESEL) && contents->next == NULL)
+   if ((flags & LD_MULTIPLESEL) && contents && contents->next == NULL)
    {
       obj = (object_node *) contents->data;
       if (!(info->flags & LD_AMOUNTS) || !IsNumberObj(obj->id))

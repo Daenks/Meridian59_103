@@ -44,8 +44,8 @@ typedef struct {
 /* Encapsulate calls to ToServer */
 
 /* Login mode messages */
-#define RequestLogin(v1, v2, i1, i2, i3, i4, i5, w1, w2, i7, i8, i9, str1, str2) \
-  ToServer(AP_LOGIN, NULL, v1, v2, i1, i2, i3, i4, i5, w1, w2, i7, i8, i9, str1, str2)
+#define RequestLogin(v1, v2, i1, i2, i3, i4, i5, w1, w2, i7, i8, i9, str1, str2, str3) \
+  ToServer(AP_LOGIN, NULL, v1, v2, i1, i2, i3, i4, i5, w1, w2, i7, i8, i9, str1, str2, str3)
 #define RequestGame(time, catch, hostname) \
   ToServer(AP_REQ_GAME, NULL, time, catch, hostname)
 

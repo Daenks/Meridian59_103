@@ -49,10 +49,10 @@ resources:
    DragonFly_dead_icon_rsc = dflyX.bgf
    DragonFly_dead_name_rsc = "dead dragonfly"
 
-   DragonFly_sound_hit = df_atkm.wav
-   DragonFly_sound_miss = df_atkm.wav
-   DragonFly_sound_death = df_dth.wav
-   DragonFly_sound_aware = df_awr.wav
+   DragonFly_sound_hit = df_atkm.ogg
+   DragonFly_sound_miss = df_atkm.ogg
+   DragonFly_sound_death = df_dth.ogg
+   DragonFly_sound_aware = df_awr.ogg
 
    DragonFly_spit = loogy.bgf
 

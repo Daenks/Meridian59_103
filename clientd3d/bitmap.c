@@ -97,7 +97,7 @@ object_bitmap_type GetBackgroundBitmap(ID rsc)
 
    if (bkgnd != NULL)
       if (bkgnd->idnum == rsc) 
-	 return bkgnd;
+    return bkgnd;
       else FreeBackgroundBitmap();  /* Free previous background */
 
    debug(("Loading background bitmap %ld\n", rsc));

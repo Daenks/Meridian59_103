@@ -20,6 +20,7 @@ typedef struct account_node_struct
    int account_id;
    char *name;
    char *password;
+   char *email;
    int type;
    int credits;			/* remember, stored as 1/100 of a credit */
    int last_login_time;
@@ -27,28 +28,33 @@ typedef struct account_node_struct
    struct account_node_struct *next;
 } account_node;
 
+bool AccountValidateEmail(char *email);
 void InitAccount(void);
 void ResetAccount(void);
 account_node * GetConsoleAccount(void);
 int GetNextAccountID(void);
 int GetUsedGuestAccounts(void);
-Bool CreateAccount(char *name,char *password,int type,int *account_id);
-int CreateAccountSecurePassword(char *name,char *password,int type);
-int RecreateAccountSecurePassword(int account_id,char *name,char *password,int type);
-void LoadAccount(int account_id,char *name,char *password,int type,int last_login_time,
+Bool CreateAccount(char *name,char *password,char *email,int type,int *account_id);
+int CreateAccountSecurePassword(char *name,char *password,char *email,int type);
+int RecreateAccountSecurePassword(int account_id,char *name,char *password,char *email,int type);
+void LoadAccount(int account_id,char *name,char *password,char *email,int type,int last_login_time,
 		 int suspend_time, int credits);
 Bool DeleteAccount(int account_id);
 void SetAccountName(account_node *a,char *name);
 void SetAccountPassword(account_node *a,char *password);
 void SetAccountPasswordAlreadyEncrypted(account_node *a,char *password);
+void SetAccountEmail(account_node *a,char *email);
 void SetNextAccountID(int accountNum);
 account_node * GetAccountByID(int account_id);
 account_node * GetAccountByName(char *name);
+account_node * GetAccountByEmail(char *email);
 account_node * AccountLoginByName(char *name);
 void AccountLogoff(account_node *a);
 void DoneLoadAccounts(void);
 void ForEachAccount(void (*callback_func)(account_node *a));
+void ForEachAccountWithString(void(*callback_func)(account_node *a, char *str), char *str);
 void DeleteAccountAndAssociatedUsersByID(int account_id);
+void DeleteAccountsIfUnused();
 void DeleteAccountIfUnused(account_node *a);
 void CompactAccounts(void);
 

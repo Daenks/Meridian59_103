@@ -83,9 +83,9 @@ void MapMoveAnnotations( MapAnnotation *annotations, int x, int y, float scale, 
    AREA view;
 
    if( !bMiniMap )
-		CopyCurrentView(&view);
+      CopyCurrentView(&view);
    else
-		CopyCurrentAreaMiniMap( &view );
+      CopyCurrentAreaMiniMap( &view );
 
    hToolTips = TooltipGetControl();
    ti.cbSize = sizeof(TOOLINFO); 
@@ -119,7 +119,7 @@ void MapMoveAnnotations( MapAnnotation *annotations, int x, int y, float scale, 
 /*
  * MapAnnotationClick:  Mouse button pressed on main window while map is up;
  *   edit annotation that was clicked on, or add a new annotation.
- *		Modified by ajw 5/19/97. Annotations made possible only in MiniMap.
+ *      Modified by ajw 5/19/97. Annotations made possible only in MiniMap.
  */
 void MapAnnotationClick(int x, int y)
 {
@@ -145,11 +145,11 @@ void MapAnnotationClick(int x, int y)
        continue;
 
      if (a->x <= x + MAP_ANNOTATION_SIZE / 2 && a->x >= x - MAP_ANNOTATION_SIZE / 2 &&
-	 a->y <= y + MAP_ANNOTATION_SIZE / 2 && a->y >= y - MAP_ANNOTATION_SIZE / 2)
+    a->y <= y + MAP_ANNOTATION_SIZE / 2 && a->y >= y - MAP_ANNOTATION_SIZE / 2)
        {
-	 existed = True;
-	 index = i;
-	 break;
+    existed = True;
+    index = i;
+    break;
        }
   }
 
@@ -160,26 +160,26 @@ void MapAnnotationClick(int x, int y)
     {
       if (current_room.annotations[i].text[0] == 0)
       {
-	index = i;
-	break;
+   index = i;
+   break;
       }
     }
       if (index == -1)
       {
-	GameMessagePrintf(GetString(hInst, IDS_ANNOTATIONSFULL), MAX_ANNOTATIONS);
-	return;
+   GameMessagePrintf(GetString(hInst, IDS_ANNOTATIONSFULL), MAX_ANNOTATIONS);
+   return;
       }
   }
 
   if (DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ANNOTATE), hMain,
-		     MapAnnotationDialogProc, (LPARAM) index) == IDOK)
+           MapAnnotationDialogProc, (LPARAM) index) == IDOK)
     {
       current_room.annotations_changed = True;
       if (!existed)
-	{
-	  current_room.annotations[index].x = x;
-	  current_room.annotations[index].y = y;
-	}
+   {
+     current_room.annotations[index].x = x;
+     current_room.annotations[index].y = y;
+   }
     }
 
   TooltipReset();
@@ -214,19 +214,19 @@ BOOL CALLBACK MapAnnotationDialogProc(HWND hDlg, UINT message, UINT wParam, LONG
       switch(GET_WM_COMMAND_ID(wParam, lParam))
       {
       case IDC_DELETE:
-	 current_room.annotations[index].text[0] = 0;
-	 EndDialog(hDlg, IDOK);
-	 return TRUE;
-	
+    current_room.annotations[index].text[0] = 0;
+    EndDialog(hDlg, IDOK);
+    return TRUE;
+   
       case IDOK:
-	 hEdit = GetDlgItem(hDlg, IDC_ANNOTATE);
-	 Edit_GetText(hEdit, current_room.annotations[index].text, MAX_ANNOTATION_LEN - 1);
-	 EndDialog(hDlg, IDOK);
-	 return TRUE;
+    hEdit = GetDlgItem(hDlg, IDC_ANNOTATE);
+    Edit_GetText(hEdit, current_room.annotations[index].text, MAX_ANNOTATION_LEN - 1);
+    EndDialog(hDlg, IDOK);
+    return TRUE;
 
       case IDCANCEL:
-	 EndDialog(hDlg, IDCANCEL);
-	 return TRUE;
+    EndDialog(hDlg, IDCANCEL);
+    return TRUE;
       }
       break;
 

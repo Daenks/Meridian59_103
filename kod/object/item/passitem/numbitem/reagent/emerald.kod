@@ -18,14 +18,12 @@ resources:
 
    include emerald.lkod
 
-
    emerald_name_rsc = "emerald"
    emerald_icon_rsc = emerald.bgf
    emerald_desc_rsc = \
-   "This sparkling green \"Jasper emerald\" is beautiful, "
-   "although not exceptionally valuable.  It has a warm, "
-   "magical glow."
-
+      "This sparkling green \"Jasper emerald\" is beautiful, "
+      "although not exceptionally valuable.  It has a warm, "
+      "magical glow."
    emerald_name_plural_rsc = "emeralds"
 
 classvars:
@@ -48,7 +46,6 @@ classvars:
 properties:
 
    piNumber = 3
-
 
 messages:
 

@@ -185,7 +185,8 @@ messages:
       oItemAtt = Send(SYS,@FindItemAttByNum,#num=iChoice);
 
       % Ask that ItemAtt to generate an item with this attribute.
-      oItem = Send(oItemAtt,@GenerateItemWithAttribute, #who=who);
+      oItem = Send(oItemAtt,@GenerateItemWithAttribute,#who=who,
+                     #diff_seed=diff_seed);
 
       return oItem;
    }
@@ -289,8 +290,9 @@ messages:
             {
                iSafetyCntr = 0;
 
-               while (NOT Send(oTreasure,@SpellItemIsAccessible))
-                     AND iSafetyCntr++ < 5
+               while ((IsClass(oTreasure,&SpellItem)
+                     AND NOT Send(oTreasure,@SpellItemIsAccessible))
+                  AND iSafetyCntr++ < 5)
                {
                   oTreasure = Send(self,@GenerateTreasure,#level=level,
                                     #who=who,#mob=mob,#tokengen=tokengen,
@@ -427,6 +429,7 @@ messages:
       }
 
       if NOT (attributes & MOB_ONE_TREASURE)
+         AND plTreasure <> $
       {
          % No rare item dropped, check loot table.
          oObj = Send(self,@GenerateLootTableTreasure,#who=who,#corpse=corpse);
@@ -555,6 +558,11 @@ messages:
       }
 
       return;
+   }
+
+   GetTreasureList()
+   {
+      return plTreasure;
    }
 
 end

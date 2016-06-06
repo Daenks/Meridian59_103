@@ -93,11 +93,10 @@ static unsigned short crc16( char *name)
 	return retval ;
 }
 
-static void GenerateCRC16( void )
+static void GenerateCRC16(void)
 {
-	gCRC16 = crc16( __argv[0] );
+   gCRC16 = crc16(__argv[0]);
 }
-
 /************************************************************************/
 long CALLBACK WndProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -307,14 +306,13 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdPa
 
 	ModulesInit();   // Set up data structures for modules
 
-
 /* attempt make a crc16 on the meridian.exe */
 	GenerateCRC16();
 
 	MainInitState(STATE_OFFLINE);
 
 	UpdateWindow(hMain);
-
+   
 	while (!bQuit)
 	{
 		MainIdle();

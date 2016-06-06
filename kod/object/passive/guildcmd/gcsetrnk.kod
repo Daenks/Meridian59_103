@@ -13,7 +13,6 @@ GuildSetRank is GuildCommand
 constants:
 
    include blakston.khd
-   include protocol.khd
 
 resources:
 
@@ -22,13 +21,17 @@ resources:
    guildsetrank_name_rsc = "set rank"
    guildsetrank_icon_rsc = light.bgf
 
-   guildsetrank_lieutenant = "Replaces 'promote' and 'demote' in new, neat-o interface."
+   guildsetrank_lieutenant = \
+      "Replaces 'promote' and 'demote' in new, neat-o interface."
 
    setrank_not_member = "%s%s is not a member of %s%q!"
    setrank_cant_setrank_self = "You may not promote or demote yourself!"
    setrank_non_user = "%s%s doesn't seem to be concerned about your decision."
-   setrank_too_high = "You may not change the rank of someone of equal or higher rank than yourself!"
-   setrank_promotion_too_high = "You may not promote someone to a rank equal or higher than your own!"
+   setrank_too_high = \
+      "You may not change the rank of someone of equal or "
+      "higher rank than yourself!"
+   setrank_promotion_too_high = \
+      "You may not promote someone to a rank equal or higher than your own!"
 
 classvars:
 
@@ -56,53 +59,57 @@ messages:
    {
       local oGuild, oldrank, newrank, promoterrank;
 
-      if not isClass(oTarget,&player)
-        {
-          send(who,@msgsenduser,#message_rsc=setrank_non_user,
-            #parm1 = send(oTarget,@getcapdef), #parm2 = send(oTarget,@getname));
-          return false;
-        }
+      if NOT IsClass(oTarget,&Player)
+      {
+         Send(who,@MsgSendUser,#message_rsc=setrank_non_user,
+               #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
 
-      oGuild = send(who,@getguild);
+         return FALSE;
+      }
 
-      if oGuild <> send(oTarget,@getguild)
-        {
-          send(who,@msgsenduser,#message_rsc=setrank_not_member,
-              #parm1=send(oTarget,@getdef),
-			  #parm2=send(oTarget,@getname),#parm3=send(oGuild,@getdef),
-              #parm4=send(oGuild,@getname));
-          return FALSE;
-        }
+      oGuild = Send(who,@GetGuild);
 
-      if oTarget=who
-        {
-          send(who,@msgsenduser,#message_rsc=setrank_cant_setrank_self);
-          return FALSE;
-        }
+      if oGuild <> Send(oTarget,@GetGuild)
+      {
+         Send(who,@MsgSendUser,#message_rsc=setrank_not_member,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName),
+               #parm3=Send(oGuild,@GetDef),#parm4=Send(oGuild,@GetName));
+
+         return FALSE;
+      }
+
+      if oTarget = who
+      {
+         Send(who,@MsgSendUser,#message_rsc=setrank_cant_setrank_self);
+
+         return FALSE;
+      }
 
       newrank = data;
-      oldrank = send(oGuild,@getrank,#who=oTarget);
-      promoterrank = send(oGuild,@getrank,#who=who);
+      oldrank = Send(oGuild,@GetRank,#who=oTarget);
+      promoterrank = Send(oGuild,@GetRank,#who=who);
 
       if oldrank >= promoterrank
-         {
-           send(who,@msgsenduser,#message_rsc=setrank_too_high);
-           return FALSE;
-         }
+      {
+         Send(who,@MsgSendUser,#message_rsc=setrank_too_high);
+
+         return FALSE;
+      }
 
       if newrank >= promoterrank
-         {
-            send(who,@msgsenduser,#message_rsc=setrank_promotion_too_high);
-            return FALSE;
-         }
+      {
+         Send(who,@MsgSendUser,#message_rsc=setrank_promotion_too_high);
 
-      if send(oGuild,@checkchangerank,#who=oTarget,#promoter=who,#newrank = newrank)
-        {
-          send(oGuild,@changerank,#who=oTarget,#promoter=who, #newrank = newrank);
-        }
+         return FALSE;
+      }
+
+      if Send(oGuild,@CheckChangeRank,#who=oTarget,#promoter=who,#newrank=newrank)
+      {
+         Send(oGuild,@ChangeRank,#who=oTarget,#promoter=who,#newrank=newrank);
+      }
 
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

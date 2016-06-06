@@ -41,7 +41,7 @@ resources:
       "%s%s lets out a cry of pain as ice shards pierce %s skin "
       "for ~k~B%i~n damage."
 
-   icenova_sound = fshatter.wav
+   icenova_sound = fshatter.ogg
 
 classvars:
 
@@ -77,13 +77,10 @@ properties:
 
    piSpeed = 9
 
-   piDamageMin = 14
-   piDamageMax = 23
+   piDamageMin = 11
+   piDamageMax = 18
 
    piNumber = 12
-
-   pbAccessible = FALSE
-   pbEnabled = FALSE
 
 messages:
 
@@ -132,7 +129,7 @@ messages:
       {
          each_obj = Send(oRoom,@HolderExtractObject,#data=i);
 
-         if isClass(each_obj,&Player)
+         if IsClass(each_obj,&User)
          {
             if each_obj = who
             {

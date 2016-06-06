@@ -1,4 +1,6 @@
 dm_login = de "Willkommen in Meridian, %s."
+dm_mortal = de "Du bist jetzt sterblich."
+dm_immortal = de "Du bist jetzt unsterblich."
 dm_teleportto = de \
    "%s schreitet durch ein Dimensionstor, das sich neben Dir öffnet."
 dm_teleportfrom = de \
@@ -8,10 +10,10 @@ dm_dimensionalgate = de "Du öffnest ein Dimensionstor zu %s und gehst hindurch."
 dm_pk_lock = de \
    "Dein PK Status ist jetzt durch natürliche Ereignisse unverändert."
 dm_pk_unlock = de "Dein PK Status ist jetzt der eines normalen Spielers."
-dm_PK_ENABLE = de \
+dm_pk_enable = de \
    "Zur Zeit ist Dein PK Status AN, was bedeutet, dass Du andere Spieler "
    "nach Belieben angreifen kannst."
-dm_PK_DISABLE = de \
+dm_pk_disable = de \
    "Zur Zeit ist Dein PK Status AUS, was bedeutet, dass Du andere Spieler "
    "nicht töten bzw. nicht von ihnen getötet werden kannst."
 dm_appeal_on = de "Du kannst jetzt die Rufe hören."
@@ -87,6 +89,8 @@ dm_stealth_on = de "Du gehst jetzt heimlich vor."
 dm_stealth_off = de "Du gehst nicht mehr heimlich vor."
 dm_plain = de "Du wirst für die Spieler wieder sichtbar."
 dm_blank = de "You are now blank."
+dm_mortal_command = de "mortal"
+dm_immortal_command = de "immortal"
 dm_no_longer = de \
    "Dieser Befehl existiert nicht mehr. Gib ~Idm help~I ein, um mehr Infos "
    "zu erhalten."
@@ -99,6 +103,8 @@ dm_no_item = de "No item with that name exists in the Meridian universe."
 dm_no_monster = de "No monster with that name exists in the Meridian universe."
 dm_no_item_group = de "There is no item group with that name."
 dm_q = de "Q"
+dm_gone_mortal = de "%s scheint verwundbarer."
+dm_gone_immortal = de "%s scheint weniger verwundbar."
 dm_void = de "%s greift in das Dimensionstor. %s%s wird herausgezogen!"
 dm_call = de \
    "%s murmelt magische Zauberformeln, und plötzlich erscheinen überall Monster."
@@ -161,7 +167,7 @@ dm_admin_help = de \
    "~w[Decke die komplette Karte auf]~n\nHIDEMAP  ~w[Vergisst die Karte]~n\nRESET "
    "~w[Aktualisiert Deinen Client]~n\nGETPLAYER <name> ~w[Holt einen Spieler "
    "zu Dir]~n\nGOPLAYER <name> ~w[Bringt Dich zu einem Spieler]~n\n"
-dm_help_items = de \
+dm_help_all = de \
    "You can place scenery and lights using the \"dm place \" command.\nType "
    "\"dm help lights\" and \"dm help scenery\" to get a list of available objects "
    "to place."

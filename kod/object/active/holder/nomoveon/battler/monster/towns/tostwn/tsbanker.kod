@@ -201,11 +201,11 @@ messages:
       propagate;
    }
 
-   TryAddToQuestEngine()
+   TryAddToLibrary()
    "There was a problem with Skivlat getting quests involving gems.  "
    "Previously, he would no longer accept gems if someone had recently "
-   "brought him a gem.  By removing him from the quest engine, we prevent "
-   "this error.  Hopefully, we will find a better way to do "
+   "brought him a gem.  By removing him from the library NPC lists, we "
+   "prevent this error.  Hopefully, we will find a better way to do "
    "this in the future.  CDS"
    {
      return FALSE;

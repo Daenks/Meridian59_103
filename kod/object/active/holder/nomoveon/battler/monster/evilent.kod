@@ -33,10 +33,10 @@ resources:
    EvilEnt_dead_leaves_sparse_rsc = res0003f.bgf
    EvilEnt_dead_name_rsc = "dead remains of diseased tree"
 
-   EvilEnt_sound_hit = tr_atkh.wav
-   EvilEnt_sound_miss = tr_atkm.wav
-   EvilEnt_sound_death = tr_dth.wav
-   EvilEnt_sound_aware = tr_awr.wav
+   EvilEnt_sound_hit = tr_atkh.ogg
+   EvilEnt_sound_miss = tr_atkm.ogg
+   EvilEnt_sound_death = tr_dth.ogg
+   EvilEnt_sound_aware = tr_awr.ogg
 
 classvars:
 

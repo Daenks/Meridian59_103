@@ -3,11 +3,11 @@ seraphymquest_icon_rsc = de serappol.bgf
 seraphymquest_name_rsc = de "Polierte Edelsteine Quest"
 seraphymquest_desc_rsc = de \
    "Du wurdest gefragt, ob Du ungeschliffene Seraphen besitzt, damit "
-   "ein NPC seine Künste verbessern kann. Er wird dir einen seiner Resultate geben."
+   "jemand seine Künste verbessern kann. Er wird dir einen seiner Resultate geben."
 
 seraphymquest_deliver_rsc = de \
    "%s verbessert %sseine Künste, und hat dich gefragt, ob Du noch ungeschliffene Seraphen hast. "
-   "Als Gegenleistung erhälst Du %seinen seiner Resultate."
+   "Als Gegenleistung erhältst Du %seinen seiner Resultate."
 
 seraphymquest_completed_rsc = de \
    "Du hast das Quest abgeschlossen"
@@ -15,9 +15,9 @@ seraphymquest_completed_rsc = de \
 % Quest resources.
 polishquest_assign = de \
    "Entschuldige, ich habe meine Fähigkeiten verbessert, und frage mich ob "
-   "Du vielleicht ungeschliffene Edelsteine jeglicher Art dabei hast.  Wenn "
+   "Du vielleicht ungeschliffene Edelsteine jeglicher Art dabei hast. Wenn "
    "ja, wäre ich froh sie zu polieren und gebe Dir einen als Resultat."
 polishquest_success = de "Ah, vielen Dank. Erlaube mir Dich zu belohnen."
 polishquest_failure = de \
-   "Betreff:  Edelstein polieren\nVergiss die ungeschliffenen Edelsteine, "
-   "ich habe welche von jemandem anderes bekommen. Danke."
+   "Betreff: Edelstein polieren\nVergiss die ungeschliffenen Edelsteine, "
+   "ich habe welche von jemanden anderes bekommen. Danke."

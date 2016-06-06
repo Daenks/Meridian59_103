@@ -35,7 +35,7 @@ resources:
       "Raza, or your little sister suicides your character just to spite you), "
       "or you didn't get a potion in the school you wanted and threw it away, "
       "you will NOT get another potion.  So don't ask.\n\n"
-   BetaPotion_gulp_sound = drkptn.wav
+   BetaPotion_gulp_sound = drkptn.ogg
    BetaPotion_drink = "You quaff the contents of the vial in a single gulp."
    BetaPotion_worked = "You suddenly feel a little taller."
    BetaPotion_bad_drink = \
@@ -116,6 +116,7 @@ messages:
             HealthBoost = bound(piHealth,0,(100+Send(apply_on,@GetStamina)));
             HealthBoost = bound(HealthBoost,0,(piHealthCap-iBaseMaxHealth));
             Send(apply_on,@GainBaseMaxHealth,#amount=HealthBoost);
+            Send(apply_on,@ResetXPToLevel);
 
             % Don't use iBaseMaxHealth, because it changed.
             if (Send(apply_on,@GetBaseMaxHealth) >= Send(SETTINGS_OBJECT,@GetPKillEnableHP))

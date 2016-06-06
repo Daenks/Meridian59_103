@@ -187,7 +187,7 @@ messages:
 
       if school = 0
       {
-         DEBUG("Playeradvanced called without any school!");
+         Debug("Playeradvanced called without any school!");
 
          return;
       }
@@ -239,8 +239,7 @@ messages:
          Send(self,@CheckForWorthiness,#lList=plShalilleFarenKraanan,#who=who,
               #score=faren+shalille+kraanan,#index=POS_SFK);
       }
-
-      if school = SS_FAREN
+      else if school = SS_FAREN
       {
          Send(self,@CheckForWorthiness,#lList=plFaren,#who=who,
               #score=faren,#index=POS_F);
@@ -253,8 +252,7 @@ messages:
          Send(self,@CheckForWorthiness,#lList=plShalilleFarenKraanan,#who=who,
               #score=faren+shalille+kraanan,#index=POS_SFK);
       }
-
-      if school = SS_KRAANAN
+      else if school = SS_KRAANAN
       {
          Send(self,@CheckForWorthiness,#lList=plKraanan,#who=who,
               #score=kraanan,#index=POS_K);
@@ -267,8 +265,7 @@ messages:
          Send(self,@CheckForWorthiness,#lList=plShalilleFarenKraanan,#who=who,
               #score=faren+shalille+kraanan,#index=POS_SFK);
       }
-
-      if school = SS_QOR
+      else if school = SS_QOR
       {
          Send(self,@CheckForWorthiness,#lList=plQor,#who=who,
               #score=qor,#index=POS_Q);
@@ -279,8 +276,7 @@ messages:
          Send(self,@CheckForWorthiness,#lList=plQorFarenKraanan,#who=who,
               #score=faren+qor+kraanan,#index=POS_QFK);
       }
-
-      if school = SS_SHALILLE
+      else if school = SS_SHALILLE
       {
          Send(self,@CheckForWorthiness,#lList=plShalille,#who=who,
               #score=Shalille,#index=POS_S);
@@ -291,14 +287,12 @@ messages:
          Send(self,@CheckForWorthiness,#lList=plShalilleFarenKraanan,#who=who,
               #score=faren+Shalille+kraanan,#index=POS_SFK);
       }
-
-      if school = SS_RIIJA
+      else if school = SS_RIIJA
       {
          Send(self,@CheckForWorthiness,#lList=plRiija,#who=who,
               #score=riija,#index=POS_R);
       }
-
-      if school = SS_JALA
+      else if school = SS_JALA
       {
          Send(self,@CheckForWorthiness,#lList=plJala,#who=who,
               #score=sjala,#index=POS_J);
@@ -324,14 +318,14 @@ messages:
 
       if who = $ OR score = $
       {
-         DEBUG("Bad info passed to checkforworthiness");
+         Debug("Bad info passed to checkforworthiness");
 
          return;
       }
 
       if lList = $
       {
-         DEBUG("List set to nil somehow!");
+         Debug("List set to nil somehow!");
 
          return;
       }
@@ -366,7 +360,7 @@ messages:
 
       if score >= Nth(lNode,2)
       {
-         SetNth(lNode,1,who);
+         SetFirst(lNode,who);
          SetNth(lNode,2,score);
          Send(self,@SortHeroList,#lList=lList,#who=who);
          piSomethingChanged = index;
@@ -414,17 +408,17 @@ messages:
                    AND Nth(lAft,2) = Nth(lFore,2))
             {
                % Swap the two elements.
-               oSwap = Nth(lAft,1);
+               oSwap = First(lAft);
                iSwap = Nth(lAft,2);
-               SetNth(lAft,1,Nth(lFore,1));
+               SetFirst(lAft,First(lFore));
                SetNth(lAft,2,Nth(lFore,2));
-               SetNth(lFore,1,oSwap);
+               SetFirst(lFore,oSwap);
                SetNth(lFore,2,iSwap);
                bCheckAgain = TRUE;
             }
 
             % Proceed to the previous element for comparison.
-            iCount = iCount - 1;
+            --iCount;
          }
       }
 
@@ -442,7 +436,7 @@ messages:
       while index <= length(plCurrentBest)
       {
          SetNth(plCurrentBest,index,$);
-         index = index + 1;
+         ++index;
       }
 
       if piSomethingChanged <= POS_BEST
@@ -532,17 +526,7 @@ messages:
 
    IsInCurrentBest(who=$)
    {
-      local i;
-
-      foreach i in plCurrentBest
-      {
-         if i = who
-         {
-            return TRUE;
-         }
-      }
-
-      return FALSE;
+      return FindListElem(plCurrentBest, who) > 0;
    }
 
    SetBestInList(lList=$,index=0)
@@ -558,7 +542,7 @@ messages:
 
       if index = 0
       {
-         DEBUG("Index = 0!  Bad!");
+         Debug("Index = 0!  Bad!");
 
          return;
       }
@@ -567,11 +551,9 @@ messages:
       % elsewhere in plCurrentBest.  If everyone appears, then use the 
       % First person.  Remember, people at the front of the list are assumed
       % to be the best.
-
-      oChosen = $;
       foreach i in lList
       {
-         if not Send(self,@IsInCurrentBest,#who=First(i))
+         if NOT Send(self,@IsInCurrentBest,#who=First(i))
          {
             oChosen = First(i);
 
@@ -590,8 +572,8 @@ messages:
    }
 
    RemovePlayerIfFirstElem(lList = $,who = $)
-   "This procedure will search any list of lists, and set to scratch any nodes which the "
-   "player is the First element of."
+   "This procedure will search any list of lists, and set to scratch any nodes "
+   "which the player is the First element of."
    {
       local i;
 
@@ -604,7 +586,7 @@ messages:
       {
          if First(i) = who
          {
-            SetNth(i,1,$);
+            SetFirst(i,$);
             SetNth(i,2,0);
          }
       }
@@ -618,7 +600,7 @@ messages:
    {
       if who <> $ AND IsClass(who,&User)
       {
-         plExclude = cons(who,plExclude);
+         plExclude = Cons(who,plExclude);
 
          % Delete this player from current lists
          Send(self,@PlayerSuicides,#who=who);
@@ -667,7 +649,7 @@ messages:
 
    SetInvestigator(who=$)
    {
-      if who <> $ AND NOT isClass(who,&DM)
+      if who <> $ AND NOT IsClass(who,&DM)
       {
          return Send(SYS,@GetFailureRsc);
       }
@@ -701,7 +683,7 @@ messages:
 
    AddSuspect(who=$)
    {
-      if who <> $ AND isClass(who,&User)
+      if who <> $ AND IsClass(who,&User)
       {
          plSuspects = Cons(who,plSuspects);
 
@@ -732,7 +714,5 @@ messages:
       return;
    }
 
-
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

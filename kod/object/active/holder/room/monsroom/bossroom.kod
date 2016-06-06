@@ -335,8 +335,7 @@ messages:
                count = count + 1;
 
                if (count > delete_index)
-                  AND (plBossTreasure = $
-                     OR FindListElem(plBossTreasure,First(i)) = $)
+                  AND (FindListElem(plBossTreasure,First(i)) = 0)
                {        %*****
                   Send(First(i),@DestroyDisposable);
                }
@@ -355,8 +354,8 @@ messages:
       {
          % Never dispose of Boss or Henchmen automatically,
          % handle this in reset code.
-         if (plBoss = $ OR FindListElem(plBoss,First(i)) = $)
-            AND (plHenchmen = $ OR FindListElem(plHenchmen,First(i)) = $)
+         if (FindListElem(plBoss,First(i)) = 0)
+            AND (FindListElem(plHenchmen,First(i)) = 0)
          {      %*****
             Send(First(i),@DestroyDisposable);
          }
@@ -366,8 +365,7 @@ messages:
       {
          % Never dispose of Boss Treasure automatically,
          % handle this in reset code.
-         if plBossTreasure = $
-            OR FindListElem(plBossTreasure,First(i)) = $
+         if FindListElem(plBossTreasure,First(i)) = 0
          {                                               %*****
             Send(First(i),@DestroyDisposable);
          }

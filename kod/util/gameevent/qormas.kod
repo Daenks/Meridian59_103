@@ -1138,7 +1138,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       ++piGameDayCount;
 

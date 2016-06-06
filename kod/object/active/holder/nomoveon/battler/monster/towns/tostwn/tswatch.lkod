@@ -28,9 +28,9 @@ TosWatcher_fight_in_progress = de \
 TosWatcher_already_combatant = de "Aber Du bist bereits ein Kämpfer!"
 TosWatcher_already_champion = de "Aber Du bist bereits unser Champion!"
 TosWatcher_already_have_champion = de \
-   "Wir haben bereits einen Champion: %s%s. Wagst Du es zu kämpfen?"
+   "Wir haben bereits einen Champion: %s%s.  Wagst Du es zu kämpfen?%s$0"
 TosWatcher_challenge_offered = de \
-   "%s%s hat Dich herausgefordert. Bist Du bereit zu kämpfen?"
+   "%s%s hat Dich herausgefordert. Bist Du bereit zu kämpfen?%s$0"
 TosWatcher_must_accept = de \
    "Du hast nur noch %i Sekunden, um die Herausforderungen von %s%s anzunehmen."
 TosWatcher_cant_renege = de \
@@ -44,11 +44,11 @@ TosWatcher_new_champion = de \
 TosWatcher_killed_champion = de \
    "%s%s hat den Champion von Kraanan, %s%s, besiegt!"
 TosWatcher_retain_title = de \
-   "%s%s, Champion von Kraanan, hat den Titel tapfer verteidigt!"
+   "%s%s, Champion von Kraanan, hat den Titel tapfer verteidigt!%s$0"
 TosWatcher_champion_killed = de "Der Champion hat %s%s getötet!"
 TosWatcher_someone_killed = de "%s%s hat %s%s besiegt."
 TosWatcher_champ_reneges = de \
-   "%s%s, der Champion von Kraanan, hat den Titel abgegeben."
+   "%s%s, der Champion von Kraanan, hat den Titel abgegeben.%s$0"
 TosWatcher_ready_to_fight = de \
    "%s%s gegen %s%s. Bereitet euch vor, auf mein Kommando mit dem Kampf zu "
    "beginnen."
@@ -98,7 +98,7 @@ TosWatcher_welcome = de \
    "Lies die Banner, wenn Du Hilfe brauchst.\""
 TosWatcher_worship_admin = de \
    "Alle sollen %s huldigen und beten, dass wir nicht für unwürdig erachtet "
-   "werden!"
+   "werden!%s$0"
 TosWatcher_worship_dm = de "Verbeugt Euch vor %s %s von Meridian!"
 TosWatcher_welcome_champion = de "Alle bejubeln %s%s, den Champion von Kraanan!"
 TosWatcher_welcome_champion_guild = de \
@@ -148,7 +148,7 @@ TosWatcher_quit_guild = de \
    "Kampf verloren."
 TosWatcher_no_guild_tourny = de \
    "%s%s ist in keiner Gilde. Nur Gildenangehörige dürfen bei dieser Turnierart "
-   "teilnehmen."
+   "teilnehmen.%s$0"
 TosWatcher_wrong_guild_tourny = de \
    "%s%s ist kein Mitglied irgendeiner Gilde, die für diesen Kampf registriert "
    "ist."

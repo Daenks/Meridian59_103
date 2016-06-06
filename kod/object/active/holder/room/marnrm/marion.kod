@@ -26,24 +26,24 @@ resources:
    room_name_marion = "Marion"
    room_marion = marion.roo
 
-   mar_music = city02.mp3
+   mar_music = city02.ogg
 
-   wind_sound_marion = rs_wind.wav
+   wind_sound_marion = rs_wind.ogg
 
    mimosa_rose_offering = \
-      "You pause to reflect on the fallen, and feel your spirit refreshed despite the sorrow."
-
+      "You pause to reflect on the fallen, and feel your spirit refreshed "
+      "despite the sorrow."
    mimosa_rose_offering_spam = \
       "You pause to ponder the meaning of life."
-
    mimosa_other_offering = \
-      "Your offering to the fallen falls softly on a bed of dried flower petals."
+      "Your offering to the fallen falls softly on a bed of dried "
+      "flower petals."
 
    mimosa_name = "the mimosa tree"
    mimosa_icon = treebot.bgf
    mimosa_desc = \
-      "This tree stands as a memorial of a fallen friend. "
-      "A small metal plaque is affixed near the ground; a few dried rose petals rest nearby."
+      "This tree stands as a memorial of a fallen friend.  A small metal "
+      "plaque is affixed near the ground; a few dried rose petals rest nearby."
    mimosa_insc = \
       "The young girls\n"
       "Cut their hair at your passing.\n"
@@ -62,7 +62,9 @@ resources:
       "We used to wipe your face.\n"
       "More than that, I would not have done."
 
-   marion_gate_warning = "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   marion_gate_warning = \
+      "This gate was put in place to keep citizens safe from the "
+      "dangers of the crypt."
 
 classvars:
 
@@ -72,7 +74,8 @@ classvars:
    viTeleport_row = 56
    viTeleport_col = 39
 
-   viTerrain_type = TERRAIN_CITY | TERRAIN_ROAD | TERRAIN_FIELDS | TERRAIN_FOREST
+   viTerrain_type = \
+      TERRAIN_CITY | TERRAIN_ROAD | TERRAIN_FIELDS | TERRAIN_FOREST
 
    viFlag_row = 36
    viFlag_col = 60
@@ -97,6 +100,7 @@ messages:
    CreateYellZoneList()
    {
       plYell_Zone = [ RID_C4, RID_C5 ];
+
       propagate;
    }
 
@@ -109,7 +113,7 @@ messages:
          propagate;
       }
 
-      who = send(what,@GetOwner);
+      who = Send(what,@GetOwner);
       if who = $
       {
          propagate;
@@ -118,7 +122,7 @@ messages:
       if (new_row >= (TREE_ROW - 1)) AND (new_row <= (TREE_ROW + 1))
          AND (new_col >= (TREE_COL - 1)) AND (new_col <= (TREE_COL + 1))
       {
-         send(self,@OfferingDroppedOnTree,#what=what,#who=who);
+         Send(self,@OfferingDroppedOnTree,#what=what,#who=who);
       }
 
       propagate;
@@ -128,47 +132,57 @@ messages:
    {
       local oBoon;
 
-      if what = $ OR NOT isClass(what,&Item) { return; }
-      if who = $ OR NOT isClass(who,&Player) { return; }
-
-      if isClass(what, &Rose)
+      if (what = $
+         OR NOT IsClass(what,&Item))
       {
-         oBoon = send(SYS,@FindSpellByNum,#num=SID_MYSTICISM_BOON);
+         return;
+      }
 
-         if not send(who,@IsEnchanted,#what=oBoon)
+      if (who = $
+         OR NOT IsClass(who,&User))
+      {
+         return;
+      }
+
+      if IsClass(what,&Rose)
+      {
+         oBoon = Send(SYS,@FindSpellByNum,#num=SID_MYSTICISM_BOON);
+
+         if NOT Send(who,@IsEnchanted,#what=oBoon)
          {
-            send(who,@MsgSendUser,#message_rsc=mimosa_rose_offering);            
-            send(oBoon,@AddBoon,#target=who,#days=1,#amount=5);
+            Send(who,@MsgSendUser,#message_rsc=mimosa_rose_offering);
+            Send(oBoon,@AddBoon,#target=who,#days=1,#amount=5);
          }
          else
          {
-            send(who,@MsgSendUser,#message_rsc=mimosa_rose_offering_spam);
+            Send(who,@MsgSendUser,#message_rsc=mimosa_rose_offering_spam);
          }
 
          return;
       }
 
-      send(who,@MsgSendUser,#message_rsc=mimosa_other_offering);
+      Send(who,@MsgSendUser,#message_rsc=mimosa_other_offering);
 
       return;
    }
 
    SomethingMoved(what = $,new_row = $, new_col = $)
    {
-      if (new_row < 32) and (new_col > 66)
+      if (new_row < 32) AND (new_col > 66)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_C4),
-              #new_row=34,#new_col=5,#new_angle=ANGLE_NORTH_EAST);
+               #where=Send(SYS,@FindRoomByNum,#num=RID_C4),
+               #new_row=34,#new_col=5,#new_angle=ANGLE_NORTH_EAST);
+
          return;
       }
 
-      if (new_row > 83) and (new_col > 48)
+      if (new_row > 83) AND (new_col > 48)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_C5),
-              #new_row=3,#new_col=23,#new_angle=ANGLE_SOUTH_WEST);
-              
+               #where=Send(SYS,@FindRoomByNum,#num=RID_C5),
+               #new_row=3,#new_col=23,#new_angle=ANGLE_SOUTH_WEST);
+
          return;
       }
 
@@ -180,8 +194,9 @@ messages:
       Send(self,@NewHold,#what=Create(&MarionElder),
            #new_row=80,#new_col=37,#new_angle=ANGLE_NORTH);
 
-      Send(self,@NewHold,#what=Create(&Sign,#name=mimosa_name,#icon=mimosa_icon,#desc=mimosa_desc,#insc=mimosa_insc),
-           #new_row=TREE_ROW,#new_col=TREE_COL);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#rName=mimosa_name,
+            #rIcon=mimosa_icon,#rDesc=mimosa_desc,#rInsc=mimosa_insc),
+            #new_row=TREE_ROW,#new_col=TREE_COL);
 
       Send(self,@NewHold,#what=Create(&Tree,#top=TREE_OAK,#bottom=TREE_ELM),
            #new_row=5,#new_col=17);
@@ -199,7 +214,7 @@ messages:
 
       % Lighting - Under the Mimosa tree
 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BWHITE,#iIntensity=5),
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BWHITE,#iIntensity=5),
            #new_row=45,#new_col=7,#fine_row=32,#fine_col=32);
 
       Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Orange),
@@ -242,7 +257,6 @@ messages:
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

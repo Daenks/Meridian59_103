@@ -1,0 +1,76 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MajorHeal is Heal
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   include majheal.lkod
+
+   majorheal_name_rsc = "major heal"
+   majorheal_icon_rsc = imajheal.bgf
+   majorheal_desc_rsc = \
+      "The compassionate power of Shal'ille heals severe wounds in the "
+      "caster or another player.  Shal'ille gives a small reward toward the "
+      "karma of the mage who heals another good soul.  Requires four "
+      "herbs to cast."
+   majorheal_cast_rsc = \
+      "%s%s's spell floods you with pure healing energy, "
+      "restoring ~g~B%i~B~n hitpoints."
+   majorheal_cast_self = \
+      "Shal'ille's holy magic floods you with pure healing energy, "
+      "restoring ~g~B%i~B~n hitpoints."
+
+classvars:
+
+   vrName = majorheal_name_rsc
+   vrIcon = majorheal_icon_rsc
+   vrDesc = majorheal_desc_rsc
+   vrCastSelf = majorheal_cast_self
+   vrCastOther = majorheal_cast_rsc
+
+   viSpell_num = SID_MAJOR_HEAL
+   viMana = 20
+   viSchool = SS_SHALILLE
+   viSpell_level = 5
+   viChance_To_Increase = 15
+   viMeditate_ratio = 75
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Herbs,4],plReagents);
+
+      return;
+   }
+
+   GetHealAmount(oTarget=$,iSpellPower=1)
+   {
+      if (oTarget = $)
+      {
+         Debug("Trying to get heal amount for $ target!");
+
+         return 1;
+      }
+
+      return Bound(Random(700,1300) + ((iSpellPower + 1) * 20)
+               + (Send(oTarget,@GetKarma) * 20),0,5000);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -47,14 +47,14 @@ resources:
    monster_drastically = "drastically "     % for 75+ pts to gain
 
    monster_teach_karma = \
-      "Your karma is not far enough along the true path for you to learn %s." 
+      "Your karma is not far enough along the true path for you to learn %s."
    monster_teach_quest_needed = \
       "I can teach you %s, but first you must prove your worth as a pupil."
    monster_teach_base = \
       "Your mind is focused properly, and with %sfurther progress in the "
       "previous %s levels you can learn %s." 
    monster_teach_success = \
-      "You are currently qualified to learn %s.  Congratulations."  
+      "You are currently qualified to learn %s.  Congratulations."
    monster_teach_already = "You have already been taught %s."
    monster_teach_nobase = \
       "You first need to have some knowledge of the previous level before you "
@@ -105,10 +105,6 @@ resources:
    LS_Signet_wrong = \
       "An heirloom for sure.  You should take it to %s%s yourself.  There's "
       "likely to be a reward for its return."
-   LS_already_done_permquest = \
-      "You have already earned my favor; you need not keep trying."
-   LS_unwanted_oldquest = \
-      "Sorry you went to such trouble, but someone else already gave me that."
    LS_wanted_keep = "Thank you.  I will someday return the favor."
    LS_unwanted_keep = \
       "~k%s%s tells you, \"Thank you.  It is very nice of you to just give "
@@ -367,6 +363,8 @@ classvars:
 
    viFaction = FACTION_NEUTRAL
 
+   vbIsAreaEffect = FALSE
+
 properties:
 
    piVisionDistance
@@ -533,7 +531,7 @@ messages:
          Send(Send(SYS,@GetLibrary),@AddToOccupationList,#who=self);
       }
 
-      Send(self,@TryAddToQuestEngine);
+      Send(self,@TryAddToLibrary);
 
       if (iBrain > 0 AND iBrain <= BRAIN_MAX_NUM)
       {
@@ -554,7 +552,7 @@ messages:
 
       piMood = 0;
 
-      iStatPoints = (viDifficulty + 1) * 10;
+      iStatPoints = Bound((viDifficulty + 1) * 10,20,100);
 
       if iStatPoints - 1 > 50
       {
@@ -680,17 +678,19 @@ messages:
       return;
    }
 
-   TryAddToQuestEngine()
-   "Some NPCs should have chatter and random triggers, but should not be "
-   "part of the game's quest engine.  This procedure should be overwritten "
+   TryAddToLibrary()
+   "Adds the NPC to the library's random NPC lists, which are used as "
+   "defaults for quests and other things, e.g. signet rings. Some NPCs "
+   "should have chatter and random triggers, but should not be part of "
+   "the game's quest system.  This procedure should be overwritten "
    "for them to return FALSE."
    {
       if (viAttributes & MOB_RANDOM) AND (viAttributes & MOB_LISTEN)
       {
-         Send(Send(SYS,@GetLibrary),@AddToHinterList,#who=self);
-         if (viAttributes & MOB_RECEIVE) OR (viAttributes&MOB_BUYER)
+         Send(Send(SYS,@GetLibrary),@AddToSignetNPCList,#who=self);
+         if (viAttributes & MOB_RECEIVE) OR (viAttributes & MOB_BUYER)
          {
-            Send(Send(SYS,@GetLibrary),@AddToQuesterList,#who=self);
+            Send(Send(SYS,@GetLibrary),@AddToRandomNPCList,#who=self);
          }
 
          return TRUE;
@@ -742,11 +742,11 @@ messages:
 
       if (viAttributes & MOB_RANDOM)
       {
-         Send(Send(SYS,@GetLibrary),@DeleteFromHinterList,#who=self);
+         Send(Send(SYS,@GetLibrary),@DeleteFromSignetNPCList,#who=self);
          if (viAttributes & MOB_LISTEN)
             AND (viAttributes & MOB_RECEIVE)
          {
-            Send(Send(SYS,@GetLibrary),@DeleteFromQuesterList,#who=self);
+            Send(Send(SYS,@GetLibrary),@DeleteFromRandomNPCList,#who=self);
          }
       }
 
@@ -1728,19 +1728,28 @@ messages:
 
    RangedAttackChance(base=0)
    {
+      local oSpell, state;
+
       if Send(self,@IsEnchanted,#byClass=&Vertigo)
       {
          base = base + 18;
       }
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Winds)
+      if (poOwner <> $)
       {
-         base = base + 24;
-      }
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_WINDS);
+         state = Send(poOwner,@GetEnchantmentState,#what=oSpell);
+         if (state <> $)
+         {
+            base = base + 24;
+         }
 
-      if Send(self,@IsAffectedByRadiusEnchantment,#byClass=&Sandstorm)
-      {
-         base = base + 30;
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SANDSTORM);
+         state = Send(poOwner,@GetEnchantmentState,#what=oSpell);
+         if (state <> $)
+         {
+            base = base + 30;
+         }
       }
 
       return base;
@@ -1980,7 +1989,8 @@ messages:
       {
          % Check the attack here. If it fails, AllowPlayerAttack handles
          % the message sent to the player.
-         if NOT Send(poMaster,@AllowPlayerAttack,#victim=what,#report=FALSE)
+         if NOT Send(poMaster,@AllowPlayerAttack,#victim=what,#report=FALSE,
+                     #stroke_obj=self)
          {
             return FALSE;
          }
@@ -2137,7 +2147,7 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered;
+      local iDamage, iResist, iPercentClass, i, each_obj;
 
       if NOT precision
       {
@@ -2154,28 +2164,7 @@ messages:
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
 
-      % Increase initial damage by 35 percent if attacker damage rod is active
-      bAttackerEmpowered = FALSE;
-      if what <> $
-         AND IsClass(what,&Player)
-      {
-         foreach i in Send(what,@GetHolderPassive)
-         {
-            if IsClass(i,&DamageRod)
-               AND Send(i,@IsActive)
-            {
-               bAttackerEmpowered = TRUE;
-            }
-         }
-      }
-
-      if bAttackerEmpowered
-      {
-         damage = damage * 135 / 100;
-      }
-
-      % check for any applicable resistances.
-
+      % Check for any applicable resistances.
       if NOT absolute
       {
          iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,
@@ -2958,8 +2947,6 @@ messages:
    "We have been given an item on our wanted list. This is either a banker"
    "type, or a quest completion of some kind or an intrigue token."
    {
-      local iQuestID,oLibrary,iQuestType;
-
       % Handle the kludgy banker interface immediately.
       if (viAttributes & MOB_BANKER) AND IsClass(obj,&Money)
       {
@@ -2968,44 +2955,26 @@ messages:
          return;
       }
 
-      oLibrary = Send(SYS,@GetLibrary);
-      iQuestID = Send(oLibrary,@GetQuestID,#who=self);
-      iQuestType = Send(oLibrary,@GetQuestType,#id=iQuestID);
-
-      % If were involved in an object quest, lets see if this was the right
-      %  one.
-      if iQuestID > 0
-         AND (iQuestType=QST_PERM_OBJECT OR iQuestType=QST_TEMP_OBJECT)
-         AND IsClass(obj,GetClass(Send(oLibrary,@GetQuestGoal,#id=iQuestID)))
+      % We musta wanted the item for some other reason. So do special stuff
+      % If we get a FALSE return, it means we didnt keep the item.
+      if NOT Send(self,@CheckWhyWanted,#obj=obj,#who=who)
       {
-         if NOT Send(oLibrary,@FinishedQuest,#who=who,#id=iQuestID)
-         {
-            return;
-         }
+         return;
       }
-      else
+
+      % accepting some items makes NPC's happier or sadder
+      Send(self,@AffectMood,#why=MOODMOD_ACCEPT_ITEM,#what=obj);
+
+      if IsClass(obj,&Token) AND Send(SYS,@GetTokenGame) <> $
       {
-         % We musta wanted the item for some other reason. So do special stuff
-         % If we get a FALSE return, it means we didnt keep the item.
-         if NOT Send(self,@CheckWhyWanted,#obj=obj,#who=who)
-         {
-            return;
-         }
+         Send(Send(SYS,@GetTokenGame),@TokenDelivered,
+              #what=obj,#who=who,#mob=self);
 
-         % accepting some items makes NPC's happier or sadder
-         Send(self,@AffectMood,#why=MOODMOD_ACCEPT_ITEM,#what=obj);
-
-         if isClass(obj,&Token) AND Send(SYS,@GetTokenGame) <> $
-         {
-            Send(Send(SYS,@GetTokenGame),@TokenDelivered,
-                 #what=obj,#who=who,#mob=self);
-
-            return;
-         }
+         return;
       }
 
       %Lets dispose of the offered item.
-      if IsClass(obj,&NumberItem) 
+      if IsClass(obj,&NumberItem)
       {
          Send(who,@RemoveNumberItemFromPossession,#ToBeRemoved=obj);
       }
@@ -3019,11 +2988,9 @@ messages:
    "Someone just randomly gave us an object we didnt really want."
    "They could be fishing for a quest, so occasionally, lets keep it."
    {
-      local iRnd,oMoney,i,lReward,oLibrary,iQuestID;
- 
       % Quickly, lets check to see if it's a signet ring.  If so, give a
       %  special message.
-      If IsClass(obj,&SignetRing)
+      if IsClass(obj,&SignetRing)
       {
          Post(poOwner,@SomeoneSaid,#what=self,
               #string=LS_Signet_wrong,#type=SAY_RESOURCE,
@@ -3033,44 +3000,8 @@ messages:
          return;
       }
 
-      oLibrary=Send(sys,@Getlibrary);
-      iQuestID=Send(oLibrary,@GetQuestID,#who=self);
-      lReward=Send(oLibrary,@GetQuestReward,#id=iQuestID);
-
-      % If were a permquester then maybe the person has already done it.
-      if iQuestID > 0
-         AND First(lReward) = QST_REWARD_ID 
-         AND Send(oLibrary,@HasDoneQuestID,#who=who,#questID=Nth(lReward,2))
-      {
-         Post(self,@SayToOne,#target=who,
-              #message_rsc=LS_already_done_permquest);
-
-         return;
-      }
-
-      % Perhaps the item was meant for an earlier quest,but is now too late.
-      % If so, lets return the item to the player.
-
-      foreach i in Send(oLibrary,@GetOldClasses,#mob=self)
-      {
-         if IsClass(obj,i)
-         {
-            Post(self,@SayToOne,#target=who,#message_rsc=LS_unwanted_oldquest);
-            if IsClass(obj,&NumberItem)
-            {
-               Send(obj,@Delete);
-            }
-            else
-            {
-               Send(who,@NewHold,#what=obj);
-            }
-
-            return;
-         }
-      }
-
       % Handle giving us a token.  In general, we don't want it.
-      if isClass(obj,&Token) AND NOT isClass(self,&DragonFlyQueen)
+      if IsClass(obj,&Token) AND NOT IsClass(self,&DragonFlyQueen)
       {
          Post(who,@MsgSendUser,#message_rsc=vrUnwanted_token,
               #parm1=Send(self,@GetCapDef),#parm2=Send(self,@GetName));
@@ -3104,7 +3035,7 @@ messages:
    "Takes the said string and if its from a user searches libraries for"
    "a response."
    {
-      local i,lActionList, oLibrary,iQuestID,iQuestType, oQuestNode;
+      local i, lActionList, oLibrary, oQuestNode;
 
       % Are we supposed to hear things?
       if (NOT (viAttributes & MOB_LISTEN))
@@ -3128,7 +3059,7 @@ messages:
       % Don't handle triggers normally if player's anonymous flag is set,
       % just say anonymous_response
 
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
          AND (Send(what,@CheckPlayerFlag,#flag=PFLAG_ANONYMOUS)
               OR Send(what,@CheckPlayerFlag,#flag=PFLAG_MORPHED))
          AND type <> SAY_DM
@@ -3152,35 +3083,6 @@ messages:
          }
       }
 
-      %% Old quest stuff (and old old quest stuff)
-      iQuestID = Send(oLibrary,@GetQuestID,#who=self);
-
-      % If were on a quest, then scan the libraries to see if we have
-      %  a match, and if so then finish the quest.
-      if iQuestID > 0
-      {
-         iQuestType = Send(oLibrary,@GetQuestType,#id=iQuestID);
-
-         if (iQuestType=QST_PERM_PHRASE OR iQuestType=QST_TEMP_PHRASE)
-            AND Send(oLibrary,@IsQuestStringMatch,#string=string,#id=iQuestID,
-                     #who=what,#mob=self)
-         {
-            Send(oLibrary,@FinishedQuest,#who=what,#id=iQuestID);
-
-            propagate;
-         }
-      }
-
-      % If it wasnt a current quest, maybe it was an old quest.
-      foreach i in Send(oLibrary,@GetOldPhrases,#mob=self)
-      {
-         if Send(oLibrary,@IsQuestStringMatch,
-                 #string=string,#goal=i,#who=what,#mob=self)
-         {
-            propagate;
-         }
-      }
-
       % Maybe it was just a simple speech trigger. So, we check and parse.
       lActionList = $;
       lActionList = Send(oLibrary,@SearchSpeechLib,#mob=self,#string=string);
@@ -3189,9 +3091,9 @@ messages:
          Post(oLibrary,@ParseAction,#action=First(lActionList),
               #mob=self,#target=what);
          Send(self,@AddToSpamList,#mob_class=Nth(lActionList,2),
-              #key_num=Nth(lActionList,3));            
+              #key_num=Nth(lActionList,3));
       }
-      
+
       % Last but not least, is the player asking about one of my spells/skills?
       if (viAttributes & MOB_TEACHER) 
       {
@@ -3204,7 +3106,7 @@ messages:
          AND Send(self,@MobIsBanker)
          AND (Send(SYS,@GetInvestigator) = what)
       {
-         if stringEqual(string,"top accounts")
+         if StringEqual(string,"top accounts")
          {
             Send(self,@ReportBankBalance,#number=10);
 
@@ -5708,12 +5610,6 @@ messages:
       return ((viAttributes & MOB_COND_SELLER) AND TRUE);
    }
 
-   MobIsPermQuester()
-   {
-      % We AND with TRUE to have it return a boolean.
-      return ((viAttributes & MOB_PERM_QUESTER) AND TRUE);
-   }
-
    MobIsSeller()
    {
       return (viAttributes & MOB_SELLER)
@@ -5734,11 +5630,6 @@ messages:
    }
 
    InitCondSale()
-   {
-      return;
-   }
-
-   InitPermQuest()
    {
       return;
    }
@@ -5845,7 +5736,6 @@ messages:
                Create(&Longsword),
                Create(&Longbow),
                Create(&BattleBow),
-               Create(&HealWand),
                Create(&Gauntlet),
                Create(&JewelOfFroz),
                Create(&Arrow,#number=150),
@@ -5853,6 +5743,7 @@ messages:
                Create(&NeruditeArrow,#number=150),
                Create(&IceArrow,#number=150),
                Create(&FireArrow,#number=150),
+               Create(&AcidArrow,#number=150),
                Create(&Helm),
                Create(&Mint,#number=100),
                Create(&NeruditeBow),
@@ -6488,6 +6379,64 @@ messages:
       return;
    }
 
+   GetMaster()
+   "Preferably return poMaster, otherwise check if monster is an apparition."
+   {
+      if (poMaster <> $)
+      {
+         return poMaster;
+      }
+      else if (poApparitionCaster <> $)
+      {
+         return poApparitionCaster;
+      }
+
+      return $;
+   }
+
+   % Evil twin and reflection have an override for this.
+   SetMaster(oMaster=$)
+   {
+      if oMaster = $
+      {
+         if poMaster <> $
+         {
+            Send(poMaster,@RemoveControlledMinion,#what=self);
+
+            % After the honeymoon is over, go after the master!
+            Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
+                  #value=FALSE);
+            Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
+            poMaster = $;
+
+            Send(self,@EnterStateChase);
+         }
+      }
+      else
+      {
+         poMaster = oMaster;
+
+         % Break target.
+         Send(self,@EnterStateWait);
+
+         % Uncomment this if post-capture attack behavior changes.
+         %if NOT Send(SYS,@IsPKAllowed)
+         %   AND (poTarget <> $
+         %      AND IsClass(poTarget,&Player))
+         %{
+         %   % Forget our target
+         %   Send(self,@EnterStateWait);
+         %}
+      }
+
+      if poOwner <> $
+      {
+         Post(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
+   }
+
    CanPlayerAdvanceOnMe()
    {
       return (NOT Send(self,@IsIllusion));
@@ -6718,54 +6667,6 @@ messages:
       return FALSE;
    }
 
-   GetMaster()
-   {
-      return poMaster;
-   }
-
-   % Evil twin and reflection have an override for this.
-   SetMaster(oMaster=$)
-   {
-      if oMaster = $
-      {
-         if poMaster <> $
-         {
-            Send(poMaster,@RemoveControlledMinion,#what=self);
-
-            % After the honeymoon is over, go after the master!
-            Send(self,@SetBehaviorFlag,#flag=AI_MOVE_FOLLOW_MASTER,
-                  #value=FALSE);
-            Send(self,@TargetSwitch,#what=poMaster,#iHatred=150);
-            poMaster = $;
-
-            Send(self,@EnterStateChase);
-         }
-      }
-      else
-      {
-         poMaster = oMaster;
-
-         % Break target.
-         Send(self,@EnterStateWait);
-
-         % Uncomment this if post-capture attack behavior changes.
-         %if NOT Send(SYS,@IsPKAllowed)
-         %   AND (poTarget <> $
-         %      AND IsClass(poTarget,&Player))
-         %{
-         %   % Forget our target
-         %   Send(self,@EnterStateWait);
-         %}
-      }
-
-      if poOwner <> $
-      {
-         Post(poOwner,@SomethingChanged,#what=self);
-      }
-
-      return;
-   }
-
    SetBehaviorFlag(flag=0, value = TRUE)
    {
       if value
@@ -6783,8 +6684,13 @@ messages:
    IsWizard()
    {
       return FALSE;
-   }  
-  
+   }
+
+   IsAreaEffect()
+   {
+      return vbIsAreaEffect;
+   }
+
    GetHatred()
    {
       return piHatred;
@@ -7123,6 +7029,95 @@ messages:
    LoseLight()
    {
       return 0;
+   }
+
+   PrintInfo()
+   {
+      local i, iTresLen, lTresList, oItem, oTresType;
+
+      ClearTempString();
+
+      oTresType = Send(SYS,@FindTreasureByNum,#num=Send(self,@GetTreasureType));
+
+      if (oTresType <> $)
+      {
+         lTresList = Send(oTresType,@GetTreasureList);
+      }
+
+      iTresLen = Length(lTresList);
+
+      if (iTresLen > 0)
+      {
+         AppendTempString(", Treasure: ");
+      }
+      else
+      {
+         AppendTempString(", No Treasure.");
+      }
+
+      foreach i in lTresList
+      {
+         oItem = Send(SYS,@FindTemplateItemByClass,#cClass=First(i));
+         if (oItem = $)
+         {
+            continue;
+         }
+
+         AppendTempString(Send(oItem,@GetTrueName));
+         AppendTempString(" ");
+         AppendTempString(Nth(i,2));
+         if (--iTresLen > 0)
+         {
+            AppendTempString("\%, ");
+         }
+         else
+         {
+            AppendTempString("\%");
+         }
+      }
+
+      GodLog(Send(self,@GetTrueName)," level: ",viLevel,", karma: ",viKarma,
+         ", speed: ",viSpeed, GetTempString());
+
+      return;
+   }
+
+   PrintSellList()
+   "Prints out all the items (not spells/skills) for sale for this mob, "
+   "including any conditional sale items (with prices)."
+   {
+      local i, iPrice;
+
+      if (plFor_sale = $
+         OR First(plFor_sale) = $)
+      {
+         return;
+      }
+
+      GodLog("NPC: ",Send(self,@GetName));
+
+      foreach i in First(plFor_sale)
+      {
+         iPrice = Send(i,@GetInitValue) * (100 + 20 * viMerchant_markup) / 100;
+         GodLog("Item: ",Send(i,@GetName),", Price: ",iPrice);
+      }
+
+      Send(Send(SYS,@GetLibrary),@PrintMobConditional,#mob=self);
+
+      return;
+   }
+
+   PrintRoom()
+   "Prints out the name of the mob and the room it is in."
+   {
+      if (poOwner = $)
+      {
+         return;
+      }
+
+      GodLog("NPC: ",Send(self,@GetName),", Map: ",Send(poOwner,@GetName));
+
+      return;
    }
 
 end

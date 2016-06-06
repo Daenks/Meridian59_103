@@ -4,14 +4,12 @@ fire_desc_rsc = de \
    "Es ist nicht sehr schwer zu lernen, doch nur die, die es ernsthaft betreiben, "
    "werden diese Fertigkeit meistern."
 fire_only_missile_weapon = de \
-   "Du kannst SchieÃŸen nur in Verbindung mit einer Fernwaffe anwenden."
+   "Du kannst Zielen nur in Verbindung mit einem Bogen anwenden."
 fire_need_weapon = de \
-   "Du musst eine Fernwaffe in HÃ¤nden halten, um damit auf jemanden zu schieÃŸen."
-fire_wrong_ammo = de "%s%s benÃ"
-   "¶"
-   "tigt noch die passende Munition."
+   "Du musst einen Bogen in den Händen halten, um damit auf jemanden zu schießen."
+fire_wrong_ammo = de "%s%s benötigt noch die passende Munition."
 fire_new_ammo = de \
-   "Du greifst nach einem Deiner Pfeile und spannst Deinen Bogen."
+   "Du greifst nach einem Deiner Pfeile und spannst Deinen Bogen.%s$0"
 fire_skill_intro = de \
-   "Waffenfertigkeit Zirkel 3: Der SchlÃ¼ssel, um alle Fernwaffen zu beherrschen."
-fire_no_ammo = de "Du hast keine Munition fÃ¼r diese Waffe!"
+   "Waffenfertigkeit Zirkel 3: Der Schlüssel, um alle Fernwaffen zu beherrschen."
+fire_no_ammo = de "Du hast keine Munition für diese Waffe!"

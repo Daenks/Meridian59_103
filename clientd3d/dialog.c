@@ -46,7 +46,7 @@ static int SetFontToFitText(DescDialogStruct *info, HWND hwnd, int fontNum, cons
 {
 	HFONT hOldFont;
 	LOGFONT newFont;
-	int height;
+	int height = 0;
 	RECT rcWindow,rcText;
 	BOOL fit = FALSE;
 	HDC hdc;

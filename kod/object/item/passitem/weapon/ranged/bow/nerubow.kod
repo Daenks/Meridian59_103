@@ -54,23 +54,23 @@ classvars:
 
 properties:
 
-   piAttack_Type = ATCK_WEAP_NERUDITE+ATCK_WEAP_PIERCE
+   piAttack_Type = ATCK_WEAP_NERUDITE + ATCK_WEAP_PIERCE
 
 messages:
 
    DoShatter()
    {
-      send(self,@WeaponBroke);
+      Send(self,@WeaponBroke);
 
       propagate;
    }
 
    ShatterToShards()
    {
-      if poOwner <> $ AND isClass(poOwner,&User)
+      if poOwner <> $ AND IsClass(poOwner,&User)
       {
-         if send(poOwner,@AssessDamage,#what=self,#damage=random(10,25),
-            #report=FALSE,#atype=ATCK_WEAP_NERUDITE) = $
+         if Send(poOwner,@AssessDamage,#what=self,#damage=Random(10,25),
+                  #report=FALSE,#atype=ATCK_WEAP_NERUDITE) = $
          {
             Send(Send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);
             Send(poOwner,@Killed,#what=self);
@@ -82,11 +82,10 @@ messages:
 
    WeaponBroke()
    {
-      send(self,@ShatterToShards);
+      Send(self,@ShatterToShards);
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

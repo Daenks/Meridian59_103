@@ -22,7 +22,6 @@ resources:
    cyanmushroom_icon_rsc = mushroom.bgf
    cyanmushroom_desc_rsc = \
       "These magical mushrooms radiate a strange and uplifting power."
-
    cyanmushroom_name_plural_rsc = "cyan mushrooms"
 
 classvars:
@@ -37,7 +36,6 @@ classvars:
    viWeight = 2
    viBulk = 5
 
-
 properties:
 
    piNumber = 1
@@ -46,11 +44,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKY,#color2=XLAT_TO_SKY);
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKY,
+                           #color2=XLAT_TO_SKY);
       
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

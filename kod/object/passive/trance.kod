@@ -8,7 +8,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Trance is PassiveObject 
+Trance is PassiveObject
 
 constants:
 
@@ -20,7 +20,7 @@ resources:
 
    trance_begin = "You focus your whole will on casting %s."
    trance_break = "Your concentration is broken and the %s spell fizzles."
-   trance_break_sound = spelfail.wav
+   trance_break_sound = spelfail.ogg
 
 classvars:
 
@@ -43,7 +43,7 @@ messages:
          %time = Send(oWarpTime,@GetStretchedTime,#oldtime=time,
          %            #oRoom=Send(who,@GetOwner));
       }
-      
+
       Send(who,@StartEnchantment,#what=self,#time=time,#addicon=FALSE,
            #state=[what,who,lTargets,TRUE]);
 
@@ -63,8 +63,8 @@ messages:
    " 2) Spell expires"
    {
       local oSpell, oCaster, lTargets, iSpellPower;
-      
-      oSpell = Nth(state,1);
+
+      oSpell = First(state);
       oCaster = Nth(state,2);
       lTargets = Nth(state,3);
       Send(oCaster,@ClearTranceFlag);
@@ -84,14 +84,14 @@ messages:
          {
             Send(oSpell,@CastSpell,#who=oCaster,#lTargets=[oCaster],
                  #iSpellPower=iSpellPower/2);
-         }             
+         }
          else
          {
             Send(oSpell,@CastSpell,#who=oCaster,#lTargets=lTargets,
                  #iSpellPower=iSpellPower);
          }
       }
-      
+
       return;
    }
 
@@ -99,23 +99,17 @@ messages:
    {
       local oSpell, oCaster;
 
-      if state = $
-         AND who <> $
-      {
-         state = Send(who,@GetRawState,#what=self);
-      }
-
       oSpell = First(state);
       oCaster = Nth(state,2);
       Send(oCaster,@ClearTranceFlag);
-      
+
       if event <> EVENT_STEER
       {
          Send(oSpell,@TranceBroken,#oCaster=oCaster,#state=state);
       }
-      
+
       Send(oCaster,@RemoveEnchantment,#what=self);
-      
+
       return;
    }
 
@@ -126,7 +120,7 @@ messages:
       return;
    }
 
-   ShowEnchantmentIcon() 
+   ShowEnchantmentIcon()
    {
       return False;
    }
@@ -145,7 +139,6 @@ messages:
    {
       return resistance_list;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -14,39 +14,34 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// German (Germany) resources
+// German resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-#ifdef _WIN32
 LANGUAGE LANG_GERMAN, SUBLANG_NEUTRAL
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_MAIN_DLG DIALOG DISCARDABLE  0, 0, 252, 93
-STYLE DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+IDD_MAIN_DLG DIALOGEX 0, 0, 252, 109
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Updating Meridian 59..."
 CLASS "club (Andrew & Christopher Kirmse)"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Animate1",IDC_ANIMATE1,"SysAnimate32",ACS_CENTER | 
-                    ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,9,10,190,30
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,
-                    10,59,182,12
-    LTEXT           "Empfangen:",IDC_STATIC,10,75,32,8
-    LTEXT           "%d von %d bytes",IDC_BYTES1,48,75,143,8
-    DEFPUSHBUTTON   "Abbrechen",IDCANCEL,202,59,40,12,WS_GROUP
-    CONTROL         "Bitte warten...",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,10,47,182,9
+    CONTROL         "Animate1",IDC_ANIMATE1,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,9,10,190,30
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,10,78,182,12
+    LTEXT           "Empfangen:",IDC_STATIC,10,94,32,8
+    LTEXT           "%d von %d bytes",IDC_BYTES1,48,94,143,8
+    DEFPUSHBUTTON   "Abbrechen",IDCANCEL,202,78,40,12,WS_GROUP
+    CONTROL         "Bitte warten...",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,10,66,182,9
+    LTEXT           "Empfange Datei %s",IDS_RETRIEVING,10,51,202,8
 END
 
-IDD_ERROR DIALOG DISCARDABLE  0, 0, 197, 124
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ERROR DIALOG 0, 0, 197, 124
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Error"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -57,12 +52,32 @@ BEGIN
     LTEXT           "Erneut versuchen?",IDC_STATIC,64,82,68,8
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_MAIN_DLG, DIALOG
+    BEGIN
+    END
+
+    IDD_ERROR, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_CANTUNCOMPRESS      "Übertragungsfehler: Versuche es nochmal."
     IDS_BADTEMPFILE         "Ich kann keine temporären Dateien anlegen."
@@ -81,20 +96,7 @@ BEGIN
     IDS_FILECORRUPT         "Die gezogene Datei ist beschädigt."
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_APPNAME             "Meridian 59 Update"
-    IDS_STARTING            "Starting up..."
-    IDS_RETRIEVING          "Empfangen %s."
-    IDS_RECEIVED1           "Empfangen %i von %i bytes."
-    IDS_RECEIVED2           "Empfangene %i bytes."
-    IDS_UNARCHIVING         "Entpacke..."
-    IDS_RESTARTING          "Starte Meridian neu..."
-    IDS_CONNECTING          "Verbinde zu %s..."
-    IDS_READBLOCK           "Kommunikationsfehler!"
-END
-
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_CANTUNPACK          "Es ist während des entpacken ein Fehler aufgetreten; Grund: %s\n\nErneut versuchen?"
     IDS_DEARCHIVEERROR      "Es ist während des entpacken ein Fehler aufgetreten."
@@ -103,51 +105,61 @@ BEGIN
     IDS_NOCONNECTION        "Es konnte keine Verbindung zu %s aufgebaut werden.\nFehler: %d (%s)"
     IDS_BADCALLBACK         "Internet Serverfehler.\nFehler: %d (%s)"
     IDS_CANTOPENFTPFILE     "Die heruntergeladene Datei (%s) konnte nicht geöffnet werden.\nFehler: %d (%s)"
-    IDS_CANTWRITELOCALFILE  "Die heruntergeladene Datei (%s) konnte nicht gespeichert werden..\nFehler: %d (%s)"
+    IDS_CANTWRITELOCALFILE  "Die heruntergeladene Datei (%s) konnte nicht gespeichert werden. Bitte schließe alle geöffneten Meridian-Clients und versuche es erneut.\nError: %d (%s)"
     IDS_CANTREADFTPFILE     "Fehler beim Lesen der heruntergeladenen Datei (%s).\nFehler: %d (%s)"
     IDS_CANTRENAME          "Auf die heruntergeladene Datei konnte nicht zugegriffen werden.\nSchließe alle Clients und versuche es erneut."
     IDS_CANTSENDREQUEST     "Der HTTP request auf Server (%s) für Datei (%s) konnte nicht ausgeführt werden.\nFehler: %d (%s)"
     IDS_CANTGETFILESIZE     "Ein Fehler mit der Datei %s ist aufgetreten.\nFehler: %d (%s)"
+    IDS_JSONERROR           "Kann Patchfile nicht laden %s. Fehler: %s."
 END
 
-#endif    // German (Germany) resources
+STRINGTABLE
+BEGIN
+    IDS_SCANNING            "Scanne Datei..."
+    IDS_APPNAME             "Meridian 59 Update"
+    IDS_STARTING            "Starting up..."
+    IDS_RETRIEVING          "Empfange Datei %s"
+    IDS_RECEIVED1           "Empfangen %i von %i bytes."
+    IDS_RECEIVED2           "Empfangene %i bytes."
+    IDS_UNARCHIVING         "Entpacke..."
+    IDS_RESTARTING          "Starte Meridian neu..."
+    IDS_CONNECTING          "Verbinde zu %s..."
+    IDS_READBLOCK           "Erhaltene Pakete."
+END
+
+#endif    // German resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_MAIN_DLG DIALOG DISCARDABLE  0, 0, 252, 93
-STYLE DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+IDD_MAIN_DLG DIALOGEX 0, 0, 253, 109
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Updating Meridian 59..."
 CLASS "club (Andrew & Christopher Kirmse)"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Animate1",IDC_ANIMATE1,"SysAnimate32",ACS_CENTER | 
-                    ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,9,10,190,30
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,
-                    10,59,182,12
-    LTEXT           "Received:",IDC_STATIC,10,75,32,8
-    LTEXT           "%d of %d bytes",IDC_BYTES1,48,75,143,8
-    DEFPUSHBUTTON   "Cancel",IDCANCEL,202,59,40,12,WS_GROUP
-    CONTROL         "Initializing...",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | 
-                    WS_GROUP,10,47,182,9
+    CONTROL         "Animate1",IDC_ANIMATE1,"SysAnimate32",ACS_CENTER | ACS_TRANSPARENT | ACS_AUTOPLAY | WS_TABSTOP,9,10,190,30
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,10,78,182,12
+    LTEXT           "Received:",IDC_STATIC,10,94,32,8
+    LTEXT           "%d of %d bytes",IDC_BYTES1,48,94,143,8
+    DEFPUSHBUTTON   "Cancel",IDCANCEL,202,78,40,12,WS_GROUP
+    CONTROL         "Initializing...",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,10,66,182,9
+    LTEXT           "Retrieving file %s.",IDS_RETRIEVING,10,51,202,8
 END
 
-IDD_ERROR DIALOG DISCARDABLE  0, 0, 197, 124
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ERROR DIALOG 0, 0, 197, 124
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Error"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -159,25 +171,50 @@ BEGIN
 END
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_MAIN_DLG, DIALOG
+    BEGIN
+        RIGHTMARGIN, 252
+        BOTTOMMARGIN, 108
+    END
+
+    IDD_ERROR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 190
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <commctrl.h>\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -193,46 +230,21 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON                ICON    DISCARDABLE     "logo.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
-BEGIN
-    IDD_MAIN_DLG, DIALOG
-    BEGIN
-        RIGHTMARGIN, 251
-        BOTTOMMARGIN, 92
-    END
-
-    IDD_ERROR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 190
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 117
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
+IDI_ICON                ICON                    "logo.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // AVI
 //
 
-IDA_DOWNLOAD            AVI     DISCARDABLE     "download.avi"
+IDA_DOWNLOAD            AVI                     "download.avi"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_CANTUNCOMPRESS      "Cannot uncompress the downloaded file %s.\nReason:\n%s\nTry again?"
     IDS_BADTEMPFILE         "Cannot create temporary file."
@@ -251,7 +263,24 @@ BEGIN
     IDS_FILECORRUPT         "The downloaded file is corrupt."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
+BEGIN
+    IDS_CANTUNPACK          "There was an error while unpacking archive; reason: %s\n\nTry again?"
+    IDS_DEARCHIVEERROR      "There was an error while dearchiving."
+    IDS_UNKNOWNERROR        "There was an error of unknown type."
+    IDS_CANTINIT            "Cannot initialize connection to the Internet.\nError: %d (%s)"
+    IDS_NOCONNECTION        "Cannot establish a remote connection to %s.\nError: %d (%s)"
+    IDS_BADCALLBACK         "There was an internal error with a callback function.\nError: %d (%s)"
+    IDS_CANTOPENFTPFILE     "Cannot open the remote file %s.\nError: %d (%s)"
+    IDS_CANTWRITELOCALFILE  "Cannot write to the local file %s. Please close any open Meridian clients and try again.\nError: %d (%s)"
+    IDS_CANTREADFTPFILE     "Cannot read the remote file %s.\nError: %d (%s)"
+    IDS_CANTRENAME          "Cannot rename unarchived file.\nMake sure that you have closed all copies of Meridian 59 that you were running, and then try again."
+    IDS_CANTSENDREQUEST     "Cannot send an HTTP request for the remote file %s on the server %s.\nError: %d (%s)"
+    IDS_CANTGETFILESIZE     "Cannot get the size of the file %s on the server %s.\nError: %d (%s)"
+    IDS_JSONERROR           "Unable to load patch file %s. Error: %s."
+END
+
+STRINGTABLE
 BEGIN
     IDS_APPNAME             "Meridian 59 Update"
     IDS_STARTING            "Starting up..."
@@ -262,25 +291,10 @@ BEGIN
     IDS_RESTARTING          "Restarting main program..."
     IDS_CONNECTING          "Connecting to %s..."
     IDS_READBLOCK           "Received block."
+    IDS_SCANNING            "Scanning files..."
 END
 
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_CANTUNPACK          "There was an error while unpacking archive; reason: %s\n\nTry again?"
-    IDS_DEARCHIVEERROR      "There was an error while dearchiving."
-    IDS_UNKNOWNERROR        "There was an error of unknown type."
-    IDS_CANTINIT            "Cannot initialize connection to the Internet.\nError: %d (%s)"
-    IDS_NOCONNECTION        "Cannot establish a remote connection to %s.\nError: %d (%s)"
-    IDS_BADCALLBACK         "There was an internal error with a callback function.\nError: %d (%s)"
-    IDS_CANTOPENFTPFILE     "Cannot open the remote file %s.\nError: %d (%s)"
-    IDS_CANTWRITELOCALFILE  "Cannot write to the local file %s.\nError: %d (%s)"
-    IDS_CANTREADFTPFILE     "Cannot read the remote file %s.\nError: %d (%s)"
-    IDS_CANTRENAME          "Cannot rename unarchived file.\nMake sure that you have closed all copies of Meridian 59 that you were running, and then try again."
-    IDS_CANTSENDREQUEST     "Cannot send an HTTP request for the remote file %s on the server %s.\nError: %d (%s)"
-    IDS_CANTGETFILESIZE     "Cannot get the size of the file %s on the server %s.\nError: %d (%s)"
-END
-
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -16,8 +16,8 @@ typedef struct {
    object_node obj;               /* Basic info on overlay (ID, icon, animation) */
    int         x;                 /* Angle on background to display overlay */
    int         y;                 /* Vertical position of overlay (0 = horizon, positive = up) */
-   BOOL	       drawn;		  /* Was this drawn on the last frame? */
-   RECT	       rcScreen;	  /* Screen coordinates if drawn */
+   BOOL          drawn;        /* Was this drawn on the last frame? */
+   RECT          rcScreen;     /* Screen coordinates if drawn */
 } BackgroundOverlay;
 
 void BackgroundOverlaysReset(void);

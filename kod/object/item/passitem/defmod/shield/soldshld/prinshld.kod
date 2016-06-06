@@ -54,7 +54,7 @@ resources:
       "also lower your rank.\n\n"
       "ABILITIES: With your status as a faction soldier, I will show you additional ways "
       "to increase your power.  I will make you more intelligent and able to comprehend "
-      "all things mystical.  I will also teach you ways to reduce the cost of your "
+      "all things mystical.  I will also teach you ways to reduce the mana cost of your "
       "spells.  The potence of these abilities will increase as you gain ranks.\n\n"
       "THE COUNCILORS: The councilors have declared that the tokens are too delicate to "
       "be entrusted to the hands of soldiers.  Therefore, you are instructed not to pick "
@@ -94,11 +94,11 @@ messages:
    RemoveStats()
    {
       if poOwner <> $
-         AND IsClass(poOwner,&Player)
+         AND IsClass(poOwner,&User)
       {
          % Reset owner's stats
-         send(poOwner,@AddIntellect,#points=-piIntellectChange);
-         send(poOwner,@AddMysticism,#points=-piMysticismChange);
+         Send(poOwner,@AddIntellect,#points=-piIntellectChange);
+         Send(poOwner,@AddMysticism,#points=-piMysticismChange);
          piIntellectChange = 0;
          piMysticismChange = 0;
       }
@@ -112,7 +112,7 @@ messages:
       local iStatAdjustment, iNewAdjustment;
 
       if poOwner = $
-         OR NOT IsClass(poOwner,&Player)
+         OR NOT IsClass(poOwner,&User)
       {
          return;
       }
@@ -121,16 +121,13 @@ messages:
       {
          iStatAdjustment = 0;
       }
+      else if piFactionRank <= 6
+      {
+         iStatAdjustment = 3;
+      }
       else
       {
-         if piFactionRank <= 6
-         {
-            iStatAdjustment = 3;
-         }
-         else
-         {
-            iStatAdjustment = 5;
-         }
+         iStatAdjustment = 5;
       }
 
       % In the following:
@@ -138,49 +135,29 @@ messages:
       %  pi(stat)Change is the cumulative change to that stat.
       if iStatAdjustment <> piIntellectChange
       {
-         iNewAdjustment = send(poOwner,@AddIntellect,#points=(iStatAdjustment-piIntellectChange));
+         iNewAdjustment = Send(poOwner,@AddIntellect,
+                                 #points=(iStatAdjustment-piIntellectChange));
          piIntellectChange = piIntellectChange + iNewAdjustment;
       }
 
       if iStatAdjustment <> piMysticismChange
       {
-         iNewAdjustment = send(poOwner,@AddMysticism,#points=(iStatAdjustment-piMysticismChange));
+         iNewAdjustment = Send(poOwner,@AddMysticism,
+                                 #points=(iStatAdjustment-piMysticismChange));
          piMysticismChange = piMysticismChange + iNewAdjustment;
       }
 
       return;
    }
 
-   GetSpellManaReduction(lTargets=$)
+   GetSpellManaReduction()
    {
-      local oTarget, oSoldierShield;
+      local iReduction;
 
-      % Cess shield gives mana cost reduction against monsters & enemy soldiers
+      iReduction = ((piFactionRank / 3) - 1);
 
-      if Send(SETTINGS_OBJECT,@GetAlwaysApplySoldierBonus)
-      {
-         return ((piFactionRank/3) - 1);
-      }
-
-      if lTargets <> $
-         AND Length(lTargets) = 1
-      {
-         oTarget = First(lTargets);
-
-         oSoldierShield = Send(poOwner,@FindUsing,#class=&SoldierShield);
-         if (IsClass(oTarget,&Player)
-               AND oSoldierShield <> $
-               AND Send(oSoldierShield,@IsEnemyAttack,#who=oTarget,
-                         #what=poOwner,#damage=FALSE))
-            OR IsClass(oTarget,&Monster)
-         {
-            return ((piFactionRank/3) - 1);
-         }
-      }
-
-      return 0;
+      return iReduction;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

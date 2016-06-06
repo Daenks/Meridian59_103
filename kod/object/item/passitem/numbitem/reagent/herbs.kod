@@ -12,19 +12,15 @@ Herbs is Reagent
 
 constants:
 
-   include blakston.khd
-
 resources:
 
    include herbs.lkod
 
    Herbs_name_rsc = "herb"
    Herbs_desc_rsc = \
-   "These magical herbs are dark green in color.  The leaves "
-   "are oily and have a mint-like aroma."
-
+      "These magical herbs are dark green in color.  The leaves "
+      "are oily and have a mint-like aroma."
    Herbs_icon_rsc = herb.bgf
-
    Herbs_name_plural_rsc = "herbs"
 
 classvars:
@@ -37,7 +33,7 @@ classvars:
 
    viValue_average = 10
    viWeight = 2
-   viBulk = 4
+   viBulk = 3
 
 properties:
 

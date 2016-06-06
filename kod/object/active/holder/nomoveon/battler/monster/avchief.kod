@@ -56,10 +56,10 @@ resources:
    avarchief_dead_icon_rsc = avchiefX.bgf
    avarchief_dead_name_rsc = "former avar chieftain"
 
-   avarchief_sound_hit = ac_atkh.wav
-   avarchief_sound_miss = ac_atkm.wav
-   avarchief_sound_death = ac_dth.wav
-   avarchief_sound_aware = ac_awr.wav
+   avarchief_sound_hit = ac_atkh.ogg
+   avarchief_sound_miss = ac_atkm.ogg
+   avarchief_sound_death = ac_dth.ogg
+   avarchief_sound_aware = ac_awr.ogg
 
    avarchief_arrow = arrow.bgf
 

@@ -1,15 +1,13 @@
 % Quest description.
-shalofferingqt_name_rsc = de "Shal'ille offering quest"
+shalofferingqt_name_rsc = de "Shal'ill Beten Quest"
 shalofferingqt_desc_rsc = de \
-   "Priestess Xiana has invited you to chant with her, to give strength "
-   "to your Mistress."
+   "Priesterin Xiana hat Dich eingeladen mit ihr zu singen, um die Herrin zu stärken."
 
 shalofferingqt_completed = de \
-   "You have given part of your life essence in order to strengthen "
-   "your Mistress.  In return, you have received a powerful magical "
-   "item.  When placed at one of the Shrines located around the "
-   "world, the Shrine will be dedicated to Shal'ille and her spells "
-   "will have more power."
+   "Du gibst ein wenig deiner Lebenskraft an Shalill ab."
+   "Du hast ebenfalls einen mächtigen magischen Gegenstand erhalten. Wenn dieser an einem "
+   "der Schreine in der Welt platziert wird, wird er Shalill geweiht und verleit den "
+   "Zaubern Shalills mehr Kraft."
 
 % Quest resources.
 shalilleoffering_assign_2 = de \
@@ -18,7 +16,7 @@ shalilleoffering_assign_2 = de \
 shalilleoffering_trigger_2 = de "ja"
 shalilleoffering_assign_3 = de \
    "`bDann bete mit mir.  Zusammen werden wir unsere eigene Lebenskraft aufgeben, "
-   "als Symbol für die Reinheit unserer Göttin.  Selten stehen die Sterne "
+   "als Symbol für die Reinheit unserer Göttin. Selten stehen die Sterne "
    "so günstig wie heute, um das heilige Ritual auszuüben. Also lass uns "
    "schnell sprechen. Spreche diese Worte mit mir: %CARGO"
 shalilleoffering_trigger_3 = de \
@@ -26,10 +24,10 @@ shalilleoffering_trigger_3 = de \
    "Sha'lill. "
 shalilleoffering_failure_3 = de \
    "Betreff: Ach\nAn diesem Tag haben sind wir nicht hoch genug gekommen, "
-   "aber jetzt haben wir es geschafft, dass es ausreicht.  Am heutigen Tage "
+   "aber jetzt haben wir es geschafft, dass es ausreicht. Am heutigen Tage "
    "sind wir schwach und ohne etwas in den Händen, aber wenn die Zeit reif "
    "ist wird Sha'lill uns nach oben tragen."
 shalilleoffering_assign_4 = de "`b%CARGO!"
 shalilleoffering_success_5 = de \
-   "`bLobet Shal'ill!  Geh nun und trage die das Symbol der Reinheit unserer "
+   "`bLobet Shal'ill! Geh nun und trage die das Symbol der Reinheit unserer "
    "Göttinin die ganze Welt.!"

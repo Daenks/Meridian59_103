@@ -36,7 +36,7 @@ resources:
    room_name_rsc = "Room"
 
    room_door_is_locked = "This door is locked."
-   room_sound_locked = doorlck.wav
+   room_sound_locked = doorlck.ogg
 
    room_move_req_no = "You're unable to change rooms."
 
@@ -76,90 +76,90 @@ resources:
    % Unlike the rest of these, this is actually a stormy sky.
    background_stormy_sky = 3sky.bgf
 
-   creaky_door_sound = doropen1.wav
+   creaky_door_sound = doropen1.ogg
 
-   water_wading_sound = splash.wav
+   water_wading_sound = splash.ogg
 
-   room_jungle_sound1 = jungle01.wav
-   room_jungle_sound2 = jungle02.wav
-   room_jungle_sound3 = jungle03.wav
-   room_jungle_sound4 = jungle04.wav
-   room_jungle_sound5 = jungle05.wav
-   room_jungle_sound6 = jungle06.wav
-   room_jungle_sound7 = jungle07.wav
-   room_jungle_sound8 = jungle08.wav
-   room_jungle_sound9 = jungle09.wav
-   room_jungle_sound10 = jungle10.wav
-   room_jungle_sound11 = jungle11.wav
-   room_jungle_sound12 = jungle12.wav
-   room_jungle_sound13 = jungle13.wav
-   room_jungle_sound14 = jungle14.wav
-   room_jungle_sound15 = jungle15.wav
-   room_jungle_sound16 = jungle16.wav
-   room_jungle_sound17 = jungle17.wav
-   room_jungle_sound18 = jungle18.wav
-   room_jungle_sound19 = jungle19.wav
-   room_jungle_sound20 = jungle20.wav
-   room_jungle_sound21 = jungle21.wav
-   room_jungle_sound22 = jungle22.wav
-   room_jungle_sound23 = jungle23.wav
-   room_jungle_sound24 = jungle24.wav
-   room_jungle_sound25 = jungle25.wav
+   room_jungle_sound1 = jungle01.ogg
+   room_jungle_sound2 = jungle02.ogg
+   room_jungle_sound3 = jungle03.ogg
+   room_jungle_sound4 = jungle04.ogg
+   room_jungle_sound5 = jungle05.ogg
+   room_jungle_sound6 = jungle06.ogg
+   room_jungle_sound7 = jungle07.ogg
+   room_jungle_sound8 = jungle08.ogg
+   room_jungle_sound9 = jungle09.ogg
+   room_jungle_sound10 = jungle10.ogg
+   room_jungle_sound11 = jungle11.ogg
+   room_jungle_sound12 = jungle12.ogg
+   room_jungle_sound13 = jungle13.ogg
+   room_jungle_sound14 = jungle14.ogg
+   room_jungle_sound15 = jungle15.ogg
+   room_jungle_sound16 = jungle16.ogg
+   room_jungle_sound17 = jungle17.ogg
+   room_jungle_sound18 = jungle18.ogg
+   room_jungle_sound19 = jungle19.ogg
+   room_jungle_sound20 = jungle20.ogg
+   room_jungle_sound21 = jungle21.ogg
+   room_jungle_sound22 = jungle22.ogg
+   room_jungle_sound23 = jungle23.ogg
+   room_jungle_sound24 = jungle24.ogg
+   room_jungle_sound25 = jungle25.ogg
 
-   room_sewer_sound1 = sewer03.wav
-   room_sewer_sound2 = sewer04.wav
-   room_sewer_sound3 = drips.wav
-   room_sewer_sound4 = sngldrip.wav
+   room_sewer_sound1 = sewer03.ogg
+   room_sewer_sound2 = sewer04.ogg
+   room_sewer_sound3 = drips.ogg
+   room_sewer_sound4 = sngldrip.ogg
    % Not included for now.  Kinda stupid rat sound.
-   room_sewer_sound5 = sewer01.wav
+   room_sewer_sound5 = sewer01.ogg
 
-   room_badmount_sound1 = ice04.wav
-   room_badmount_sound2 = ice03.wav
-   room_badmount_sound3 = sws_wind.wav
-   room_badmount_sound4 = rs_wind.wav
-   room_badmount_sound5 = eagle.wav
+   room_badmount_sound1 = ice04.ogg
+   room_badmount_sound2 = ice03.ogg
+   room_badmount_sound3 = sws_wind.ogg
+   room_badmount_sound4 = rs_wind.ogg
+   room_badmount_sound5 = eagle.ogg
 
-   room_beach_sound1 = sws_wind.wav
-   room_beach_sound2 = beach.wav
-   room_beach_sound3 = gulls.wav
-   room_beach_sound4 = wave1.wav
-   room_beach_sound5 = wave2.wav
-   room_beach_sound6 = wave3.wav
-   room_beach_sound7 = wave4.wav
+   room_beach_sound1 = sws_wind.ogg
+   room_beach_sound2 = beach.ogg
+   room_beach_sound3 = gulls.ogg
+   room_beach_sound4 = wave1.ogg
+   room_beach_sound5 = wave2.ogg
+   room_beach_sound6 = wave3.ogg
+   room_beach_sound7 = wave4.ogg
 
-   room_waterfront_sound1 = wfront03.wav
-   room_waterfront_sound2 = wfront05.wav
+   room_waterfront_sound1 = wfront03.ogg
+   room_waterfront_sound2 = wfront05.ogg
 
-   room_cave_sound1 = drop.wav
+   room_cave_sound1 = drop.ogg
 
-   room_forest_sound1 = rs_for01.wav
-   room_forest_sound2 = rs_for02.wav
-   room_forest_sound3 = rs_for03.wav
-   room_forest_sound4 = rs_for05.wav
-   room_forest_sound5 = rs_for14.wav
-   room_forest_sound6 = rs_for18.wav
-   room_forest_sound7 = rs_for20.wav
+   room_forest_sound1 = rs_for01.ogg
+   room_forest_sound2 = rs_for02.ogg
+   room_forest_sound3 = rs_for03.ogg
+   room_forest_sound4 = rs_for05.ogg
+   room_forest_sound5 = rs_for14.ogg
+   room_forest_sound6 = rs_for18.ogg
+   room_forest_sound7 = rs_for20.ogg
 
-   room_necropolis_sound1 = necro01.wav
-   room_necropolis_sound2 = necro02.wav
-   room_necropolis_sound3 = necro03.wav
-   room_necropolis_sound4 = necro04.wav
-   room_necropolis_sound5 = necro05.wav
-   room_necropolis_sound6 = necro06.wav
-   room_necropolis_sound7 = necro07.wav
-   room_necropolis_sound8 = necro08.wav
-   room_necropolis_sound9 = necro09.wav
+   room_necropolis_sound1 = necro01.ogg
+   room_necropolis_sound2 = necro02.ogg
+   room_necropolis_sound3 = necro03.ogg
+   room_necropolis_sound4 = necro04.ogg
+   room_necropolis_sound5 = necro05.ogg
+   room_necropolis_sound6 = necro06.ogg
+   room_necropolis_sound7 = necro07.ogg
+   room_necropolis_sound8 = necro08.ogg
+   room_necropolis_sound9 = necro09.ogg
 
-   room_jungle_sound = jungle.wav
-   room_sewer_sound = seweramb.wav
-   room_cave_sound = ambcave.wav
-   room_badmount_sound = icecave.wav
-   room_lava_sound = lavaflow.wav
-   room_forest_sound = ambcntry.wav
-   room_necro_sound = necloop2.wav
-   room_beach_sound = ocean.wav
+   room_jungle_sound = jungle.ogg
+   room_sewer_sound = seweramb.ogg
+   room_cave_sound = ambcave.ogg
+   room_badmount_sound = icecave.ogg
+   room_lava_sound = lavaflow.ogg
+   room_forest_sound = ambcntry.ogg
+   room_necro_sound = necloop2.ogg
+   room_beach_sound = ocean.ogg
 
-   room_rain_sound = rain.wav
+   room_rain_sound = rain.ogg
 
    no_use_jig = \
       "You can't wield that - it would interfere with your funky moves!"
@@ -412,6 +412,14 @@ messages:
       propagate;
    }
 
+   SomethingChanged(what = $)
+   "Override from Holder, optimised for Room."
+   {
+      SendList(plActive,1,@SomethingChanged,#what=what);
+
+      return;
+   }
+
    EnableIllusions()
    {
       return;
@@ -438,13 +446,12 @@ messages:
    {
       local cClass, lUsers, oNewRoom, i;
 
-      lUsers = $;
       cClass = GetClass(self);
       foreach i in plActive
       {
-         if isClass(first(i),&User)
+         if IsClass(First(i),&User)
          {
-            lUsers = Cons(first(i),lUsers);
+            lUsers = Cons(First(i),lUsers);
          }
       }
 
@@ -593,7 +600,7 @@ messages:
          }
       }
 
-      piPeriodic_sounds = bound(piPeriodic_sounds,2000,20000);
+      piPeriodic_sounds = Bound(piPeriodic_sounds,2000,20000);
 
       return;
    }
@@ -622,9 +629,9 @@ messages:
          iSoundY = 0;
          if pbPeriodic_sound_random_location
          {
-            if ( piCols = $ ) OR ( piRows = $ )
+            if (piCols = $ OR piRows = $)
             {
-               debug("Nil rows/cols in RID ",piRoom_num);
+               Debug("Nil rows/cols in RID ",piRoom_num);
 
                return;
             }
@@ -665,7 +672,7 @@ messages:
          {
             iRadius = 0;
             iMaxVol = 0;
-            if length(lLoopSound) > 3
+            if Length(lLoopSound) > 3
             {
                iRadius = Nth(lLoopSound,4);
             }
@@ -696,12 +703,12 @@ messages:
          % Send sound to all players
          iRadius = 0;
          iMaxVol = 0;
-         if length(lSoundData) > 3
+         if Length(lSoundData) > 3
          {
             iRadius = Nth(lSoundData,4);
          }
 
-         if length(lSoundData) > 4
+         if Length(lSoundData) > 4
          {
             iMaxVol = Nth(lSoundData,5);
          }
@@ -843,27 +850,25 @@ messages:
 
       foreach lElement in lObjList
       {
-         if length(lElement) = 3
+         if Length(lElement) = 3
          {
             oObject = Create(&OrnamentalObject,#type=Nth(lElement,3));
             Send(self,@NewHold,#what=oObject,
-                 #new_row=Nth(lElement,1),#new_col=Nth(lElement,2));
+                  #new_row=First(lElement),#new_col=Nth(lElement,2));
+         }
+         else if Length(lElement) = 5
+         {
+            oObject = Create(&OrnamentalObject,#type=Nth(lElement,5));
+            Send(self,@NewHold,#what=oObject,
+                  #new_row=First(lElement),#new_col=Nth(lElement,2),
+                  #fine_row=Nth(lElement,3),#fine_col=Nth(lElement,4));
          }
          else
          {
-            if length(lElement) = 5
-            {
-               oObject = Create(&OrnamentalObject,#type=Nth(lElement,5));
-               Send(self,@NewHold,#what=oObject,
-                    #new_row=Nth(lElement,1),#new_col=Nth(lElement,2),
-                    #fine_row=Nth(lElement,3),#fine_col=Nth(lElement,4));
-            }
-            else
-            {
-               debug("Sent invalid coord list to CreateOrnObjFromList:", first(lObjList));
+            Debug("Sent invalid coord list to CreateOrnObjFromList:",
+                  First(lObjList));
 
-               return;
-            }
+            return;
          }
       }
 
@@ -885,25 +890,22 @@ messages:
 
       foreach lElement in lObjList
       {
-         if length(lElement) = 2
+         if Length(lElement) = 2
          {
             Send(self,@NewHold,#what=Create(oObjectClassName),
-                 #new_row=Nth(lElement,1),#new_col=Nth(lElement,2));
+                 #new_row=First(lElement),#new_col=Nth(lElement,2));
+         }
+         else if Length(lElement) = 4
+         {
+            Send(self,@NewHold,#what=Create(oObjectClassName),
+                 #new_row=First(lElement),#new_col=Nth(lElement,2),
+                 #fine_row=Nth(lElement,3),#fine_col=Nth(lElement,4));
          }
          else
          {
-            if length(lElement) = 4
-            {
-               Send(self,@NewHold,#what=Create(oObjectClassName),
-                    #new_row=Nth(lElement,1),#new_col=Nth(lElement,2),
-                    #fine_row=Nth(lElement,3),#fine_col=Nth(lElement,4));
-            }
-            else
-            {
-               debug("Sent invalid coord list to CreateObjFromList:", first(lObjList));
+            Debug("Sent invalid coord list to CreateObjFromList:", first(lObjList));
 
-               return;
-            }
+            return;
          }
       }
 
@@ -923,27 +925,27 @@ messages:
       % this is ugly to do it here, but was lowest risk to add as an emergency patch
       % change this later by overriding GetRegion() please!
 
-      if (piRoom_num >= RID_GUEST_BASE) and (piRoom_num < RID_NEWB_BASE)
+      if (piRoom_num >= RID_GUEST_BASE) AND (piRoom_num < RID_NEWB_BASE)
       {
          return RID_GUEST_BASE;
       }
 
-      if (piRoom_num >= RID_NEWB_BASE) and (piRoom_num <= RID_NEWB_MAX)
+      if (piRoom_num >= RID_NEWB_BASE) AND (piRoom_num <= RID_NEWB_MAX)
       {
          return RID_NEWB_BASE;
       }
 
-      if (piRoom_num >= RID_KOCATAN) and (piRoom_num <= RID_KOCATAN_END)
+      if (piRoom_num >= RID_KOCATAN) AND (piRoom_num <= RID_KOCATAN_END)
       {
          return RID_KOCATAN;
       }
 
-      if (piRoom_num >= RID_ORC_CAVE1) and (piRoom_num <= RID_ORC_CAVE_END)
+      if (piRoom_num >= RID_ORC_CAVE1) AND (piRoom_num <= RID_ORC_CAVE_END)
       {
          return RID_ORC_CAVE1;
       }
 
-      if (piRoom_num >= RID_BRAX_START) and (piRoom_num <= RID_BRAX_END)
+      if (piRoom_num >= RID_BRAX_START) AND (piRoom_num <= RID_BRAX_END)
       {
          return RID_BRAX;
       }
@@ -1006,7 +1008,7 @@ messages:
                }
             }
 
-            if not bFound and iRID <> piRoom_num
+            if NOT bFound AND iRID <> piRoom_num
             {
                plYell_Zone = Cons(iRID, plYell_Zone);
             }
@@ -1047,7 +1049,7 @@ messages:
 
       foreach lPassiveObject in plPassive
       {
-         Send(first(lPassiveObject),@Delete);
+         Send(First(lPassiveObject),@Delete);
       }
 
       return;
@@ -1059,10 +1061,10 @@ messages:
 
       foreach i in plActive
       {
-         if isClass(first(i),&StorageBox)
+         if IsClass(First(i),&StorageBox)
          {
-            Send(SYS,@AddChestToList,#oChest=first(i));
-            Send(first(i),@EnterLimbo);
+            Send(SYS,@AddChestToList,#oChest=First(i));
+            Send(First(i),@EnterLimbo);
          }
       }
 
@@ -1099,11 +1101,12 @@ messages:
    HustleUsersOutOfRoom(new_rid = $, new_row = $, new_col = $)
    {
       local oNewRoom, i, oUser;
+
       oNewRoom = Send(SYS,@FindRoomByNum,#num=new_rid);
       foreach i in plActive
       {
          oUser = Send(self,@HolderExtractObject,#data=i);
-         if isClass(oUser,&User)
+         if IsClass(oUser,&User)
          {
             if oNewRoom = $
             {
@@ -1112,7 +1115,7 @@ messages:
             else
             {
                Send(SYS,@UtilGoNearSquare,#what=oUser,#where=oNewRoom,
-                    #new_row=new_row,#new_col=new_col);
+                     #new_row=new_row,#new_col=new_col);
             }
          }
       }
@@ -1126,7 +1129,7 @@ messages:
 
       if prRoom = $
       {
-         debug("Problems with",vrName,piRoom_num);
+         Debug("Problems with",vrName,piRoom_num);
       }
 
       prmRoom = LoadRoom(prRoom);
@@ -1217,6 +1220,27 @@ messages:
       return Send(self,@CheckRoomFlag,#flag=ROOM_SAFE_DEATH);
    }
 
+   SetGuildPKOnly(value=TRUE)
+   {
+      if (piRoom_Flags & ROOM_SAFE_DEATH)
+         OR (piRoom_Flags & ROOM_NO_COMBAT)
+         OR (piRoom_flags & ROOM_NO_PK)
+      {
+         return;
+      }
+
+      if (value)
+      {
+         piRoom_Flags = piRoom_Flags | ROOM_GUILD_PK_ONLY;
+      }
+      else
+      {
+         Send(self,@SetRoomFlagToDefault,#flag=ROOM_GUILD_PK_ONLY);
+      }
+
+      return;
+   }
+
    GetPermanentFlags()
    {
       return viPermanent_flags;
@@ -1297,11 +1321,11 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isClass(each_obj, class)
+         if IsClass(each_obj, class)
          {
             if (NOT mastered) OR Send(each_obj,@GetMaster) <> $
             {
-               n = n + 1;
+               ++n;
             }
          }
       }
@@ -1312,17 +1336,17 @@ messages:
    ReqSomethingAttack(what = $,victim = $, use_weapon = $, stroke_obj = $,
                       report = TRUE)
    {
-      local oWatcher, i, each_obj;
+      local oWatcher, i, each_obj, oSpell;
 
       if what <> $
-         AND IsClass(what,&Player)
+         AND IsClass(what,&User)
          AND Send(what,@IsInCannotInteractMode)
       {
          return FALSE;
       }
       
       if victim <> $
-         AND IsClass(victim,&Player)
+         AND IsClass(victim,&User)
          AND Send(victim,@IsInCannotInteractMode)
       {
          return FALSE;
@@ -1361,20 +1385,12 @@ messages:
          AND (IsClass(what,&Monster)
          OR IsClass(victim,&Monster))
       {
-         if IsClass(what,&User)
+         if report
+            AND IsClass(what,&User)
          {
-            if report
-            {
-               Send(what,@MsgSendUser,#message_rsc=room_no_mob_attack);
-            }
+            Send(what,@MsgSendUser,#message_rsc=room_no_mob_attack);
          }
-         return FALSE;
-      }
 
-      if IsClass(what,&Monster)
-         AND (IsClass(victim,&User)
-              AND Send(victim,@IsAffectedByRadiusEnchantment,#byClass=&Truce))
-      {
          return FALSE;
       }
 
@@ -1441,7 +1457,6 @@ messages:
       }
 
       oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
-      oOtherShield = $;
       if victim <> $
       {
          oOtherShield = Send(victim,@FindUsing,#class=&SoldierShield);
@@ -1602,8 +1617,7 @@ messages:
    {
       local iLight;
 
-      iLight = piBaseLight;
-      iLight = iLight + piOutside_factor*(Send(SYS,@SystemGetBrightness)-50)/4;
+      iLight = piBaseLight + piOutside_factor*(Send(SYS,@SystemGetBrightness)-50)/4;
       if iLight < LIGHT_MIN
       {
          iLight = LIGHT_MIN;
@@ -1668,7 +1682,6 @@ messages:
       local iTime, i, oEachObj, count, delete_index,
             iLengthDispose, lDisposeItems, j;
 
-      lDisposeItems = $;
       ptDispose = $;
       iTime = piDispose_delay + Random(-5000,5000);
       ptDispose = CreateTimer(self,@DisposeTimer,iTime);
@@ -1679,7 +1692,7 @@ messages:
          %  player's corpse has own delete timer.  Monster corpses
          %  do not trigger this effect.
 
-         oEachObj = Send(self,@HolderExtractObject,#data=i);
+         oEachObj = First(i);
 
          if IsClass(oEachObj,&DeadBody) AND Send(oEachObj,@WasPlayer)
          {
@@ -1694,52 +1707,48 @@ messages:
 
          return;
       }
-      else
+      else if Length(plPassive) > 15
       {
          % If we have more than 15 passive object in room, try to dispose some.
          % This number is large to reduce the amount of times this is run
          % unnecessarily in rooms with lots of passive objects present, or
          % a small amount of items that don't really need disposing.
-         if Length(plPassive) > 15
+         foreach i in plPassive
          {
-            foreach i in plPassive
+            % If the passive object is actually an item, add it to dispose list
+            if IsClass(First(i),&Item)
             {
-               % If the passive object is actually an item, add it to dispose list
-               if IsClass(First(i),&Item)
-               {
-                  lDisposeItems = Cons(First(i),lDisposeItems);
-               }
+               lDisposeItems = Cons(First(i),lDisposeItems);
+            }
+         }
+
+         iLengthDispose = Length(lDisposeItems);
+
+         % If we have more than 11 items on the ground, dispose 25%
+         if iLengthDispose > 11
+         {
+            delete_index = iLengthDispose / 4;
+
+            % In rare cases we can end up with items piling up far too
+            % fast, so we should do a one-off dispose of a larger number
+            % to prevent the screen from crashing
+            if iLengthDispose > 75
+            {
+               delete_index = iLengthDispose / 2;
             }
 
-            iLengthDispose = Length(lDisposeItems);
+            count = 0;
 
-            % If we have more than 11 items on the ground, dispose 25%
-            if iLengthDispose > 11
+            foreach j in lDisposeItems
             {
-               delete_index = iLengthDispose/4;
-
-               % In rare cases we can end up with items piling up far too
-               % fast, so we should do a one-off dispose of a larger number
-               % to prevent the screen from crashing
-               if iLengthDispose > 75
+               if ++count <= delete_index
                {
-                  delete_index = iLengthDispose/2;
+                  Send(j,@DestroyDisposable);
                }
-
-               count = 0;
-
-               foreach j in lDisposeItems
+               else
                {
-                  count = count + 1;
-                  if count <= delete_index
-                  {
-                     Send(j,@DestroyDisposable);
-                  }
-                  else
-                  {
-                     % Deleted all the appropriate items
-                     break;
-                  }
+                  % Deleted all the appropriate items
+                  break;
                }
             }
          }
@@ -2025,7 +2034,7 @@ messages:
       if new_row = $ OR new_col = $ OR fine_row = $ OR fine_col = $
          OR new_angle = $
       {
-         debug("Tried to NewHold",Send(what,@GetName),"at bad coords.");
+         Debug("Tried to NewHold",Send(what,@GetName),"at bad coords.");
 
          return;
       }
@@ -2406,7 +2415,7 @@ messages:
          }
       }
       else
-      {	  
+      {
          % these are no valid moves inside the room
          % don't validate them later
          server_validate = FALSE;
@@ -2531,7 +2540,7 @@ messages:
       if NOT GetLocationInfoBSP(prmRoom, iQflags, new_row, new_col, fine_row, fine_col,
                 *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
       {
-         debug("Failed to get location info in ", prmRoom);
+         Debug("Failed to get location info in ", prmRoom);
          iRflags = 0;
       }
 
@@ -2747,7 +2756,7 @@ messages:
 
       if (ptPeriodic_sounds <> $)
       {
-         deleteTimer(ptPeriodic_sounds);
+         DeleteTimer(ptPeriodic_sounds);
          ptPeriodic_sounds = $;
       }
 
@@ -2784,7 +2793,7 @@ messages:
 
       % Area list is of the format minrow, maxrow, mincol, maxcol, also
       % using xxyy format. Check player coordinates against these.
-      if iRowDec >= Nth(lArea,1)
+      if iRowDec >= First(lArea)
          AND iRowDec <= Nth(lArea,2)
          AND iColDec >= Nth(lArea,3)
          AND iColDec <= Nth(lArea,4)
@@ -2838,7 +2847,7 @@ messages:
 
          % Area list is of the format minrow, maxrow, mincol, maxcol, also
          % using xxyy format. Check player coordinates against these.
-         if iRowDec >= Nth(lArea,1)
+         if iRowDec >= First(lArea)
             AND iRowDec <= Nth(lArea,2)
             AND iColDec >= Nth(lArea,3)
             AND iColDec <= Nth(lArea,4)
@@ -2873,7 +2882,7 @@ messages:
 
       foreach i in plSector_changes
       {
-         if First(i) = sector and Nth(i,2) = animation
+         if First(i) = sector AND Nth(i,2) = animation
          {
             SetNth(i,3,height);
 
@@ -2942,7 +2951,7 @@ messages:
 
       foreach i in plSector_flag_changes
       {
-         if (id <> $ AND Nth(i,1) = id)
+         if (id <> $ AND First(i) = id)
          {
             plSector_flag_changes = DelListElem(plSector_flag_changes,i);
          }
@@ -3056,7 +3065,7 @@ messages:
 
       foreach i in plWall_changes
       {
-         if (wall <> $ AND Nth(i,1) = wall)
+         if (wall <> $ AND First(i) = wall)
          {
             plWall_changes = DelListElem(plWall_changes,i);
          }
@@ -3096,7 +3105,7 @@ messages:
       % and store so that new people in room will get the change
       foreach i in plTexture_changes
       {
-         if first(i) = id AND Nth(i,3) = flags
+         if First(i) = id AND Nth(i,3) = flags
          {
             SetNth(i,2,new_texture);
 
@@ -3125,11 +3134,11 @@ messages:
 
       foreach i in plTexture_changes
       {
-         if (id <> $ AND Nth(i,1) = id)
+         if (id <> $ AND First(i) = id)
             OR (flags <> 0 AND Nth(i,3) = flags)
          {
             % reset this texture-change in BSP room data
-            ChangeTextureBSP(prmRoom, Nth(i,1), Nth(i,2), Nth(i,3) | CTF_RESET);
+            ChangeTextureBSP(prmRoom, First(i), Nth(i,2), Nth(i,3) | CTF_RESET);
 
             plTexture_changes = DelListElem(plTexture_changes,i);
          }
@@ -3176,7 +3185,7 @@ messages:
             else
             {
                if Nth(i,6) = ROW_IS_GREATER_THAN
-                  AND Send(what,@getrow) > Nth(i,7)
+                  AND Send(what,@GetRow) > Nth(i,7)
                {
                   iRoom = Nth(i,2);
                   iRow = Nth(i,3);
@@ -3186,7 +3195,7 @@ messages:
                }
 
                if Nth(i,6) = ROW_IS_LESS_THAN
-                  AND Send(what,@getrow) < Nth(i,7)
+                  AND Send(what,@GetRow) < Nth(i,7)
                {
                   iRoom = Nth(i,2);
                   iRow = Nth(i,3);
@@ -3196,7 +3205,7 @@ messages:
                }
 
                if Nth(i,6) = COL_IS_GREATER_THAN
-                  AND Send(what,@getcol) > Nth(i,7)
+                  AND Send(what,@GetCol) > Nth(i,7)
                {
                   iRoom = Nth(i,2);
                   iRow = Nth(i,3);
@@ -3206,7 +3215,7 @@ messages:
                }
 
                if Nth(i,6) = COL_IS_LESS_THAN
-                  AND Send(what,@getcol) < Nth(i,7)
+                  AND Send(what,@GetCol) < Nth(i,7)
                {
                   iRoom = Nth(i,2);
                   iRow = Nth(i,3);
@@ -3285,11 +3294,11 @@ messages:
 
       foreach i in plExits
       {
-         if (row = First(i)) and (col = Nth(i,2))
+         if (row = First(i)) AND (col = Nth(i,2))
          {
             if Nth(i,3) = ROOM_LOCKED_DOOR
             {
-               if length(i) = 4
+               if Length(i) = 4
                {
                   Send(what,@MsgSendUser,#message_rsc=Nth(i,4));
                }
@@ -3408,24 +3417,85 @@ messages:
       foreach i in plActive
       {
          each_obj = First(i);
-         if IsClass(each_obj,&Player)
+         if IsClass(each_obj,&User)
          {
             Send(what,@StartEnchantment,#who=each_obj,
-                 #iSpellPower=iSpellPower,#state=state);
+                  #iSpellPower=iSpellPower,#state=state);
          }
       }
 
       return;
    }
 
-   UnenchantAllOccupants( what = $, state = $ )
+   EnchantPlayerStatusChanged(who=$)
+   "Called when there's change in status of a player. Any enchantments they "
+   "cast should re-check to see if they now affect any other players, and "
+   "other enchantments should check if they now affect the player."
+   {
+      local i, state, oSpell, lObj, oUser;
+
+      foreach i in plEnchantments
+      {
+         oSpell = Nth(i,2);
+         state = Nth(i,3);
+
+         // Only applies to spells that come with conditional effects,
+         // e.g. winds lowers aim on players the caster can attack.
+         if (state = $
+            OR NOT Send(oSpell,@HasConditionalEffect))
+         {
+            continue;
+         }
+
+         if (Nth(state,2) = who)
+         {
+            // If 'who' cast the spell, check everyone.
+            foreach lObj in plActive
+            {
+               oUser = First(lObj);
+               if IsClass(oUser,&User)
+               {
+                  if (Send(oUser,@IsEnchanted,#what=oSpell))
+                  {
+                     if (NOT Send(oSpell,@CanEnchantUser,#who=oUser,#state=state))
+                     {
+                        Send(oSpell,@RemoveEnchantment,#who=oUser);
+                     }
+                  }
+                  else if (Send(oSpell,@CanEnchantUser,#who=oUser,#state=state))
+                  {
+                     Send(oSpell,@StartEnchantment,#who=oUser,#state=state);
+                  }
+               }
+            }
+         }
+         else if (Send(who,@IsEnchanted,#what=oSpell))
+         {
+            if (NOT Send(oSpell,@CanEnchantUser,#who=who,#state=state))
+            {
+               // Should no longer be affected by this spell.
+               // e.g. deguilded, lost a faction shield.
+               Send(oSpell,@RemoveEnchantment,#who=who);
+            }
+         }
+         else if (Send(oSpell,@CanEnchantUser,#who=who,#state=state))
+         {
+            // Should be affected, e.g. turned outlaw.
+            Send(oSpell,@StartEnchantment,#who=who,#state=state);
+         }
+      }
+
+      return;
+   }
+
+   UnenchantAllOccupants(what = $, state = $)
    {
       local i, each_obj;
 
       foreach i in plActive
       {
-         each_obj = Send(self,@HolderExtractObject,#data=i);
-         if IsClass(each_obj,&Player)
+         each_obj = First(i);
+         if IsClass(each_obj,&User)
          {
             Send(what,@EndRoomEnchantment,#who=each_obj,#state=state);
          }
@@ -3441,14 +3511,13 @@ messages:
       local iRange_squared, iRowDiff, iColDiff, iRowCenter, iColCenter,
             lEnchanted, each_obj, i;
 
-      lEnchanted = $ ;
       iRange_squared = range * range ;
       iRowCenter = Send(center,@GetRow);
       iColCenter = Send(center,@GetCol);
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if IsClass(each_obj, &Player)
+         if IsClass(each_obj,&User)
             OR (monsters and IsClass(each_obj, &Monster))
          {
             iRowDiff = iRowCenter - Send(each_obj,@GetRow);
@@ -3506,14 +3575,7 @@ messages:
 
       if what = $
       {
-         if plEnchantments
-         {
-            return TRUE;
-         }
-         else
-         {
-            return FALSE;
-         }
+         return plEnchantments <> $;
       }
 
       return GetListNode(plEnchantments, 2, what) <> $;
@@ -3986,19 +4048,21 @@ messages:
 
    EndSandstorm()
    {
-      local i, each_obj;
+      local i, each_obj, oSpell, state;
 
       if Send(self,@CheckRoomFlag,#flag=ROOM_SANDSTORM)
       {
          Send(self,@SetRoomFlag,#flag=ROOM_SANDSTORM,#value=FALSE);
 
-         foreach i in plActive
+         // Only clear the effect if sandstorm spell not active.
+         oSpell = Send(SYS,@FindSpellByNum,#num=SID_SANDSTORM);
+         state = Send(self,@GetEnchantmentState,#what=oSpell);
+         if (state = $)
          {
-            each_obj = Send(self,@HolderExtractObject,#data=i);
-            if IsClass(each_obj,&User)
+            foreach i in plActive
             {
-               if NOT Send(each_obj,@IsAffectedByRadiusEnchantment,
-                           #byClass=&Sandstorm)
+               each_obj = Send(self,@HolderExtractObject,#data=i);
+               if IsClass(each_obj,&User)
                {
                   Send(each_obj,@EffectSendUser,#what=each_obj,
                         #effect=EFFECT_CLEARSAND);
@@ -4193,23 +4257,21 @@ messages:
          }
       }
 
-      if IsClass(self,&Room)
+      foreach i in plActive
       {
-         foreach i in plActive
+         each_obj = First(i);
+         if IsClass(each_obj,&Battler)
          {
-            each_obj = Send(self,@HolderExtractObject,#data=i);
-            if IsClass(each_obj,&Battler)
-            {
-               Send(each_obj,@RemoveSchoolEnchantments,#school=school,
-                    #report=report);
-            }
+            Send(each_obj,@RemoveSchoolEnchantments,#school=school,
+                 #report=report);
          }
       }
 
       return;
    }
 
-   DispelIllusionEnchantments(who = $, report = TRUE, iChance = 100)
+   DispelIllusionEnchantments(who = $, report = TRUE, iChance = 100,
+                              stroke_obj = $)
    {
       local i,pSpell,each_obj,oSpell;
 
@@ -4225,11 +4287,12 @@ messages:
 
       foreach i in plActive
       {
-         each_obj = Send(self,@HolderExtractObject,#data=i);
+         each_obj = First(i);
          if IsClass(each_obj,&Battler)
             AND who <> $
             AND Send(self,@ReqSomethingAttack,#what=who,#victim=each_obj)
-            AND Send(who,@AllowPlayerAttack,#victim=each_obj)
+            AND Send(who,@AllowPlayerAttack,#victim=each_obj,
+                     #stroke_obj=stroke_obj)
          {
             Send(each_obj,@DispelIllusionEnchantments,#report=report,
                  #iChance=iChance);
@@ -4239,9 +4302,10 @@ messages:
       return;
    }
 
-   DispelIllusions(who = $, what = $, iChance = 100, bAll = TRUE)
+   DispelIllusions(who = $, what = $, iChance = 100, bAll = TRUE,
+                   stroke_obj = $)
    {
-      local i, each_obj;
+      local i, each_obj, oTarget;
 
       if NOT bAll
       {
@@ -4252,39 +4316,46 @@ messages:
 
       foreach i in plActive
       {
-         each_obj = Send(self,@HolderExtractObject,#data=i);
+         each_obj = First(i);
          if Send(each_obj,@IsIllusion)
             AND Random(1,100) <= iChance
             AND who <> $
          {
-            if (isClass(each_obj,&Reflection)
-               OR isClass(each_obj,&ActiveWallElement)
-               OR isClass(each_obj,&EvilTwin))
+            if (IsClass(each_obj,&Monster))
             {
-               if Send(self,@ReqSomethingAttack,#what=who,#victim=Send(each_obj,@GetCaster))
-                  AND Send(who,@AllowPlayerAttack,#victim=Send(each_obj,@GetCaster))
+               if (Send(self,@ReqSomethingAttack,#what=who,#victim=each_obj)
+                     AND Send(who,@AllowPlayerAttack,#victim=each_obj,
+                              #stroke_obj=stroke_obj))
                {
                   Send(each_obj,@Delete);
                }
             }
-            else
+            else if (IsClass(each_obj,&ActiveWallElement))
             {
-               % Delete any unhandled illusions without a safety check
-               Send(each_obj,@Delete);
+               oTarget = Send(each_obj,@GetCaster);
+
+               if (Send(self,@ReqSomethingAttack,#what=who,#victim=oTarget)
+                  AND Send(who,@AllowPlayerAttack,#victim=oTarget,
+                           #stroke_obj=stroke_obj))
+               {
+                  Send(each_obj,@Delete);
+               }
             }
          }
       }
 
       foreach i in plPassive
       {
-         each_obj = Send(self,@HolderExtractObject,#data=i);
+         each_obj = First(i);
          if Send(each_obj,@IsIllusion)
             AND Random(1,100) <= iChance
          {
-            if isClass(each_obj,&PassiveWallofFire)
+            if IsClass(each_obj,&PassiveWallofFire)
             {
-               if Send(self,@ReqSomethingAttack,#what=who,#victim=Send(each_obj,@GetCaster))
-                  AND Send(who,@AllowPlayerAttack,#victim=Send(each_obj,@GetCaster))
+               oTarget = Send(each_obj,@GetCaster);
+               if Send(self,@ReqSomethingAttack,#what=who,#victim=oTarget)
+                  AND Send(who,@AllowPlayerAttack,#victim=oTarget,
+                           #stroke_obj=stroke_obj)
                {
                   Send(each_obj,@Delete);
                }
@@ -4470,11 +4541,11 @@ messages:
       {
          if Send(First(i),@IsFire)
          {
-            iBonus = iBonus + 1;
+            ++iBonus;
          }
       }
 
-      piFaren_bonus = bound(iBonus,0,30);
+      piFaren_bonus = Bound(iBonus,0,30);
 
       return;
    }
@@ -4511,30 +4582,24 @@ messages:
       %   Send(what,@ResetMonsterChasers);
       %}
 
-      oTarg1 = $;
-      oTarg2 = $;
-      oTarg3 = $;
-      oTarg4 = $;
-      oTarg5 = $;
       iHate1 = 0;
       iHate2 = 0;
       iHate3 = 0;
       iHate4 = 0;
       iHate5 = 0;
-      oBrain = $;
 
       foreach i in plActive
       {
-         if isClass(first(i),&monster)
+         oTarg = First(i);
+         if IsClass(oTarg,&Monster)
          {
             if oBrain = $
             {
-               oBrain = Send(first(i),@GetBrain);
+               oBrain = Send(oTarg,@GetBrain);
             }
 
-            iHate = Send(oBrain,@GetHatred,#what=what,#mob=first(i),
-                         #behavior=Send(first(i),@GetBehavior),#event=6);
-            oTarg = First(i);
+            iHate = Send(oBrain,@GetHatred,#what=what,#mob=oTarg,
+                           #behavior=Send(oTarg,@GetBehavior),#event=6);
 
             if iHate > iHate1
             {
@@ -4644,7 +4709,7 @@ messages:
       foreach i in plActive
       {
          oMonster = First(i);
-         if isClass(oMonster,&Monster)
+         if IsClass(oMonster,&Monster)
          {
             Post(oMonster,@AffectMood,#why=MOODMOD_FACTION_CHANGE,
                  #what=new_fact);
@@ -4667,7 +4732,7 @@ messages:
       foreach i in plActive
       {
          oMonster = First(i);
-         if isClass(oMonster,&Monster)
+         if IsClass(oMonster,&Monster)
          {
             Post(oMonster,@AffectMood,#why=MOODMOD_WANDERER_ENTERED,#what=mob);
          }
@@ -4686,12 +4751,12 @@ messages:
       oTrance = Send(SYS,@FindSpellByNum,#num=SID_TRANCE);
       foreach i in plActive
       {
-         oActive = first(i);
-         if isClass(oActive,&Player)
+         oActive = First(i);
+         if IsClass(oActive,&Player)
          {
             Send(oActive,@EffectSendUserDuration,#effect=EFFECT_SHAKE,
-                 #duration=duration);
-            if random(1,100) < disruption
+                  #duration=duration);
+            if Random(1,100) < disruption
                AND Send(oActive,@IsEnchanted,#what=oTrance)
             {
                % Post this so we don't disrupt Earthquake (which caused this
@@ -4711,7 +4776,7 @@ messages:
       foreach i in plExits
       {
          oObject = Create(&Apple);
-         Send(self,@NewHold,#what=oObject,#new_row=Nth(i,1),#new_col=Nth(i,2));
+         Send(self,@NewHold,#what=oObject,#new_row=First(i),#new_col=Nth(i,2));
       }
 
       return;
@@ -4788,8 +4853,6 @@ messages:
       iMCol = iCol;
       iMRowFine = FINENESS_HALF;
       iMColFine = FINENESS_HALF;
-	  
-      lPatrolPath = $;
 
       if oMonster = $
       {
@@ -4830,6 +4893,7 @@ messages:
                Debug("failed to place monster ",oMonster,Send(oMonster,@GetName),
                      " in room ",self,Send(self,@GetName));
                Send(oMonster,@Delete);
+
                return FALSE;
             }
             else
@@ -4855,27 +4919,28 @@ messages:
       }
 
       % possibly check location (skipped for randompoints)
-	  % active for generators or provided coords in param
+      % active for generators or provided coords in param
       if iCheck = TRUE
       {
          % we want the full info
          iQflags = LIQ_CHECK_OBJECTBLOCK | LIQ_CHECK_THINGSBOX | LIQ_GET_SECTORINFO;
-	  
+
          % query to C function
          if NOT GetLocationInfoBSP(prmRoom, iQflags,
                   iMRow,iMCol,iMRowFine,iMColFine,
                   *iRflags, *iHeightF, *iHeightFWD, *iHeightC, *iServerID)
          {
-            debug("Failed to get location info in ", prmRoom);
+            Debug("Failed to get location info in ", prmRoom);
+
             return FALSE;
          }
       }
       else
-	  {
+      {
          % make sure we pass the test below
          iRflags = LIR_SECTOR_INSIDE | LIR_SECTOR_HASFTEX;
-	  }
-      
+      }
+
       % verify location
       if (iRflags & LIR_SECTOR_INSIDE)
          AND (iRflags & LIR_SECTOR_HASFTEX)
@@ -4900,6 +4965,12 @@ messages:
       return TRUE;
    }
 
+   TryCreateMonster()
+   "Return FALSE for any non-monster generating room."
+   {
+      return FALSE;
+   }
+
    CanHavePlayerPortal()
    "Return whether it's permissible to have a player-created portal in this room. "
    {
@@ -4918,35 +4989,35 @@ messages:
       local num, oNews, i;
       
       % Have to check News and Newslink separately, as the classes aren't related.
-      num = Send(self, @CountHoldingHowMany, #class = &News);
+      num = Send(self,@CountHoldingHowMany,#class=&News);
       i = 1;
       while i <= num
       {
-         oNews = Send(self, @FindHolding, #class = &News, #sequence = i);
-         if Send(oNews, @GetNewsNum) = nid
+         oNews = Send(self,@FindHolding,#class=&News,#sequence=i);
+         if Send(oNews,@GetNewsNum) = nid
          {
             return TRUE;
          }
-         i = i + 1;
+         ++i;
       }
 
-      num = Send(self, @CountHoldingHowMany, #class = &NewsLink);
+      num = Send(self,@CountHoldingHowMany,#class=&NewsLink);
       i = 1;
       while i <= num
       {
-         oNews = Send(self, @FindHolding, #class = &NewsLink, #sequence = i);
+         oNews = Send(self,@FindHolding,#class=&NewsLink,#sequence=i);
          if Send(oNews, @GetNewsNum) = nid
          {
             return TRUE;
          }
-         i = i + 1;
+         ++i;
       }
 
       return FALSE;
    }
 
    DeleteWallsAroundBattler(who=$)
-   "Deletes walls in a small radius around target battler."   
+   "Deletes walls in a small radius around target battler."
    {
       local i, each_obj;
 
@@ -4956,7 +5027,8 @@ messages:
          return;
       }
 
-      % Check each active element, tell the object to delete if it is a wall and too close
+      // Check each active element, tell the object to delete
+      // if it is a wall and too close
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
@@ -4965,21 +5037,23 @@ messages:
             AND NOT IsClass(each_obj,&ActiveSporeCloud)
             AND NOT IsClass(each_obj,&Web)
          {
-            if Send(who,@SquaredDistanceTo,#what=each_obj) <= (WALL_DELETE_RADIUS * WALL_DELETE_RADIUS)
+            if Send(who,@SquaredDistanceTo,#what=each_obj)
+               <= (WALL_DELETE_RADIUS * WALL_DELETE_RADIUS)
             {
                Post(each_obj,@Delete);
             }
          }
       }
-      
-      % Separate check through plPassive for passive wall elements
+
+      // Separate check through plPassive for passive wall elements
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if IsClass(each_obj,&PassiveWallofFire)
             OR IsClass(each_obj,&PassiveWallofLightning)
          {
-            if Send(who,@SquaredDistanceTo,#what=each_obj) <= (WALL_DELETE_RADIUS * WALL_DELETE_RADIUS)
+            if Send(who,@SquaredDistanceTo,#what=each_obj)
+               <= (WALL_DELETE_RADIUS * WALL_DELETE_RADIUS)
             {
                Post(each_obj,@Delete);
             }
@@ -5167,6 +5241,12 @@ messages:
 
       Send(self,@SetRoomFlagToDefault,#flag=ROOM_NO_PK);
 
+      return;
+   }
+
+   PrintMobGenerators()
+   "Override which prints nothing for non-monsterrooms."
+   {
       return;
    }
 

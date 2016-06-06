@@ -26,6 +26,16 @@
 #define IDD_CHARAPPEARANCE              143
 #define IDD_CHARSTATS                   144
 #define IDS_FAVORITES                   255
+#define IDS_SHALILLE                    256
+#define IDS_QOR                         257
+#define IDS_KRAANAN                     258
+#define IDS_FAREN                       259
+#define IDS_RIIJA                       260
+#define IDS_JALA                        261
+#define IDS_DMSCHOOL                    262
+#define IDS_FENCING                     263
+#define IDS_BRAWLING                    264
+#define IDS_THIEVERY                    265
 #define IDC_DESCRIPTION                 1000
 #define IDC_FACE                        1001
 #define IDC_PLACEHOLDER                 1002
@@ -87,7 +97,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        105
+#define _APS_NEXT_RESOURCE_VALUE        266
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1045
 #define _APS_NEXT_SYMED_VALUE           101

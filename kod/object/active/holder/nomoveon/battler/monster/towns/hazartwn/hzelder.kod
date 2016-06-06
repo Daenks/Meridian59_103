@@ -100,12 +100,7 @@ messages:
    {
       if StringEqual(string,HzEl_stat_window_trigger)
       {
-         if Send(what,@FindHolding,#class=&StatsResetToken) <> $
-            OR (Send(what,@GetBaseMaxHealth)
-               <= Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
-         {
-            Send(what,@SendStatChange);
-         }
+         Send(what,@SendStatChange);
       }
 
       propagate;
@@ -150,7 +145,7 @@ messages:
             SID_ZAP, SID_SWEEP,
             SID_MYSTIC_TOUCH,
             SID_LIGHT,
-            SID_SUMMON_FOG,
+            SID_FOG,
             SID_SUPERSTRENGTH,
             SID_RESIST_POISON,
             SID_HASTE, 

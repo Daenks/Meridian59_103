@@ -39,12 +39,12 @@ static int timer_id;
 static int scroll_width, scroll_height;  // Size of scrolling window
 static int scroll_y;       // Current y position in scrolling bitmap
 
-static char *sounds[] = { "swrdmtl1.wav", 
-			  "swrdmtl2.wav", 
-			  "swrdmtl3.wav",
-			  "patk.wav",
-			  "orc_awr.wav",
-			  "fquake.wav",                          
+static char *sounds[] = { "swrdmtl1.ogg", 
+           "swrdmtl2.ogg", 
+           "swrdmtl3.ogg",
+           "patk.ogg",
+           "orc_awr.ogg",
+           "fquake.ogg",                          
 };
 #define num_sounds 3   // # of sounds for default dude
 
@@ -95,20 +95,20 @@ BOOL CALLBACK AboutDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
       {
       case IDOK:
       case IDCANCEL:
-	 EndDialog(hDlg, IDOK);
-	 if (timer_id != 0)
-	   KillTimer(hDlg, TIMER_ABOUT);
+    EndDialog(hDlg, IDOK);
+    if (timer_id != 0)
+      KillTimer(hDlg, TIMER_ABOUT);
 
-	 gBitmap = (HBITMAP) SelectObject(gDC, gOldBitmap);
-	 DeleteObject(gBitmap);
-	 DeleteDC(gDC);
+    gBitmap = (HBITMAP) SelectObject(gDC, gOldBitmap);
+    DeleteObject(gBitmap);
+    DeleteDC(gDC);
 
-	 for (i=0; i < NUM_DUDES; i++)
-	   if (dudes[i].obj != NULL)
-	     dudes[i].obj = ObjectDestroyAndFree(dudes[i].obj);
+    for (i=0; i < NUM_DUDES; i++)
+      if (dudes[i].obj != NULL)
+        dudes[i].obj = ObjectDestroyAndFree(dudes[i].obj);
 
-	 BitmapsFree(&credits_b);
-	 return TRUE;
+    BitmapsFree(&credits_b);
+    return TRUE;
       }
       break;
 
@@ -189,12 +189,12 @@ BOOL AboutInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam)
 
    if (config.technical)
    {
-	sprintf(buffer, "Client Software Version %d:%d", MAJOR_REV, MINOR_REV);
-	SetDlgItemText(hDlg, IDC_SPECIAL1, buffer);
+   sprintf(buffer, "Client Software Version %d:%d", MAJOR_REV, MINOR_REV);
+   SetDlgItemText(hDlg, IDC_SPECIAL1, buffer);
 
-	sprintf(buffer, "Server Host Address %s:%d",
-		(LPCTSTR)config.comm.hostname, config.comm.sockport);
-	SetDlgItemText(hDlg, IDC_SPECIAL2, buffer);
+   sprintf(buffer, "Server Host Address %s:%d",
+      (LPCTSTR)config.comm.hostname, config.comm.sockport);
+   SetDlgItemText(hDlg, IDC_SPECIAL2, buffer);
    }
 
    GetWindowRect(GetDlgItem(hDlg,IDC_SPECIAL2),&r);
@@ -220,22 +220,22 @@ BOOL AboutInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam)
       // Set up animated characters
       for (i=0; i < NUM_DUDES; i++)
       {
-	 object_node *obj;
-	 
-	 obj = dudes[i].obj = ObjectGetBlank();	
-	 obj->icon_res = ABOUT_RSC;
-	 obj->animate->animation = ANIMATE_NONE;
-	 
-	 if (i == 0)
-	 {
-	    dudes[i].angle = 3 * NUMDEGREES / 4;
-	    dudes[i].x = DUDE_X1;
-	 }
-	 else 
-	 {
-	    dudes[i].angle = NUMDEGREES / 4;
-	    dudes[i].x = DUDE_X2;
-	 }
+    object_node *obj;
+    
+    obj = dudes[i].obj = ObjectGetBlank();   
+    obj->icon_res = ABOUT_RSC;
+    obj->animate->animation = ANIMATE_NONE;
+    
+    if (i == 0)
+    {
+       dudes[i].angle = 3 * NUMDEGREES / 4;
+       dudes[i].x = DUDE_X1;
+    }
+    else 
+    {
+       dudes[i].angle = NUMDEGREES / 4;
+       dudes[i].x = DUDE_X2;
+    }
       }
    }
    
@@ -284,46 +284,46 @@ void AboutTimer(HWND hwnd, UINT id)
    {
       if (dudes[i].obj != NULL)
       {
-	 obj = dudes[i].obj;
-	 if (rand() % 30 == 0)
-	 {
-	    obj->animate->animation = ANIMATE_ONCE;
-	    obj->animate->group = obj->animate->group_low = 3;
-	    obj->animate->group_high = 4;
-	    obj->animate->group_final = 0;
-	    obj->animate->period = obj->animate->tick = 400;
+    obj = dudes[i].obj;
+    if (rand() % 30 == 0)
+    {
+       obj->animate->animation = ANIMATE_ONCE;
+       obj->animate->group = obj->animate->group_low = 3;
+       obj->animate->group_high = 4;
+       obj->animate->group_final = 0;
+       obj->animate->period = obj->animate->tick = 400;
 
-	    if (config.play_sound)
-	    {
-	       switch (dudes[i].obj->icon_res)
-	       {
-	       case ABOUT_RSC1: index = 3; break;
-	       case ABOUT_RSC2: index = 4; break;
-	       case ABOUT_RSC3: index = 5; break;
-	       default: index = rand() % num_sounds; break;
-	       }
-		   SoundPlayFile(sounds[index], SF_RANDOM_PITCH);
-	    }
-	 }
-		
-	 AnimateObject(dudes[i].obj, ABOUT_INTERVAL);
-	
-	 pdib = GetObjectPdib(dudes[i].obj->icon_res, dudes[i].angle, dudes[i].obj->animate->group);
-	 if (pdib == NULL)
-	    continue;
-	
-	 bits = DibPtr(pdib);
-	 x = dudes[i].x - DibWidth(pdib) / 2;
-	 y = DUDE_MAX_HEIGHT - DibHeight(pdib);
-	 for (j=0; j < DibHeight(pdib); j++)
-	 {
-	    for (k=0; k < DibWidth(pdib); k++)
-	    {
-	       index = *(bits + j * DibWidth(pdib) + k);
-	       if (index != TRANSPARENT_INDEX)
-		  *(gBits + (j + y) * DIBWIDTH(gbits_width) + x + k) = index;
-	    }
-	 }
+       if (config.play_sound)
+       {
+          switch (dudes[i].obj->icon_res)
+          {
+          case ABOUT_RSC1: index = 3; break;
+          case ABOUT_RSC2: index = 4; break;
+          case ABOUT_RSC3: index = 5; break;
+          default: index = rand() % num_sounds; break;
+          }
+         SoundPlayFile(sounds[index], SF_RANDOM_PITCH);
+       }
+    }
+      
+    AnimateObject(dudes[i].obj, ABOUT_INTERVAL);
+   
+    pdib = GetObjectPdib(dudes[i].obj->icon_res, dudes[i].angle, dudes[i].obj->animate->group);
+    if (pdib == NULL)
+       continue;
+   
+    bits = DibPtr(pdib);
+    x = dudes[i].x - DibWidth(pdib) / 2;
+    y = DUDE_MAX_HEIGHT - DibHeight(pdib);
+    for (j=0; j < DibHeight(pdib); j++)
+    {
+       for (k=0; k < DibWidth(pdib); k++)
+       {
+          index = *(bits + j * DibWidth(pdib) + k);
+          if (index != TRANSPARENT_INDEX)
+        *(gBits + (j + y) * DIBWIDTH(gbits_width) + x + k) = index;
+       }
+    }
       }
    }
    SelectPalette(hdc, hPal, FALSE);
@@ -348,9 +348,9 @@ void AboutLButtonDown(HWND hwnd, BOOL fDoubleClick, int x, int y, UINT keyFlags)
    for (i=0; i < num_names; i++)
       if (y >= names[i].min_y && y <= names[i].max_y)
       {
-	 index = names[i].index;
-	 if (dudes[index].obj != NULL)
-	    dudes[index].obj->icon_res = names[i].rsc;
+    index = names[i].index;
+    if (dudes[index].obj != NULL)
+       dudes[index].obj->icon_res = names[i].rsc;
       }
 #else
    RECT rect;
@@ -364,7 +364,7 @@ void AboutLButtonDown(HWND hwnd, BOOL fDoubleClick, int x, int y, UINT keyFlags)
    {
       credits_page++;
       if (credits_page >= credits_b.num_bitmaps)
-	 credits_page = 0;
+    credits_page = 0;
       credits_pdib = BitmapsGetPdibByIndex(credits_b, credits_page);
       scroll_y = 0;
    }

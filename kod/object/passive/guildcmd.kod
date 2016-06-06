@@ -21,10 +21,9 @@ resources:
 
    guildcommand_name_rsc = "guild command"
    guildcommand_icon_rsc = light.bgf
-   guildcommand_desc_text_rsc = "This is a guild command, used to administer a guild."
-
+   guildcommand_desc_text_rsc = \
+      "This is a guild command, used to administer a guild."
    guildcommand_out_of_range = "%s%q is out of range."
-
    guildcommand_desc_rsc = "Guild Command    Rank needed: %s/%s\n\n%s"
 
 classvars:
@@ -53,20 +52,22 @@ messages:
       local rMale, rFemale, oGuild;
 
       if who = $
-         {
-           return;
-         }
-      oGuild=send(who,@getguild);
+      {
+        return;
+      }
+
+      oGuild = Send(who,@GetGuild);
       if oGuild = $
-        {
-           Addpacket(4,vrDesc);
-        }
+      {
+         AddPacket(4,vrDesc);
+      }
       else
-        {
-           rMale = send(oGuild,@getrankname,#rank=viRank_needed,#sex=GENDER_MALE);
-           rMale = send(oGuild,@getrankname,#rank=viRank_needed,#sex=GENDER_FEMALE);
-           AddPacket(4,guildcommand_desc_rsc,4,rMale,4,rFemale,4,vrDesc);
-        }
+      {
+         rMale = Send(oGuild,@GetRankName,#rank=viRank_needed,#sex=GENDER_MALE);
+         rFemale = Send(oGuild,@GetRankName,#rank=viRank_needed,#sex=GENDER_FEMALE);
+         AddPacket(4,guildcommand_desc_rsc,4,rMale,4,rFemale,4,vrDesc);
+      }
+
       return;
    }
 
@@ -77,24 +78,26 @@ messages:
 
       %%if necro and viNecro_enabled = FALSE
       %%{                         %% player shouldn't have command
-      %%    send(who,@removeguildcommand,#command_num=viGuildCommand_num);
+      %%    Send(who,@RemoveGuildCommand,#command_num=viGuildCommand_num);
       %%	  return;
       %%}
 
       if rank < viRank_needed
-        {                         %% player shouldn't have command
-          send(who,@removeguildcommand,#command_num=viGuildCommand_num);
-        }
+      {
+         Send(who,@RemoveGuildCommand,#command_num=viGuildCommand_num);
+      }
       else                        %% player should have command
-        {                        
-          send(who,@addguildcommand,#command_num=viGuildCommand_num);
-        }
+      {
+         Send(who,@AddGuildCommand,#command_num=viGuildCommand_num);
+      }
+
       return;
    }
 
    Delete()
    {
       Send(SYS,@DeleteGuildCommand,#what=self);
+
       propagate;
    }
 
@@ -116,37 +119,39 @@ messages:
 
    InitialAbility(who=$)
    {
-      local prereq_stats;
-
       return 99;
    }
 
    CanPayCosts(who = $, lTargets = $)
    {
-     local oOwner, i, oGuild;
+      local oOwner, i, oGuild;
 
-     oGuild= send(who,@getGuild);
-     if oGuild = $
-        { return FALSE;  }
+      oGuild = Send(who,@GetGuild);
+      if oGuild = $
+      {
+         return FALSE;
+      }
 
-     if send(oGuild,@getrank,#who=who) < viRank_needed
-        {
-           return FALSE;          %% not high enough in rank to get this command
-        }
+      if Send(oGuild,@GetRank,#who=who) < viRank_needed
+      {
+         return FALSE;
+      }
 
       % Check that target(s) are in range
-      oOwner = Send(who, @GetOwner);
+      oOwner = Send(who,@GetOwner);
       foreach i in lTargets
       {
-	 if oOwner <> Send(i, @GetOwner)
-	 {
-            Send(who, @MsgSendUser,#message_rsc=guildcommand_out_of_range, 
-                 #parm1=Send(i,@GetCapDef),#parm2=Send(i,@GetName),#type2=STRING_RESOURCE);
+         if oOwner <> Send(i,@GetOwner)
+         {
+            Send(who,@MsgSendUser,#message_rsc=guildcommand_out_of_range,
+                  #parm1=Send(i,@GetCapDef),#parm2=Send(i,@GetName),
+                  #type2=STRING_RESOURCE);
+
             return FALSE;
          }
       }
-      %debug("spell cast is fine.");
-      return True;
+
+      return TRUE;
    }
 
    DoCommand(who = $, oTarget = $)

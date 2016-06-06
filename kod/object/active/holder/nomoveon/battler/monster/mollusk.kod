@@ -54,9 +54,9 @@ resources:
    MolluskMonster_dead_icon_rsc = molX.bgf
    MolluskMonster_dead_name_rsc = "slain mollusk creature"
 
-   MolluskMonster_sound_miss = mol_atk.wav
-   MolluskMonster_sound_death = mol_dth.wav
-   MolluskMonster_sound_aware = mol_awr.wav
+   MolluskMonster_sound_miss = mol_atk.ogg
+   MolluskMonster_sound_death = mol_dth.ogg
+   MolluskMonster_sound_aware = mol_awr.ogg
 
    MolluskMonster_rock_small = rocksm.bgf
    MolluskMonster_rock_large = rockla.bgf
@@ -76,12 +76,12 @@ classvars:
    viAttack_type = ATCK_WEAP_BLUDGEON
 
    viAttributes = 0
-   viLevel = 140
-   viDifficulty = 7
+   viLevel = 150
+   viDifficulty = 8
    viVisionDistance = 20
    % Attack range of 192, or 3 row/col.
    viAttackRange = 192
-   viKarma = 90
+   viKarma = 100
    viCashmin = 400
    viCashmax = 1500
    vrSound_miss = MolluskMonster_sound_miss

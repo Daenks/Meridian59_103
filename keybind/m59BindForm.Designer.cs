@@ -184,20 +184,19 @@
             // 
             // tabControl1
             // 
+            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage6);
-            this.tabControl1.Location = new System.Drawing.Point(1, 1);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(498, 259);
-            this.tabControl1.TabIndex = 0;
             // 
             // tabPage1
             // 
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Controls.Add(this.buttonMouselookToggleMod);
             this.tabPage1.Controls.Add(this.label12);
             this.tabPage1.Controls.Add(this.buttonMouselookToggle);
@@ -234,39 +233,25 @@
             this.tabPage1.Controls.Add(this.buttonForwardMod);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.buttonForward);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(490, 233);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Movement";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // buttonMouselookToggleMod
             // 
-            this.buttonMouselookToggleMod.Location = new System.Drawing.Point(446, 173);
+            resources.ApplyResources(this.buttonMouselookToggleMod, "buttonMouselookToggleMod");
             this.buttonMouselookToggleMod.Name = "buttonMouselookToggleMod";
-            this.buttonMouselookToggleMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonMouselookToggleMod.TabIndex = 35;
-            this.buttonMouselookToggleMod.Text = "+";
             this.buttonMouselookToggleMod.UseVisualStyleBackColor = true;
             this.buttonMouselookToggleMod.Click += new System.EventHandler(this.buttonMouselookToggleMod_Click);
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(254, 178);
+            resources.ApplyResources(this.label12, "label12");
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(95, 13);
-            this.label12.TabIndex = 34;
-            this.label12.Text = "Mouselook Toggle";
             // 
             // buttonMouselookToggle
             // 
-            this.buttonMouselookToggle.Location = new System.Drawing.Point(365, 173);
+            resources.ApplyResources(this.buttonMouselookToggle, "buttonMouselookToggle");
             this.buttonMouselookToggle.Name = "buttonMouselookToggle";
-            this.buttonMouselookToggle.Size = new System.Drawing.Size(75, 23);
-            this.buttonMouselookToggle.TabIndex = 33;
             this.buttonMouselookToggle.UseVisualStyleBackColor = true;
             this.buttonMouselookToggle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonMouselookToggle_KeyDown);
             this.buttonMouselookToggle.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMouselookToggle_MouseDown);
@@ -274,29 +259,20 @@
             // 
             // buttonFlipMod
             // 
-            this.buttonFlipMod.Location = new System.Drawing.Point(446, 144);
+            resources.ApplyResources(this.buttonFlipMod, "buttonFlipMod");
             this.buttonFlipMod.Name = "buttonFlipMod";
-            this.buttonFlipMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonFlipMod.TabIndex = 32;
-            this.buttonFlipMod.Text = "+";
             this.buttonFlipMod.UseVisualStyleBackColor = true;
             this.buttonFlipMod.Click += new System.EventHandler(this.buttonFlipMod_Click);
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(254, 149);
+            resources.ApplyResources(this.label11, "label11");
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(23, 13);
-            this.label11.TabIndex = 31;
-            this.label11.Text = "Flip";
             // 
             // buttonFlip
             // 
-            this.buttonFlip.Location = new System.Drawing.Point(365, 144);
+            resources.ApplyResources(this.buttonFlip, "buttonFlip");
             this.buttonFlip.Name = "buttonFlip";
-            this.buttonFlip.Size = new System.Drawing.Size(75, 23);
-            this.buttonFlip.TabIndex = 30;
             this.buttonFlip.UseVisualStyleBackColor = true;
             this.buttonFlip.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonFlip_KeyDown);
             this.buttonFlip.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonFlip_MouseDown);
@@ -304,29 +280,20 @@
             // 
             // buttonLookStraightMod
             // 
-            this.buttonLookStraightMod.Location = new System.Drawing.Point(446, 115);
+            resources.ApplyResources(this.buttonLookStraightMod, "buttonLookStraightMod");
             this.buttonLookStraightMod.Name = "buttonLookStraightMod";
-            this.buttonLookStraightMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonLookStraightMod.TabIndex = 29;
-            this.buttonLookStraightMod.Text = "+";
             this.buttonLookStraightMod.UseVisualStyleBackColor = true;
             this.buttonLookStraightMod.Click += new System.EventHandler(this.buttonLookStraightMod_Click);
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(254, 120);
+            resources.ApplyResources(this.label10, "label10");
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(70, 13);
-            this.label10.TabIndex = 28;
-            this.label10.Text = "Look Straight";
             // 
             // buttonLookStraight
             // 
-            this.buttonLookStraight.Location = new System.Drawing.Point(365, 115);
+            resources.ApplyResources(this.buttonLookStraight, "buttonLookStraight");
             this.buttonLookStraight.Name = "buttonLookStraight";
-            this.buttonLookStraight.Size = new System.Drawing.Size(75, 23);
-            this.buttonLookStraight.TabIndex = 27;
             this.buttonLookStraight.UseVisualStyleBackColor = true;
             this.buttonLookStraight.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonLookStraight_KeyDown);
             this.buttonLookStraight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonLookStraight_MouseDown);
@@ -334,29 +301,20 @@
             // 
             // buttonLookDownMod
             // 
-            this.buttonLookDownMod.Location = new System.Drawing.Point(446, 86);
+            resources.ApplyResources(this.buttonLookDownMod, "buttonLookDownMod");
             this.buttonLookDownMod.Name = "buttonLookDownMod";
-            this.buttonLookDownMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonLookDownMod.TabIndex = 26;
-            this.buttonLookDownMod.Text = "+";
             this.buttonLookDownMod.UseVisualStyleBackColor = true;
             this.buttonLookDownMod.Click += new System.EventHandler(this.buttonLookDownMod_Click);
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(254, 91);
+            resources.ApplyResources(this.label9, "label9");
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(62, 13);
-            this.label9.TabIndex = 25;
-            this.label9.Text = "Look Down";
             // 
             // buttonLookDown
             // 
-            this.buttonLookDown.Location = new System.Drawing.Point(365, 86);
+            resources.ApplyResources(this.buttonLookDown, "buttonLookDown");
             this.buttonLookDown.Name = "buttonLookDown";
-            this.buttonLookDown.Size = new System.Drawing.Size(75, 23);
-            this.buttonLookDown.TabIndex = 24;
             this.buttonLookDown.UseVisualStyleBackColor = true;
             this.buttonLookDown.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonLookDown_KeyDown);
             this.buttonLookDown.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonLookDown_MouseDown);
@@ -364,29 +322,20 @@
             // 
             // buttonLookUpMod
             // 
-            this.buttonLookUpMod.Location = new System.Drawing.Point(446, 57);
+            resources.ApplyResources(this.buttonLookUpMod, "buttonLookUpMod");
             this.buttonLookUpMod.Name = "buttonLookUpMod";
-            this.buttonLookUpMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonLookUpMod.TabIndex = 23;
-            this.buttonLookUpMod.Text = "+";
             this.buttonLookUpMod.UseVisualStyleBackColor = true;
             this.buttonLookUpMod.Click += new System.EventHandler(this.buttonLookUpMod_Click);
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(254, 62);
+            resources.ApplyResources(this.label8, "label8");
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(48, 13);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "Look Up";
             // 
             // buttonLookUp
             // 
-            this.buttonLookUp.Location = new System.Drawing.Point(365, 57);
+            resources.ApplyResources(this.buttonLookUp, "buttonLookUp");
             this.buttonLookUp.Name = "buttonLookUp";
-            this.buttonLookUp.Size = new System.Drawing.Size(75, 23);
-            this.buttonLookUp.TabIndex = 21;
             this.buttonLookUp.UseVisualStyleBackColor = true;
             this.buttonLookUp.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonLookUp_KeyDown);
             this.buttonLookUp.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonLookUp_MouseDown);
@@ -394,29 +343,20 @@
             // 
             // buttonRunWalkMod
             // 
-            this.buttonRunWalkMod.Location = new System.Drawing.Point(446, 28);
+            resources.ApplyResources(this.buttonRunWalkMod, "buttonRunWalkMod");
             this.buttonRunWalkMod.Name = "buttonRunWalkMod";
-            this.buttonRunWalkMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonRunWalkMod.TabIndex = 20;
-            this.buttonRunWalkMod.Text = "+";
             this.buttonRunWalkMod.UseVisualStyleBackColor = true;
             this.buttonRunWalkMod.Click += new System.EventHandler(this.buttonRunWalkMod_Click);
             // 
             // label7
             // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(254, 33);
+            resources.ApplyResources(this.label7, "label7");
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(57, 13);
-            this.label7.TabIndex = 19;
-            this.label7.Text = "Run/Walk";
             // 
             // buttonRunWalk
             // 
-            this.buttonRunWalk.Location = new System.Drawing.Point(365, 28);
+            resources.ApplyResources(this.buttonRunWalk, "buttonRunWalk");
             this.buttonRunWalk.Name = "buttonRunWalk";
-            this.buttonRunWalk.Size = new System.Drawing.Size(75, 23);
-            this.buttonRunWalk.TabIndex = 18;
             this.buttonRunWalk.UseVisualStyleBackColor = true;
             this.buttonRunWalk.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonRunWalk_KeyDown);
             this.buttonRunWalk.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonRunWalk_MouseDown);
@@ -424,29 +364,20 @@
             // 
             // buttonSlideRightMod
             // 
-            this.buttonSlideRightMod.Location = new System.Drawing.Point(185, 173);
+            resources.ApplyResources(this.buttonSlideRightMod, "buttonSlideRightMod");
             this.buttonSlideRightMod.Name = "buttonSlideRightMod";
-            this.buttonSlideRightMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonSlideRightMod.TabIndex = 17;
-            this.buttonSlideRightMod.Text = "+";
             this.buttonSlideRightMod.UseVisualStyleBackColor = true;
             this.buttonSlideRightMod.Click += new System.EventHandler(this.buttonSlideRightMod_Click);
             // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 178);
+            resources.ApplyResources(this.label6, "label6");
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(58, 13);
-            this.label6.TabIndex = 16;
-            this.label6.Text = "Slide Right";
             // 
             // buttonSlideRight
             // 
-            this.buttonSlideRight.Location = new System.Drawing.Point(104, 173);
+            resources.ApplyResources(this.buttonSlideRight, "buttonSlideRight");
             this.buttonSlideRight.Name = "buttonSlideRight";
-            this.buttonSlideRight.Size = new System.Drawing.Size(75, 23);
-            this.buttonSlideRight.TabIndex = 15;
             this.buttonSlideRight.UseVisualStyleBackColor = true;
             this.buttonSlideRight.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonSlideRight_KeyDown);
             this.buttonSlideRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonSlideRight_MouseDown);
@@ -454,29 +385,20 @@
             // 
             // buttonSlideLeftMod
             // 
-            this.buttonSlideLeftMod.Location = new System.Drawing.Point(185, 144);
+            resources.ApplyResources(this.buttonSlideLeftMod, "buttonSlideLeftMod");
             this.buttonSlideLeftMod.Name = "buttonSlideLeftMod";
-            this.buttonSlideLeftMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonSlideLeftMod.TabIndex = 14;
-            this.buttonSlideLeftMod.Text = "+";
             this.buttonSlideLeftMod.UseVisualStyleBackColor = true;
             this.buttonSlideLeftMod.Click += new System.EventHandler(this.buttonSlideLeftMod_Click);
             // 
             // label5
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(16, 149);
+            resources.ApplyResources(this.label5, "label5");
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(51, 13);
-            this.label5.TabIndex = 13;
-            this.label5.Text = "Slide Left";
             // 
             // buttonSlideLeft
             // 
-            this.buttonSlideLeft.Location = new System.Drawing.Point(104, 144);
+            resources.ApplyResources(this.buttonSlideLeft, "buttonSlideLeft");
             this.buttonSlideLeft.Name = "buttonSlideLeft";
-            this.buttonSlideLeft.Size = new System.Drawing.Size(75, 23);
-            this.buttonSlideLeft.TabIndex = 12;
             this.buttonSlideLeft.UseVisualStyleBackColor = true;
             this.buttonSlideLeft.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonSlideLeft_KeyDown);
             this.buttonSlideLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonSlideLeft_MouseDown);
@@ -484,29 +406,20 @@
             // 
             // buttonTurnRightMod
             // 
-            this.buttonTurnRightMod.Location = new System.Drawing.Point(185, 115);
+            resources.ApplyResources(this.buttonTurnRightMod, "buttonTurnRightMod");
             this.buttonTurnRightMod.Name = "buttonTurnRightMod";
-            this.buttonTurnRightMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTurnRightMod.TabIndex = 11;
-            this.buttonTurnRightMod.Text = "+";
             this.buttonTurnRightMod.UseVisualStyleBackColor = true;
             this.buttonTurnRightMod.Click += new System.EventHandler(this.buttonTurnRightMod_Click);
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(16, 120);
+            resources.ApplyResources(this.label4, "label4");
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(57, 13);
-            this.label4.TabIndex = 10;
-            this.label4.Text = "Turn Right";
             // 
             // buttonTurnRight
             // 
-            this.buttonTurnRight.Location = new System.Drawing.Point(104, 115);
+            resources.ApplyResources(this.buttonTurnRight, "buttonTurnRight");
             this.buttonTurnRight.Name = "buttonTurnRight";
-            this.buttonTurnRight.Size = new System.Drawing.Size(75, 23);
-            this.buttonTurnRight.TabIndex = 9;
             this.buttonTurnRight.UseVisualStyleBackColor = true;
             this.buttonTurnRight.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTurnRight_KeyDown);
             this.buttonTurnRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTurnRight_MouseDown);
@@ -514,29 +427,20 @@
             // 
             // buttonTurnLeftMod
             // 
-            this.buttonTurnLeftMod.Location = new System.Drawing.Point(185, 86);
+            resources.ApplyResources(this.buttonTurnLeftMod, "buttonTurnLeftMod");
             this.buttonTurnLeftMod.Name = "buttonTurnLeftMod";
-            this.buttonTurnLeftMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTurnLeftMod.TabIndex = 8;
-            this.buttonTurnLeftMod.Text = "+";
             this.buttonTurnLeftMod.UseVisualStyleBackColor = true;
             this.buttonTurnLeftMod.Click += new System.EventHandler(this.buttonTurnLeftMod_Click);
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 91);
+            resources.ApplyResources(this.label3, "label3");
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(50, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Turn Left";
             // 
             // buttonTurnLeft
             // 
-            this.buttonTurnLeft.Location = new System.Drawing.Point(104, 86);
+            resources.ApplyResources(this.buttonTurnLeft, "buttonTurnLeft");
             this.buttonTurnLeft.Name = "buttonTurnLeft";
-            this.buttonTurnLeft.Size = new System.Drawing.Size(75, 23);
-            this.buttonTurnLeft.TabIndex = 6;
             this.buttonTurnLeft.UseVisualStyleBackColor = true;
             this.buttonTurnLeft.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTurnLeft_KeyDown);
             this.buttonTurnLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTurnLeft_MouseDown);
@@ -544,29 +448,20 @@
             // 
             // buttonBackwardMod
             // 
-            this.buttonBackwardMod.Location = new System.Drawing.Point(185, 57);
+            resources.ApplyResources(this.buttonBackwardMod, "buttonBackwardMod");
             this.buttonBackwardMod.Name = "buttonBackwardMod";
-            this.buttonBackwardMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonBackwardMod.TabIndex = 5;
-            this.buttonBackwardMod.Text = "+";
             this.buttonBackwardMod.UseVisualStyleBackColor = true;
             this.buttonBackwardMod.Click += new System.EventHandler(this.buttonBackwardMod_Click);
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 62);
+            resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Backward";
             // 
             // buttonBackward
             // 
-            this.buttonBackward.Location = new System.Drawing.Point(104, 56);
+            resources.ApplyResources(this.buttonBackward, "buttonBackward");
             this.buttonBackward.Name = "buttonBackward";
-            this.buttonBackward.Size = new System.Drawing.Size(75, 23);
-            this.buttonBackward.TabIndex = 3;
             this.buttonBackward.UseVisualStyleBackColor = true;
             this.buttonBackward.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonBackward_KeyDown);
             this.buttonBackward.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonBackward_MouseDown);
@@ -574,29 +469,20 @@
             // 
             // buttonForwardMod
             // 
-            this.buttonForwardMod.Location = new System.Drawing.Point(185, 28);
+            resources.ApplyResources(this.buttonForwardMod, "buttonForwardMod");
             this.buttonForwardMod.Name = "buttonForwardMod";
-            this.buttonForwardMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonForwardMod.TabIndex = 2;
-            this.buttonForwardMod.Text = "+";
             this.buttonForwardMod.UseVisualStyleBackColor = true;
             this.buttonForwardMod.Click += new System.EventHandler(this.buttonForwardMod_Click);
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 33);
+            resources.ApplyResources(this.label1, "label1");
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(45, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Forward";
             // 
             // buttonForward
             // 
-            this.buttonForward.Location = new System.Drawing.Point(104, 28);
+            resources.ApplyResources(this.buttonForward, "buttonForward");
             this.buttonForward.Name = "buttonForward";
-            this.buttonForward.Size = new System.Drawing.Size(75, 23);
-            this.buttonForward.TabIndex = 0;
             this.buttonForward.UseVisualStyleBackColor = true;
             this.buttonForward.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonForward_KeyDown);
             this.buttonForward.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonForward_MouseDown);
@@ -604,6 +490,7 @@
             // 
             // tabPage2
             // 
+            resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Controls.Add(this.buttonEmoteMod);
             this.tabPage2.Controls.Add(this.buttonEmote);
             this.tabPage2.Controls.Add(this.label19);
@@ -625,30 +512,20 @@
             this.tabPage2.Controls.Add(this.buttonSayMod);
             this.tabPage2.Controls.Add(this.buttonSay);
             this.tabPage2.Controls.Add(this.label13);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(490, 233);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Communication";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // buttonEmoteMod
             // 
-            this.buttonEmoteMod.Location = new System.Drawing.Point(446, 28);
+            resources.ApplyResources(this.buttonEmoteMod, "buttonEmoteMod");
             this.buttonEmoteMod.Name = "buttonEmoteMod";
-            this.buttonEmoteMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonEmoteMod.TabIndex = 20;
-            this.buttonEmoteMod.Text = "+";
             this.buttonEmoteMod.UseVisualStyleBackColor = true;
             this.buttonEmoteMod.Click += new System.EventHandler(this.buttonEmoteMod_Click);
             // 
             // buttonEmote
             // 
-            this.buttonEmote.Location = new System.Drawing.Point(365, 28);
+            resources.ApplyResources(this.buttonEmote, "buttonEmote");
             this.buttonEmote.Name = "buttonEmote";
-            this.buttonEmote.Size = new System.Drawing.Size(75, 23);
-            this.buttonEmote.TabIndex = 19;
             this.buttonEmote.UseVisualStyleBackColor = true;
             this.buttonEmote.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonEmote_KeyDown);
             this.buttonEmote.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonEmote_MouseDown);
@@ -656,29 +533,20 @@
             // 
             // label19
             // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(254, 33);
+            resources.ApplyResources(this.label19, "label19");
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(37, 13);
-            this.label19.TabIndex = 18;
-            this.label19.Text = "Emote";
             // 
             // buttonWhoMod
             // 
-            this.buttonWhoMod.Location = new System.Drawing.Point(185, 173);
+            resources.ApplyResources(this.buttonWhoMod, "buttonWhoMod");
             this.buttonWhoMod.Name = "buttonWhoMod";
-            this.buttonWhoMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonWhoMod.TabIndex = 17;
-            this.buttonWhoMod.Text = "+";
             this.buttonWhoMod.UseVisualStyleBackColor = true;
             this.buttonWhoMod.Click += new System.EventHandler(this.buttonWhoMod_Click);
             // 
             // buttonWho
             // 
-            this.buttonWho.Location = new System.Drawing.Point(104, 173);
+            resources.ApplyResources(this.buttonWho, "buttonWho");
             this.buttonWho.Name = "buttonWho";
-            this.buttonWho.Size = new System.Drawing.Size(75, 23);
-            this.buttonWho.TabIndex = 16;
             this.buttonWho.UseVisualStyleBackColor = true;
             this.buttonWho.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonWho_KeyDown);
             this.buttonWho.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonWho_MouseDown);
@@ -686,29 +554,20 @@
             // 
             // label18
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(16, 178);
+            resources.ApplyResources(this.label18, "label18");
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(30, 13);
-            this.label18.TabIndex = 15;
-            this.label18.Text = "Who";
             // 
             // buttonBroadcastMod
             // 
-            this.buttonBroadcastMod.Location = new System.Drawing.Point(185, 144);
+            resources.ApplyResources(this.buttonBroadcastMod, "buttonBroadcastMod");
             this.buttonBroadcastMod.Name = "buttonBroadcastMod";
-            this.buttonBroadcastMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonBroadcastMod.TabIndex = 14;
-            this.buttonBroadcastMod.Text = "+";
             this.buttonBroadcastMod.UseVisualStyleBackColor = true;
             this.buttonBroadcastMod.Click += new System.EventHandler(this.buttonBroadcastMod_Click);
             // 
             // buttonBroadcast
             // 
-            this.buttonBroadcast.Location = new System.Drawing.Point(104, 144);
+            resources.ApplyResources(this.buttonBroadcast, "buttonBroadcast");
             this.buttonBroadcast.Name = "buttonBroadcast";
-            this.buttonBroadcast.Size = new System.Drawing.Size(75, 23);
-            this.buttonBroadcast.TabIndex = 13;
             this.buttonBroadcast.UseVisualStyleBackColor = true;
             this.buttonBroadcast.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonBroadcast_KeyDown);
             this.buttonBroadcast.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonBroadcast_MouseDown);
@@ -716,29 +575,20 @@
             // 
             // label17
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(16, 149);
+            resources.ApplyResources(this.label17, "label17");
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(55, 13);
-            this.label17.TabIndex = 12;
-            this.label17.Text = "Broadcast";
             // 
             // buttonYellMod
             // 
-            this.buttonYellMod.Location = new System.Drawing.Point(185, 115);
+            resources.ApplyResources(this.buttonYellMod, "buttonYellMod");
             this.buttonYellMod.Name = "buttonYellMod";
-            this.buttonYellMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonYellMod.TabIndex = 11;
-            this.buttonYellMod.Text = "+";
             this.buttonYellMod.UseVisualStyleBackColor = true;
             this.buttonYellMod.Click += new System.EventHandler(this.buttonYellMod_Click);
             // 
             // buttonYell
             // 
-            this.buttonYell.Location = new System.Drawing.Point(104, 115);
+            resources.ApplyResources(this.buttonYell, "buttonYell");
             this.buttonYell.Name = "buttonYell";
-            this.buttonYell.Size = new System.Drawing.Size(75, 23);
-            this.buttonYell.TabIndex = 10;
             this.buttonYell.UseVisualStyleBackColor = true;
             this.buttonYell.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonYell_KeyDown);
             this.buttonYell.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonYell_MouseDown);
@@ -746,29 +596,20 @@
             // 
             // label16
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(16, 120);
+            resources.ApplyResources(this.label16, "label16");
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(24, 13);
-            this.label16.TabIndex = 9;
-            this.label16.Text = "Yell";
             // 
             // buttonTellMod
             // 
-            this.buttonTellMod.Location = new System.Drawing.Point(185, 86);
+            resources.ApplyResources(this.buttonTellMod, "buttonTellMod");
             this.buttonTellMod.Name = "buttonTellMod";
-            this.buttonTellMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTellMod.TabIndex = 8;
-            this.buttonTellMod.Text = "+";
             this.buttonTellMod.UseVisualStyleBackColor = true;
             this.buttonTellMod.Click += new System.EventHandler(this.buttonTellMod_Click);
             // 
             // buttonTell
             // 
-            this.buttonTell.Location = new System.Drawing.Point(104, 86);
+            resources.ApplyResources(this.buttonTell, "buttonTell");
             this.buttonTell.Name = "buttonTell";
-            this.buttonTell.Size = new System.Drawing.Size(75, 23);
-            this.buttonTell.TabIndex = 7;
             this.buttonTell.UseVisualStyleBackColor = true;
             this.buttonTell.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTell_KeyDown);
             this.buttonTell.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTell_MouseDown);
@@ -776,29 +617,20 @@
             // 
             // label15
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(16, 91);
+            resources.ApplyResources(this.label15, "label15");
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(24, 13);
-            this.label15.TabIndex = 6;
-            this.label15.Text = "Tell";
             // 
             // buttonChatMod
             // 
-            this.buttonChatMod.Location = new System.Drawing.Point(185, 57);
+            resources.ApplyResources(this.buttonChatMod, "buttonChatMod");
             this.buttonChatMod.Name = "buttonChatMod";
-            this.buttonChatMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonChatMod.TabIndex = 5;
-            this.buttonChatMod.Text = "+";
             this.buttonChatMod.UseVisualStyleBackColor = true;
             this.buttonChatMod.Click += new System.EventHandler(this.buttonChatMod_Click);
             // 
             // buttonChat
             // 
-            this.buttonChat.Location = new System.Drawing.Point(104, 57);
+            resources.ApplyResources(this.buttonChat, "buttonChat");
             this.buttonChat.Name = "buttonChat";
-            this.buttonChat.Size = new System.Drawing.Size(75, 23);
-            this.buttonChat.TabIndex = 4;
             this.buttonChat.UseVisualStyleBackColor = true;
             this.buttonChat.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonChat_KeyDown);
             this.buttonChat.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonChat_MouseDown);
@@ -806,29 +638,20 @@
             // 
             // label14
             // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(16, 62);
+            resources.ApplyResources(this.label14, "label14");
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(29, 13);
-            this.label14.TabIndex = 3;
-            this.label14.Text = "Chat";
             // 
             // buttonSayMod
             // 
-            this.buttonSayMod.Location = new System.Drawing.Point(185, 28);
+            resources.ApplyResources(this.buttonSayMod, "buttonSayMod");
             this.buttonSayMod.Name = "buttonSayMod";
-            this.buttonSayMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonSayMod.TabIndex = 2;
-            this.buttonSayMod.Text = "+";
             this.buttonSayMod.UseVisualStyleBackColor = true;
             this.buttonSayMod.Click += new System.EventHandler(this.buttonSayMod_Click);
             // 
             // buttonSay
             // 
-            this.buttonSay.Location = new System.Drawing.Point(104, 28);
+            resources.ApplyResources(this.buttonSay, "buttonSay");
             this.buttonSay.Name = "buttonSay";
-            this.buttonSay.Size = new System.Drawing.Size(75, 23);
-            this.buttonSay.TabIndex = 1;
             this.buttonSay.UseVisualStyleBackColor = true;
             this.buttonSay.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonSay_KeyDown);
             this.buttonSay.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonSay_MouseDown);
@@ -836,15 +659,12 @@
             // 
             // label13
             // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(16, 33);
+            resources.ApplyResources(this.label13, "label13");
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(25, 13);
-            this.label13.TabIndex = 0;
-            this.label13.Text = "Say";
             // 
             // tabPage3
             // 
+            resources.ApplyResources(this.tabPage3, "tabPage3");
             this.tabPage3.Controls.Add(this.buttonAttackMod);
             this.tabPage3.Controls.Add(this.buttonAttack);
             this.tabPage3.Controls.Add(this.label28);
@@ -872,30 +692,20 @@
             this.tabPage3.Controls.Add(this.buttonOpenMod);
             this.tabPage3.Controls.Add(this.buttonOpen);
             this.tabPage3.Controls.Add(this.label20);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(490, 233);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Interaction";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // buttonAttackMod
             // 
-            this.buttonAttackMod.Location = new System.Drawing.Point(446, 86);
+            resources.ApplyResources(this.buttonAttackMod, "buttonAttackMod");
             this.buttonAttackMod.Name = "buttonAttackMod";
-            this.buttonAttackMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonAttackMod.TabIndex = 26;
-            this.buttonAttackMod.Text = "+";
             this.buttonAttackMod.UseVisualStyleBackColor = true;
             this.buttonAttackMod.Click += new System.EventHandler(this.buttonAttackMod_Click);
             // 
             // buttonAttack
             // 
-            this.buttonAttack.Location = new System.Drawing.Point(365, 86);
+            resources.ApplyResources(this.buttonAttack, "buttonAttack");
             this.buttonAttack.Name = "buttonAttack";
-            this.buttonAttack.Size = new System.Drawing.Size(75, 23);
-            this.buttonAttack.TabIndex = 25;
             this.buttonAttack.UseVisualStyleBackColor = true;
             this.buttonAttack.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonAttack_KeyDown);
             this.buttonAttack.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonAttack_MouseDown);
@@ -903,29 +713,20 @@
             // 
             // label28
             // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(254, 91);
+            resources.ApplyResources(this.label28, "label28");
             this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(38, 13);
-            this.label28.TabIndex = 24;
-            this.label28.Text = "Attack";
             // 
             // buttonWithdrawMod
             // 
-            this.buttonWithdrawMod.Location = new System.Drawing.Point(446, 57);
+            resources.ApplyResources(this.buttonWithdrawMod, "buttonWithdrawMod");
             this.buttonWithdrawMod.Name = "buttonWithdrawMod";
-            this.buttonWithdrawMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonWithdrawMod.TabIndex = 23;
-            this.buttonWithdrawMod.Text = "+";
             this.buttonWithdrawMod.UseVisualStyleBackColor = true;
             this.buttonWithdrawMod.Click += new System.EventHandler(this.buttonWithdrawMod_Click);
             // 
             // buttonWithdraw
             // 
-            this.buttonWithdraw.Location = new System.Drawing.Point(365, 57);
+            resources.ApplyResources(this.buttonWithdraw, "buttonWithdraw");
             this.buttonWithdraw.Name = "buttonWithdraw";
-            this.buttonWithdraw.Size = new System.Drawing.Size(75, 23);
-            this.buttonWithdraw.TabIndex = 22;
             this.buttonWithdraw.UseVisualStyleBackColor = true;
             this.buttonWithdraw.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonWithdraw_KeyDown);
             this.buttonWithdraw.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonWithdraw_MouseDown);
@@ -933,29 +734,20 @@
             // 
             // label27
             // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(254, 62);
+            resources.ApplyResources(this.label27, "label27");
             this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(52, 13);
-            this.label27.TabIndex = 21;
-            this.label27.Text = "Withdraw";
             // 
             // buttonDepositMod
             // 
-            this.buttonDepositMod.Location = new System.Drawing.Point(446, 28);
+            resources.ApplyResources(this.buttonDepositMod, "buttonDepositMod");
             this.buttonDepositMod.Name = "buttonDepositMod";
-            this.buttonDepositMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonDepositMod.TabIndex = 20;
-            this.buttonDepositMod.Text = "+";
             this.buttonDepositMod.UseVisualStyleBackColor = true;
             this.buttonDepositMod.Click += new System.EventHandler(this.buttonDepositMod_Click);
             // 
             // buttonDeposit
             // 
-            this.buttonDeposit.Location = new System.Drawing.Point(365, 28);
+            resources.ApplyResources(this.buttonDeposit, "buttonDeposit");
             this.buttonDeposit.Name = "buttonDeposit";
-            this.buttonDeposit.Size = new System.Drawing.Size(75, 23);
-            this.buttonDeposit.TabIndex = 19;
             this.buttonDeposit.UseVisualStyleBackColor = true;
             this.buttonDeposit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonDeposit_KeyDown);
             this.buttonDeposit.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonDeposit_MouseDown);
@@ -963,29 +755,20 @@
             // 
             // label26
             // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(254, 33);
+            resources.ApplyResources(this.label26, "label26");
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(43, 13);
-            this.label26.TabIndex = 18;
-            this.label26.Text = "Deposit";
             // 
             // buttonBuyMod
             // 
-            this.buttonBuyMod.Location = new System.Drawing.Point(185, 173);
+            resources.ApplyResources(this.buttonBuyMod, "buttonBuyMod");
             this.buttonBuyMod.Name = "buttonBuyMod";
-            this.buttonBuyMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonBuyMod.TabIndex = 17;
-            this.buttonBuyMod.Text = "+";
             this.buttonBuyMod.UseVisualStyleBackColor = true;
             this.buttonBuyMod.Click += new System.EventHandler(this.buttonBuyMod_Click);
             // 
             // buttonBuy
             // 
-            this.buttonBuy.Location = new System.Drawing.Point(104, 173);
+            resources.ApplyResources(this.buttonBuy, "buttonBuy");
             this.buttonBuy.Name = "buttonBuy";
-            this.buttonBuy.Size = new System.Drawing.Size(75, 23);
-            this.buttonBuy.TabIndex = 16;
             this.buttonBuy.UseVisualStyleBackColor = true;
             this.buttonBuy.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonBuy_KeyDown);
             this.buttonBuy.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonBuy_MouseDown);
@@ -993,29 +776,20 @@
             // 
             // label25
             // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(16, 178);
+            resources.ApplyResources(this.label25, "label25");
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(25, 13);
-            this.label25.TabIndex = 15;
-            this.label25.Text = "Buy";
             // 
             // buttonOfferMod
             // 
-            this.buttonOfferMod.Location = new System.Drawing.Point(185, 144);
+            resources.ApplyResources(this.buttonOfferMod, "buttonOfferMod");
             this.buttonOfferMod.Name = "buttonOfferMod";
-            this.buttonOfferMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonOfferMod.TabIndex = 14;
-            this.buttonOfferMod.Text = "+";
             this.buttonOfferMod.UseVisualStyleBackColor = true;
             this.buttonOfferMod.Click += new System.EventHandler(this.buttonOfferMod_Click);
             // 
             // buttonOffer
             // 
-            this.buttonOffer.Location = new System.Drawing.Point(104, 144);
+            resources.ApplyResources(this.buttonOffer, "buttonOffer");
             this.buttonOffer.Name = "buttonOffer";
-            this.buttonOffer.Size = new System.Drawing.Size(75, 23);
-            this.buttonOffer.TabIndex = 13;
             this.buttonOffer.UseVisualStyleBackColor = true;
             this.buttonOffer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonOffer_KeyDown);
             this.buttonOffer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonOffer_MouseDown);
@@ -1023,29 +797,20 @@
             // 
             // label24
             // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(16, 149);
+            resources.ApplyResources(this.label24, "label24");
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(30, 13);
-            this.label24.TabIndex = 12;
-            this.label24.Text = "Offer";
             // 
             // buttonExamineMod
             // 
-            this.buttonExamineMod.Location = new System.Drawing.Point(185, 115);
+            resources.ApplyResources(this.buttonExamineMod, "buttonExamineMod");
             this.buttonExamineMod.Name = "buttonExamineMod";
-            this.buttonExamineMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonExamineMod.TabIndex = 11;
-            this.buttonExamineMod.Text = "+";
             this.buttonExamineMod.UseVisualStyleBackColor = true;
             this.buttonExamineMod.Click += new System.EventHandler(this.buttonExamineMod_Click);
             // 
             // buttonExamine
             // 
-            this.buttonExamine.Location = new System.Drawing.Point(104, 115);
+            resources.ApplyResources(this.buttonExamine, "buttonExamine");
             this.buttonExamine.Name = "buttonExamine";
-            this.buttonExamine.Size = new System.Drawing.Size(75, 23);
-            this.buttonExamine.TabIndex = 10;
             this.buttonExamine.UseVisualStyleBackColor = true;
             this.buttonExamine.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonExamine_KeyDown);
             this.buttonExamine.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonExamine_MouseDown);
@@ -1053,29 +818,20 @@
             // 
             // label23
             // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(16, 120);
+            resources.ApplyResources(this.label23, "label23");
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(47, 13);
-            this.label23.TabIndex = 9;
-            this.label23.Text = "Examine";
             // 
             // buttonLookMod
             // 
-            this.buttonLookMod.Location = new System.Drawing.Point(185, 86);
+            resources.ApplyResources(this.buttonLookMod, "buttonLookMod");
             this.buttonLookMod.Name = "buttonLookMod";
-            this.buttonLookMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonLookMod.TabIndex = 8;
-            this.buttonLookMod.Text = "+";
             this.buttonLookMod.UseVisualStyleBackColor = true;
             this.buttonLookMod.Click += new System.EventHandler(this.buttonLookMod_Click);
             // 
             // buttonLook
             // 
-            this.buttonLook.Location = new System.Drawing.Point(104, 86);
+            resources.ApplyResources(this.buttonLook, "buttonLook");
             this.buttonLook.Name = "buttonLook";
-            this.buttonLook.Size = new System.Drawing.Size(75, 23);
-            this.buttonLook.TabIndex = 7;
             this.buttonLook.UseVisualStyleBackColor = true;
             this.buttonLook.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonLook_KeyDown);
             this.buttonLook.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonLook_MouseDown);
@@ -1083,29 +839,20 @@
             // 
             // label22
             // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(16, 91);
+            resources.ApplyResources(this.label22, "label22");
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(31, 13);
-            this.label22.TabIndex = 6;
-            this.label22.Text = "Look";
             // 
             // buttonPickUpMod
             // 
-            this.buttonPickUpMod.Location = new System.Drawing.Point(185, 57);
+            resources.ApplyResources(this.buttonPickUpMod, "buttonPickUpMod");
             this.buttonPickUpMod.Name = "buttonPickUpMod";
-            this.buttonPickUpMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonPickUpMod.TabIndex = 5;
-            this.buttonPickUpMod.Text = "+";
             this.buttonPickUpMod.UseVisualStyleBackColor = true;
             this.buttonPickUpMod.Click += new System.EventHandler(this.buttonPickUpMod_Click);
             // 
             // buttonPickUp
             // 
-            this.buttonPickUp.Location = new System.Drawing.Point(104, 57);
+            resources.ApplyResources(this.buttonPickUp, "buttonPickUp");
             this.buttonPickUp.Name = "buttonPickUp";
-            this.buttonPickUp.Size = new System.Drawing.Size(75, 23);
-            this.buttonPickUp.TabIndex = 4;
             this.buttonPickUp.UseVisualStyleBackColor = true;
             this.buttonPickUp.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonPickUp_KeyDown);
             this.buttonPickUp.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonPickUp_MouseDown);
@@ -1113,29 +860,20 @@
             // 
             // label21
             // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(16, 62);
+            resources.ApplyResources(this.label21, "label21");
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(45, 13);
-            this.label21.TabIndex = 3;
-            this.label21.Text = "Pick Up";
             // 
             // buttonOpenMod
             // 
-            this.buttonOpenMod.Location = new System.Drawing.Point(185, 28);
+            resources.ApplyResources(this.buttonOpenMod, "buttonOpenMod");
             this.buttonOpenMod.Name = "buttonOpenMod";
-            this.buttonOpenMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonOpenMod.TabIndex = 2;
-            this.buttonOpenMod.Text = "+";
             this.buttonOpenMod.UseVisualStyleBackColor = true;
             this.buttonOpenMod.Click += new System.EventHandler(this.buttonOpenMod_Click);
             // 
             // buttonOpen
             // 
-            this.buttonOpen.Location = new System.Drawing.Point(104, 28);
+            resources.ApplyResources(this.buttonOpen, "buttonOpen");
             this.buttonOpen.Name = "buttonOpen";
-            this.buttonOpen.Size = new System.Drawing.Size(75, 23);
-            this.buttonOpen.TabIndex = 1;
             this.buttonOpen.UseVisualStyleBackColor = true;
             this.buttonOpen.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonOpen_KeyDown);
             this.buttonOpen.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonOpen_MouseDown);
@@ -1143,15 +881,12 @@
             // 
             // label20
             // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(16, 33);
+            resources.ApplyResources(this.label20, "label20");
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(33, 13);
-            this.label20.TabIndex = 0;
-            this.label20.Text = "Open";
             // 
             // tabPage4
             // 
+            resources.ApplyResources(this.tabPage4, "tabPage4");
             this.tabPage4.Controls.Add(this.buttonSelectTargetMod);
             this.tabPage4.Controls.Add(this.buttonSelectTarget);
             this.tabPage4.Controls.Add(this.label35);
@@ -1173,30 +908,20 @@
             this.tabPage4.Controls.Add(this.buttonTargetNextMod);
             this.tabPage4.Controls.Add(this.buttonTargetNext);
             this.tabPage4.Controls.Add(this.label29);
-            this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(490, 233);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "Targeting";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // buttonSelectTargetMod
             // 
-            this.buttonSelectTargetMod.Location = new System.Drawing.Point(446, 28);
+            resources.ApplyResources(this.buttonSelectTargetMod, "buttonSelectTargetMod");
             this.buttonSelectTargetMod.Name = "buttonSelectTargetMod";
-            this.buttonSelectTargetMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonSelectTargetMod.TabIndex = 23;
-            this.buttonSelectTargetMod.Text = "+";
             this.buttonSelectTargetMod.UseVisualStyleBackColor = true;
             this.buttonSelectTargetMod.Click += new System.EventHandler(this.buttonSelectTargetMod_Click);
             // 
             // buttonSelectTarget
             // 
-            this.buttonSelectTarget.Location = new System.Drawing.Point(365, 28);
+            resources.ApplyResources(this.buttonSelectTarget, "buttonSelectTarget");
             this.buttonSelectTarget.Name = "buttonSelectTarget";
-            this.buttonSelectTarget.Size = new System.Drawing.Size(75, 23);
-            this.buttonSelectTarget.TabIndex = 22;
             this.buttonSelectTarget.UseVisualStyleBackColor = true;
             this.buttonSelectTarget.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonSelectTarget_KeyDown);
             this.buttonSelectTarget.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonSelectTarget_MouseDown);
@@ -1204,29 +929,20 @@
             // 
             // label35
             // 
-            this.label35.AutoSize = true;
-            this.label35.Location = new System.Drawing.Point(254, 33);
+            resources.ApplyResources(this.label35, "label35");
             this.label35.Name = "label35";
-            this.label35.Size = new System.Drawing.Size(71, 13);
-            this.label35.TabIndex = 21;
-            this.label35.Text = "Select Target";
             // 
             // buttonTabBackwardMod
             // 
-            this.buttonTabBackwardMod.Location = new System.Drawing.Point(185, 173);
+            resources.ApplyResources(this.buttonTabBackwardMod, "buttonTabBackwardMod");
             this.buttonTabBackwardMod.Name = "buttonTabBackwardMod";
-            this.buttonTabBackwardMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTabBackwardMod.TabIndex = 20;
-            this.buttonTabBackwardMod.Text = "+";
             this.buttonTabBackwardMod.UseVisualStyleBackColor = true;
             this.buttonTabBackwardMod.Click += new System.EventHandler(this.buttonTabBackwardMod_Click);
             // 
             // buttonTabBackward
             // 
-            this.buttonTabBackward.Location = new System.Drawing.Point(104, 173);
+            resources.ApplyResources(this.buttonTabBackward, "buttonTabBackward");
             this.buttonTabBackward.Name = "buttonTabBackward";
-            this.buttonTabBackward.Size = new System.Drawing.Size(75, 23);
-            this.buttonTabBackward.TabIndex = 19;
             this.buttonTabBackward.UseVisualStyleBackColor = true;
             this.buttonTabBackward.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTabBackward_KeyDown);
             this.buttonTabBackward.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTabBackward_MouseDown);
@@ -1234,29 +950,20 @@
             // 
             // label34
             // 
-            this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(16, 178);
+            resources.ApplyResources(this.label34, "label34");
             this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(77, 13);
-            this.label34.TabIndex = 18;
-            this.label34.Text = "Tab Backward";
             // 
             // buttonTabForwardMod
             // 
-            this.buttonTabForwardMod.Location = new System.Drawing.Point(185, 144);
+            resources.ApplyResources(this.buttonTabForwardMod, "buttonTabForwardMod");
             this.buttonTabForwardMod.Name = "buttonTabForwardMod";
-            this.buttonTabForwardMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTabForwardMod.TabIndex = 17;
-            this.buttonTabForwardMod.Text = "+";
             this.buttonTabForwardMod.UseVisualStyleBackColor = true;
             this.buttonTabForwardMod.Click += new System.EventHandler(this.buttonTabForwardMod_Click);
             // 
             // buttonTabForward
             // 
-            this.buttonTabForward.Location = new System.Drawing.Point(104, 144);
+            resources.ApplyResources(this.buttonTabForward, "buttonTabForward");
             this.buttonTabForward.Name = "buttonTabForward";
-            this.buttonTabForward.Size = new System.Drawing.Size(75, 23);
-            this.buttonTabForward.TabIndex = 16;
             this.buttonTabForward.UseVisualStyleBackColor = true;
             this.buttonTabForward.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTabForward_KeyDown);
             this.buttonTabForward.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTabForward_MouseDown);
@@ -1264,29 +971,20 @@
             // 
             // label33
             // 
-            this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(16, 149);
+            resources.ApplyResources(this.label33, "label33");
             this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(67, 13);
-            this.label33.TabIndex = 15;
-            this.label33.Text = "Tab Forward";
             // 
             // buttonTargetSelfMod
             // 
-            this.buttonTargetSelfMod.Location = new System.Drawing.Point(185, 115);
+            resources.ApplyResources(this.buttonTargetSelfMod, "buttonTargetSelfMod");
             this.buttonTargetSelfMod.Name = "buttonTargetSelfMod";
-            this.buttonTargetSelfMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTargetSelfMod.TabIndex = 14;
-            this.buttonTargetSelfMod.Text = "+";
             this.buttonTargetSelfMod.UseVisualStyleBackColor = true;
             this.buttonTargetSelfMod.Click += new System.EventHandler(this.buttonTargetSelfMod_Click);
             // 
             // buttonTargetSelf
             // 
-            this.buttonTargetSelf.Location = new System.Drawing.Point(104, 115);
+            resources.ApplyResources(this.buttonTargetSelf, "buttonTargetSelf");
             this.buttonTargetSelf.Name = "buttonTargetSelf";
-            this.buttonTargetSelf.Size = new System.Drawing.Size(75, 23);
-            this.buttonTargetSelf.TabIndex = 13;
             this.buttonTargetSelf.UseVisualStyleBackColor = true;
             this.buttonTargetSelf.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTargetSelf_KeyDown);
             this.buttonTargetSelf.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTargetSelf_MouseDown);
@@ -1294,29 +992,20 @@
             // 
             // label32
             // 
-            this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(16, 120);
+            resources.ApplyResources(this.label32, "label32");
             this.label32.Name = "label32";
-            this.label32.Size = new System.Drawing.Size(59, 13);
-            this.label32.TabIndex = 12;
-            this.label32.Text = "Target Self";
             // 
             // buttonTargetClearMod
             // 
-            this.buttonTargetClearMod.Location = new System.Drawing.Point(185, 86);
+            resources.ApplyResources(this.buttonTargetClearMod, "buttonTargetClearMod");
             this.buttonTargetClearMod.Name = "buttonTargetClearMod";
-            this.buttonTargetClearMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTargetClearMod.TabIndex = 11;
-            this.buttonTargetClearMod.Text = "+";
             this.buttonTargetClearMod.UseVisualStyleBackColor = true;
             this.buttonTargetClearMod.Click += new System.EventHandler(this.buttonTargetClearMod_Click);
             // 
             // buttonTargetClear
             // 
-            this.buttonTargetClear.Location = new System.Drawing.Point(104, 86);
+            resources.ApplyResources(this.buttonTargetClear, "buttonTargetClear");
             this.buttonTargetClear.Name = "buttonTargetClear";
-            this.buttonTargetClear.Size = new System.Drawing.Size(75, 23);
-            this.buttonTargetClear.TabIndex = 10;
             this.buttonTargetClear.UseVisualStyleBackColor = true;
             this.buttonTargetClear.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTargetClear_KeyDown);
             this.buttonTargetClear.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTargetClear_MouseDown);
@@ -1324,29 +1013,20 @@
             // 
             // label31
             // 
-            this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(16, 91);
+            resources.ApplyResources(this.label31, "label31");
             this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(65, 13);
-            this.label31.TabIndex = 9;
-            this.label31.Text = "Target Clear";
             // 
             // buttonTargetPreviousMod
             // 
-            this.buttonTargetPreviousMod.Location = new System.Drawing.Point(185, 56);
+            resources.ApplyResources(this.buttonTargetPreviousMod, "buttonTargetPreviousMod");
             this.buttonTargetPreviousMod.Name = "buttonTargetPreviousMod";
-            this.buttonTargetPreviousMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTargetPreviousMod.TabIndex = 8;
-            this.buttonTargetPreviousMod.Text = "+";
             this.buttonTargetPreviousMod.UseVisualStyleBackColor = true;
             this.buttonTargetPreviousMod.Click += new System.EventHandler(this.buttonTargetPreviousMod_Click);
             // 
             // buttonTargetPrevious
             // 
-            this.buttonTargetPrevious.Location = new System.Drawing.Point(104, 57);
+            resources.ApplyResources(this.buttonTargetPrevious, "buttonTargetPrevious");
             this.buttonTargetPrevious.Name = "buttonTargetPrevious";
-            this.buttonTargetPrevious.Size = new System.Drawing.Size(75, 23);
-            this.buttonTargetPrevious.TabIndex = 7;
             this.buttonTargetPrevious.UseVisualStyleBackColor = true;
             this.buttonTargetPrevious.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTargetPrevious_KeyDown);
             this.buttonTargetPrevious.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTargetPrevious_MouseDown);
@@ -1354,29 +1034,20 @@
             // 
             // label30
             // 
-            this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(16, 61);
+            resources.ApplyResources(this.label30, "label30");
             this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(82, 13);
-            this.label30.TabIndex = 6;
-            this.label30.Text = "Target Previous";
             // 
             // buttonTargetNextMod
             // 
-            this.buttonTargetNextMod.Location = new System.Drawing.Point(185, 28);
+            resources.ApplyResources(this.buttonTargetNextMod, "buttonTargetNextMod");
             this.buttonTargetNextMod.Name = "buttonTargetNextMod";
-            this.buttonTargetNextMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonTargetNextMod.TabIndex = 5;
-            this.buttonTargetNextMod.Text = "+";
             this.buttonTargetNextMod.UseVisualStyleBackColor = true;
             this.buttonTargetNextMod.Click += new System.EventHandler(this.buttonTargetNextMod_Click);
             // 
             // buttonTargetNext
             // 
-            this.buttonTargetNext.Location = new System.Drawing.Point(104, 28);
+            resources.ApplyResources(this.buttonTargetNext, "buttonTargetNext");
             this.buttonTargetNext.Name = "buttonTargetNext";
-            this.buttonTargetNext.Size = new System.Drawing.Size(75, 23);
-            this.buttonTargetNext.TabIndex = 4;
             this.buttonTargetNext.UseVisualStyleBackColor = true;
             this.buttonTargetNext.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonTargetNext_KeyDown);
             this.buttonTargetNext.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonTargetNext_MouseDown);
@@ -1384,15 +1055,12 @@
             // 
             // label29
             // 
-            this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(16, 33);
+            resources.ApplyResources(this.label29, "label29");
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(63, 13);
-            this.label29.TabIndex = 3;
-            this.label29.Text = "Target Next";
             // 
             // tabPage5
             // 
+            resources.ApplyResources(this.tabPage5, "tabPage5");
             this.tabPage5.Controls.Add(this.buttonMapZoomOutMod);
             this.tabPage5.Controls.Add(this.buttonMapZoomOut);
             this.tabPage5.Controls.Add(this.label38);
@@ -1402,30 +1070,20 @@
             this.tabPage5.Controls.Add(this.buttonMapMod);
             this.tabPage5.Controls.Add(this.buttonMap);
             this.tabPage5.Controls.Add(this.label36);
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(490, 233);
-            this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "Map";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // buttonMapZoomOutMod
             // 
-            this.buttonMapZoomOutMod.Location = new System.Drawing.Point(185, 86);
+            resources.ApplyResources(this.buttonMapZoomOutMod, "buttonMapZoomOutMod");
             this.buttonMapZoomOutMod.Name = "buttonMapZoomOutMod";
-            this.buttonMapZoomOutMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonMapZoomOutMod.TabIndex = 11;
-            this.buttonMapZoomOutMod.Text = "+";
             this.buttonMapZoomOutMod.UseVisualStyleBackColor = true;
             this.buttonMapZoomOutMod.Click += new System.EventHandler(this.buttonMapZoomOutMod_Click);
             // 
             // buttonMapZoomOut
             // 
-            this.buttonMapZoomOut.Location = new System.Drawing.Point(104, 86);
+            resources.ApplyResources(this.buttonMapZoomOut, "buttonMapZoomOut");
             this.buttonMapZoomOut.Name = "buttonMapZoomOut";
-            this.buttonMapZoomOut.Size = new System.Drawing.Size(75, 23);
-            this.buttonMapZoomOut.TabIndex = 10;
             this.buttonMapZoomOut.UseVisualStyleBackColor = true;
             this.buttonMapZoomOut.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonMapZoomOut_KeyDown);
             this.buttonMapZoomOut.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMapZoomOut_MouseDown);
@@ -1433,29 +1091,20 @@
             // 
             // label38
             // 
-            this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(16, 91);
+            resources.ApplyResources(this.label38, "label38");
             this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(78, 13);
-            this.label38.TabIndex = 9;
-            this.label38.Text = "Map Zoom Out";
             // 
             // buttonMapZoomInMod
             // 
-            this.buttonMapZoomInMod.Location = new System.Drawing.Point(185, 57);
+            resources.ApplyResources(this.buttonMapZoomInMod, "buttonMapZoomInMod");
             this.buttonMapZoomInMod.Name = "buttonMapZoomInMod";
-            this.buttonMapZoomInMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonMapZoomInMod.TabIndex = 8;
-            this.buttonMapZoomInMod.Text = "+";
             this.buttonMapZoomInMod.UseVisualStyleBackColor = true;
             this.buttonMapZoomInMod.Click += new System.EventHandler(this.buttonMapZoomInMod_Click);
             // 
             // buttonMapZoomIn
             // 
-            this.buttonMapZoomIn.Location = new System.Drawing.Point(104, 57);
+            resources.ApplyResources(this.buttonMapZoomIn, "buttonMapZoomIn");
             this.buttonMapZoomIn.Name = "buttonMapZoomIn";
-            this.buttonMapZoomIn.Size = new System.Drawing.Size(75, 23);
-            this.buttonMapZoomIn.TabIndex = 7;
             this.buttonMapZoomIn.UseVisualStyleBackColor = true;
             this.buttonMapZoomIn.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonMapZoomIn_KeyDown);
             this.buttonMapZoomIn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMapZoomIn_MouseDown);
@@ -1463,29 +1112,20 @@
             // 
             // label37
             // 
-            this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(16, 61);
+            resources.ApplyResources(this.label37, "label37");
             this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(70, 13);
-            this.label37.TabIndex = 6;
-            this.label37.Text = "Map Zoom In";
             // 
             // buttonMapMod
             // 
-            this.buttonMapMod.Location = new System.Drawing.Point(185, 28);
+            resources.ApplyResources(this.buttonMapMod, "buttonMapMod");
             this.buttonMapMod.Name = "buttonMapMod";
-            this.buttonMapMod.Size = new System.Drawing.Size(16, 23);
-            this.buttonMapMod.TabIndex = 5;
-            this.buttonMapMod.Text = "+";
             this.buttonMapMod.UseVisualStyleBackColor = true;
             this.buttonMapMod.Click += new System.EventHandler(this.buttonMapMod_Click);
             // 
             // buttonMap
             // 
-            this.buttonMap.Location = new System.Drawing.Point(104, 28);
+            resources.ApplyResources(this.buttonMap, "buttonMap");
             this.buttonMap.Name = "buttonMap";
-            this.buttonMap.Size = new System.Drawing.Size(75, 23);
-            this.buttonMap.TabIndex = 4;
             this.buttonMap.UseVisualStyleBackColor = true;
             this.buttonMap.KeyDown += new System.Windows.Forms.KeyEventHandler(this.buttonMap_KeyDown);
             this.buttonMap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMap_MouseDown);
@@ -1493,247 +1133,169 @@
             // 
             // label36
             // 
-            this.label36.AutoSize = true;
-            this.label36.Location = new System.Drawing.Point(16, 33);
+            resources.ApplyResources(this.label36, "label36");
             this.label36.Name = "label36";
-            this.label36.Size = new System.Drawing.Size(28, 13);
-            this.label36.TabIndex = 3;
-            this.label36.Text = "Map";
             // 
             // tabPage6
             // 
+            resources.ApplyResources(this.tabPage6, "tabPage6");
             this.tabPage6.Controls.Add(this.groupBox2);
             this.tabPage6.Controls.Add(this.checkBoxInvertMouse);
-            this.tabPage6.Location = new System.Drawing.Point(4, 22);
             this.tabPage6.Name = "tabPage6";
-            this.tabPage6.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage6.Size = new System.Drawing.Size(490, 233);
-            this.tabPage6.TabIndex = 5;
-            this.tabPage6.Text = "Mouse";
             this.tabPage6.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
+            resources.ApplyResources(this.groupBox2, "groupBox2");
             this.groupBox2.Controls.Add(this.labelMouselookYScaleValue);
             this.groupBox2.Controls.Add(this.labelMouselookXScaleValue);
             this.groupBox2.Controls.Add(this.label40);
             this.groupBox2.Controls.Add(this.label39);
             this.groupBox2.Controls.Add(this.trackBarMouseYScale);
             this.groupBox2.Controls.Add(this.trackBarMouseXScale);
-            this.groupBox2.Location = new System.Drawing.Point(163, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(276, 199);
-            this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Mouse Scale";
             // 
             // labelMouselookYScaleValue
             // 
-            this.labelMouselookYScaleValue.AutoSize = true;
-            this.labelMouselookYScaleValue.Location = new System.Drawing.Point(250, 154);
+            resources.ApplyResources(this.labelMouselookYScaleValue, "labelMouselookYScaleValue");
             this.labelMouselookYScaleValue.Name = "labelMouselookYScaleValue";
-            this.labelMouselookYScaleValue.Size = new System.Drawing.Size(13, 13);
-            this.labelMouselookYScaleValue.TabIndex = 5;
-            this.labelMouselookYScaleValue.Text = "0";
             // 
             // labelMouselookXScaleValue
             // 
-            this.labelMouselookXScaleValue.AutoSize = true;
-            this.labelMouselookXScaleValue.Location = new System.Drawing.Point(250, 73);
+            resources.ApplyResources(this.labelMouselookXScaleValue, "labelMouselookXScaleValue");
             this.labelMouselookXScaleValue.Name = "labelMouselookXScaleValue";
-            this.labelMouselookXScaleValue.Size = new System.Drawing.Size(13, 13);
-            this.labelMouselookXScaleValue.TabIndex = 4;
-            this.labelMouselookXScaleValue.Text = "0";
             // 
             // label40
             // 
-            this.label40.AutoSize = true;
-            this.label40.Location = new System.Drawing.Point(53, 132);
+            resources.ApplyResources(this.label40, "label40");
             this.label40.Name = "label40";
-            this.label40.Size = new System.Drawing.Size(99, 13);
-            this.label40.TabIndex = 3;
-            this.label40.Text = "Mouselook Y Scale";
             // 
             // label39
             // 
-            this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(53, 46);
+            resources.ApplyResources(this.label39, "label39");
             this.label39.Name = "label39";
-            this.label39.Size = new System.Drawing.Size(99, 13);
-            this.label39.TabIndex = 2;
-            this.label39.Text = "Mouselook X Scale";
             // 
             // trackBarMouseYScale
             // 
-            this.trackBarMouseYScale.Location = new System.Drawing.Point(47, 148);
+            resources.ApplyResources(this.trackBarMouseYScale, "trackBarMouseYScale");
             this.trackBarMouseYScale.Maximum = 30;
             this.trackBarMouseYScale.Minimum = 1;
             this.trackBarMouseYScale.Name = "trackBarMouseYScale";
-            this.trackBarMouseYScale.Size = new System.Drawing.Size(197, 45);
-            this.trackBarMouseYScale.TabIndex = 1;
             this.trackBarMouseYScale.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.trackBarMouseYScale.Value = 1;
             this.trackBarMouseYScale.Scroll += new System.EventHandler(this.trackBarMouseYScale_Scroll);
             // 
             // trackBarMouseXScale
             // 
-            this.trackBarMouseXScale.Location = new System.Drawing.Point(47, 68);
+            resources.ApplyResources(this.trackBarMouseXScale, "trackBarMouseXScale");
             this.trackBarMouseXScale.Maximum = 30;
             this.trackBarMouseXScale.Minimum = 1;
             this.trackBarMouseXScale.Name = "trackBarMouseXScale";
-            this.trackBarMouseXScale.Size = new System.Drawing.Size(197, 45);
-            this.trackBarMouseXScale.TabIndex = 0;
             this.trackBarMouseXScale.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.trackBarMouseXScale.Value = 1;
             this.trackBarMouseXScale.Scroll += new System.EventHandler(this.trackBarMouseXScale_Scroll);
             // 
             // checkBoxInvertMouse
             // 
-            this.checkBoxInvertMouse.AutoSize = true;
-            this.checkBoxInvertMouse.Location = new System.Drawing.Point(34, 37);
+            resources.ApplyResources(this.checkBoxInvertMouse, "checkBoxInvertMouse");
             this.checkBoxInvertMouse.Name = "checkBoxInvertMouse";
-            this.checkBoxInvertMouse.Size = new System.Drawing.Size(88, 17);
-            this.checkBoxInvertMouse.TabIndex = 0;
-            this.checkBoxInvertMouse.Text = "Invert Mouse";
             this.checkBoxInvertMouse.UseVisualStyleBackColor = true;
             this.checkBoxInvertMouse.CheckedChanged += new System.EventHandler(this.checkBoxInvertMouse_CheckedChanged);
             // 
             // groupBox1
             // 
+            resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.checkBoxSoftwareRenderer);
             this.groupBox1.Controls.Add(this.checkBoxDynamicLighting);
             this.groupBox1.Controls.Add(this.checkBoxAttackOnTarget);
             this.groupBox1.Controls.Add(this.checkBoxAlwaysRun);
             this.groupBox1.Controls.Add(this.checkBoxQuickChat);
             this.groupBox1.Controls.Add(this.checkBoxClassicKeyBind);
-            this.groupBox1.Location = new System.Drawing.Point(516, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(186, 173);
-            this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Options";
             // 
             // checkBoxSoftwareRenderer
             // 
-            this.checkBoxSoftwareRenderer.AutoSize = true;
-            this.checkBoxSoftwareRenderer.Location = new System.Drawing.Point(6, 141);
+            resources.ApplyResources(this.checkBoxSoftwareRenderer, "checkBoxSoftwareRenderer");
             this.checkBoxSoftwareRenderer.Name = "checkBoxSoftwareRenderer";
-            this.checkBoxSoftwareRenderer.Size = new System.Drawing.Size(115, 17);
-            this.checkBoxSoftwareRenderer.TabIndex = 4;
-            this.checkBoxSoftwareRenderer.Text = "Software Renderer";
             this.checkBoxSoftwareRenderer.UseVisualStyleBackColor = true;
             this.checkBoxSoftwareRenderer.CheckedChanged += new System.EventHandler(this.checkBoxSoftwareRenderer_CheckedChanged);
             // 
             // checkBoxDynamicLighting
             // 
-            this.checkBoxDynamicLighting.AutoSize = true;
-            this.checkBoxDynamicLighting.Location = new System.Drawing.Point(6, 117);
+            resources.ApplyResources(this.checkBoxDynamicLighting, "checkBoxDynamicLighting");
             this.checkBoxDynamicLighting.Name = "checkBoxDynamicLighting";
-            this.checkBoxDynamicLighting.Size = new System.Drawing.Size(107, 17);
-            this.checkBoxDynamicLighting.TabIndex = 2;
-            this.checkBoxDynamicLighting.Text = "Dynamic Lighting";
             this.checkBoxDynamicLighting.UseVisualStyleBackColor = true;
             this.checkBoxDynamicLighting.CheckedChanged += new System.EventHandler(this.checkBoxDynamicLighting_CheckedChanged);
             // 
             // checkBoxAttackOnTarget
             // 
-            this.checkBoxAttackOnTarget.AutoSize = true;
-            this.checkBoxAttackOnTarget.Location = new System.Drawing.Point(6, 94);
+            resources.ApplyResources(this.checkBoxAttackOnTarget, "checkBoxAttackOnTarget");
             this.checkBoxAttackOnTarget.Name = "checkBoxAttackOnTarget";
-            this.checkBoxAttackOnTarget.Size = new System.Drawing.Size(108, 17);
-            this.checkBoxAttackOnTarget.TabIndex = 3;
-            this.checkBoxAttackOnTarget.Text = "Attack On Target";
             this.checkBoxAttackOnTarget.UseVisualStyleBackColor = true;
             this.checkBoxAttackOnTarget.CheckedChanged += new System.EventHandler(this.checkBoxAttackOnTarget_CheckedChanged);
             // 
             // checkBoxAlwaysRun
             // 
-            this.checkBoxAlwaysRun.AutoSize = true;
-            this.checkBoxAlwaysRun.Location = new System.Drawing.Point(6, 71);
+            resources.ApplyResources(this.checkBoxAlwaysRun, "checkBoxAlwaysRun");
             this.checkBoxAlwaysRun.Name = "checkBoxAlwaysRun";
-            this.checkBoxAlwaysRun.Size = new System.Drawing.Size(82, 17);
-            this.checkBoxAlwaysRun.TabIndex = 2;
-            this.checkBoxAlwaysRun.Text = "Always Run";
             this.checkBoxAlwaysRun.UseVisualStyleBackColor = true;
             this.checkBoxAlwaysRun.CheckedChanged += new System.EventHandler(this.checkBoxAlwaysRun_CheckedChanged);
             // 
             // checkBoxQuickChat
             // 
-            this.checkBoxQuickChat.AutoSize = true;
-            this.checkBoxQuickChat.Location = new System.Drawing.Point(6, 48);
+            resources.ApplyResources(this.checkBoxQuickChat, "checkBoxQuickChat");
             this.checkBoxQuickChat.Name = "checkBoxQuickChat";
-            this.checkBoxQuickChat.Size = new System.Drawing.Size(79, 17);
-            this.checkBoxQuickChat.TabIndex = 1;
-            this.checkBoxQuickChat.Text = "Quick Chat";
             this.checkBoxQuickChat.UseVisualStyleBackColor = true;
             this.checkBoxQuickChat.CheckedChanged += new System.EventHandler(this.checkBoxQuickChat_CheckedChanged);
             // 
             // checkBoxClassicKeyBind
             // 
-            this.checkBoxClassicKeyBind.AutoSize = true;
-            this.checkBoxClassicKeyBind.Location = new System.Drawing.Point(6, 25);
+            resources.ApplyResources(this.checkBoxClassicKeyBind, "checkBoxClassicKeyBind");
             this.checkBoxClassicKeyBind.Name = "checkBoxClassicKeyBind";
-            this.checkBoxClassicKeyBind.Size = new System.Drawing.Size(118, 17);
-            this.checkBoxClassicKeyBind.TabIndex = 0;
-            this.checkBoxClassicKeyBind.Text = "Classic Key Binding";
             this.checkBoxClassicKeyBind.UseVisualStyleBackColor = true;
             this.checkBoxClassicKeyBind.CheckedChanged += new System.EventHandler(this.checkBoxClassicKeyBind_CheckedChanged);
             // 
             // buttonRestoreDefaults
             // 
-            this.buttonRestoreDefaults.Location = new System.Drawing.Point(614, 191);
+            resources.ApplyResources(this.buttonRestoreDefaults, "buttonRestoreDefaults");
             this.buttonRestoreDefaults.Name = "buttonRestoreDefaults";
-            this.buttonRestoreDefaults.Size = new System.Drawing.Size(95, 23);
-            this.buttonRestoreDefaults.TabIndex = 2;
-            this.buttonRestoreDefaults.Text = "Restore Defaults";
             this.buttonRestoreDefaults.UseVisualStyleBackColor = true;
             this.buttonRestoreDefaults.Click += new System.EventHandler(this.buttonRestoreDefaults_Click);
             // 
             // buttonOK
             // 
-            this.buttonOK.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.buttonOK.Location = new System.Drawing.Point(505, 225);
+            resources.ApplyResources(this.buttonOK, "buttonOK");
             this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(57, 23);
-            this.buttonOK.TabIndex = 3;
-            this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
             this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
             // buttonCancel
             // 
-            this.buttonCancel.Location = new System.Drawing.Point(576, 225);
+            resources.ApplyResources(this.buttonCancel, "buttonCancel");
             this.buttonCancel.Name = "buttonCancel";
-            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
-            this.buttonCancel.TabIndex = 4;
-            this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // buttonHelp
             // 
-            this.buttonHelp.Location = new System.Drawing.Point(665, 225);
+            resources.ApplyResources(this.buttonHelp, "buttonHelp");
             this.buttonHelp.Name = "buttonHelp";
-            this.buttonHelp.Size = new System.Drawing.Size(44, 23);
-            this.buttonHelp.TabIndex = 5;
-            this.buttonHelp.Text = "Help";
             this.buttonHelp.UseVisualStyleBackColor = true;
             this.buttonHelp.Click += new System.EventHandler(this.buttonHelp_Click);
             // 
             // M59Bind
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(721, 260);
             this.Controls.Add(this.buttonHelp);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.buttonRestoreDefaults);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tabControl1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "M59Bind";
-            this.Text = "Meridian 59 Bind Editor";
             this.Load += new System.EventHandler(this.M59Bind_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);

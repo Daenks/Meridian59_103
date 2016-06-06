@@ -1,39 +1,240 @@
-barloque_clerk_name_rsc = de "Caramo"
-barloque_clerk_desc_rsc = de \
+bq_clerk_name_rsc = de "Caramo"
+bq_clerk_desc_rsc = de \
    "Nicht gerade das, was Du Dir unter einer typischen königlichen Bürokratin "
    "vorstellst. Sie ist attraktiv, charmant und nach allem, was man hört, "
    "ehrenhaft. Caramo hat Jahre damit verbracht, das Geld des Herzogs zu "
    "zählen, die Steuerunterlagen der früheren Königin zu ordnen und seit "
    "kurzem als Schreiberin im Büro des Justiziars zu dienen."
-barloque_clerk_pardon = de "Begnadigen"
-barloque_clerk_pardons = de "Begnadigungen"
-barloque_clerk_anoutlaw = de "Gesetzlose(r)"
-barloque_clerk_outlaws = de "Gesetzlosen"
-barloque_clerk_amurderer = de "Mörder(in)"
-barloque_clerk_murderers = de "Mörder(innen)"
-barloque_clerk_alawful = de "gesetzestreue(r) Bürger(in)"
-barloque_clerk_lawfuls = de "gesetzestreue Bürger(innen)"
-barloque_clerk_aperson = de "eine Person"
-barloque_clerk_person = de "Person"
-barloque_clerk_people = de "Leute"
-barloque_clerk_pardons_served1 = de \
+
+% Basic stuff
+
+bq_clerk_for_shame = de \
+   "Schäme Dich, %s! Aufgrund Deines ungesetzlichen Status muss ich Dich "
+   "des Amtes entheben!"
+bq_clerk_hail_justicar = de \
+   "Gesegnet seien alle, der ehrenwerte Justiziar %s ist angekommen!"
+bq_clerk_bye_justicar = de \
+   "Der ehrenwerte Justiziar %q hat das Büro gerade verlassen."
+bq_clerk_refuse_service = de \
+   "Ich würde noch nicht einmal die widerliche Idee ~Berwägen~B, mit "
+   "jemandem wie Euch Geschäfte zu machen, %s! Hebt Euch hinweg oder die "
+   "Wache wird Euch begleiten!"
+
+% Voting
+
+bq_clerk_election_no_justicar_subject = de "Das Amt ist frei"
+bq_clerk_election_no_justicar = de \
+   "Das Büro des Justiziars ist nun unbesetzt. Bis eine neue Wahl gehalten "
+   "wurde und ein neuer Justiziar gewählt ist, gibt es keine Begnadigungen "
+   "durch die Krone.\n\n-- Caramo"
+bq_clerk_election_open_subject = de "Der Wahlkampf hat begonnen"
+bq_clerk_election_open = de \
+   "Die Wahl des Justiziars hat begonnen. Du kannst nun einen Stimmzettel "
+   "von mir kaufen. Schreibe den Namen Deines favorisierten Kandidaten auf "
+   "den Zettel und gib ihn im Büro des Justiziars ab. Vergiss nicht, dass "
+   "gemäß dem geltenden Recht von Meridian weder Neulinge noch Gesetzlose "
+   "weder wählen noch für das Amt kandidieren können.\n\n-- Caramo"
+bq_clerk_tally_day = de \
+   "Dem nächsten Justiziar wird in %d Meridiantagen der Amtseid abgenommen."
+bq_clerk_tally_no_leader = de \
+   "Bisher sind noch keine Stimmen für die Wahl des nächsten Justiziars "
+   "gezählt worden."
+bq_clerk_tally_leader = de \
+   "Bisher führt %q die Wahl um den nächsten Justiziar mit %i Stimmen an."
+bq_clerk_tally_tied = de "Bislang sieht es nach einem Unentschieden aus"
+bq_clerk_announce_winner_subject = de "Neu gewählter Justiziar"
+bq_clerk_announce_winner1 = de "Bitte gratuliere "
+bq_clerk_announce_winner2 = de ", dem neu gewählten Justiziar.\n\n-- Caramo"
+bq_clerk_not_yet = de "Zu diesem Zeitpunkt nehme ich keine Stimmen an."
+bq_clerk_blank_ballot = de \
+   "Wirklich, verschwende meine Zeit nicht mit leeren Stimmzetteln."
+bq_clerk_votes_tied = de \
+   "Die Wahl des Justiziars ist stimmengleich ausgegangen und ist deshalb "
+   "noch nicht zu Ende."
+
+% Accountability
+
+bq_clerk_pardon = de "Begnadigen"
+bq_clerk_pardons = de "Begnadigungen"
+bq_clerk_anoutlaw = de "Gesetzlose(r)"
+bq_clerk_outlaws = de "Gesetzlosen"
+bq_clerk_amurderer = de "Mörder(in)"
+bq_clerk_murderers = de "Mörder(innen)"
+bq_clerk_alawful = de "gesetzestreue(r) Bürger(in)"
+bq_clerk_lawfuls = de "gesetzestreue Bürger(innen)"
+bq_clerk_aperson = de "eine Person"
+bq_clerk_person = de "Person"
+bq_clerk_people = de "Leute"
+bq_clerk_pardons_served1 = de \
    "In dieser Amtszeit hat Justiziar %q %i %s erlassen."
-barloque_clerk_pardons_served2 = de "Davon: %i %s von %s und %i von %s."
-barloque_clerk_no_justicar = de \
+bq_clerk_pardons_served2 = de "Davon: %i %s von %s und %i von %s."
+
+% Commands
+
+bq_clerk_pardon_phrase = de "Als Justiziar begnadige ich "
+bq_clerk_remand_phrase = de "Als Justiziar inhaftiere ich "
+bq_clerk_report_phrase = de "Bericht des Justiziars"
+bq_clerk_tally_phrase = de "zähle die Stimmen"
+
+% Problems
+
+bq_clerk_no_justicar = de \
    "In der Tat gibt es zur Zeit keinen amtierenden Justiziar."
-barloque_clerk_summary_lawful = de \
+bq_clerk_in_absentia = de \
+   "Euer Ehren, diese Person ist nicht anwesend. Sie muss sich in Eurer"
+   "Gesellschaft befinden."
+bq_clerk_step_forward = de \
+   "Euer Ehren, diese Person befindet sich im Zuschauerraum. In der Tat "
+   "müssen sie zuerst vor jenes Gericht treten."
+bq_clerk_already_pardoned = de \
+   "Euer Ehren, die Krone schaut nicht freundlich auf reuelose Mörder, und "
+   "erlaubt in diesem Fall keine weitere Begnadigung."
+bq_clerk_citizen_unknown = de \
+   "Euer Ehren, es gibt keine Aufzeichnungen über einen Bürger solches Namens."
+bq_clerk_no_more = de \
+   "Euer Ehren, nach dem Königlichen Gesetz habt Ihr für diese Amtszeit "
+   "die Höchstzahl von Begnadigungen erreicht."
+
+% Intelligence
+
+bq_clerk_summary_lawful = de \
+   "Nach den Aufzeichnungen ist %q gesetzestreu und hält sich an die "
+   "königlichen Vorgaben."
+bq_clerk_summary_outlaw = de \
+   "Nach den Aufzeichnungen ist %q gesetzlos und hat gesetzestreue "
+   "Bürger verletzt oder andere Gesetzes des Landes gebrochen."
+bq_clerk_summary_murderer1 = de \
+   "Nach den Aufzeichnungen ist %q des Mordes schuldig und hat "
+   "bereits %i %s getötet."
+bq_clerk_jc_summary_lawful = de \
    "Euer Ehren, nach den Aufzeichnungen ist %q gesetzestreu und hält sich "
    "an die königlichen Vorgaben."
-barloque_clerk_summary_outlaw = de \
+bq_clerk_jc_summary_outlaw = de \
    "Euer Ehren, nach den Aufzeichnungen ist %q gesetzlos und hat gesetzestreue "
    "Bürger verletzt oder andere Gesetzes des Landes gebrochen."
-barloque_clerk_summary_murderer1 = de \
+bq_clerk_jc_summary_murderer1 = de \
    "Euer Ehren, nach den Aufzeichnungen ist %q des Mordes schuldig und hat "
    "bereits %i %s getötet."
-barloque_clerk_summary_murderer2 = de \
+bq_clerk_summary_murderer2 = de \
    "Davon sind %i %s und %i %s vor dem Gesetz entschuldbar."
-barloque_clerk_was = de "war"
-barloque_clerk_were = de "waren"
+bq_clerk_was = de "war"
+bq_clerk_were = de "waren"
+
+% Announcements
+
+bq_clerk_granted = de \
+   "Justiziar %s hat %s, %s begnadigt. Die Person hat von nun an den Status %s!"
+bq_clerk_accepting_votes = de \
+   "Ich nehme jetzt Nominierungen und Stimmen für das Büro des Justiziars an."
+bq_clerk_votes_tallied = de "Die Stimmen wurden ausgezählt."
+bq_clerk_new_justicar = de "Gratuliert %q, Eurem neuen Justiziar."
+bq_clerk_no_can_vote = de \
+   "Ich habe keine Aufzeichnungen über eine Person dieses Namens."
+bq_clerk_vote_noted = de "Deine Stimme für %q wurde notiert."
+bq_clerk_vote_switched = de \
+   "Ich habe Deine Stimme in eine Stimme für %q umgeändert."
+bq_clerk_vote_already = de "Du hast %q bereits Deine Stimme gegeben."
+
+bq_clerk_hands_back = de "~bCaramo gibt den Stimmzettel zurück."
+bq_clerk_bad_candidate = de \
+   "%q kommt für das Amt des Justiziars nicht in Frage."
+bq_clerk_no_newbie_voter = de "Du bist noch nicht berechtigt zu wählen."
+bq_clerk_no_outlaw_voter = de "Kriminelle haben kein Wahlrecht. Verschwinde."
+
+bq_clerk_notify_ad = de \
+   "~wCaramo teilt Dir mit, \"~I~bEs findet gerade eine Wahl zum Amt des "
+   "neuen Justiziars statt.~I~w\""
+bq_clerk_start_ad = de \
+   "Ich werde euch wissen lassen wenn eine neue Wahl beginnt, so ihr ein "
+   "gesetzestreuer Bürger bleibt."
+bq_clerk_start_ad_outlaw = de \
+   "Eine neue Wahl sollte für euch uninteressant sein. Kriminellen wie euch "
+   "ist es nicht erlaubt zu wählen. Solltet ihr euch wieder als "
+   "gesetzestreuer Bürger erweisen, werde ich euch über neue Wahlen "
+   "benachrichtigen."
+bq_clerk_no_start_ad = de \
+   "Du wirst bereits benachrichtigt werden, wenn eine neue Wahl startet."
+bq_clerk_stop_ad = de \
+   "Du wirst nicht länger benachrichtigt, wenn eine neue Wahl beginnt."
+bq_clerk_stop_ad_outlaw = de \
+   "Ich sehe schon, Reformen stehen ausserhalb eures Verständnisses.  Ich "
+   "werde euch also nicht länger mit meinen Benachrichtigungen belästigen."
+bq_clerk_no_stop_ad = de \
+   "Du wirst nicht länger benachrichtigt, wenn eine neue Wahl startet."
+
+bq_clerk_advertise = de "Benachrichtigung"
+bq_clerk_no_advertise = de "keine Benachrichtigung"
+
+% Initiation
+
+bq_clerk_mail = de \
+   "Betreff: Gratulation zu Eurer Wahl.\n"
+   "Vom Tisch von Caramo, der Schreiberin im Büro des Justiziars\n\n"
+   "Im Rahmen dieser Mitteilung wird Euch offiziell verkündet, dass Ihr von "
+   "den gesetzestreuen Bürgern Meridians gewählt worden seid, das Amt des "
+   "Justiziars zu übernehmen.\n\n"
+   "Als der Justiziar von Meridian könnt Ihr in Rechtsfällen entscheiden und "
+   "die Schuld oder Unschuld von Leuten nach Eurem eigenen Gerechtigkeitssinn "
+   "verkünden. Ihr seid von Euresgleichen gewählt worden und es ist Eure "
+   "Pflicht, sowohl ihre als auch Eure eigenen Ideale zu bewahren, oder es "
+   "ist unwahrscheinlich, dass Ihr das Amt für eine weitere Amtszeit innehabt."
+   "\n\n"
+   "Ihr dürft im Verlaufe einer Amtszeit von 7 Tagen nur acht Personen "
+   "begnadigen. Eine Begnadigung ändert den rechtlichen Status eines Mörders "
+   "in den eines Verbrechers und eines Verbrechers in den eines gesetzestreuen "
+   "Bürgers. So erfordert die völlige Rehabilitierung eines Mörders zwei "
+   "getrennte Verhandlungen.\n\n"
+   "Für offizielle Angelegenheiten müßt Ihr das Büro des Justiziars im Norden "
+   "von Barloque benutzen. Ich stehe zu Eurer Verfügung, um Euch mit "
+   "Informationen über Mörder oder diejenigen im Land zu versorgen, die das "
+   "Gesetz mißachten. Ich selbst werde den Papierkram nach den Vorgaben der "
+   "Königlichen Regierung von Meridian in Ordnung halten.\n\n"
+   "Wenn Ihr auf der Richterbank sitzt, sagt einfach nur den Namen eines "
+   "Bürgers und ich werde Euch dessen Stellung nach dem königlichen Gesetz "
+   "sagen. Um eine Begnadigung auszusprechen, vielleicht bezüglich \"Zaphod\", "
+   "dann sagt Ihr von der Richterbank aus, \"Als Justiziar begnadige ich "
+   "Zaphod\". Und seid euch darüber im Klaren, dass ein jeder gesetzestreue "
+   "Bürger Einsicht in Eure Aufzeichnungen nehmen kann, wenn er mich einfach "
+   "nach dem \"Bericht des Justiziars\" fragt.\n\n"
+   "Noch einmal herzlichen Glückwunsch, und ich freue mich darauf, Euch im "
+   "Rahmen der Rechtsprechung zu helfen.\n\n"
+   "Bittet mich einfach um Hilfe, wenn Ihr sie brauchen solltet.\n\n"
+   "Auf Jalas Wahrheit,\n    Caramo, Büro des Justiziars\n\n"
+   "(Kopie an den Herzog von Burg Schwarzstein)\n"
+   "(Kopie an Prinzessin Kateriina von Schloß Bourgeois)\n"
+bq_clerk_help1 = de \
+   "Seid gesegnet, Justiziar %s. Ich bin Caramo, Euer Assistent während "
+   "Eurer Amtszeit."
+bq_clerk_help2 = de \
+   "Ihr könnt Euch so viele Fälle anhören, wie Ihr wollt in diesem Büro, "
+   "aber Ihr seid vom königlichen Gesetz darauf beschränkt, nur %i Bürger "
+   "bis zum Ende Eurer Amtszeit zu begnadigen. "
+
+% Dealing with the Disorderly
+
+bq_clerk_warn = de \
+   "Ich flehe Euch an, wenn Ihr, %s, Eure Arbeit nicht ordnungsgemäß "
+   "verrichten könnt, dann verlasst dieses Büro."
+bq_clerk_warn_outside = de \
+   "Eure Aufregung stört den reibungslosen Fortgang der Dinge am Hof des "
+   "Justiziars, %s. Bitte nehmt Abstand."
+bq_clerk_dismiss = de \
+   "Kommt nicht zurück, %s, ehe Ihr Euch nicht wieder ordentlich benehmt."
+bq_clerk_glare = de "Versucht Euch zivilisiert zu benehmen, %s."
+
+% Pardons
+
+barloque_clerk_pardon_1 = de "Lasst es bekannt werden, dass "
+barloque_clerk_pardon_2 = de " eine Gnadenfrist gewährt wurde. Ehemals "
+// barloque_clerk_pardon_3 = de ", "
+barloque_clerk_pardon_4 = de "weilt diese Person nun als "
+barloque_clerk_pardon_5 = de " unter uns. Im Namen des Justiziars "
+barloque_clerk_pardon_6 = de \
+   ". So ward es gesprochen, so soll es geschehen.\n\n-- Caramo"
+barloque_clerk_pardon_7 = de " wurde offiziell begnadigt."
+
+% Bribes
+
 indulgence_not_enough_money = de \
    "Du denkst das Gesetz wird dir vergeben? Bezahl den vollen Betrag oder "
    "geh mir aus den Augen."
@@ -41,32 +242,41 @@ indulgence_success = de \
    "Vielen Dank für die Zahlung ihrer Schuld an die Gesellschaft. Du wirst "
    "nicht weiter als Mörder verfolgt."
 indulgence_not_a_murderer = de "Nur Mörder können Ablässe kaufen."
-barloque_clerk_indulgence_1 = de "Es sei bekannt, dass "
-barloque_clerk_indulgence_2 = de \
-   " ist begnadigt worden.  So wurde es gesprochen und so ist es rechtskräftig.\n\n-- "
-   " Caramo"
-barloque_clerk_indulgence_3 = de " Begnadigung gewährt"
-no_more_ballots = de "Anhand der Reduzierung der Bürokratie, werden Stimmzettel hier nicht weiter verwendet."
-barloque_clerk_trigger_change = de "ändern"
-barloque_clerk_trigger_name = de "Name"
-barloque_clerk_change_name = de \
-	  "Ja, ich kann Deinen Namen mittels Urkunde ändern. Schreibe einfach Deinen Namen "
-	  "auf diese Schriftrolle, und gebe Sie mir zurück."
-	  "Wenn der Name verfügbar ist und nicht obszön, wird er Deiner sein.\n"
-	  "Ich muss Dich allerdings warnen, denn es Dich eine Gebühr von %i Schillingen "
-	  "diesen Service zu beanspruchen.\n\n "
-	  "Dieser Betrag wird von Deinem Bankkonto abgezogen."
-barloque_clerk_cant_hold = de \
-	  "Ich kann Deinen Namen mit einer Urkunde ändern, aber Du hast keinen Platz "
-	  "mehr in Deinem Inventar um diese Urkunde aufzunehmen."
-barloque_clerk_warning_cost = de \
-	  "~BIch warne Dich noch einmal bevor ich den Prozess beende, dass Dir %i Schillinge "
-	  "für diesen Service berechnet werden. Wenn Du sicher bist, nehme ich die Urkunde an mich "
-	  "und fahre fort."
-barloque_clerk_not_enough = de "Du hast nicht genug Geld auf deinem Bankkonto um diesen Service zu benutzen."
-barloque_clerk_bad_name = de "Sorry, der Name ist nicht gültig."
-barloque_clerk_name_changed = de "Dein Name wurde geändert."
-barloque_clerk_name_post_1 = de "s Name wurde geändert"
-barloque_clerk_name_post_2 = de "So sei bekannt zu machen, dass "
-barloque_clerk_name_post_3 = de "s Name wurde per Urkunde geändert und heißt nun "
-barloque_clerk_name_post_4 = de ". So wie es gesprochen wurde, wurde es getan. \n\n-- Caramo"
+bq_clerk_indulgence_1 = de "Es sei bekannt, dass "
+bq_clerk_indulgence_2 = de \
+   " begnadigt worden ist. Das Urteil ist rechtskräftig.\n\n-- Caramo"
+bq_clerk_indulgence_3 = de " Begnadigung gewährt"
+no_more_ballots = de \
+   "Anhand der Reduzierung der Bürokratie, werden Stimmzettel hier nicht "
+   "weiter verwendet."
+
+% Name Change
+
+bq_clerk_trigger_change = de "ändern"
+bq_clerk_trigger_name = de "Name"
+bq_clerk_change_name = de \
+   "Ja, ich kann Deinen Namen mittels Urkunde ändern. Schreibe einfach Deinen "
+   "Namen auf diese Schriftrolle, und gebe Sie mir zurück.  Wenn der Name "
+   "verfügbar ist und nicht obszön, wird er Deiner sein.\nIch muss Dich "
+   "allerdings warnen, denn es kostet Dich eine Gebühr von %i Schillingen "
+   "um diesen Service zu beanspruchen.\n\n "
+   "Dieser Betrag wird von Deinem Bankkonto abgezogen."
+bq_clerk_cant_hold = de \
+   "Ich kann Deinen Namen mit einer Urkunde ändern, aber Du hast keinen Platz "
+   "mehr in Deinem Inventar um diese Urkunde aufzunehmen."
+bq_clerk_warning_cost = de \
+   "~BIch warne Dich noch einmal bevor ich den Prozess beende, dass "
+   "Dir %i Schillinge "
+   "für diesen Service berechnet werden. Wenn Du sicher bist, nehme ich die "
+   "Urkunde an mich "
+   "und fahre fort."
+bq_clerk_not_enough = de \
+   "Du hast nicht genug Geld auf deinem Bankkonto um diesen Service "
+   "zu benutzen."
+bq_clerk_bad_name = de "Sorry, der Name ist nicht gültig."
+bq_clerk_name_changed = de "Dein Name wurde geändert."
+bq_clerk_name_post_1 = de "s Name wurde geändert"
+bq_clerk_name_post_2 = de "So sei bekannt zu machen, dass "
+bq_clerk_name_post_3 = de "'s Name per Urkunde geändert wurde, und heißt nun "
+bq_clerk_name_post_4 = de \
+   ". So wie es gesprochen wurde, wurde es getan. \n\n-- Caramo"

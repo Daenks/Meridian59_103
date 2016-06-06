@@ -16,8 +16,6 @@ constants:
 
 resources:
 
-   escaped_convict_name_rsc = "Escaped Convict"
-
 classvars:
 
    % Amount of shillings to distribute to EACH ATTACKER.
@@ -52,6 +50,19 @@ properties:
 
 messages:
 
+   AllowPlayerAttack(victim=$)
+   "Will not let a person attack someone who isn't pkill_enabled."
+   "Will not let a person who isn't pkill_enabled attack another person."
+   {
+      if (victim = $
+         OR Send(victim,@GetOwner) = $)
+      {
+         return FALSE;
+      }
+
+      return TRUE;
+   }
+
    % Handles damage done to player
    AssessDamage(what=$,damage=$,atype=0,aspell=0,stroke_obj=$,bonus=0,
                scalefactor=1000,report=TRUE,report_resistance=TRUE,
@@ -73,19 +84,15 @@ messages:
                plAttackers = Cons(what,plAttackers);
             }
          }
+         else if (Length(plAttackers) < piAttackers)
+         {
+            // Player not already in list, check size and delete if needed.
+            plAttackers = Cons(what,plAttackers);
+         }
          else
          {
-            % Player not already in list, check size and delete if needed.
-            if (Length(plAttackers) < piAttackers)
-            {
-               plAttackers = Cons(what,plAttackers);
-            }
-            else
-            {
-               plAttackers =
-                     DelListElem(plAttackers,Nth(plAttackers,piAttackers));
-               plAttackers = Cons(what,plAttackers);
-            }
+            plAttackers = DelListElem(plAttackers,Nth(plAttackers,piAttackers));
+            plAttackers = Cons(what,plAttackers);
          }
       }
 
@@ -102,48 +109,50 @@ messages:
 
    Killed(what = $)
    {
-      local oAttacker,lTreasure,oTreasure,lInventoryContents;
+      local oAttacker, lTreasure, oTreasure, lInventory;
 
-      lInventoryContents = [plActive,plPassive];
-      
+      lInventory = [plActive, plPassive];
+
       % Autogive loot to all players in plAttackers that are present
       foreach oAttacker in plAttackers
       {
-         if Send(self,@GetOwner) = Send(oAttacker,@GetOwner)
+         if Send(self,@GetOwner) <> Send(oAttacker,@GetOwner)
          {
-            foreach lTreasure in lInventoryContents
+            continue;
+         }
+
+         foreach lTreasure in lInventory
+         {
+            if pbDebug
+            {
+               Debug("treasure list",lTreasure);
+            }
+
+            foreach oTreasure in lTreasure
             {
                if pbDebug
                {
-                  Debug("treasure list",lTreasure);
+                  Debug("treasure object",Send(oTreasure,@GetName));
                }
-               foreach oTreasure in lTreasure
+
+               if Send(oTreasure,@DropOnDeath)
                {
-                  if pbDebug
+                  % Numbered item, include value in creation
+                  if IsClass(oTreasure,&NumberItem)
                   {
-                     Debug("treasure object",Send(oTreasure,@GetName));
-                  }
-                  if Send(oTreasure,@DropOnDeath)
-                  {
-                     % Numbered item, include value in creation
-                     if isclass(oTreasure,&NumberItem)
-                     {
-                        Send(oAttacker,@NewHold,
-                           #what=create(GetClass(oTreasure),
+                     Send(oAttacker,@NewHold,#what=Create(GetClass(oTreasure),
                            #number=Send(oTreasure,@GetNumber)));
-                     }
-                     else
-                     {
-                        Send(oAttacker,@NewHold,
-                           #what=create(GetClass(oTreasure)));
-                     }
+                  }
+                  else
+                  {
+                     Send(oAttacker,@NewHold,#what=Create(GetClass(oTreasure)));
                   }
                }
             }
          }
       }
-      
-      foreach lTreasure in lInventoryContents
+
+      foreach lTreasure in lInventory
       {
          foreach oTreasure in lTreasure
          {
@@ -153,49 +162,14 @@ messages:
             }
          }
       }
-      foreach oTreasure in plActive
-      {
-         if Send(oTreasure,@DropOnDeath)
-            {
-               Send(oTreasure,@Delete);
-            }
-      }
-      foreach oTreasure in plPassive
-      {
-         if Send(oTreasure,@DropOnDeath)
-            {
-               Send(oTreasure,@Delete);
-            }
-      }
-
-      % Delete all elements in plAttackers.
-      foreach oAttacker in plAttackers
-      {
-         plAttackers = DelListElem(plAttackers,oAttacker);
-      }
 
       plAttackers = $;
 
       propagate;
    }
 
-   GetName()
-   {
-      % Give a generic resource Clients will not have the proper name resource.
-      % as EscapedConvict is hidden from the who list
-      return escaped_convict_name_rsc;
-   }
-
-   PlayerNewCharInfo(desc = $,charinfo = $,gender = $)
-   {
-      vrName = escaped_convict_name_rsc;
-
-      propagate;
-   }
-
    AdminReset()
    {
-      
       piMight = 50;
       piIntellect = 50;
       piStamina = 50;
@@ -211,17 +185,24 @@ messages:
       Send(self,@GivePlayerAllSKills,#override=TRUE);
       Send(self,@EvaluatePKStatus);
       Send(self,@PlayerIsIntriguing);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_MURDERER,#value=TRUE);
 
       Send(self,@EquipEscapedConvict);
 
       return;
    }
 
+   GetBaseMaxHealth()
+   "Override this so we can set health higher than normal."
+   {
+      return piBase_max_health;
+   }
+
    EquipEscapedConvict()
    {
       if (Send(self,@FindHolding,#class=&ReagentBag) = $)
       {
-         Send(self,@Newhold,#what=Create(&ReagentBag));
+         Send(self,@NewHold,#what=Create(&ReagentBag));
       }
 
       return;
@@ -238,6 +219,7 @@ messages:
    AdminHeal(percent=10)
    {
       piHealth = piHealth + ((viMax_Health / (100 / percent)) * 100);
+
       return;
    }
 
@@ -251,6 +233,8 @@ messages:
       piMax_Health = iAmount;
       piBase_Max_Health = iAmount;
       Send(self,@DrawHealth);
+      Send(self,@ResetXPToLevel);
+      Send(self,@DrawXP);
 
       return piHealth;
    }
@@ -291,6 +275,12 @@ messages:
    GetClientObjectType()
    {
       return OT_EVENTCHAR;
+   }
+
+   RevenantChance()
+   "No revenants for Escaped Convict."
+   {
+      return 0;
    }
 
 end

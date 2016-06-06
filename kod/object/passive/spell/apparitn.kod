@@ -16,7 +16,7 @@ constants:
 
    % What number do we divide the true hps by in order to get the hps of
    %  the apparition?
-   APPARITION_FRACTION = 5
+   APPARITION_FRACTION = 10
 
 resources:
 
@@ -40,7 +40,7 @@ resources:
       "%s%s has no mind to be tinkered with by your illusion magic."
    apparition_fizzle = "Your apparition spell fizzles!"
 
-   summonapparition_sound = rapparit.wav
+   summonapparition_sound = rapparit.ogg
 
 classvars:
 
@@ -140,13 +140,12 @@ messages:
          if Length(lMonsList) = 0
             OR Random(1,100) > iSpellPower
          {
-            oApparition = Send(self,@CreateRandomMonster,
-                                 #spellpower=iSpellpower);
+            oApparition = Send(self,@CreateRandomMonster,#spellpower=iSpellpower);
          }
          else
          {
             i = Random(1,Length(lMonsList));
-            oApparition = Create(Nth(Nth(lMonsList,i),1));
+            oApparition = Create(First(Nth(lMonsList,i)));
          }
       }
 

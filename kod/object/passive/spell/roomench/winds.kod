@@ -1,0 +1,211 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Winds is RoomEnchantment
+
+%% April 20, 1997 - DSchubert
+%% Reduces aim by Spellpower/2
+%% lasts 60 to 60+spellpower minutes
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   include winds.lkod
+
+   winds_name_rsc = "winds"
+   winds_icon_rsc = iwinds.bgf
+   winds_desc_rsc = \
+      "Summons powerful winds which render ranged attacks more difficult "
+      "for several minutes.  Requires three elderberries and a purple "
+      "mushroom to cast."
+   winds_already_enchanted = "Magical winds are already present."
+   winds_on = "Violent winds suddenly sweep the area and buffet your limbs."
+   winds_off = "The winds slow and then cease."
+   winds_new_entrant = "Violent winds sweep the area and buffet your limbs."
+   winds_miss_rsc = "The powerful winds snatch your shot away."
+   winds_spell_intro = \
+      "Faren Level 3: Summons violent winds, which make ranged "
+      "combat less effective."
+   winds_sound = fwinds.ogg
+
+classvars:
+
+   vrName = winds_name_rsc
+   vrIcon = winds_icon_rsc
+   vrDesc = winds_desc_rsc
+   vrSpell_intro = winds_spell_intro
+   vrAlreadyEnchanted = winds_already_enchanted
+   vrSucceed_wav = winds_sound
+   viShow_enchantment_icon = ENCHANTMENT_SHOW_ROOM
+   viHarmful = TRUE
+   viNoNewbieOffense = TRUE
+   viSpell_num = SID_WINDS
+   viMana = 10
+   viSpell_level = 3
+   viSchool = SS_FAREN
+   viChance_To_Increase = 35
+   viMeditate_ratio = 40
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Elderberry,3],plReagents);
+      plReagents = Cons([&PurpleMushroom,1],plReagents);
+
+      return;
+   }
+
+   GetSpellPowerFromState(state=$)
+   {
+      return First(state) MOD 100;
+   }
+
+   CastSpell(who = $, iSpellPower = 0)
+   "Initiation point for the spell."
+   {
+      local oRoom;
+
+      oRoom = Send(who,@GetOwner);
+
+      // Global effects of the enchantment.
+      Send(oRoom,@SomeoneSaid,#type=SAY_MESSAGE,#string=winds_on,#what=self);
+      Send(oRoom,@RoomStartEnchantment,#what=self,#time=Send(self,@GetDuration),
+            #state=[iSpellPower, who]);
+      Send(oRoom,@EnchantAllOccupants,#what=self,#iSpellPower=iSpellPower,
+            #state=[iSpellPower, who]);
+
+      propagate;
+   }
+
+   StartEnchantmentNewOccupant(who = $, state=$)
+   "Called on new occupants of the enchanted room."
+   {
+      Send(who,@MsgSendUser,#message_rsc=winds_new_entrant);
+      Send(self,@StartEnchantment,#who=who,#state=state);
+
+      return;
+   }
+
+   StartEnchantment(who = $, state = $)
+   "Starts enchantment effect on one player"
+   {
+      if (NOT Send(who,@IsEnchanted,#what=self)
+         AND Send(self,@CanEnchantUser,#who=who,#state=state))
+      {
+         Send(who,@AddAim,#points=-(First(state) / 3));
+         Send(who,@StartEnchantment,#what=self,#state=state);
+      }
+
+      return;
+   }
+
+   EndRoomEnchantment(who = $, state = $)
+   "Ends enchantment effect on one player"
+   {
+      Send(who,@RemoveEnchantment,#what=self);
+
+      return;
+   }
+
+   EndEnchantment(who = $, state = $)
+   "Ends enchantment effect on one player"
+   {
+      Send(who,@AddAim,#points=First(state) / 3);
+
+      return;
+   }
+
+   EndSpell(where = $, state = $)
+   "Called when spell expires."
+   {
+      Send(where,@SomeoneSaid,#type=SAY_MESSAGE,#string=winds_off,#what=self);
+      Send(where,@UnenchantAllOccupants,#what=self,#state=state);
+
+      return;
+   }
+
+   RemoveEnchantment(who = $)
+   "Remove enchantment effects on this occupant"
+   {
+      Send(who,@RemoveEnchantment,#what=self);
+
+      return;
+   }
+
+   GetDuration(iSpellPower=0)
+   {
+      return Random(60000,60000 + (iSpellPower * 1000));
+   }
+
+   CanEnchantUser(who=$,state=$)
+   {
+      local oCaster;
+
+      if (who = $ OR state = $)
+      {
+         propagate;
+      }
+
+      oCaster = Nth(state,2);
+
+      if (IsClass(oCaster,&User)
+         AND ((who = self AND NOT vbRoomEnchHitCaster)
+            OR NOT Send(oCaster,@AllowPlayerAttack,#victim=who,
+                        #stroke_obj=self)))
+      {
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+   TryRuinShot(who=$,state=$)
+   "Returns TRUE if it manages to knock down a shot."
+   {
+      local iMissChance, iSpellPower, oCaster;
+
+      oCaster = Nth(state,2);
+
+      if (IsClass(oCaster,&User)
+         AND ((who = self AND NOT vbRoomEnchHitCaster)
+            OR NOT Send(oCaster,@AllowPlayerAttack,#victim=who,
+                        #stroke_obj=self)))
+      {
+         return FALSE;
+      }
+
+      iSpellPower = First(state) MOD 100;
+
+      iMissChance = iSpellpower / 2 + 10;
+      iMissChance = Bound(iMissChance,25,60);
+      if Random(1,100) < iMissChance
+      {
+         Send(who,@MsgSendUser,#message_rsc=winds_miss_rsc);
+
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   HasConditionalEffect()
+   {
+      return TRUE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

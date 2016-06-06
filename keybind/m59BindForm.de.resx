@@ -1,0 +1,462 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="label12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>96, 13</value>
+  </data>
+  <data name="label12.Text" xml:space="preserve">
+    <value>Mouselook an/aus</value>
+  </data>
+  <data name="label11.Size" type="System.Drawing.Size, System.Drawing">
+    <value>73, 13</value>
+  </data>
+  <data name="label11.Text" xml:space="preserve">
+    <value>Drehung 180°</value>
+  </data>
+  <data name="label10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>79, 13</value>
+  </data>
+  <data name="label10.Text" xml:space="preserve">
+    <value>Blick zentrieren</value>
+  </data>
+  <data name="label9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>87, 13</value>
+  </data>
+  <data name="label9.Text" xml:space="preserve">
+    <value>Blick nach unten</value>
+  </data>
+  <data name="label8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 13</value>
+  </data>
+  <data name="label8.Text" xml:space="preserve">
+    <value>Blick nach oben</value>
+  </data>
+  <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 13</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Laufen/Gehen</value>
+  </data>
+  <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>73, 13</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Seitlich rechts</value>
+  </data>
+  <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 13</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Seitlich links</value>
+  </data>
+  <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 13</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Drehung rechts</value>
+  </data>
+  <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 13</value>
+  </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Drehung links</value>
+  </data>
+  <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>58, 13</value>
+  </data>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Rückwärts</value>
+  </data>
+  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 13</value>
+  </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Vorwärts</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Bewegung</value>
+  </data>
+  <data name="label19.Size" type="System.Drawing.Size, System.Drawing">
+    <value>26, 13</value>
+  </data>
+  <data name="label19.Text" xml:space="preserve">
+    <value>Ego</value>
+  </data>
+  <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 13</value>
+  </data>
+  <data name="label18.Text" xml:space="preserve">
+    <value>Wer spielt?</value>
+  </data>
+  <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 13</value>
+  </data>
+  <data name="label17.Text" xml:space="preserve">
+    <value>Mitteilung an alle</value>
+  </data>
+  <data name="label16.Size" type="System.Drawing.Size, System.Drawing">
+    <value>36, 13</value>
+  </data>
+  <data name="label16.Text" xml:space="preserve">
+    <value>Rufen</value>
+  </data>
+  <data name="label15.Size" type="System.Drawing.Size, System.Drawing">
+    <value>57, 13</value>
+  </data>
+  <data name="label15.Text" xml:space="preserve">
+    <value>Telepathie</value>
+  </data>
+  <data name="label14.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 13</value>
+  </data>
+  <data name="label14.Text" xml:space="preserve">
+    <value>Chat aktivieren</value>
+  </data>
+  <data name="label13.Size" type="System.Drawing.Size, System.Drawing">
+    <value>38, 13</value>
+  </data>
+  <data name="label13.Text" xml:space="preserve">
+    <value>Sagen</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Kommunikation</value>
+  </data>
+  <data name="label28.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 13</value>
+  </data>
+  <data name="label28.Text" xml:space="preserve">
+    <value>Angreifen</value>
+  </data>
+  <data name="label27.Size" type="System.Drawing.Size, System.Drawing">
+    <value>56, 13</value>
+  </data>
+  <data name="label27.Text" xml:space="preserve">
+    <value>Auszahlen</value>
+  </data>
+  <data name="label26.Size" type="System.Drawing.Size, System.Drawing">
+    <value>53, 13</value>
+  </data>
+  <data name="label26.Text" xml:space="preserve">
+    <value>Einzahlen</value>
+  </data>
+  <data name="label25.Size" type="System.Drawing.Size, System.Drawing">
+    <value>41, 13</value>
+  </data>
+  <data name="label25.Text" xml:space="preserve">
+    <value>Kaufen</value>
+  </data>
+  <data name="label24.Size" type="System.Drawing.Size, System.Drawing">
+    <value>49, 13</value>
+  </data>
+  <data name="label24.Text" xml:space="preserve">
+    <value>Anbieten</value>
+  </data>
+  <data name="label23.Size" type="System.Drawing.Size, System.Drawing">
+    <value>68, 13</value>
+  </data>
+  <data name="label23.Text" xml:space="preserve">
+    <value>Untersuchen</value>
+  </data>
+  <data name="label22.Size" type="System.Drawing.Size, System.Drawing">
+    <value>61, 13</value>
+  </data>
+  <data name="label22.Text" xml:space="preserve">
+    <value>Anschauen</value>
+  </data>
+  <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 13</value>
+  </data>
+  <data name="label21.Text" xml:space="preserve">
+    <value>Nehmen</value>
+  </data>
+  <data name="label20.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 13</value>
+  </data>
+  <data name="label20.Text" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="tabPage3.Text" xml:space="preserve">
+    <value>Interaktion</value>
+  </data>
+  <data name="label35.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 13</value>
+  </data>
+  <data name="label35.Text" xml:space="preserve">
+    <value>Ziel auswählen</value>
+  </data>
+  <data name="label34.Size" type="System.Drawing.Size, System.Drawing">
+    <value>61, 13</value>
+  </data>
+  <data name="label34.Text" xml:space="preserve">
+    <value>Tab zurück</value>
+  </data>
+  <data name="label33.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 13</value>
+  </data>
+  <data name="label33.Text" xml:space="preserve">
+    <value>Tab vor</value>
+  </data>
+  <data name="label32.Size" type="System.Drawing.Size, System.Drawing">
+    <value>58, 26</value>
+  </data>
+  <data name="label32.Text" xml:space="preserve">
+    <value>Sich selbst
+markieren</value>
+  </data>
+  <data name="label31.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 13</value>
+  </data>
+  <data name="label31.Text" xml:space="preserve">
+    <value>Ziel aufheben</value>
+  </data>
+  <data name="label30.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 13</value>
+  </data>
+  <data name="label30.Text" xml:space="preserve">
+    <value>Vorheriges Ziel</value>
+  </data>
+  <data name="label29.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 13</value>
+  </data>
+  <data name="label29.Text" xml:space="preserve">
+    <value>Nächstes Ziel</value>
+  </data>
+  <data name="tabPage4.Text" xml:space="preserve">
+    <value>Zielauswahl</value>
+  </data>
+  <data name="label38.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 13</value>
+  </data>
+  <data name="label38.Text" xml:space="preserve">
+    <value>Hinauszoomen</value>
+  </data>
+  <data name="label37.Size" type="System.Drawing.Size, System.Drawing">
+    <value>74, 13</value>
+  </data>
+  <data name="label37.Text" xml:space="preserve">
+    <value>Hineinzoomen</value>
+  </data>
+  <data name="label36.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 13</value>
+  </data>
+  <data name="label36.Text" xml:space="preserve">
+    <value>Karte öffnen</value>
+  </data>
+  <data name="tabPage5.Text" xml:space="preserve">
+    <value>Karte</value>
+  </data>
+  <data name="label40.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 13</value>
+  </data>
+  <data name="label40.Text" xml:space="preserve">
+    <value>Mouselook Y Achse</value>
+  </data>
+  <data name="label39.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 13</value>
+  </data>
+  <data name="label39.Text" xml:space="preserve">
+    <value>Mouselook X Achse</value>
+  </data>
+  <data name="groupBox2.Text" xml:space="preserve">
+    <value>Mouselook</value>
+  </data>
+  <data name="checkBoxInvertMouse.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 17</value>
+  </data>
+  <data name="checkBoxInvertMouse.Text" xml:space="preserve">
+    <value>Maus umkehren</value>
+  </data>
+  <data name="tabPage6.Text" xml:space="preserve">
+    <value>Maus</value>
+  </data>
+  <data name="checkBoxSoftwareRenderer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>130, 17</value>
+  </data>
+  <data name="checkBoxSoftwareRenderer.Text" xml:space="preserve">
+    <value>Software Grafikmodus</value>
+  </data>
+  <data name="checkBoxDynamicLighting.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 17</value>
+  </data>
+  <data name="checkBoxDynamicLighting.Text" xml:space="preserve">
+    <value>dynamische Beleuchtung</value>
+  </data>
+  <data name="checkBoxAttackOnTarget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 17</value>
+  </data>
+  <data name="checkBoxAttackOnTarget.Text" xml:space="preserve">
+    <value>Angriff bei Zielauswahl</value>
+  </data>
+  <data name="checkBoxAlwaysRun.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 17</value>
+  </data>
+  <data name="checkBoxAlwaysRun.Text" xml:space="preserve">
+    <value>immer rennen</value>
+  </data>
+  <data name="checkBoxQuickChat.Size" type="System.Drawing.Size, System.Drawing">
+    <value>110, 17</value>
+  </data>
+  <data name="checkBoxQuickChat.Text" xml:space="preserve">
+    <value>schnelles Chatten</value>
+  </data>
+  <data name="checkBoxClassicKeyBind.Size" type="System.Drawing.Size, System.Drawing">
+    <value>155, 17</value>
+  </data>
+  <data name="checkBoxClassicKeyBind.Text" xml:space="preserve">
+    <value>klassische Tastenbelegung</value>
+  </data>
+  <data name="groupBox1.Text" xml:space="preserve">
+    <value>Optionen</value>
+  </data>
+  <data name="buttonRestoreDefaults.Text" xml:space="preserve">
+    <value>Standardeinstellungen</value>
+  </data>
+  <data name="buttonCancel.Text" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="buttonHelp.Text" xml:space="preserve">
+    <value>Hilfe</value>
+  </data>
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAIAICAQAAAAAADoAgAAJgAAABAQEAAAAAAAKAEAAA4DAAAoAAAAIAAAAEAAAAABAAQAAAAAAIAC
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAgAAAAICAAIAAAACAAIAAgIAAAMDAwACAgIAAAAD/AAD/
+        AAAA//8A/wAAAP8A/wD//wAA////AAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAMREAAAAAAAAAAAAAAAAB
+        ERERERAAAAAAAAAAAAAAERERERERAAAAAAAAAAIgAREREREREQAiIAAAAAAAoiERGREZkREyIgAAAAAA
+        AKojERERERERIiIAAAAAAAYiIhkRERGRESIgAAAAAAABETIREREZERIhERAAAAABEREQIREREREjERER
+        EAABEREAAACQAAABAAAAEREQERkQd3d3B3d3cHd3dwEREQmREHAAdwcAB3Bwd3cBERAJkZB3dwcHB3Bw
+        cHd3AREQCZGQcAAHBwdwcHAAdwmREAmZEHB3dwcHcHBwd3cJERgJkZB3AAcHAAdwcAAHAZEQAJkQd3d3
+        B3d3cHd3dwEZAAABGQAAABAAAAEAAAAREAAAAxkZIhEHd3dwEiIREQAAACIiISERBwAAcBEREiIgAAAi
+        IREREQcHd3AREREiIgAAABEREREHAAdwEREREQAAAAERERERBwd3cBEZEREQAAAAERkZEQcAAHARGRER
+        AAAAABEZmREHd3dwERGZEQAAAAARmZEREAAAAREZEREAAAAAGZkZGRESAREREZGRAAAAAAmRkZkRIhER
+        EZGREAAAAAABkZGZERIZGRkZERAAAAAAkAEZEREAABkREQAJAAAAAAAAAREAAAAAERAAAAAA//7////8
+        P///4Af//8AD//mAAx/8AAA//AAAP/gAAH/4AAAf4AAAB4AAAAEAAAAAgAAAAYAAAAGAAAABgAAAAIAA
+        AAHAAAAD4AAAB+AAAA/AAAAHwAAAA/AAAA/gAAAH8AAAD/AAAA/wAAAP8AAAD/gAAB/4AAAf9gPA7/+P
+        8f8oAAAAEAAAACAAAAABAAQAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAgAAAAICAAIAA
+        AACAAIAAgIAAAMDAwACAgIAAAAD/AAD/AAAA//8A/wAAAP8A/wD//wAA////AAAAAAEQAAAAAAABEREQ
+        AAAAqiERERYiAAACIREREiAAAAABAAAQAAAHd3B3dwd3cAd3cHd3B3dwB3dwd3cHd3AHd3B3dwd3cAAA
+        AQAAEAAAAiEQd3cBEiAAERB3dwERAAARkHd3AZEAABmQd3cBkQAACRkAABEQAAAAEQAAEQAA/n8AAPgf
+        AADAAwAA4AcAAIABAAAAAAAAAAAAAAAAAAAAAAAAgAEAAIABAADAAwAAwAMAAMADAADgBwAA888AAA==
+</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Meridian 59 Tasteneinstellungen</value>
+  </data>
+</root>

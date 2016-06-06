@@ -35,7 +35,7 @@ resources:
    shadowform_on = "You melt into your shadow."
    shadowform_off = "You fade back to your own colors."
 
-   shadowform_wave_rsc = shadI11m.wav
+   shadowform_wave_rsc = shadI11m.ogg
 
 classvars:
 
@@ -58,6 +58,11 @@ classvars:
    viDefensive = TRUE
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 60
 
 messages:
 

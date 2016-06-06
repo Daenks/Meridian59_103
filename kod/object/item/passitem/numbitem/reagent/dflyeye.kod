@@ -12,8 +12,6 @@ DragonflyEye is Reagent
 
 constants:
 
-   include blakston.khd
-
 resources:
 
    include dflyeye.lkod
@@ -23,7 +21,6 @@ resources:
    DragonflyEye_desc_rsc = \
    "Once belonging to a dragonfly, these eyes are uncommon, "
    "but much desired magical fare."
-
    DragonflyEye_name_plural_rsc = "dragonfly eyes"
 
 classvars:
@@ -41,7 +38,6 @@ classvars:
 properties:
 
    piNumber = 3
-
 
 messages:
 

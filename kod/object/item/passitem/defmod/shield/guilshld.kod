@@ -645,6 +645,11 @@ messages:
       return [ [ATCK_WEAP_PIERCE,10] ];
    }
 
+   GetHeatDamage()
+   {
+      return 2;
+   }
+
    GetBaseSpellModifier(oSpell=$)
    {
       local iSchool;

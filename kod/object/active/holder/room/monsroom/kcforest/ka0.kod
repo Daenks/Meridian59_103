@@ -27,8 +27,8 @@ resources:
    include ka0.lkod
 
    room_name_OutdoorsKA0 = "A dark, humid cavern"
-   room_OutdoorsKA0 = KA0.roo
-   OutdoorsKA0_music = drgnfly.mp3
+   room_OutdoorsKA0 = ka0.roo
+   OutdoorsKA0_music = drgnfly.ogg
 
    new_item_appears_rsc = "The air shimmers and a ghostly image appears."
    Drop_correct_item_rsc = \

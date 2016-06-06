@@ -21,6 +21,8 @@ typedef struct resource_struct
    struct resource_struct *next;
 } resource_node;
 
+void SaveRsbMD5(char *rsb_hash);
+char * GetRsbMD5(void);
 void InitResource(void);
 void ResetResource(void);
 void AddResource(int id, int lang_id, char *str_value);

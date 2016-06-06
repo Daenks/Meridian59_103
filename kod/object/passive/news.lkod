@@ -1,2 +1,8 @@
 news_name_rsc = de "Nachrichtenrolle"
 news_desc_rsc = de "Du schaust auf ein öffentliches Nachrichtenwerkzeug."
+news_users_cant_delete = de \
+	"Nur DMs, Admins und Moderatoren können Nachrichten von dieser Nachrichtenkugel löschen"
+news_not_own_post = de \
+	"Du kannst nur Deine eigenen Nachrichten löschen!"
+news_del_time_expired_header = de \
+	"Du kannst nur Nachrichten von Dir löschen, die innerhalb von %r%r%r%r%r%r%r geschrieben wurden."

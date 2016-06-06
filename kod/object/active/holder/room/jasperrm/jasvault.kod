@@ -21,6 +21,19 @@ resources:
    room_jaspervault = jasvault.roo
    room_name_Jaspervault = "The Vault of Jasper"
 
+   JasVault_sign_name = "Welcome to the Jasper Vaults"
+   JasVault_sign_desc = \
+      "To use my fair services, simply type DEPOSIT with no further argument.  "
+      "A list of your inventory will appear, and you can choose the items you "
+      "wish to deposit.  To retrieve these items, simply use the WITHDRAW "
+      "command.  Note that this service is not free (the cost will be automatically "
+      "removed from your purse), and that I will not store shillings.\n\n"
+      "Using the Conveyance spell on a stackable item (food, reagents) in "
+      "your inventory will also send your item to the vaults, provided "
+      "you carry enough shillings to cover the fee.\n\n"
+      "Any items you deposit here can also be accessed from the Barloque "
+      "Vaults in the Ports of Barloque."
+
 classvars:
 
    vrName = room_name_jaspervault
@@ -62,18 +75,19 @@ messages:
 
       Send(self,@NewHold,#what=Create(&Brazier),
            #new_row=7,#new_col=5,#fine_row=32, #fine_col=31);
-
       Send(self,@NewHold,#what=Create(&Brazier),
            #new_row=5,#new_col=7,#fine_row=33, #fine_col=26);
-
       Send(self,@NewHold,#what=Create(&Brazier),
            #new_row=7,#new_col=7,#fine_row=32, #fine_col=36);
-
       Send(self,@NewHold,#what=Create(&Brazier),
            #new_row=5,#new_col=5,#fine_row=30, #fine_col=30);
 
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_VJOURNAL),
            #new_row=10,#new_col=7,#fine_row=10,#fine_col=51);
+
+      Send(self,@NewHold,#what=Create(&Sign,#desc=JasVault_sign_desc,
+            #name=JasVault_sign_name),
+            #new_row=9,#new_col=4,#fine_row=62,#fine_col=32);
 
       propagate;
    }

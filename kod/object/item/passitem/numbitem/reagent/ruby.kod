@@ -18,11 +18,10 @@ resources:
 
    include ruby.lkod
 
-
    ruby_name_rsc = "ruby"
    ruby_icon_rsc = ruby.bgf
    ruby_desc_rsc =  \
-   "This fire ruby is larger than a man's fist and extremely valuable."
+      "This fire ruby is larger than a man's fist and extremely valuable."
    ruby_name_plural_rsc = "rubies"
 
 classvars:

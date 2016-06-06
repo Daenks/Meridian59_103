@@ -1,12 +1,5 @@
-// Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
-// All rights reserved.
-//
-// This software is distributed under a license that is described in
-// the LICENSE file that accompanies it.
-//
-// Meridian is a registered trademark.
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by club.rc
 //
 #define IDS_APPNAME                     1
@@ -50,6 +43,8 @@
 #define IDS_CANTRENAME                  137
 #define IDS_CANTSENDREQUEST             138
 #define IDS_CANTGETFILESIZE             139
+#define IDS_JSONERROR                   140
+#define IDS_SCANNING                    141
 #define IDC_STATUS                      1001
 #define IDC_AMOUNT                      1002
 #define IDC_PROGRESS                    1003

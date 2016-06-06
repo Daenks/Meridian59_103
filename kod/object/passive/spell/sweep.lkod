@@ -1,22 +1,21 @@
 Sweep_name_rsc = de "Fegen"
 Sweep_desc_rsc = de \
-   "Die ungebändigten Winde von Faren fegen durch das Gebiet und tragen weggeworfene "
-   "Gegenstände davon. Der Zauber benötigt Pilze."
+   "Die ungebändigten Winde von Faren werde durch das Gebiet fegen und tragen "
+   "alle weggeworfene Gegenstände zu Dir. Der Zauber benötigt zwei braune Pilze. "
 Sweep_room_cast = de \
-   "%s%s schwingt einen magischen Besen, so dass manche Gegenstände in %s "
-   "Hände landen."
-Sweep_Something = de "Du richtest die Dinge etwas."
-Sweep_Nothing = de "Der Boden scheint nicht wirklich sauberer zu sein."
+   "%s%s fegt einige Gegenstände in %s's Gepäck."
+Sweep_Something = de "Du hast etwas Ordnung in die Dinge gebracht."
+Sweep_Nothing = de "Der Boden sieht nicht viel sauberer aus."
 Sweep_Pissed_rant = de \
-   "~kRan er'Hoth schreit, \"~r%s%s, du kleine stingende Schnecke, ICH habe "
-   "diesen Zauber benutzt.~k\""
+   "~kRan 'er Zen schreit, \"~r%s%s Du am Boden kriechende Schleimschnecke! Das "
+   "wollte ich noch BENUTZEN.~k\""
 Sweep_Grateful_rant = de \
-   "~kRan er'Hoth kriecht und stöhnt, \"Oh, danke o du %s%s, danke, danke.  "
-   "ich hatte solche Angst, solche Angst bis du es weggefegt hast.\""
+   "~kRan 'er Zen krächzt zitternd, \"Oh danke, mächtiger %s%s, Danke, danke, "
+   "danke. Ich war voller Angst und Furcht, bis Du es verscheucht hast.\""
 Sweep_Freaked_rant = de \
-   "~kRan er'Hoth schreit, \"ACK! ERK! URK! ORK! Wo ist es hin?  Was hast "
-   "du damit getan, %s%s? Bitte tu es nicht mit MIR!\""
+   "~kRan 'er Zen schreit, \"ACK! ERK! URK! ORK! Wo ist es hin? Was hast "
+   "Du damit getan, %s%s? Das hast Du hoffentlich nicht mit ~Imir~I vor.\""
 Sweep_no_reward = de \
-   "Hey, dass war nett von dir . . . meinen Laden aufzuräumen."
+   "Hey, das war nett von Dir . . . meinen Laden einfach für umsonst aufzuräumen."
 Sweep_spell_intro_rsc = de \
    "Faren Level 1: Boden fegen und Gegenstände landen in deinem Inventar."

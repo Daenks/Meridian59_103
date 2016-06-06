@@ -30,10 +30,10 @@ resources:
    lupogg_dead_icon_rsc = lupoggX.bgf
    lupogg_dead_name_rsc = "dead lupogg"
 
-   lupogg_sound_hit = lup_atkh.wav
-   lupogg_sound_miss = lup_atkm.wav
-   lupogg_sound_death = lup_dth.wav
-   lupogg_sound_aware = lup_awr.wav
+   lupogg_sound_hit = lup_atkh.ogg
+   lupogg_sound_miss = lup_atkm.ogg
+   lupogg_sound_death = lup_dth.ogg
+   lupogg_sound_aware = lup_awr.ogg
 
 classvars:
 

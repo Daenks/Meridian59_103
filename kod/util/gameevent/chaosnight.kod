@@ -50,7 +50,7 @@ resources:
    chaos_gift = \
        "~B~U~k[###]~n ~B~vQor grants you %s%s to smite your enemies!"
 
-   chaos_wav = chaosup.wav
+   chaos_wav = chaosup.ogg
 
 
 classvars:
@@ -276,9 +276,6 @@ messages:
       Send(&TosInnKeeper,@SetForSaleFrenzy);
       Send(&HazarInnKeeper,@SetForSaleFrenzy);
       Send(&KocatanInnkeeper,@SetForSaleFrenzy);
-
-      % Reduce the weight and bulk of all items.
-      Send(SYS,@ReduceAllItemWeightAndBulk,#iNumber=1);
 
       return;
    }

@@ -30,7 +30,7 @@ resources:
       "You cross your eyes momentarily to make the illusions in the area fade "
       "away."
 
-   dispelillusion_sound = kdispill.wav
+   dispelillusion_sound = kdispill.ogg
 
 classvars:
    vrName = dispelillusion_name_rsc
@@ -45,6 +45,8 @@ classvars:
    viMana = 20
    viSpellExertion = 3
    viMeditate_ratio = 30
+
+   vbIsAreaEffect = TRUE
 
 properties:
 
@@ -87,10 +89,12 @@ messages:
 
       if bAll
       {
-         Send(oRoom,@DispelIllusionEnchantments,#who=who,#iChance=iChance);
+         Send(oRoom,@DispelIllusionEnchantments,#who=who,#iChance=iChance,
+               #stroke_obj=self);
       }
 
-      Send(oRoom,@DispelIllusions,#who=who,#what=self,#iChance=iChance,#bAll=bAll);
+      Send(oRoom,@DispelIllusions,#who=who,#what=self,#iChance=iChance,
+            #bAll=bAll,#stroke_obj=self);
 
       Send(who,@MsgSendUser,#message_rsc=dispelillusion_castermsg_rsc);
 

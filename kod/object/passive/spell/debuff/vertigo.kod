@@ -33,7 +33,7 @@ resources:
       "someone hit you on the head with a very large hammer."
    Vertigo_off = "You recover from that terrible feeling."
 
-   Vertigo_sound = rvertigo.wav
+   Vertigo_sound = rvertigo.ogg
 
 classvars:
 
@@ -96,23 +96,26 @@ messages:
            #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
 
       % Spell effects
-      if IsClass(oTarget,&Player)
+      if IsClass(oTarget,&User)
       {
          Send(oTarget,@MsgSendUser,#message_rsc=vrEnchantment_On);
-         Send(oTarget,@EffectSendUserDuration,#effect=EFFECT_WAVER,#duration=iDuration);
+         Send(oTarget,@EffectSendUserDuration,#effect=EFFECT_WAVER,
+               #duration=iDuration);
 
          iAgil = Send(oTarget,@AddAgility,#points=-iAmount);
          iStr = Send(oTarget,@AddMight,#points=-iAmount);
          iAim = Send(oTarget,@AddAim,#points=-iAmount);
 
-         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,#state=[-iAgil,-iStr,-iAim]);
+         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,
+               #state=[-iAgil,-iStr,-iAim]);
       }
       else
       {
          iAgil = Send(oTarget,@AddMonsterAgility,#points=-iAmount);
          iAim = Send(oTarget,@AddMonsterAim,#points=-iAmount);
 
-         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,#state=[-iAgil,-iAim]);
+         Send(oTarget,@StartEnchantment,#what=self,#time=iDuration,
+               #state=[-iAgil,-iAim]);
       }
 
       propagate;
@@ -149,15 +152,7 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=vrEnchantment_Off);
       }
 
-      % Handle transition from 3-element enchantment list elements to
-      % 4-element ones.
-      if state = $
-         OR state = 0
-      {
-         state = Send(who,@GetRawState,#what=self);
-      }
-
-      if IsClass(who,&Player)
+      if IsClass(who,&User)
       {
          Send(who,@AddAgility,#points=Nth(state,1));
          Send(who,@AddMight,#points=Nth(state,2));
@@ -182,7 +177,7 @@ messages:
       {
          if Nth(i,2) = self
          {
-            iDuration = GetTimeRemaining(Nth(i,1));
+            iDuration = GetTimeRemaining(First(i));
          }
       }
 

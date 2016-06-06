@@ -76,7 +76,8 @@ messages:
       oTarget = First(lTargets);
 
       % Can't bonk someone if they already have an effect, i.e. a debuff.
-      if Send(oTarget,@IsEnchanted,#byClass=&Debuff)
+      if IsClass(oTarget,&Battler)
+         AND Send(oTarget,@IsEnchanted,#byClass=&Debuff)
       {
          return FALSE;
       }
@@ -133,7 +134,7 @@ messages:
                if bItemCast
                {
                   Send(each_obj,@MsgSendUser,#message_rsc=allinroom_bstick_msg1,
-                        #parm1=Send(oTarget,@GetDef,#cap=TRUE),
+                        #parm1=Send(oTarget,@GetCapDef),
                         #parm2=Send(oTarget,@GetName),
                         #parm3=Send(who,@GetDef),
                         #parm4=Send(who,@GetName),

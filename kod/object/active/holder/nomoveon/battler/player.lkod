@@ -75,13 +75,14 @@ player_improved = de \
 player_aggressor = de \
    "Sha-Lill ist Durch Deinen ungerechtfertigten Angriff erzürnt."
 player_aggressor_minion = de \
-   "Shal'ille frowns upon your unprovoked attack on %s%s's minion."
+   "Shal'ille runzelt die Stirn auf deinen unprovozierten Angriff auf %s%s's Kreatur."
 player_safety_caught = de \
    "Hey! Du hast fast %s%s getroffen! Gut, dass Deine Schutzvorrichtung an "
    "war!"
 player_safety_caught_minion = de \
-   "Hey!  You almost hit %s%s's minion! Good thing your safety was on!"
-player_own_minion = de "You cannot attack your own minion!"
+   "Hey! Du hast fast %s%s's Kreatur getroffen! Gut, dass Deine Schutzvorrichtung an "
+   "war!"
+player_own_minion = de "Du kannst nicht deine eigenen Kreatur angreifen!"
 player_safe_server = de \
    "In dieser Welt können keine anderen Spieler angegriffen werden."
 player_no_enter = de \
@@ -96,15 +97,17 @@ player_wanted_now = de \
    "Du wirst nun für die Ermordung von %s%s zum Gesetzlosen erklärt."
 player_haunted_on = de "%s%ss gewaltsamer Tod ruft einen Racheengel hervor."
 player_haunted_off = de "Der Racheengel ist zufrieden."
-player_training_inform = de "Du hast nun ~B%i~B Trainings Punkte!"
+player_training_inform = de "Du hast nun ~B%i~B Trainingspunkte!"
 player_reached_maxtraining = de \
-   "Du hast ~B1000~B Trainings Punkte erreicht und kannst nicht mehr dazu "
-   "bekommen!  Meditiere um sie zu benutzen!"
-player_gained_training = de "Du hast ~B%i~B Trainings Punkte dazu bekommen!"
-player_spent_training = de "Du hast ~B%i~B Trainings Punkte benutzt!"
+   "~BDu hast ~B%i~B Trainingspunkte erreicht und kannst nicht mehr dazu "
+   "bekommen! Meditiere jetzt, um sie zu benutzen!"
+player_gained_training = de "Du hast ~B%i~B Trainingspunkte dazu bekommen!"
+player_spent_training = de "Du hast ~B%i~B Trainingspunkte benutzt!"
 player_logon_bonus = de \
-   "Du hast deinen täglichen Trainings Punkte Bonus von ~B%i~B Punkten bekommen!  "
-   "Komm morgen wieder um mehr zu bekommen!"
+   "Du hast deinen täglichen Trainingspunkte Bonus in Höhe von ~B%i~B Punkten bekommen. "
+   "Komm morgen wieder, um mehr davon zu bekommen!"
+player_experience_gained = de "Du hast ~B~s%i~v~B XP erhalten."
+player_experience_lost = de "Du hast ~B~r%i~B~v XP verloren!"
 player_health_gain_maxed = de \
    "Deine Lebensenergie kann sich nicht weiter erhöhen."
 player_cant_hit_newbie = de \
@@ -184,7 +187,7 @@ player_for = de " seit "
 player_years = de " Jahren."
 player_year = de " Jahr."
 player_under_one_year = de " weniger als ein Jahr."
-player_is_justicar = de "Gewählter königlicher Justiziar von Meridian."
+player_is_justicar = de "Gewählter königlicher Justiziar von Meridian.\n"
 player_is_holding = de "%s$0Hält: %s%s.\n"
 player_is_wearing = de "%s$0Trägt: %s%s.\n"
 player_known_for_mastery = de "Ist weit und breit für eine Meisterschaft von "
@@ -238,12 +241,12 @@ player_wave = de "Du winkst mit deiner Hand."
 player_point = de "Du zeigst."
 player_angel = de "Dein Schutzengel"
 intrigue_ambassador = de "Baron Springer von Cor Noth"
-player_newbie_honor_string = de "Diese Seele ist neu im Lande von Meridian 59."
+player_newbie_honor_string = de "Diese Seele ist neu im Lande von Meridian 59.\n"
 player_newbie_commands = de \
    "~BGrundlegende Befehle für Meridian 59:~B\n~IBenutze diese Maus- und Tastaturbefehle, "
    "um mit der Welt zu interagieren.\nDiese beziehen sich auf die Standardbelegung "
    "der Tasten. Du kannst die Belegung jederzeit ändern unter~I ~wSpiel > "
-   "Konfiguration.~rRechtsklick auf ein Objekt~b - untersucht ein Object "
+   "Konfiguration.\n~rRechtsklick auf ein Objekt~b - untersucht ein Object "
    "und lässt Dich nähere Details betrachten. \nKlicke rechts auf das Schild "
    "in diesem Raum um mehr zu erfahren.\n~rLeertaste~b - gehe durch Türen, "
    "wie die blaue Tür im Norden.\n~rE-Taste~b - greife Monster an. Vielleicht "
@@ -454,7 +457,7 @@ player_Debug_nokarma = de "%s kann %s aufgrund des Karmas nicht erreichen."
 player_Debug_noway = de \
    "Für %s ist es unmöglich, jemals den %s-Zauber zu erlernen."
 player_eavesdrop_login_str = de "~B~g[~n%s hat sich eingewählt. ~B~g]"
-player_eavesdrop_str = de "~B~g[~n%s erzählt %s, "
+player_eavesdrop_str = de "~B~g[~n%s erzählt %s, \"%q~n\"~B~g]"
 player_eavesdrop_logout_str = de "~B~g[~n%s hat das Spiel verlassen. ~B~g]"
 player_admin_added_spell = de "Zauberspruch hinzugefuegt."
 player_admin_modified_spell = de "Zauberspruch geaendert."
@@ -470,20 +473,20 @@ second_wind_finished = de \
 player_monster_attack_string = de "Monster Angriff"
 player_no_weapon_string = de "Keine Waffen"
 cannot_attack_ally = de \
-   "Du kannst %s nicht angreifen, %ss ist aus deiner Allianz!"
+   "Du kannst %s nicht angreifen,%sdu bist ist aus seiner Allianz!"
 cannot_attack_guildmate = de \
-   "Du kannst %s nicht angreifen, %ss ist dein Gildenkollege!"
+   "Du kannst %s nicht angreifen,%sdu bist sein Gildenmitglied!"
 group_experience_rsc = de \
-   "Du absorbierst eine kleine Menge an Energie von %ss Mord an %s."
+   "%s$2 wurde von %s$1 getötet. Du absorbierst eine kleine Menge an Energie von diesem Mord."
 rod_gained_charge_msg = de \
-   "Du bemerkst, dass eine deiner magischen Gegenständen durch den Kill wieder "
+   "Du bemerkst, dass eine deiner magischen Gegenständen durch den Tod wieder "
    "etwas aufgeladen wurde."
-rods_fully_recharged_by_safe_place_msg = de \
+rods_recharged_by_safe_place_msg = de \
    "Dieser sichere Ort lässt deinen Zauberstab wieder zu Kräften kommen."
 player_truced = de "Shal'ills Magie zwingt dich dazu Waffenruhe einzuhalten."
 Jig_cannot_attack = de \
-   "Es würde sich nicht richtig anfühlen %s anzugreifen, solange du so schön "
-   "mit %s tanzt"
+   "Es würde sich nicht richtig anfühlen anzugreifen, solange du so schön "
+   "mit %s%s tanzt."
 phased_out_cant_use = de \
    "Du versuchst den Gegenstand zu benutzen, aber du bist ausgestiegen aus "
    "der Realität und greifst vorbei."
@@ -498,4 +501,4 @@ phased_player_description = de \
    "Dies ist der aus der Realität ausgestiegene Körper von %q, der irgendwo "
    "anders ist, aber sicher nicht hier."
 bad_line_of_sight = de \
-   "Deine schlechte Sicht, lässt einen Schlag schwieriger werden."
+   "Deine schlechte Sicht lässt einen Schlag schwieriger werden."

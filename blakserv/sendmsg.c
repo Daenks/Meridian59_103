@@ -70,7 +70,7 @@ int done;
 int InterpretAtMessage(int object_id,class_node* c,message_node* m,
                   int num_sent_parms,parm_node sent_parms[],
                   val_type *ret_val);
-__inline void StoreValue(int object_id,local_var_type *local_vars,int data_type,int data,
+__forceinline void StoreValue(int object_id,local_var_type *local_vars,int data_type,int data,
                    val_type new_data);
 void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type opcode);
 void InterpretBinaryAssign(int object_id,local_var_type *local_vars,opcode_type opcode);
@@ -99,12 +99,12 @@ void InitProfiling(void)
    kod_stat.message_depth_highest = 0;
    kod_stat.interpreting_class = INVALID_CLASS;
 
-   for (i = 0; i < MAX_C_FUNCTION; i++)
+   for (i = 0; i < MAX_C_FUNCTION; ++i)
+   {
       kod_stat.c_count_untimed[i] = 0;
-   for (i = 0; i < MAX_C_FUNCTION; i++)
       kod_stat.c_count_timed[i] = 0;
-   for (i = 0; i < MAX_C_FUNCTION; i++)
       kod_stat.ccall_total_time[i] = 0;
+   }
 
    message_depth = 0;
 
@@ -752,7 +752,7 @@ int InterpretAtMessage(int object_id,class_node* c,message_node* m,
 /* RetrieveValue used to be here, but is inline, and used in ccode.c too, so it's
 in sendmsg.h now */
 
-__inline void StoreValue(int object_id, local_var_type *local_vars,
+__forceinline void StoreValue(int object_id, local_var_type *local_vars,
                          int data_type, int data, val_type new_data)
 {
    object_node *o;
@@ -840,10 +840,11 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
             source_data.v.tag,source_data.v.data);
          break;
       }
-      if (opnode->source != opnode->dest)
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
          StoreValue(object_id, local_vars, opcode.dest, opnode->dest, source_data);
       ++source_data.v.data;
-      StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       return;
    case PRE_INCREMENT:
       if (source_data.v.tag != TAG_INT)
@@ -853,8 +854,9 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
          break;
       }
       ++source_data.v.data;
-      if (opnode->source != opnode->dest)
-         StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
+         StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       break;
    case POST_DECREMENT :
       if (source_data.v.tag != TAG_INT)
@@ -863,10 +865,11 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
             source_data.v.tag,source_data.v.data);
          break;
       }
-      if (opnode->source != opnode->dest)
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
          StoreValue(object_id, local_vars, opcode.dest, opnode->dest, source_data);
       --source_data.v.data;
-      StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       return;
    case PRE_DECREMENT:
       if (source_data.v.tag != TAG_INT)
@@ -876,8 +879,9 @@ void InterpretUnaryAssign(int object_id,local_var_type *local_vars,opcode_type o
          break;
       }
       --source_data.v.data;
-      if (opnode->source != opnode->dest)
-         StoreValue(object_id, local_vars, opcode.dest, opnode->source, source_data);
+      if (opnode->source != opnode->dest
+         || opcode.source1 != opcode.dest)
+         StoreValue(object_id, local_vars, opcode.source1, opnode->source, source_data);
       break;
    default :
       bprintf("InterpretUnaryAssign can't perform unary op %i\n",info);

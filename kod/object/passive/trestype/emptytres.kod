@@ -1,0 +1,38 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+EmptyTreasure is TreasureType
+
+// EmptyTreasure has no items in the plTreasure list, but still drops rare
+// items. Set piDiff_seed and piItem_Att_chance to the monster's difficulty
+// when called to drop treasure (works thanks to single threaded nature of kod).
+
+constants:
+
+   include blakston.khd
+
+classvars:
+
+   viTreasure_num = TID_EMPTY
+
+properties:
+
+messages:
+
+   CreateMobTreasure(difficulty = 0)
+   {
+      piItem_Att_chance = difficulty;
+      piDiff_seed = difficulty;
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,9 +1,10 @@
 reveal_name_rsc = de "Offenbaren"
 reveal_desc_rsc = de \
-   "Streift jegliche Tarnung von einem Gegenstand ab, so dass jeder die besonderen "
-   "Fähigkeiten erkennen kann. Man braucht makellose Orkzähne."
-reveal_cant = de "Du kannst Dich nicht auf %s%s fokussieren."
+   "Streift jegliche Tarnung von einem Gegenstand ab, "
+   "so dass jeder die besonderen Fähigkeiten erkennen kann. "
+   "Man braucht zehn Smaragde, um den Zauber zu auszusprechen."
+reveal_cant = de "%s%s kann scheinbar nicht fokussiert werden."
 reveal_working = de \
-   "Du konzentriest Dich auf %s%s, und nach ein paar Momenten kommen alle "
-   "Geheimnisse zum Vorschein!"
-reveal_strip_misdir = de "Deine Magie nimmt alle Illusionen von %s%s!"
+   "%s%s ist das Ziel Deiner Konzentration. Die verborgenen Geheimnisse "
+   "werden für alle sichtbar!"
+reveal_strip_misdir = de "Deine Magie durchschaut jegliche Täuschung. %s%s ist identifiziert!"

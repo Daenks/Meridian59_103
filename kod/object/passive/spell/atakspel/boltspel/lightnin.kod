@@ -25,7 +25,7 @@ resources:
       "Hurls a bolt of lightning at the target.  "
       "Requires blue mushrooms and orc teeth to cast."
 
-   lightning_sound = fbolt.wav
+   lightning_sound = fbolt.ogg
 
 classvars:
    vrName = lightning_name_rsc

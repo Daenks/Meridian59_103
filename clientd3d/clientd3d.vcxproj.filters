@@ -21,9 +21,6 @@
     <ClInclude Include="winxblak.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="xform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="xlat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -315,6 +312,9 @@
     <ClInclude Include="audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="d3dlighting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="about.c">
@@ -587,9 +587,6 @@
     <ClCompile Include="winmsg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xform.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xlat.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -606,6 +603,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="audio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dlighting.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

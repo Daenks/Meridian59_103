@@ -20,12 +20,12 @@ resources:
 
    guildpeace_name_rsc = "end alliance"
    guildpeace_icon_rsc = light.bgf
-   guildpeace_desc_Rsc = "Use this to declare that an enemy guild is no longer an enemy.  Note that you will still not be allied with that guild."
-
+   guildpeace_desc_Rsc = \
+      "Use this to declare that an enemy guild is no longer an enemy.  "
+      "Note that you will still not be allied with that guild."
    peace_non_user = "%s%s is not impressed by your peaceful overtures."
    peace_not_member = "%s%s is not a member of an enemy guild!"
    peace_your_guild = "%s is a member of your guild!"
-
    peace_cant_self = "You become at total peace with yourself.  Whee."
 
 classvars:
@@ -52,43 +52,42 @@ messages:
    DoCommand(who=$, otarget = $)
    "Makes peace with the target guild!"
    {
-      local yourGuild,myguild,i,lmembers;
+      local yourGuild, myguild, i;
 
-      if not isClass(oTarget,&Guild)
+      if NOT IsClass(oTarget,&Guild)
       {
-         send(who,@MsgSendUser,#message_rsc=peace_non_user,
-              #parm1=send(oTarget,@GetCapDef),#parm2=send(oTarget,@GetName));
+         Send(who,@MsgSendUser,#message_rsc=peace_non_user,
+               #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
 
          return FALSE;
       }
 
-      yourGuild= oTarget;
-      myGuild = send(who,@GetGuild);
+      yourGuild = oTarget;
+      myGuild = Send(who,@GetGuild);
 
       if yourguild = myguild
       {
-          send(who,@MsgSendUser,#message_rsc=peace_your_guild,
-              #parm1=send(oTarget,@GetTrueName));
+         Send(who,@MsgSendUser,#message_rsc=peace_your_guild,
+               #parm1=Send(oTarget,@GetTrueName));
 
-          return FALSE;
-      }
-       
-      if yourguild = $ OR NOT send(myguild,@IsEnemy,#otherguild=yourguild)
-      {
-         send(who,@MsgSendUser,#message_rsc=peace_not_member,
-              #parm1=send(oTarget,@GetDef),#parm2=send(oTarget,@GetName));
-
-          return FALSE;
+         return FALSE;
       }
 
-      if send(myGuild,@CanEndEnemy,#otherguild=yourguild,#rep=who)
+      if yourguild = $ OR NOT Send(myguild,@IsEnemy,#otherguild=yourguild)
       {
-         send(myGuild,@EndEnemy,#otherguild=yourguild);
+         Send(who,@MsgSendUser,#message_rsc=peace_not_member,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+         return FALSE;
+      }
+
+      if Send(myGuild,@CanEndEnemy,#otherguild=yourguild,#rep=who)
+      {
+         Send(myGuild,@EndEnemy,#otherguild=yourguild);
       }
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

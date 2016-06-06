@@ -31,7 +31,7 @@ classvars:
    vrDesc = FactionTroop_desc_rsc
    vrDead_name = FactionTroop_dead_name_rsc
 
-   viTreasure_type = TID_NONE
+   viTreasure_type = TID_EMPTY
 
    viSpeed = SPEED_FASTER
    viAttack_type = ATCK_WEAP_SLASH
@@ -221,8 +221,7 @@ messages:
 
       plUsing = $;
 
-      % Don't propagate.  We do everything here.
-      return;
+      propagate;
    }
 
    IsAlly(target = $, regroup = FALSE)
@@ -237,7 +236,7 @@ messages:
       if IsClass(target,&Player)
       {
          iFaction = Send(target,@GetFaction);
-         if (not regroup) and (iFaction = FACTION_NEUTRAL)
+         if (NOT regroup) AND (iFaction = FACTION_NEUTRAL)
          {
             return TRUE;
          }
@@ -259,7 +258,10 @@ messages:
    {
       local iFaction;
 
-      if IsClass(what,&User) or IsClass(what,&FactionTroop)
+      if (IsClass(what,&User)
+         AND (Send(SETTINGS_OBJECT,@TroopsAttackNonShielded)
+            OR Send(what,@FindUsing,#class=&SoldierShield) <> $))
+         OR IsClass(what,&FactionTroop)
       {
          iFaction = Send(what,@GetFaction);
          if iFaction = viFaction
@@ -267,7 +269,8 @@ messages:
             return -30;
          }
 
-         if (iFaction <> FACTION_NEUTRAL) and (iFaction <> viFaction)
+         if (iFaction <> FACTION_NEUTRAL)
+            AND (iFaction <> viFaction)
          {
             return 30;
          }

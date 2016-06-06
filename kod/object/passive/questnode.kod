@@ -1232,54 +1232,44 @@ messages:
             {
                Send(oQuester,@AddMight,#points=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_INTELLECT
+            else if iPrizeStat = QN_PRIZE_STAT_INTELLECT
             {
                Send(oQuester,@AddIntellect,#points=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_AIM
+            else if iPrizeStat = QN_PRIZE_STAT_AIM
             {
                Send(oQuester,@AddAim,#points=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_STAMINA
+            else if iPrizeStat = QN_PRIZE_STAT_STAMINA
             {
                Send(oQuester,@AddStamina,#points=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_AGILITY
+            else if iPrizeStat = QN_PRIZE_STAT_AGILITY
             {
                Send(oQuester,@AddAgility,#points=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_MYSTICISM
+            else if iPrizeStat = QN_PRIZE_STAT_MYSTICISM
             {
                Send(oQuester,@AddMysticism,#points=iAmount);
                Send(oQuester,@ComputeMaxMana);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_HEALTH
+            else if iPrizeStat = QN_PRIZE_STAT_HEALTH
             {
                Send(oQuester,@GainHealth,#amount=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_MAXHEALTH
+            else if iPrizeStat = QN_PRIZE_STAT_MAXHEALTH
             {
                Send(oQuester,@GainMaxHealth,#amount=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_BASEMAXHEALTH
+            else if iPrizeStat = QN_PRIZE_STAT_BASEMAXHEALTH
             {
-               Send(oQuester,@GainBaseMaxHealth,#amount=iAmount);
+               Send(oQuester,@AddXP,#iAmount=Send(oQuester,@GetXPRemainingForNextLevel));
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_MANA
+            else if iPrizeStat = QN_PRIZE_STAT_MANA
             {
                Send(oQuester,@GainMana,#amount=iAmount);
             }
-
-            if iPrizeStat = QN_PRIZE_STAT_KARMA
+            else if iPrizeStat = QN_PRIZE_STAT_KARMA
             {
                Send(oQuester,@GainKarma,#amount=iAmount);
             }
@@ -1308,8 +1298,7 @@ messages:
 
          foreach oQuester in recipients
          {
-            Send(oQuester,@AddGainChance,#iAmount=Nth(prize,2));
-            Post(oQuester,@RollForTougher,#iLevel=Send(oQuester,@GetBaseMaxHealth));
+            Send(oQuester,@AddXP,#iAmount=Nth(prize,2));
          }
 
          return;
@@ -1329,43 +1318,35 @@ messages:
             {
                iBoonNum = SID_VIGOR_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_INTELLECT
+            else if iPrizeBoon = QN_PRIZE_BOON_INTELLECT
             {
                iBoonNum = SID_INTELLECT_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_AIM
+            else if iPrizeBoon = QN_PRIZE_BOON_AIM
             {
                iBoonNum = SID_AIM_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_STAMINA
+            else if iPrizeBoon = QN_PRIZE_BOON_STAMINA
             {
                iBoonNum = SID_STAMINA_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_AGILITY
+            else if iPrizeBoon = QN_PRIZE_BOON_AGILITY
             {
                iBoonNum = SID_AGILITY_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_MYSTICISM
+            else if iPrizeBoon = QN_PRIZE_BOON_MYSTICISM
             {
                iBoonNum = SID_MYSTICISM_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_STRENGTH
+            else if iPrizeBoon = QN_PRIZE_BOON_STRENGTH
             {
                iBoonNum = SID_STRENGTH_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_HITPOINTS
+            else if iPrizeBoon = QN_PRIZE_BOON_HITPOINTS
             {
                iBoonNum = SID_HP_BOON;
             }
-
-            if iPrizeBoon = QN_PRIZE_BOON_MANA
+            else if iPrizeBoon = QN_PRIZE_BOON_MANA
             {
                iBoonNum = SID_MANA_BOON;
             }
@@ -1400,7 +1381,7 @@ messages:
          return;
       }
 
-      if( iPrizeType = QN_PRIZETYPE_FACTION )
+      if (iPrizeType = QN_PRIZETYPE_FACTION)
       {
          foreach oQuester in recipients
          {
@@ -1410,27 +1391,24 @@ messages:
             {
                Send(oQuester,@UpdateFactionService,#full=TRUE);
             }
-            % Post these prize types, because the player will cancel any
-            % faction quests they have open in ResignFaction
-            if iPrizeFaction = QN_PRIZE_FACTION_DUKE
+            else if iPrizeFaction = QN_PRIZE_FACTION_DUKE
             {
+               % Post these prize types, because the player will cancel any
+               % faction quests they have open in ResignFaction
                Post(oQuester,@ResignFaction);
                Post(oQuester,@JoinFaction,#new_faction=FACTION_DUKE);
             }
-
-            if iPrizeFaction = QN_PRIZE_FACTION_PRINCESS
+            else if iPrizeFaction = QN_PRIZE_FACTION_PRINCESS
             {
                Post(oQuester,@ResignFaction);
                Post(oQuester,@JoinFaction,#new_faction=FACTION_PRINCESS);
             }
-
-            if iPrizeFaction = QN_PRIZE_FACTION_REBEL
+            else if iPrizeFaction = QN_PRIZE_FACTION_REBEL
             {
                Post(oQuester,@ResignFaction);
                Post(oQuester,@JoinFaction,#new_faction=FACTION_REBEL);
             }
-
-            if iPrizeFaction = QN_PRIZE_FACTION_NEUTRAL
+            else if iPrizeFaction = QN_PRIZE_FACTION_NEUTRAL
             {
                Post(oQuester,@ResignLoyaltyFailed);
             }

@@ -1079,7 +1079,7 @@ messages:
       return TRUE;
    }
 
-   TryAddToQuestEngine()
+   TryAddToLibrary()
    {
       return FALSE;
    }

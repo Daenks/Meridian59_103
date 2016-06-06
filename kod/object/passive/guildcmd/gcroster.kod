@@ -53,37 +53,46 @@ messages:
    DoCommand(who=$, oTarget = $)
    "Most of this is handled in guild.kod."
    {
-      local oGuild, members, i, firstone;
+      local oGuild, lMembers, i, firstone;
 
-      oGuild = send(who,@getguild);
-      members = send(oGuild,@getmemberlist);
+      oGuild = Send(who,@GetGuild);
+      lMembers = Send(oGuild,@GetMemberList);
 
-      if send(who,@isloggedon)
+      if Send(who,@IsLoggedOn)
       {
-         Addpacket(1,BP_MESSAGE,4,roster_message_rsc);
-         Addpacket(4,send(oGuild,@getdef),4,send(oGuild,@getname));
+         AddPacket(1,BP_MESSAGE,4,roster_message_rsc);
+         AddPacket(4,Send(oGuild,@GetDef),4,Send(oGuild,@GetName));
          firstone = TRUE;
-         foreach i in Members
-           {
-              if not firstone
-                { Addpacket(4,roster_comma); }
-              else
-                { firstone = FALSE; }
-              if send(oGuild,@getguildmaster) = first(i)
-                { Addpacket(4,roster_gm); }
-              else
-                { Addpacket(4,roster_not_gm); }
-              Addpacket(4,send(first(i),@gettruename));
+         foreach i in lMembers
+         {
+            if NOT firstone
+            {
+               AddPacket(4,roster_comma);
+            }
+            else
+            {
+               firstone = FALSE;
+            }
 
-           }
-         Addpacket(4,roster_period);
-         Addpacket(4,roster_period);
-         Addpacket(4,roster_period);
-         Addpacket(4,roster_period);
+            if Send(oGuild,@GetGuildmaster) = First(i)
+            {
+               AddPacket(4,roster_gm);
+            }
+            else
+            {
+               AddPacket(4,roster_not_gm);
+            }
 
+            AddPacket(4,Send(First(i),@GetTrueName));
+         }
+         AddPacket(4,roster_period);
+         AddPacket(4,roster_period);
+         AddPacket(4,roster_period);
+         AddPacket(4,roster_period);
 
-         sendpacket(send(who,@getsession));
+         SendPacket(Send(who,@GetSession));
       }
+
       return;
    }
 

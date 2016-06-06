@@ -95,11 +95,11 @@ messages:
    RemoveStats()
    {
       if poOwner <> $
-         AND IsClass(poOwner,&Player)
+         AND IsClass(poOwner,&User)
       {
          % Reset owner's stats
-         send(poOwner,@AddMight,#points=-piMightChange);
-         send(poOwner,@AddAim,#points=-piAimChange);
+         Send(poOwner,@AddMight,#points=-piMightChange);
+         Send(poOwner,@AddAim,#points=-piAimChange);
          piMightChange = 0;
          piAimChange = 0;
       }
@@ -113,7 +113,7 @@ messages:
       local iStatAdjustment, iNewAdjustment;
 
       if poOwner = $
-         OR NOT IsClass(poOwner,&Player)
+         OR NOT IsClass(poOwner,&User)
       {
          return;
       }
@@ -122,16 +122,13 @@ messages:
       {
          iStatAdjustment = 0;
       }
+      else if piFactionRank <= 6
+      {
+         iStatAdjustment = 3;
+      }
       else
       {
-         if piFactionRank <= 6
-         {
-            iStatAdjustment = 3;
-         }
-         else
-         {
-            iStatAdjustment = 5;
-         }
+         iStatAdjustment = 5;
       }
 
       % In the following:
@@ -139,13 +136,15 @@ messages:
       %  pi(stat)Change is the cumulative change to that stat.
       if iStatAdjustment <> piMightChange
       {
-         iNewAdjustment = send(poOwner,@AddMight,#points=(iStatAdjustment-piMightChange));
+         iNewAdjustment = Send(poOwner,@AddMight,
+                                 #points=(iStatAdjustment-piMightChange));
          piMightChange = piMightChange + iNewAdjustment;
       }
 
       if iStatAdjustment <> piAimChange
       {
-         iNewAdjustment = send(poOwner,@AddAim,#points=(iStatAdjustment-piAimChange));
+         iNewAdjustment = Send(poOwner,@AddAim,
+                                 #points=(iStatAdjustment-piAimChange));
          piAimChange = piAimChange + iNewAdjustment;
       }
 
@@ -155,29 +154,11 @@ messages:
    ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
    "Sets piDamage_reduce for damage reduction in the superclass."
    {
-      local oSoldierShield;
-
-      oSoldierShield = $;
-      if IsClass(what,&Player)
-      {
-         oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
-      }
-
-      piDamage_reduce = 0;
-      if (oSoldierShield <> $
-            AND Send(oSoldierShield,@IsEnemyAttack,#who=who,#what=what,
-                      #damage=FALSE))
-         OR IsClass(what,&Monster)
-         OR Send(SETTINGS_OBJECT,@GetAlwaysApplySoldierBonus)
-      {
-         % This ranges from 2-4.  At low end, we absorb 0-2 damage.
-         % At high end, 1-4. This bonus only works against mobs and soldiers.
-         piDamage_reduce = viDamage_base + ((piFactionRank/3) - 1);
-      }
+      % This ranges from 2-4.  At low end, we absorb 0-2 damage.  At high end, 1-4.
+      piDamage_reduce = viDamage_base + ((piFactionRank / 3) - 1);
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

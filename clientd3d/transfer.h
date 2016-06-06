@@ -18,5 +18,6 @@ void TransferClose(void);
 void __cdecl TransferStart(void *download_info);
 void TransferContinue(void);
 void TransferAbort(void);
+void __cdecl DownloadError(HWND hParent, char *fmt, ...);
 
 #endif  // _TRANSFER_H

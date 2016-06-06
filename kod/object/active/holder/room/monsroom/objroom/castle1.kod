@@ -21,7 +21,7 @@ resources:
    room_castle1 = castle1.roo
    room_name_castle1 = "Castle Victoria"
 
-   castle1_music = castle2.mp3
+   castle1_music = castle2.ogg
 
 classvars:
 
@@ -53,12 +53,12 @@ messages:
 
    Constructed()
    {
-      plMonsters = [ [&Skeleton, 60]];
+      plMonsters = [ [&Skeleton, 100]];
 
       plGenerators = [ [5,18], [13, 3], [14, 7], [12, 12],
                        [13, 8], [14, 24], [12, 27] ,
                        [13, 30], [12, 37], [19, 40] ,
-                       [15, 44], [19,36] ] ;
+                       [15, 44], [19,36], [11, 44], [11, 14], [11, 7] ] ;
                        
       plPatrolPaths = [ [ [5,23], [ 10,22 ], [11,21], [5,23], [5,18] ],
                         [ [10,4], [15,6], [13,3] ],
@@ -104,6 +104,13 @@ messages:
       plExits = Cons([ 16, 17, RID_CASTLE1C, 4, 43, ROTATE_90 ],plExits);
       plExits = Cons([ 16, 18, RID_CASTLE1C, 4, 43, ROTATE_90 ],plExits);
       plExits = Cons([ 16, 19, RID_CASTLE1C, 4, 43, ROTATE_90 ],plExits);
+
+      /* Exits to new castle room, disabled until complete.
+      plExits = Cons([ 12, 1, RID_CASTLE1D, 7, 15, ROTATE_NONE ],plExits);
+      plExits = Cons([ 12, 2, RID_CASTLE1D, 7, 15, ROTATE_NONE ],plExits);
+      plExits = Cons([ 13, 1, RID_CASTLE1D, 7, 15, ROTATE_NONE ],plExits);
+      plExits = Cons([ 13, 2, RID_CASTLE1D, 7, 15, ROTATE_NONE ],plExits);
+      */
 
       plExits = Cons([ 9, 4, RID_CASTLE1,  7, 4, ROTATE_NONE ],plExits);
       plExits = Cons([ 8, 4, RID_CASTLE1, 10, 4, ROTATE_NONE ],plExits);

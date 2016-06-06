@@ -143,13 +143,24 @@ messages:
 
    GetObjectFlags()
    {
-      % Show up with a name and map location if we're "visible"
+      % Show up with a name if we're "visible"
       if vrIcon <> DynamicLight_icon
       {
-         return (viObject_flags | OF_ATTACKABLE | OF_PLAYER);
+         return (viObject_flags | OF_ATTACKABLE | OF_DISPLAY_NAME);
       }
 
       propagate;
+   }
+
+   GetMinimapDotFlags()
+   {
+      % Show up with a map dot if we're "visible"
+      if vrIcon <> DynamicLight_icon
+      {
+         return MM_RARE_ITEM;
+      }
+
+      return MM_NONE;
    }
 
 end

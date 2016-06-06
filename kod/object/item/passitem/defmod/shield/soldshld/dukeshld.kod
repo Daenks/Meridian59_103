@@ -95,11 +95,11 @@ messages:
    RemoveStats()
    {
       if poOwner <> $
-         AND IsClass(poOwner,&Player)
+         AND IsClass(poOwner,&User)
       {
          % Reset owner's stats
-         send(poOwner,@AddStamina,#points=-piStaminaChange);
-         send(poOwner,@AddAgility,#points=-piAgilityChange);
+         Send(poOwner,@AddStamina,#points=-piStaminaChange);
+         Send(poOwner,@AddAgility,#points=-piAgilityChange);
          piStaminaChange = 0;
          piAgilityChange = 0;
       }
@@ -113,7 +113,7 @@ messages:
       local iStatAdjustment, iNewAdjustment;
 
       if poOwner = $
-         OR NOT IsClass(poOwner,&Player)
+         OR NOT IsClass(poOwner,&User)
       {
          return;
       }
@@ -122,16 +122,13 @@ messages:
       {
          iStatAdjustment = 0;
       }
+      else if piFactionRank <= 6
+      {
+         iStatAdjustment = 3;
+      }
       else
       {
-         if piFactionRank <= 6
-         {
-            iStatAdjustment = 3;
-         }
-         else
-         {
-            iStatAdjustment = 5;
-         }
+         iStatAdjustment = 5;
       }
 
       % In the following:
@@ -139,49 +136,29 @@ messages:
       %  pi(stat)Change is the cumulative change to that stat.
       if iStatAdjustment <> piAgilityChange
       {
-         iNewAdjustment = send(poOwner,@AddAgility,#points=(iStatAdjustment-piAgilityChange));
+         iNewAdjustment = Send(poOwner,@AddAgility,
+                                 #points=(iStatAdjustment-piAgilityChange));
          piAgilityChange = piAgilityChange + iNewAdjustment;
       }
 
       if iStatAdjustment <> piStaminaChange
       {
-         iNewAdjustment = send(poOwner,@AddStamina,#points=(iStatAdjustment-piStaminaChange));
+         iNewAdjustment = Send(poOwner,@AddStamina,
+                                 #points=(iStatAdjustment-piStaminaChange));
          piStaminaChange = piStaminaChange + iNewAdjustment;
       }
 
       return;
    }
 
-   GetBaseSpellModifier(oSpell=$,lTargets=$)
+   GetBaseSpellModifier(oSpell=$)
    {
-      local oTarget, oSoldierShield;
+      local iModifier;
 
-      % Duke shield gives a spellpower bonus against monsters & enemy soldiers
+      iModifier = ((15 * piFactionRank) / 10);
 
-      if Send(SETTINGS_OBJECT,@GetAlwaysApplySoldierBonus)
-      {
-         return ((15 * piFactionRank) / 10);
-      }
-
-      if lTargets <> $
-         AND Length(lTargets) = 1
-      {
-         oTarget = First(lTargets);
-
-         oSoldierShield = Send(poOwner,@FindUsing,#class=&SoldierShield);
-         if (IsClass(oTarget,&Player)
-               AND oSoldierShield <> $
-               AND Send(oSoldierShield,@IsEnemyAttack,#who=oTarget,
-                         #what=poOwner,#damage=FALSE))
-            OR IsClass(oTarget,&Monster)
-         {
-            return ((15 * piFactionRank) / 10);
-         }
-      }
-
-      return 0;
+      return iModifier;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

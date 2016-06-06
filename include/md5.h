@@ -40,5 +40,7 @@ typedef unsigned short int UINT2;
 typedef unsigned long int UINT4;
 
 void MDString (char *string, unsigned char *digest);
+void MDFileHash(char *string, char *filehash, unsigned int bytes);
+void MDStringBytes(char *string, unsigned char *digest, unsigned int bytes);
 
 #endif /* #ifndef _MD5_H */

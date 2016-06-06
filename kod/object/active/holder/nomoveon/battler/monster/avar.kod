@@ -50,10 +50,10 @@ resources:
    avar_dead_icon_rsc = avwarX.bgf
    avar_dead_name_rsc = "slain avar"
 
-   avar_sound_hit = av_atkh.wav
-   avar_sound_miss = av_atkm.wav
-   avar_sound_death = av_dth.wav
-   avar_sound_aware = av_awr.wav
+   avar_sound_hit = av_atkh.ogg
+   avar_sound_miss = av_atkm.ogg
+   avar_sound_death = av_dth.ogg
+   avar_sound_aware = av_awr.ogg
 
 classvars:
 

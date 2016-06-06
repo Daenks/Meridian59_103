@@ -28,10 +28,10 @@ resources:
    SnowRat_dead_icon_rsc = sratX.bgf
    SnowRat_dead_name_rsc = "dead snow rat"
 
-   SnowRat_sound_hit = rat_atkh.wav
-   SnowRat_sound_miss = rat_atkm.wav
-   SnowRat_sound_death = rat_dth.wav
-   SnowRat_sound_aware = rat_awr.wav
+   SnowRat_sound_hit = rat_atkh.ogg
+   SnowRat_sound_miss = rat_atkm.ogg
+   SnowRat_sound_death = rat_dth.ogg
+   SnowRat_sound_aware = rat_awr.ogg
 
 classvars:
 

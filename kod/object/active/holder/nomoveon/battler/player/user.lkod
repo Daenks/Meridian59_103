@@ -5,8 +5,9 @@ user_garbage_collecting_done = de \
 user_err_get_unk = de "%s%s? Das hat schon jemand aufgehoben."
 user_err_get_dist = de "%s%s? Das geht nicht, Du bist zu weit entfernt."
 user_disallow_get = de \
-   "Du kannst das nicht mehr aufheben. Das wird Dir zu schwer."
-user_got_some = de "Du kannst das nicht mehr aufheben. Das wird Dir zu schwer."
+   "Du kannst das nicht mehr aufheben. Das wird Dir zu schwer.%s$0%s$0"
+user_got_some = de \
+   "Du kannst das nicht mehr aufheben. Das wird Dir zu schwer.%s$0"
 user_disallow_drop = de "%s%s kann nicht weggeworfen werden."
 user_err_drop = de "Der Gegenstand ist nicht in Deinem Besitz."
 user_err_put = de \
@@ -51,6 +52,8 @@ user_show_mail = de "%q"
 user_show_nested_mail = de "%s"
 user_logon_one_mail = de "Du hast %i neue Nachricht bekommen."
 user_logon_many_mail = de "Du hast %i neue Nachrichten bekommen."
+user_mail_squelched = de \
+   "Die Möglichkeit eine Nachricht zu schreiben wurde dir genommen."
 user_mail_toobig = de \
    "Sorry, die Nachricht war zu lang, der Kurier ist unterwegs verstorben... "
    "versuch es nocheinmal aber bitte nicht ganz so lang."
@@ -109,6 +112,14 @@ user_group_condition = de "Zustand"
 user_group_stats = de "Stats"
 user_group_spells = de "Spells"
 user_group_skills = de "Skills"
+user_group_quests = de "Quests"
+
+user_active_quests_header = de "Aktive Quests: "
+user_no_active_quests_header = de "Keine aktiven Quests"
+user_completed_quests_header = de "Abgeschlossene Quests: "
+user_no_completed_quests_header = de "Keine abgeschlossenen Quests"
+
+
 user_got_offer = de "Du hast ein Angebot von %s%s."
 user_cant_offer = de "Du kannst %s%s nichts anbieten."
 user_cant_offer_arena = de \
@@ -157,10 +168,10 @@ user_guildmate_logon = de "~IBegrüße Dein Gildenmitglied %s!"
 user_guildmate_logoff = de \
    "~IDein Gildenmitglied %s hat sich gerade verabschiedet."
 user_safety_on = de \
-   "### Deine 'Sicherheit' ist ~B~gAKTIVIERT~n: Du kannst keine Unschuldigen "
+   "### Deine Sicherung ist ~B~gAKTIVIERT~n: Du kannst keine Unschuldigen "
    "angreifen."
 user_safety_off = de \
-   "### Deine 'Sicherheit' ist ~B~rDEAKTIVIERT~n: Sei vorsichtig, Du kannst "
+   "### Deine Sicherung ist ~B~rDEAKTIVIERT~n: Sei vorsichtig, Du kannst "
    "jetzt andere Spieler verletzen!"
 user_temp_safe_on = de \
    "~B~U~k[###]~n ~B~vDu bekommst einen temporären Schutzengel."
@@ -169,9 +180,9 @@ user_temp_safe_off = de \
    "nach dem Tode."
 user_temp_safe_invalid = de \
    "~B~U~k[###]~n ~B~vDein Schutzengel kann dich nicht weiter beschützen."
-user_grouping_on = de "~B~U~k[###]~n ~B~vDu kannst nun Gruppen beitreten."
+user_grouping_on = de "~B~U~k[###]~n ~B~vDu nimmst nun an Gruppenbildungen teil."
 user_grouping_off = de \
-   "~B~U~k[###]~n ~B~vDu kannst keiner Gruppe mehr beitreten."
+   "~B~U~k[###]~n ~B~vDu nimmst absofort nicht mehr an Gruppenbildungen teil."
 user_cant_go = de "Du kannst zu keinem Ort gehen."
 user_blocked_send = de "%s ignoriert Deine Mitteilungen."
 user_cant_suicide = de \
@@ -187,6 +198,10 @@ user_cant_suicide_yet = de \
 user_cant_suicide_token = de \
    "Du kannst Dich nicht umbringen, da Du ein heiliger Wächter eines Artefakts "
    "bist!"
+user_cant_suicide_hp = de \
+	  "Du hast schon einiges erreicht in der Zeit in der Du hier bist, und Du "
+	  "kannst hier nicht schon deine Reise beenden oder? Wenn Du wirklich gute "
+	  "Gründe dafür hast, wende Dich an die Götter, und sie werden Dir helfen"
 user_cant_suicide_OOG = de \
    "Die Seele schwer von Schuldgefühlen, kannst Du den Gedanken nicht ertragen, "
    "Dich umzubringen, so sehr Du Dir es auch wünschst!"
@@ -206,14 +221,15 @@ user_duplicate_guild_username = de \
 user_couldnt_replace = de \
    "Du konntest nicht zu Deinem Ausgangsort zurückkehren."
 user_logon = de \
-   "Willkommen in der Welt von Meridian 59! (Tippe \"hilfe\" um eine Anleitung "
-   "aufzurufen)."
+   "~BWillkommen auf Server 112 - der Offizielle Meridian 59 Server in Deutschland! "
+   "~n(Tippe \"Hilfe\", um weitere Informationen rund um die Welt von Meridian59 zu "
+   "erhalten). "
 user_goto_lastsaferoom = de \
-   "You have been sent to the last safe place you visited."
+   "Du wurdest an den letzten sicheren Ort geschickt, den du besucht hast."
 user_goto_safety = de "Du wurdest an einen sicheren Ort geschickt."
-user_goto_object = de "%s%s hat Dich zu sich gerufen."
+user_goto_object = de "Du wurdest zu %s%s geschickt."
 user_goto_jail = de "Du wurdest ins Gefängnis von Barloque geworfen!"
-user_last_known = de "Du hast Dich nach %s%s teleportiert."
+user_last_known = de "der letzten bekannten Position von "
 user_school_shallile = de "Schule von Sha-Lill"
 user_school_qor = de "Schule von Qor"
 user_school_kraanan = de "Schule von Kraanan"
@@ -234,7 +250,9 @@ user_first_time_appeal = de \
    "~B~U~k[###]~n %s hat sich zum ersten Mal eingewählt."
 user_did_appeal = de \
    "Solltest Du nicht sofort eine Antwort erhalten, sind die Barden und Guides "
-   "sicher beschäftigt. Du kannst jedoch versuchen, eine Gamemail zu schreiben."
+   "sicher beschäftigt. Du kannst jedoch versuchen, eine Gamemail zu schreiben.%q$0"
+user_appeal_squelched = de \
+   "Die Möglichkeit eine Beschwerde zu schreiben wurde dir genommen."
 user_kill_zone = de \
    "Dein Schutzengel flüstert Dir zu, \"Ich kann Dich hier nicht verteidigen.\""
 user_angel_rejoins = de "Dein Schutzengel kehrt zu Dir zurück."
@@ -245,12 +263,12 @@ user_news_squelched = de \
    "Deine Fähigkeiten Nachrichten zu schreiben wurden dir genommen."
 user_news_toobig = de \
    "Wow Kumpel!! Atme mal tief durch, die Nachricht ist zu lang!"
-user_guild_rsc = de "Gilde"
+user_news_los = de "Du kannst die Nachrichtenkugel von hier aus nicht sehen."
 user_guildofficer_rsc = de "guildofficer"
-user_default_url = de "http://www.openmeridian.de/"
+user_default_url = de "http://www.Meridian59.de"
+user_autocombine_on = de "Du entscheidest dich, die Gegenstände zu kombinieren."
 user_autocombine_off = de \
    "Du entscheidest dich, die Gegenstände nicht mehr zu kombinieren."
-user_autocombine_on = de "Du entscheidest dich, die Gegenstände zu kombinieren."
 user_autoloot_on = de "Autoloot ist an."
 user_autoloot_off = de "Autoloot ist aus."
 guild_survival_too_late = de \
@@ -272,14 +290,14 @@ survival_err_cant_join = de \
    "Die Survival Arena hat bereits begonnen. Du kannst nicht mehr beitreten"
 phased_out_cant_drop = de \
    "Du kannst keine Gegenstände wegwerfen, während du ausgestiegen bist."
-user_reagentbag_on = de "Reagenzien Beutel AN"
-user_reagentbag_off = de "Reagenzien Beutel AUS"
+user_reagentbag_on = de "Reagenzienbeutel AN"
+user_reagentbag_off = de "Reagenzienbeutel AUS"
 user_spellpower_on = de \
    "Du siehst ab jetzt mit welcher Macht deine Zaubersprüche gewirkt werden."
 user_spellpower_off = de \
    "Du siehst nicht länger mit welcher Macht deine Zaubersprüche "
    "gewirkt werden."
-user_logon_delay = de "Du brauchst einen Moment um dich wieder zu fassen"
+user_logon_delay = de "Du brauchst einen Moment um dich wieder zu fassen."
 inventory_sort_cleared = de "Deine Sortierliste wurde gelöscht."
 inventory_class_added = de "Du fügst %s zu Deiner Sortierliste hinzu."
 inventory_sort_no_item = de "Es existiert kein Gegenstand mit diesen Namen."
@@ -297,3 +315,22 @@ inventory_sort_report = de "%s"
 inventory_already_in_list = de "Dies ist bereits in deiner Liste."
 user_time_string = de \
    "Die Zeit in Meridian beträgt %i:00. Es ist der %q Tag des Jahres %i."
+user_say_guild_motd = de "motd"
+guild_motd_command = de "set motd "
+guild_clear_motd_command = de "clear motd"
+user_say_inventory = de "Inventar"
+user_say_inv_sort_clear = de "Inventarsortierung löschen"
+user_say_inv_sort_report = de "Inventarsortierung anzeigen"
+user_say_inv_sort_add = de "Inventarsortierung hinzufügen "
+user_say_inv_sort_help = de "Inventarsortierung Hilfe"
+user_say_inv_sort = de "Sortiere Inventar"
+user_say_survival = de "Überleben"
+user_say_start_solo_survival = de "starte solo survival Arena"
+user_say_start_pub_survival = de "starte öffentliche survival Arena"
+user_say_join_pub_survival = de "öffentliche survival Arena beitreten"
+user_say_start_guild_survival = de "starte Gilden Arena"
+user_say_join_guild_survival = de "Gilden Arena beitreten"
+
+user_say_survival_opt_unnatural = de "--unnatural"
+user_say_survival_opt_pvpon = de "--pvpon"
+user_say_survival_opt_starthere = de "--thisbase"

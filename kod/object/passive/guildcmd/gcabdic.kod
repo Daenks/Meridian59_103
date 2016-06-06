@@ -69,16 +69,16 @@ messages:
 
       if IsClass(Send(who,@GetGuild),&NecromancerGuild)
       {
-          Send(who,@MsgSendUser,#message_rsc=abdicate_necro_nak);
+         Send(who,@MsgSendUser,#message_rsc=abdicate_necro_nak);
 
-          return FALSE;
+         return FALSE;
       }
 
-      if NOT isClass(oTarget,&Player)
+      if NOT IsClass(oTarget,&Player)
       {
          Send(who,@MsgSendUser,#message_rsc=abdicate_non_user,
-              #parm1=Send(oTarget,@GetCapDef),
-              #parm2=Send(oTarget,@GetTrueName));
+               #parm1=Send(oTarget,@GetCapDef),
+               #parm2=Send(oTarget,@GetTrueName));
 
          return FALSE;
       }
@@ -90,31 +90,30 @@ messages:
          return FALSE;
       }
 
-      yourGuild= Send(oTarget,@GetGuild);
+      yourGuild = Send(oTarget,@GetGuild);
       myGuild = Send(who,@GetGuild);
 
       if yourGuild <> myGuild OR yourGuild = $
       {
-          Send(who,@MsgSendUser,#message_rsc=abdicate_not_member,
-              #parm1=Send(oTarget,@GetDef),#type1=STRING_RESOURCE,
-			     #parm2=Send(oTarget,@GetName),#parm3=Send(myGuild,@GetDef),
-              #parm4=Send(myGuild,@GetName));
+         Send(who,@MsgSendUser,#message_rsc=abdicate_not_member,
+               #parm1=Send(oTarget,@GetDef),#type1=STRING_RESOURCE,
+               #parm2=Send(oTarget,@GetName),#parm3=Send(myGuild,@GetDef),
+               #parm4=Send(myGuild,@GetName));
 
-          return FALSE;
+         return FALSE;
       }
 
-      Send(myGUild,@newguildmaster,#who=oTarget,#abdicate=TRUE);
+      Send(myGuild,@newguildmaster,#who=oTarget,#abdicate=TRUE);
 
       Send(oTarget,@MsgSendUser,#message_rsc=abdicate_to_chosen,
-           #parm1=Send(who,@GetTrueName),#parm2=Send(myguild,@GetDef),
-           #parm3=Send(myguild,@GetName));
+            #parm1=Send(who,@GetTrueName),#parm2=Send(myguild,@GetDef),
+            #parm3=Send(myguild,@GetName));
       Send(who,@MsgSendUser,#message_rsc=abdicate_to_abdicator,
-           #parm1=Send(oTarget,@GetTrueName),#type1=STRING_RESOURCE,
-           #parm2=Send(myguild,@GetDef),#parm3=Send(myguild,@GetName));
+            #parm1=Send(oTarget,@GetTrueName),#type1=STRING_RESOURCE,
+            #parm2=Send(myguild,@GetDef),#parm3=Send(myguild,@GetName));
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

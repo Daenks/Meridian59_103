@@ -39,7 +39,7 @@ resources:
       "You just about lose your pants as the patch of bramble grabs at them."
    Brambles_damage5 = "Ow ow ow ow ow ow ow..."
 
-   Brambles_scratch_snd = frying.wav
+   Brambles_scratch_snd = frying.ogg
    brambles_icon_dead = wolightn.bgf
 
    brambles_dead_name_rsc = "the ruins of some bramble"
@@ -72,6 +72,8 @@ classvars:
    vrSound_death = $
 
    vrMonster_healing = brambles_monster_healing
+
+   vbIsAreaEffect = TRUE
 
 properties:
 
@@ -201,7 +203,8 @@ messages:
       % If this is harmful, and both caster and victim are players,
       %  then disallow damage if caster's safety is on or if cannot do attack
       if IsClass(poCaster,&Player)
-         AND NOT Send(poCaster,@AllowPlayerAttack,#victim=what,#report=FALSE)
+         AND NOT Send(poCaster,@AllowPlayerAttack,#victim=what,#report=FALSE,
+                        #stroke_obj=self)
       {
          % We've been "affected" for this cycle. This also prevents super-spam.
          plAffected = Cons(what,plAffected);

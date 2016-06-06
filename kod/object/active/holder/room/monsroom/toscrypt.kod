@@ -20,7 +20,7 @@ resources:
 
    room_name_toscrypt = "The Crypt"
    room_toscrypt = toscrypt.roo
-   music_toscrypt = ksong.mp3
+   music_toscrypt = ksong.ogg
 
 classvars:
 
@@ -55,14 +55,14 @@ messages:
    TryCreateMonster(initroom = FALSE,loadfirst = FALSE)
    {
       local iHour;
-   
+
       iHour = Send(SYS,@GetHour);
-      if iHour < 5 or iHour > 21
+      if iHour < 5 OR iHour > 21
       {
          propagate;
       }
 
-      return;
+      return FALSE;
    }
 
    CreateStandardExits()

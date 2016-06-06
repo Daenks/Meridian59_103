@@ -22,40 +22,40 @@ resources:
    include necport.lkod
 
    NecropolisPortal_icon_rsc = teleport.bgf
-
-   NecropolisPortal_closing = "The portal flickers and begins to draw imperceptibly in on itself."
+   NecropolisPortal_closing = \
+      "The portal flickers and begins to draw imperceptibly in on itself."
    NecropolisPortal_closed = "The portal disappears."
 
 classvars:
 
    viMoveOn_type = MOVEON_TELEPORTER
-
    viMaxDistance = 0
 
 properties:
 
    vrIcon = NecropolisPortal_icon_rsc
-
    pbAnimate = TRUE
-
    ptClosePortal = $
 
 messages:
 
    Constructor(lLocation=$)
    {
-      Send(self, @SetTarget, #lTarget = lLocation);
+      Send(self,@SetTarget,#lTarget=lLocation);
+
       propagate;
    }
-   
+
    SetTarget(lTarget = $)
    {
       if lTarget = $
       {
-         debug("Necropolis portal got empty target");
+         Debug("Necropolis portal got empty target");
+
          return;
       }
-      piDest_room = Nth(lTarget,1);
+
+      piDest_room = First(lTarget);
       piDest_row = Nth(lTarget,2);
       piDest_col = Nth(lTarget,3);
       piDest_fine_row = Nth(lTarget,4);
@@ -67,7 +67,7 @@ messages:
    SomethingMoved(what = $,new_row = $,new_col = $)
    {
       % Don't allow monsters to escape through these portals
-      if (NOT IsClass(what, &Player)) 
+      if (NOT IsClass(what, &Player))
       {
          return;
       }
@@ -79,23 +79,24 @@ messages:
    {
       local oPlayer;
 
-      if isClass(what,&Player)
+      if IsClass(what,&Player)
       {
          % A player just left, so check if there are any left in the room
-         foreach oPlayer in send(poOwner,@GetHolderActive)
+         foreach oPlayer in Send(poOwner,@GetHolderActive)
          {
-            if IsClass(first(oPlayer),&Player)
+            if IsClass(First(oPlayer),&Player)
             {
                propagate;
             }
          }
 
          % No players left, start closing it!
-         foreach oPlayer in send(poOwner,@GetHolderActive)
+         foreach oPlayer in Send(poOwner,@GetHolderActive)
          {
-            if isClass(first(oPlayer),&Player)
+            if IsClass(First(oPlayer),&Player)
             {
-               Send(first(oPlayer),@MsgSendUser,#message_rsc=NecropolisPortal_closing);
+               Send(First(oPlayer),@MsgSendUser,
+                     #message_rsc=NecropolisPortal_closing);
             }
          }
 
@@ -105,7 +106,7 @@ messages:
             ptClosePortal = $;
          }
 
-         ptClosePortal = createTimer(self,@ClosePortal,NECROPORTAL_CLOSE_TIME);
+         ptClosePortal = CreateTimer(self,@ClosePortal,NECROPORTAL_CLOSE_TIME);
       }
 
       propagate;
@@ -117,15 +118,15 @@ messages:
 
       ptClosePortal = $;
 
-      foreach oPlayer in send(poOwner,@GetHolderActive)
+      foreach oPlayer in Send(poOwner,@GetHolderActive)
       {
-         if IsClass(first(oPlayer),&Player)
+         if IsClass(First(oPlayer),&Player)
          {
-            Send(first(oPlayer),@MsgSendUser,#message_rsc=NecropolisPortal_closed);
+            Send(First(oPlayer),@MsgSendUser,#message_rsc=NecropolisPortal_closed);
          }
       }
 
-      send(self,@Delete);
+      Send(self,@Delete);
 
       return;
    }
@@ -141,7 +142,6 @@ messages:
 
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

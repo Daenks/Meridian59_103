@@ -29,10 +29,10 @@ resources:
    orc_dead_icon_rsc = orcX.bgf
    orc_dead_name_rsc = "dead orc"
 
-   orc_sound_hit = orc_atkh.wav
-   orc_sound_miss = orc_atkm.wav
-   orc_sound_death = orc_dth.wav
-   orc_sound_aware = orc_awr.wav
+   orc_sound_hit = orc_atkh.ogg
+   orc_sound_miss = orc_atkm.ogg
+   orc_sound_death = orc_dth.ogg
+   orc_sound_aware = orc_awr.ogg
 
 classvars:
 

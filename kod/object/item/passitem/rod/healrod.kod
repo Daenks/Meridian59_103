@@ -31,14 +31,13 @@ classvars:
 
    vrName = healWand_name_rsc
    vrIcon = healWand_icon_rsc
+   vrGoodDesc = healWand_desc_rsc
+   vrSuccess = healWand_success_rsc
 
    viBulk = 20
    viWeight = 25
    viValue_average = 200
    viInventory_group = 2
-
-   vrGoodDesc = healWand_desc_rsc
-   use_success_msg = healWand_success_rsc
 
 properties:
 
@@ -56,10 +55,10 @@ messages:
       
       amount_healed = Send(poOwner,@GainHealthNormal,#amount=amount,
                            #precision=TRUE);
-      Send(poOwner,@MsgSendUser,#message_rsc=healWand_success_rsc,
+      Send(poOwner,@MsgSendUser,#message_rsc=vrSuccess,
                            #parm1=amount_healed/100);
       Send(Send(poOwner,@GetOwner),@SomethingWaveRoom,#what=poOwner,
-                           #wave_rsc=use_success_wav);
+                           #wave_rsc=vrSuccessSound);
 
       return;
    }

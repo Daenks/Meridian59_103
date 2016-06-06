@@ -1,13 +1,13 @@
 % Quest description.
-chessmatequest_name_rsc = de "chess move courier quest"
+chessmatequest_name_rsc = de "Schachzug Kurier Quest"
 
 chessmatequest_nodefive_rsc = de \
-   "%s%s has fallen into %s%s's trap!  Go and tell %s that %s%s's next "
-   "move is \"%q\"."
+   "%s%s ist auf %s%s's Falle reingefallen!  Geh und sag ihm%s das %s%s's nächster "
+   "Zug wie folgt lautet: \"%q\"."
 
 chessmatequest_completed_rsc = de \
-   "You have completed a chess move courier quest, and helped the "
-   "players finish a game!"
+   "Du hast das Schachzug Kurier Quest erfolgreich beendet, "
+   "und den Spielern damit geholfen!"
 
 % Quest resources.
 chess_checkmate_assign_5 = de \

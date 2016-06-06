@@ -886,8 +886,9 @@ void SaveLevelData (char *outfile)
 	// Backpatch in position of server information
 	FileBackpatch(file, server_pos, FileCurPos(file));
 
+   // This is currently unused.
    // Output inter-square movement grid
-   SaveServerInfo(file, tree, width, height);
+   //SaveServerInfo(file, tree, width, height);
 
    // Backpatch in room security check
 	security ^= 0x89ab786c;

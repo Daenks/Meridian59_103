@@ -23,18 +23,14 @@ resources:
    rescue_desc_rsc = \
       "Calls upon Shal'ille to transport you back to "
       "safety.  Ability determines how fast you are rescued.  "
-      "Requires emerald to cast."
-
+      "Requires one emerald to cast."
    Rescue_Start = "You start your rescue preparations."
    Rescue_Success = \
       "You feel a holy force rescue you from your current situation."
    Rescue_Already_Cast = "You are already being rescued."
    Rescue_Token_Cancel = "You cannot rescue while holding a token."
-   
-   Rescue_depart_to_destination = \
-      "%s vanishes in a burst of protective light!"
-   
-   rescue_sound = srescue.wav
+   Rescue_depart_rsc = "%s vanishes in a burst of protective light!"
+   rescue_sound = srescue.ogg
 
 classvars:
 
@@ -108,9 +104,9 @@ messages:
       iDelay = iDelay - (iSpellPower * iDelay) / 100 / 4;
 
       % Add a little delay in sometimes.
-      if random(1,2) = 1
+      if Random(1,2) = 1
       {
-         iDelay = iDelay + random(5000, 10000);
+         iDelay = iDelay + Random(2000, 4000);
       }
 
       Send(who,@StartRescueTimer,#time=iDelay);
@@ -121,7 +117,7 @@ messages:
 
    DoRescue(who = $)
    {
-      local i, each_obj, oCurrentRoom, oTargetRoom, oGuild;
+      local i, each_obj, oCurrentRoom, oTargetRoom, oGuild, iCurrentRegion;
 
       Send(who,@MsgSendUser,#message_rsc=Rescue_Success);
 
@@ -129,6 +125,8 @@ messages:
 
       if oCurrentRoom <> $
       {
+         iCurrentRegion = Send(oCurrentRoom,@GetRegion);
+
          % Are they guilded with a guild hall?
          oGuild = Send(who,@GetGuild);
          if oGuild <> $
@@ -137,10 +135,10 @@ messages:
             oTargetRoom = Send(oGuild,@GetGuildHall);
 
             % If we have a guild hall, and not already in the guild hall,
-            %  and we're in the same region as the hall, go there.
+            % and we're in the same region as the hall, go there.
             if oTargetRoom <> $
                AND oTargetRoom <> oCurrentRoom
-               AND Send(oTargetRoom,@GetRegion) = Send(oCurrentRoom,@GetRegion)
+               AND Send(oTargetRoom,@GetRegion) = iCurrentRegion
             {
                Post(oTargetRoom,@Teleport,#what=who);
 
@@ -149,7 +147,7 @@ messages:
          }
 
          % Teleport to Ko'catan Inn if we're in Kocatan, or at Vigor Pool.
-         if Send(oCurrentRoom,@GetRegion) = RID_KOCATAN
+         if iCurrentRegion = RID_KOCATAN
             OR Send(oCurrentRoom,@GetRoomNum) = RID_ORC_CAVE5_EXT
          {
             oTargetRoom = Send(SYS,@FindRoomByNum,#num=RID_KOC_INN);
@@ -160,7 +158,7 @@ messages:
 
          % If we're in the orc caves, teleport to the Pool of Vigor.
          % Except: actually being in the Pool of Vigor is handled above.
-         if Send(oCurrentRoom,@GetRegion) = RID_ORC_CAVE1
+         if iCurrentRegion = RID_ORC_CAVE1
          {
             oTargetRoom = Send(SYS,@FindRoomByNum,#num=RID_ORC_CAVE5_EXT);
             Post(oTargetRoom,@Teleport,#what=who);
@@ -172,13 +170,12 @@ messages:
       % Default: Go to our home room.
       Post(who,@AdminGoToSafety);
 
-      foreach i in Send(Send(who,@GetOwner),@GetHolderActive)
+      foreach i in Send(oCurrentRoom,@GetHolderActive)
       {
-         each_obj = Send(Send(who,@GetOwner),@HolderExtractObject,#data=i);
+         each_obj = First(i);
          if IsClass(each_obj,&User)
          {
-            Send(each_obj,@MsgSendUser,
-                  #message_rsc=Rescue_depart_to_destination,
+            Send(each_obj,@MsgSendUser,#message_rsc=Rescue_depart_rsc,
                   #parm1=Send(who,@GetName));
          }
       }

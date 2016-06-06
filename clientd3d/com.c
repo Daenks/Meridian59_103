@@ -335,7 +335,7 @@ int ReadServer(void)
 */
 Bool StartReadNotification(void)
 {
-	Bool retval;
+	Bool retval = false;
 	
 	//   debug(("Starting notification\n"));
 	notification = True;

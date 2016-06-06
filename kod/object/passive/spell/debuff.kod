@@ -140,7 +140,7 @@ messages:
          {
             if Nth(i,2) = self
             {
-               iDuration = GetTimeRemaining(Nth(i,1));
+               iDuration = GetTimeRemaining(First(i));
             }
          }
 

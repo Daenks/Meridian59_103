@@ -303,7 +303,7 @@ OWLOBJS = \
 	$(OWLOUTDIR)\owl.res
 
 {$(OWLSOURCEDIR)}.cpp{$(OWLOUTDIR)}.obj::
-	$(CC) $(CFLAGS) /FpCpch /Fd$(OWLOUTDIR)\vc90.pdb /Fo$(OWLOUTDIR)/ -c $< 
+	$(CC) $(CFLAGS) /FpCpch /Fd$(OWLOUTDIR)\ /Fo$(OWLOUTDIR)/ -c $< 
 
 {$(OWLSOURCEDIR)}.rc{$(OWLOUTDIR)}.res:
    $(RC) /i$(OWLINCLUDEDIR) /fo $@ $**

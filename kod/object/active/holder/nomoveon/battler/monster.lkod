@@ -8,20 +8,21 @@ monster_much = de "viel mehr "
 monster_significantly = de "sehr viel mehr "
 monster_drastically = de "extrem viel mehr "
 monster_teach_karma = de \
-   "Dein Karma ist nicht stark genug, um diesen Zirkel zu erlernen."
+   "Dein Karma ist nicht stark genug, den wahren Pfad zu beschreiten, "
+   "um %s zu lernen."
 monster_teach_quest_needed = de \
-   "Ich kann Dir das beibringen, doch zuerst musst Du Deinen Wert als Schüler "
-   "unter Beweis stellen."
+   "Ich könnte Dir %s beibringen, jedoch musst Du zuerst Deinen Wert als "
+   "Schüler unter Beweis stellen."
 monster_teach_base = de \
    "Du bist auf dem richtigen Weg und mit %s Fortschritt im vorherigen %s-Zirkel "
-   "kannst Du das lernen."
+   "kannst Du das lernen.%s$0"
 monster_teach_success = de \
    "Gratuliere! Du hast alle Voraussetzungen erfüllt, um diesen Zirkel zu "
-   "erlernen."
-monster_teach_already = de "Das habe ich Dir schon beigebracht."
+   "erlernen.%s$0"
+monster_teach_already = de "Das habe ich Dir schon beigebracht.%s$0"
 monster_teach_nobase = de \
    "Du musst erst einige Erkenntnisse im vorherigen Zirkel sammeln, bevor "
-   "ich Dich das lehren kann."
+   "ich Dich das lehren kann.%s$0"
 monster_teach_impossible = de \
    "Fürwahr, Du hast bereits so viel gelernt! Eine gute Fähigkeit. Du hast "
    "es nicht ... ähhhmmm... nötig ... mehr in dieser Schule zu lernen."
@@ -56,12 +57,6 @@ LS_Signet_returned = de \
 LS_Signet_wrong = de \
    "Bestimmt ein Erbstück. Du solltest es selbst zu %s%s bringen. Es ist "
    "sehr wahrscheinlich, dass es für seine Rückgabe eine Belohnung gibt."
-LS_already_done_permquest = de \
-   "Du hast mir bereits einen Gefallen getan und musst nicht weiter Dein "
-   "Glück versuchen."
-LS_unwanted_oldquest = de \
-   "Das hat mir schon jemand anderes gegeben. Tut mir leid, dass Du Dich "
-   "so bemüht hast."
 LS_wanted_keep = de \
    "Vielen Dank, ich werde mich dafür irgendwann erkenntlich zeigen."
 LS_unwanted_keep = de \
@@ -162,8 +157,8 @@ vaultman_nodeposit_cash = de \
    "Die Verwahrung dieser Gegenstände würde %i Schillinge kosten - ich sehe, "
    "dass Du sie nicht hast."
 vaultman_cant_part = de \
-   "Wow... Ich könnte nicht die Verantwortung übernehmen, wenn Dein %s verschwinden "
-   "würde - Ich kann es nicht verwahren."
+   "Wow... ich könnte nicht die Verantwortung übernehmen, wenn dir %s verschwinden "
+   "würde! Ich kann es einfach nicht verwahren."
 vaultman_noaccount = de "Ich scheine nichts von Deiner Ausrüstung zu verwahren."
 vaultman_not_enough = de \
    "Du hast nicht so viele %s unter Deinem Namen in Verwahrung gegeben!"
@@ -175,24 +170,42 @@ monster_koc_name = de "Der Moch"
 monster_report_balance = de \
    "~B~g[~n~w%s%s sagt zu Dir, \"%q hat ~b~B%i~w~B Schillinge auf dieser Bank.\"~B~g]"
 Monster_Sweep_Reward = de \
-   "Hmm . . . das sieht ein wenig sauberer aus, hier, nimm dies als Belohnung."
+   "Hmm... das sieht ein wenig sauberer aus, %s%s. Hier, nimm dies als Belohnung!"
 monster_default_attack = de "der Attacke"
 minion_trouble = de "Du bemerkst, dass dein Diener dir Ärger gebracht hat..."
 autolooted_all = de "Du plünderst die Leiche und findest %d Schillinge."
 autolooted_all_no_money = de "Du plünderst die Leiche leer."
 autolooted_some = de \
-   "Du plünderst einige Dinge von der Leiche, und findest  %d Schillinge."
+   "Du plünderst einige Dinge von der Leiche, und findest %d Schillinge."
 autolooted_some_no_money = de "Du plünderst einige Gegenstände von der Leiche."
 autolooted_only_money = de \
-   "Du findest nichts besonderes was du plündern kannst, erhälst dafür aber  "
+   "Du findest nichts besonderes was du plündern kannst, erhältst dafür aber "
    "%d Schillinge."
 autolooted_none = de "Du findest nichts besonderes, was du plündern kannst."
 autoloot_too_far_away = de "Du bist zu weit weg um die Leiche zu plündern!"
 autoloot_got_some_but_full_now = de \
-   "Du nimmst ein paar Gegenstände von der Leiche auf , aber wirst behindert, "
+   "Du nimmst ein paar Gegenstände von der Leiche auf, wirst aber behindert "
    "alles aufzunehmen."
 autoloot_got_nothing_because_full = de \
    "Du kannst nicht alles plündern, da du schon zu voll bist."
 autoloot_got_only_shillings_because_full = de \
    "Du kannst nichts mehr von der Leiche plündern da du zu voll bist, und "
    "nimmst nur die %d Schillinge."
+monster_faction_negative_msg = de \
+      "Dein Ansehen bei %s hat sich verringgert"
+monster_faction_positive_msg = de \
+      "Dein Ansehen bei %s hat sich gesteigert"
+monster_faction_unspecified = de "UNSPEZIFIZIERTE MONSTER PARTEI!"
+monster_faction_farol = de "Knechte des Lebens"
+monster_faction_orc = de "den Orks"
+monster_faction_troll = de "den Trollen"
+monster_faction_farnohl = de "dem Haus von Lord Far'Nohl"
+monster_faction_lich = de "dem Opfern von Königin Queen Venya'cyr"
+monster_faction_psavar = de "dem Peet-Seeeep Avar Clan"
+monster_faction_kkavar = de "dem Kyip-Kyip-Kreeet Avar Clan"
+monster_faction_ctavar = de "dem Chyup-Tewee Avar Clan"
+monster_faction_fey_good = de "dem Fey Elhai"
+monster_faction_fey_evil = de "dem Fey Dirhai"
+monster_faction_frogmen = de "dem Froschman"
+monster_faction_heretic = de "dem Kult der Drei"
+monster_faction_undead = de "den Knechten des Todes"

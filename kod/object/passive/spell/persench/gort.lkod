@@ -1,23 +1,31 @@
 ArmorOfGort_name_rsc = de "Gorts Panzer"
 ArmorOfGort_desc_rsc = de \
    "Umgibt den Zaubernden mit einem mächtigen Schutz, der schweren Schaden "
-   "durch harte Schläge abwehrt. Der Zauber benötigt Drachenschuppen."
+   "durch harte Schläge abwehrt. Der Zauber benötigt zwei Drachenschuppen."
 ArmorOfGort_already_enchanted_rsc = de "Du hast bereits den Panzer Gorts."
 ArmorOfGort_on_rsc = de \
-   "Du fühlst, wie sich der Panzer Gorts um deine Haut legt."
-ArmorOfGort_off_rsc = de "Gorts Panzer verschwindet."
+   "Deine Haut fühlt sich straff an, als sich Gorts Panzer um Dich legt."
+ArmorOfGort_off_rsc = de "Gorts Panzer verflüchtigt sich."
 ArmorOfGort_success_rsc = de \
-   "%s%ss Haut strafft, als Gorts Panzer sich auf die Haut legt."
+   "%s%s's Haut strafft sich durch Gorts Panzer."
 ArmorOfGort_spell_intro = de \
    "Kraanan Level 5: Umgibt den Zaubernden mit einem mächtigen Schutz."
 gort_reduction_physical_rsc = de \
-   "%s%ss Gorts Panzer erhört den Schutz %s gegen sämtliche Angriffe."
+   "%s%s's Gorts Panzer erhört den Schutz %s gegen sämtliche Angriffe."
 gort_reduction_partial_magic_rsc = de \
-   "%s%ss Gorts Panzer erhört den Schutz gegen sämtliche Angriffe."
+   "%s%s's Gorts Panzer erhört den Schutz gegen sämtliche Angriffe."
 gort_reduction_fully_magic_rsc = de \
-   "%s%ss Gorts Panzer erhört den Schutz gegen sämtliche Angriffe."
+   "%s%s's Gorts Panzer erhört den Schutz gegen sämtliche Angriffe."
 gort_enchantment_rsc = de \
-   "\n\nDein aktueller %s Zauber fügt 1-%i Rüstung gegen nicht magische "
-   "Angriffe 15, partieller magischer Widerstand um 20, und kompletter "
-   "magischer Widerstand um 25 hinzu. Nur der bessere der beiden "
-   "Eigenschaften greift."
+   "\n\nDein Gorts Panzer fügt 1-%i Rüstung hinzu, oder reduziert nicht "
+   "magischen Schaden bis 15HP, zum Teil magischen Schaden bis 20HP und "
+   "ganzen magischen Schaden bis 25HP. Nur der besseren dieser beiden "
+   "Effekte greift. "
+gort_phys_red_rsc = de \
+    "%s%s's Gorts Panzer verhärtet sich und schützt vor viel Kraft des Angriffs.%s"
+gort_part_mag_red_rsc = de \
+    "%s%s's Gorts Panzer straft sich und mildert einiges von den zum Teil magischen Angriffen."
+gort_mag_red_rsc = de \
+    "%s%s's Gorts Panzer schimmert und bietet einen leichten Schutz vor magischen Angriffen."
+
+	

@@ -33,10 +33,8 @@ BOFS = animate.bof \
        forsight.bof \
        heal.bof \
        holysymb.bof \
-       hospice.bof \
        illform.bof \
        itemench.bof \
-       majheal.bof \
        manabomb.bof \
        morph.bof \
        multicst.bof \

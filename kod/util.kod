@@ -388,22 +388,22 @@ messages:
       Xlat = Xlat - XLAT_BASE_VALUE;
       Xlat = Xlat / 11;
 
-      return XLat;
+      return Xlat;
    }
 
    DecodeSecondaryColor(Xlat = 0)
    {
       if Xlat > 120 AND Xlat < 131
       {
-         Xlat = xlat - 121;
-         xlat = xlat mod 3;
-         if xlat = 0
+         Xlat = Xlat - 121;
+         Xlat = Xlat MOD 3;
+         if Xlat = 0
          {
             return XLAT_TO_SKIN4;
          }
          else
          {
-            return xlat;
+            return Xlat;
          }
       }
 
@@ -416,9 +416,9 @@ messages:
       }
 
       Xlat = Xlat - XLAT_BASE_VALUE;
-      Xlat = Xlat mod 11;
+      Xlat = Xlat MOD 11;
 
-      return XLat;
+      return Xlat;
    }
 
    ListClass(lSource = $)
@@ -538,14 +538,10 @@ messages:
 
    IntToString(num=0)
    {
-      local retVal;
-
       ClearTempString();
       AppendTempString(num);
-      retVal = CreateString();
-      SetString(retVal,GetTempString());
 
-      return retVal;
+      return SetString($,GetTempString());
    }
 
    CreateSpellBook(SID=SID_FIREBALL,mana=1)

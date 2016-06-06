@@ -60,7 +60,9 @@ classvars:
    viDefinite = ARTICLE_THE
    viIndefinite = ARTICLE_THE
 
-   viAttributes = MOB_NOFIGHT | MOB_LISTEN | MOB_RANDOM | MOB_RECEIVE | MOB_TEACHER | MOB_PERM_QUESTER | MOB_SELLER
+   viAttributes = \
+      MOB_NOFIGHT | MOB_LISTEN | MOB_RANDOM | MOB_RECEIVE \
+      | MOB_TEACHER | MOB_SELLER
    viOccupation = MOB_ROLE_PRIESTESS
 
    viGender = GENDER_NEUTER

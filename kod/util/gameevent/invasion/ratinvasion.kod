@@ -104,36 +104,42 @@ messages:
    
    Update()
    {
+      local oRoom;
+
+      oRoom = Send(SYS,@FindRoomByNum,#num=piActiveRoom);
+
+      if (oRoom = $)
+      {
+         propagate;
+      }
+
       if piPhase = 1
       {
-         if Send(self,@CountMonsters,#type=&SmallRat) = 0
+         if Send(oRoom,@CountMonsters,#class=&SmallRat) = 0
          {
             Send(self,@PhaseTwo);
          }
       }
-
-      if piPhase = 2
+      else if piPhase = 2
       {
-         if Send(self,@CountMonsters,#type=&GiantRat) = 0
-            AND Send(self,@CountMonsters,#type=&SmallRat) = 0
+         if Send(oRoom,@CountMonsters,#class=&GiantRat) = 0
+            AND Send(oRoom,@CountMonsters,#class=&SmallRat) = 0
          {
             Send(self,@PhaseThree);
          }
       }
-
-      if piPhase = 3
+      else if piPhase = 3
       {
-         if Send(self,@CountMonsters,#type=&GiantRatSoldier) = 0
-            AND Send(self,@CountMonsters,#type=&GiantRat) = 0
-            AND Send(self,@CountMonsters,#type=&SmallRat) = 0
+         if Send(oRoom,@CountMonsters,#class=&GiantRatSoldier) = 0
+            AND Send(oRoom,@CountMonsters,#class=&GiantRat) = 0
+            AND Send(oRoom,@CountMonsters,#class=&SmallRat) = 0
          {
             Send(self,@FinalPhase);
          }
       }
-
-      if piPhase = 4
+      else if piPhase = 4
       {
-         if Send(self,@CountMonsters,#type=&GiantRatKing) = 0
+         if Send(oRoom,@CountMonsters,#class=&GiantRatKing) = 0
          {
             % Call NotifyEngineEndEvent to handle ending the event properly. 
             % This deletes the event from the GameEventEngine. It also calls

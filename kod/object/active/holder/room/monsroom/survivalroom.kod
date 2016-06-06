@@ -34,7 +34,7 @@ constants:
    PB_START_TIME = 180000
    
    % 1 minute to begin other survivals
-   DEFLT_START_TIME = 60000
+   DEFLT_START_TIME = 30000
    
    % Report goals every 1 minute
    REPORT_TIME = 60000
@@ -51,63 +51,49 @@ resources:
       "As you enter the new plane of reality, you can feel powerful energies "
       "converging toward you. This place will grow progressively more "
       "dangerous as time goes on. Fortunately, you can sense that there is no "
-      "Underworld here. Death will mean nothing for you in this realm."
-   beginning_in_sixty = \
-      "~BThe attacks will begin in sixty seconds."
+      "Underworld here. Death will mean nothing for you in this realm.\n"
+      "Say \"leave survival\" to exit the arena."
+   survivalroom_solo_starttime = "~BThe attacks will begin in %i seconds."
    next_level_in_seconds = \
       "~BYou have defeated wave number %i. The next arrives in %i seconds."
-   begin_level = \
-      "~BWave %i of the enemy force has arrived."
-   you_died_to_monster = \
-      "The %s stands triumphantly over your crumpled body."
-   player_died_to_monster = \
-      "~B%s was slain by %s%s!"
+   begin_level = "~BWave %i of the enemy force has arrived."
+   you_died_to_monster = "The %s stands triumphantly over your crumpled body."
+   player_died_to_monster = "~B%s was slain by %s%s!"
    you_were_booted = \
       "The magics enabling your battle fail, and you are flung home."
-   player_was_booted = \
-      "%s has been cast out of this reality."
+   player_was_booted = "%s has been cast out of this reality."
    lives_remain_update = \
       "You sense death can be cheated here only %i more times."
-   one_life_remains = \
-      "~BYou sense death may only be cheated once more."
+   one_life_remains = "~BYou sense death may only be cheated once more."
    no_lives_remain = \
       "From this point on, deaths will expel you from this place."
    survival_no_cast_rsc = "You cannot cast %s here."
-   goals_header = \
-      "To defeat this wave of enemies, you must:"
-   kill_goal_msg = \
-      "Kill %i enemy creatures."
-   boss_goal_msg = \
-      "Kill a boss."
-   minibosses_goal_msg = \
-      "Kill %i minibosses."
-   boss_slain_goal_msg = \
-      "~BA boss has been slain!"
-   minibosses_slain_goal_msg = \
-      "~BTwo minibosses have been slain!"
-   kills_remaining = \
-      "There are %i kills remaining until the next wave."
-   extralife_header = \
-      "To acquire an extra life, you must:"
-   kill_friendly_msg = \
-      "Kill a fellow adventurer."
-   player_murdered_player_no_goal = \
-      "~B%s has been murdered by %s!"
-   player_murdered_player_goal = \
-      "~B%s has been sacrificed by %s!"
+   goals_header = "To defeat this wave of enemies, you must:"
+   kill_goal_msg = "Kill %i enemy creatures."
+   boss_goal_msg = "Kill a boss."
+   minibosses_goal_msg = "Kill %i minibosses."
+   boss_slain_goal_msg = "~BA boss has been slain!"
+   minibosses_slain_goal_msg = "~BTwo minibosses have been slain!"
+   kills_remaining = "There are %i kills remaining until the next wave."
+   extralife_header = "To acquire an extra life, you must:"
+   kill_friendly_msg = "Kill a fellow adventurer."
+   player_murdered_player_no_goal = "~B%s has been murdered by %s!"
+   player_murdered_player_goal = "~B%s has been sacrificed by %s!"
    gain_a_life_msg = \
       "~BYou acquire enough energy to form an extra ward against death! "
       "You now have %i lives."
-   wall_blitz_activated = \
-      "~BA surge of ethereal fury overcomes the horde!"
+   wall_blitz_activated = "~BA surge of ethereal fury overcomes the horde!"
    fixed_reward_msg = \
       "It seems one of the fallen enemies has dropped one %s on the battlefield!"
-   your_lives_remain = \
-      "You have %i lives remaining."
+   your_lives_remain = "You have %i lives remaining."
    spectator_only_msg = \
       "Combat has already begun. You may spectate until all participants "
       "have died."
-   round_begin_wav = gong.wav
+   survivalroom_cant_leave_yet = \
+      "You must wait at least %i seconds after the creation of a Survival "
+      "Arena before you may exit."
+   survivalroom_user_say_leave = "leave survival"
+   round_begin_wav = gong.ogg
 
 classvars:
 
@@ -115,6 +101,9 @@ classvars:
    viTeleport_row = 1
    viTeleport_col = 1
    viPermanent_flags = ROOM_SAFELOGOFF
+
+   // Number of seconds before players can exit a newly created arena.
+   viCreationLeaveDelaySec = 25
 
 properties:
 
@@ -175,6 +164,11 @@ properties:
    % Boolean for resource restoration on level completion.
    pbRestoreResources = TRUE
 
+   // Save creation time so we can prevent leaving within a given period
+   // after the room is made. Stops survival arena spam or large amounts
+   // of rooms being created and deleted.
+   piCreationTime = $
+
 messages:
 
    Constructor(iRID=RID_SURVIVAL_START,base_room=$,poGuild=$,iPublic=FALSE,
@@ -183,7 +177,7 @@ messages:
       poBaseRoom = base_room;
       prRoom = Send(poBaseRoom,@GetRoomResource);
       piRoom_num = iRID;
-      
+
       if poGuild <> $
       {
          poGuildAssociation = poGuild;
@@ -413,13 +407,17 @@ messages:
                         [&TrollMask,30],
                         [&ShrunkenHeadMask,35],
                         [&DaemonMask,40],
-                        [&FeyMask,45],
-                        [&XeoMask,50],
-                        [&KriipaMask,55],
-                        [&CowMask,75],
+                        [&FeyMask,50],
+                        [&XeoMask,60],
+                        [&KriipaMask,70],
+                        [&StoneTrollMask,80],
+                        [&CowMask,90],
                         [&KraananCharm,100]];
 
       Send(self,@RecalcLightAndWeather);
+
+      // Record creation time.
+      piCreationTime = GetTime();
 
       propagate;
    }
@@ -579,7 +577,7 @@ messages:
    {
       if NOT pbSpawnWaves
       {
-         return;
+         return FALSE;
       }
 
       propagate;
@@ -655,7 +653,7 @@ messages:
             Send(self,@NewHold,#what=oReward,
                   #new_row=First(lRandomSpawnPoint),
                   #new_col=Nth(lRandomSpawnPoint,2));
-            iRewardTime = iRewardTime + 45000;
+            iRewardTime = iRewardTime + 75000;
          }
       }
 
@@ -920,7 +918,7 @@ messages:
          if Nth(i,2) <= 0
          {
             plExtraLifeGoals = DelListElem(plExtraLifeGoals,i);
-      
+
             if plExtraLifeGoals = $
             {
                Send(self,@GainALife);
@@ -1060,8 +1058,7 @@ messages:
                AND NOT piPublic
                AND poGuildAssociation = $
             {
-               piLevel = Send(what,@GetBaseMaxHealth) / 25;
-               piLevel = Bound(piLevel,1,$);
+               piLevel = Bound(Send(what,@GetBaseMaxHealth) / 25,1,10);
             }
             Post(what,@MsgSendUser,#message_rsc=welcome_message);
 
@@ -1097,8 +1094,7 @@ messages:
                   OR Send(oTarget,@IsInCannotInteractMode)))
             {
                oTarget = Nth(plParticipants,Random(1,Length(plParticipants)));
-               count = count + 1;
-               if count > 10
+               if ++count > 10
                {
                   break;
                }
@@ -1136,7 +1132,7 @@ messages:
 
    AggroOne(who = $,victim = $)
    {
-      local i, iCount, oMonster;
+      local i, oMonster;
 
       if (IsClass(who,&DM)
             AND Send(who,@PlayerIsImmortal))
@@ -1144,8 +1140,6 @@ messages:
       {
          return;
       }
-
-      iCount = 0;
 
       foreach i in plActive
       {
@@ -1163,12 +1157,8 @@ messages:
             }
             Send(oMonster,@TargetSwitch,#what=who,#iHatred=100);
             Send(oMonster,@EnterStateChase,#target=who,#actnow=True);
-            iCount = iCount + 1;
-            
-            if iCount >= 1
-            {
-               return;
-            }
+
+            return;
          }
       }
 
@@ -1196,9 +1186,8 @@ messages:
          {
             Send(First(i),@TargetSwitch,#what=who,#iHatred=100);
             Send(First(i),@EnterStateChase,#target=who,#actnow=True);
-            iCount = iCount + 1;
-            
-            if iCount >= 5
+
+            if ++iCount >= 5
             {
                return;
             }
@@ -1234,29 +1223,31 @@ messages:
    Delete()
    {
       Send(self,@BootAllUsers);
-      
+
       if ptNextLevelTimer <> $
       {
          DeleteTimer(ptNextLevelTimer);
          ptNextLevelTimer = $;
       }
-      
+
       if ptWallBlitzTimer <> $
       {
          DeleteTimer(ptWallBlitzTimer);
          ptWallBlitzTimer = $;
       }
+
       if ptReportGoalsTimer <> $
       {
          DeleteTimer(ptReportGoalsTimer);
          ptReportGoalsTimer = $;
       }
+
       if ptRespawnMiniBossTimer <> $
       {
          DeleteTimer(ptRespawnMiniBossTimer);
          ptRespawnMiniBossTimer = $;
       }
-      
+
       plLivesPerPlayer = $;
 
       Send(Send(SYS,@GetSurvivalRoomMaintenance),@RoomDeleted,#what=self);
@@ -1267,32 +1258,35 @@ messages:
    GainALife()
    {
       local i, p;
-      
+
       if piPublic
       {
          foreach p in plLivesPerPlayer
          {
             SetNth(p,2,Nth(p,2)+1);
-            Send(First(p),@MsgSendUser,#message_rsc=gain_a_life_msg,#parm1=Nth(p,2));
+            Send(First(p),@MsgSendUser,#message_rsc=gain_a_life_msg,
+                  #parm1=Nth(p,2));
          }
+
          return;
       }
       else
       {
-         piLives = piLives + 1;
+         ++piLives;
       }
 
       foreach i in plActive
       {
          if IsClass(First(i),&User)
          {
-            Send(First(i),@MsgSendUser,#message_rsc=gain_a_life_msg,#parm1=piLives);
+            Send(First(i),@MsgSendUser,#message_rsc=gain_a_life_msg,
+                  #parm1=piLives);
          }
       }
-      
+
       return;
    }
-   
+
    OverrideDeathFunction(who=$,what=$)
    {
       local i, bFoundGoal, p, iLives, each_obj;
@@ -1391,7 +1385,7 @@ messages:
       if NOT piPublic
          AND piLives > 0
       {
-         piLives = piLives - 1;
+         --piLives;
          Send(who,@GainMana,#amount=Send(who,@GetMaxMana),#bCapped=TRUE);
          Send(self,@Teleport,#what=who);
 
@@ -1613,7 +1607,8 @@ messages:
       {
          if IsClass(First(i),&User)
          {
-            Send(First(i),@MsgSendUser,#message_rsc=beginning_in_sixty);
+            Send(First(i),@MsgSendUser,#message_rsc=survivalroom_solo_starttime,
+                  #parm1=DEFLT_START_TIME / 1000);
          }
       }
 
@@ -1715,17 +1710,23 @@ messages:
    SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
                parm4 = $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)
    {
-      if NOT isClass(what,&player) OR type = SAY_YELL
+      if NOT IsClass(what,&Player) OR type = SAY_YELL
       {
          propagate;
       }
 
-      if StringEqual(string,"leave survival")
-         OR (piPublic AND StringEqual(string,"leave public survival"))
-         OR (poGuildAssociation <> $ 
-             AND StringEqual(string,"leave guild survival"))
+      if StringEqual(string,survivalroom_user_say_leave)
       {
-         Post(self,@BootUser,#who=what);
+         // Check if the room was just created.
+         if (GetTime() < piCreationTime + viCreationLeaveDelaySec)
+         {
+            Send(what,@MsgSendUser,#message_rsc=survivalroom_cant_leave_yet,
+                  #parm1=viCreationLeaveDelaySec);
+         }
+         else
+         {
+            Post(self,@BootUser,#who=what);
+         }
 
          return;
       }

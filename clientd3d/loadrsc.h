@@ -26,6 +26,7 @@ typedef struct {
 extern "C" {
 #endif
 
+void LoadRSBHash(void);
 Bool LoadResources(void);
 void FreeResources(void);
 void ChangeResource(ID res, char *value);
@@ -34,7 +35,7 @@ M59EXPORT char *GetString(HINSTANCE hModule, ID idnum);
 void MissingResource(void);
 void DeleteRscFiles(list_type files);
 void DeleteAllRscFiles(void);
-
+unsigned char *GetRSBHash(void);
 M59EXPORT Bool *GetAvailableLanguages(void);
 M59EXPORT char *LookupRsc(ID idnum);
 M59EXPORT char *LookupNameRsc(ID idnum);

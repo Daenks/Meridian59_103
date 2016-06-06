@@ -20,12 +20,12 @@ resources:
 
    include cornoth.lkod
 
-   room_CorNoth = CorNoth.roo
+   room_CorNoth = cornoth.roo
    room_name_CorNoth ="Cor Noth"
 
-   cor_music = city04.mp3
-   wind_sound_cornoth = ambcntry.wav
-   wind1_sound_cornoth = rs_wind.wav
+   cor_music = city04.ogg
+   wind_sound_cornoth = ambcntry.ogg
+   wind1_sound_cornoth = rs_wind.ogg
 
 classvars:
 

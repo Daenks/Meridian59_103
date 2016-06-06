@@ -23,13 +23,12 @@ resources:
 
    room_name_underworld = "The Underworld"
    room_underworld = uworld.roo
-   underworld_music = undrwrld.mp3
+   underworld_music = undrwrld.ogg
 
    hell_projectile_icon_rsc = lightnin.bgf
-   portal_zap_sound = fbolt.wav
+   portal_zap_sound = fbolt.ogg
 
    underworld_assgame = "Something forces you to stay your hand."
-
    portal_tos = \
       "Looking in the portal, you see the bustling bar of Familiars."
    portal_marion = \
@@ -40,7 +39,6 @@ resources:
       "A lazy inn next to a quiet creek rests on the other side of this portal."
    portal_barloque = \
       "Gazing into the portal, you see an expensive inn in a bustling city."
-
    zap_to_corpse = \
       "Entering the portal you wander about the netherworld, but find "
       "yourself drawn out..."
@@ -48,7 +46,7 @@ resources:
       "You enter the portal, and find yourself lost, confusion starts to "
       "take over when you find yourself home."
 
-   burning_wading_sound = frying.wav
+   burning_wading_sound = frying.ogg
 
 classvars:
 
@@ -56,8 +54,8 @@ classvars:
 
    vrName = room_name_underworld
 
-   viTeleport_row = 23
-   viTeleport_col = 19
+   viTeleport_row = 24
+   viTeleport_col = 16
 
    viPermanent_flags = ROOM_NO_COMBAT | ROOM_SAFELOGOFF
 
@@ -316,7 +314,7 @@ messages:
    {
       local i;
 
-      if isClass(what,&User)
+      if IsClass(what,&User)
       {
          foreach i in plCorpses
          {
@@ -337,13 +335,11 @@ messages:
       propagate;
    }
 
-
    ZaptoCorpse(who = $)
    {
       local i, iRow, iCol, iFineRow, iFineCol, oRoom, rUsername;
 
       rUsername = Send(who,@GetTrueName);
-      oRoom = $;
 
       % Paralyze them so they can't move around
       Send(who,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=TRUE);
@@ -384,15 +380,15 @@ messages:
       }
 
       % Post this so they're in the room completely before being able to move.
-      post(who,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=FALSE);
-      post(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
+      Post(who,@SetPlayerFlag,#flag=PFLAG_NO_MOVE,#value=FALSE);
+      Post(who,@EffectSendUser,#what=self,#effect=EFFECT_PARALYZE_OFF);
 
       return;
    }
 
    PuzzleSolved()
    {
-      local  i, poTarget, oNode;
+      local i, poTarget, oNode;
 
       % if puzzle is solved already, we're in a timer waiting for corpse to go away,
       % so shouldn't get here, but sometimes it happens
@@ -405,7 +401,7 @@ messages:
 
       foreach i in plPassive
       {
-         if isClass(First(i),&skull)
+         if IsClass(First(i),&Skull)
          {
             poTarget = First(i);
          }
@@ -413,10 +409,10 @@ messages:
 
       foreach i in plActive
       {
-         if isClass(First(i),&Portal)
+         if IsClass(First(i),&Portal)
          {
-            Send(self,@SomethingShot,#who=First(i),#target=poTarget,#projectile=self,
-                 #flags=PROJ_FLAG_LIGHT_SOURCE);
+            Send(self,@SomethingShot,#who=First(i),#target=poTarget,
+                  #projectile=self,#flags=PROJ_FLAG_LIGHT_SOURCE);
          }
       }
 
@@ -442,16 +438,16 @@ messages:
 
    DeletePortalTimer()
    {
-      Local i;
+      local i;
 
       ptReset = $;
       ptMaintenance = CreateTimer(self,@MaintenanceTimer,MAINTENANCE_DELAY);
 
       foreach i in plActive
       {
-         if IsClass(first(i),&CorpseNode)
+         if IsClass(First(i),&CorpseNode)
          {
-            Send(first(i),@NodeDisappear);
+            Send(First(i),@NodeDisappear);
          }
       }
 
@@ -500,11 +496,11 @@ messages:
 
       if Randnum <> 0
       {
-         unlit2=random(1,5);
+         unlit2 = Random(1,5);
 
          while unlit2 = unlit1
          {
-            unlit2 = random(1,5);
+            unlit2 = Random(1,5);
          }
 
          if Unlit2 = 1

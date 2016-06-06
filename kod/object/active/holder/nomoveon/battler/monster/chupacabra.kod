@@ -29,10 +29,10 @@ resources:
    chupacabra_dead_icon_rsc = chupaX.bgf
    chupacabra_dead_name_rsc = "dead chupacabra"
 
-   chupacabra_sound_hit = chupa_atkh.wav
-   chupacabra_sound_miss = chupa_atkh.wav
-   chupacabra_sound_death = chupa_dth.wav
-   chupacabra_sound_aware = chupa_awr.wav
+   chupacabra_sound_hit = chupa_atkh.ogg
+   chupacabra_sound_miss = chupa_atkh.ogg
+   chupacabra_sound_death = chupa_dth.ogg
+   chupacabra_sound_aware = chupa_awr.ogg
 
 classvars:
 

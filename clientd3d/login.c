@@ -54,12 +54,15 @@ void LoginSendInfo(void)
 
    debug(("Got partner code of %d.\n", (sysinfo.reserved & 0xFF00) >> 8));
 
+   // Load the RSB hash from LoginSendInfo to ensure we have an up-to-date hash.
+   LoadRSBHash();
+
    RequestLogin(MAJOR_REV, MINOR_REV, 
-		sysinfo.platform, sysinfo.platform_major, sysinfo.platform_minor,
-		sysinfo.memory, sysinfo.chip, 
-		sysinfo.screen_width, sysinfo.screen_height, 
-		sysinfo.color_depth, sysinfo.bandwidth, sysinfo.reserved,
-		config.username, buf);
+      sysinfo.platform, sysinfo.platform_major, sysinfo.platform_minor,
+      sysinfo.memory, sysinfo.chip, 
+      sysinfo.screen_width, sysinfo.screen_height, 
+      sysinfo.color_depth, sysinfo.bandwidth, sysinfo.reserved,
+      config.username, buf, GetRSBHash());
 }
 /****************************************************************************/
 /*

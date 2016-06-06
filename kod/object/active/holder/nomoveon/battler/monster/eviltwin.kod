@@ -27,10 +27,10 @@ resources:
    EvilTwin_dead_name_rsc = "dead evil twin"
    EvilTwin_weapon_rsc = scimov.bgf
 
-   EvilTwin_sound_hit = orc_atkh.wav
-   EvilTwin_sound_miss = orc_atkm.wav
-   EvilTwin_sound_death = orc_dth.wav
-   EvilTwin_sound_aware = orc_awr.wav
+   EvilTwin_sound_hit = orc_atkh.ogg
+   EvilTwin_sound_miss = orc_atkm.ogg
+   EvilTwin_sound_death = orc_dth.ogg
+   EvilTwin_sound_aware = orc_awr.ogg
 
    EvilTwin_delete =  "%s%s disappears into a puff of smoke."
 

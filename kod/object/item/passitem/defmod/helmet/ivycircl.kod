@@ -24,7 +24,8 @@ resources:
       "Healthy, green leaves of ivy are wrapped around a wooden wreath.  "
       "This looks like it would be cool and refreshing against your brow."
 
-   ivycirclet_cant = "The ivy circlet stubbornly resists your attempts to place it on your brow."
+   ivycirclet_cant = \
+      "The ivy circlet stubbornly resists your attempts to place it on your brow."
 
    IvyCirclet_overlay_rsc = IvyCirov.bgf
 
@@ -47,7 +48,8 @@ classvars:
    viGround_group = 1
    viInventory_group = 2
 
-   viDefense_base = 10               % This is the default value for piDefense_bonus
+   // This is the default value for piDefense_bonus
+   viDefense_base = 10
 
    viLayer = 1
 
@@ -60,10 +62,10 @@ messages:
 
    GetOverlay(animation = $)
    {
-      % Uses different file for the overlay.
+      // Uses different file for the overlay.
       return IvyCirclet_overlay_rsc;
    }
-   
+
    GetResistanceModifiers()
    {
       return [ [-ATCK_SPELL_FIRE,-10],
@@ -73,11 +75,11 @@ messages:
 
    ReqUse()
    {
-      if send(poOwner,@GetKarma) < 50  
-      { 
-         send(poOwner,@MsgSendUser,#message_rsc=ivycirclet_cant);
+      if Send(poOwner,@GetKarma) < 50
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=ivycirclet_cant);
 
-         return FALSE; 
+         return FALSE;
       }
 
       propagate;
@@ -85,19 +87,18 @@ messages:
 
    GetBaseSpellModifier(oSpell=$)
    {
-      if send(oSpell,@GetSchool) = SS_SHALILLE
+      if Send(oSpell,@GetSchool) = SS_SHALILLE
       {
          return 15;
       }
 
-      if send(oSpell,@GetSchool) = SS_QOR
+      if Send(oSpell,@GetSchool) = SS_QOR
       {
          return -15;
       }
 
       return 0;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

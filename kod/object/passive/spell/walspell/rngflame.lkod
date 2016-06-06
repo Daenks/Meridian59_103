@@ -1,10 +1,9 @@
 RingOfFlames_name_rsc = de "Flammenring"
 RingOfFlames_desc_rsc = de \
-   "Erschafft einen Ring aus Flammen um den Zaubernden. Benötigt rote Pilze, "
-   "Feuersand und ungeschliffenen Seraph. Die Anwendung dieses Zaubers kann "
-   "dazu führen, daß Du zum Gesetzlosen erklärt wirst."
+   "Erschafft einen Ring aus Flammen um den Zaubernden. "
+   "Benötigt drei Rote Pilze und drei Feuersand. "
 RingOfFlames_caster = de \
-   "Ein glühend heißer Ring aus Flammen erscheint vor %s%q."
+   "Ein glühend heißer Ring aus Flammen erscheint vor %s%s."
 RingOfFlames_target = de \
    "Ein glühend heißer Ring aus Flammen erscheint vor dir!"
 RingOfFlames_failed_rsc = de \

@@ -19,6 +19,7 @@
 #include "merintr.h"
 
 #define STAT_VIGOR 3         // Position in main stat group of vigor stat
+#define STAT_XP    4         // Position of XP bar in main stat group
 
 #define STAT_EMERGENCY_COLOR   RGB(255, 0, 0)   // Draw critical stats in this color when low
 
@@ -68,12 +69,18 @@ void StatsMainReceive(list_type stats)
       y += height;
       
       if (s->numeric.tag != STAT_INT)
-	 continue;
+         continue;
       
-      s->hControl = CreateWindow(GraphCtlGetClassName(), NULL,
-				 WS_CHILD | WS_VISIBLE | GCS_LIMITBAR | GCS_NUMBER,
-				 0, 0, 0, 0, cinfo->hMain,
-				 NULL, hInst, NULL);
+      if (s->num == STAT_XP)
+         s->hControl = CreateWindow(GraphCtlGetClassName(), NULL,
+            WS_CHILD | WS_VISIBLE | GCS_LIMITBAR | GCS_NUMBER | GCS_XP,
+            0, 0, 0, 0, cinfo->hMain,
+            NULL, hInst, NULL);
+      else
+         s->hControl = CreateWindow(GraphCtlGetClassName(), NULL,
+            WS_CHILD | WS_VISIBLE | GCS_LIMITBAR | GCS_NUMBER,
+            0, 0, 0, 0, cinfo->hMain,
+            NULL, hInst, NULL);
 
       StatsMainSetColor(s);
       StatsMainChange(s);
@@ -126,7 +133,10 @@ void StatsMainChange(Statistic *s)
 
    SendMessage(s->hControl, GRPH_RANGESET, s->numeric.min, s->numeric.max);
    SendMessage(s->hControl, GRPH_POSSET, 0, s->numeric.value);
-   SendMessage(s->hControl, GRPH_LIMITSET, 0, s->numeric.current_max);	 
+   if (s->num == STAT_XP)
+      SendMessage(s->hControl, GRPH_LIMITSET, 0, 0);
+   else
+      SendMessage(s->hControl, GRPH_LIMITSET, 0, s->numeric.current_max);
 
    if (s->num == STAT_VIGOR)
    {
@@ -139,6 +149,11 @@ void StatsMainChange(Statistic *s)
 
       if (pinfo.vigor >= MIN_VIGOR && old_vigor < MIN_VIGOR)
 	 SendMessage(s->hControl, GRPH_COLORSET, GRAPHCOLOR_BAR, GetColor(COLOR_BAR1));	 
+   }
+   else if (s->num == STAT_XP)
+   {
+      // Update tooltip
+      StatsMainMove();
    }
 }
 
@@ -203,6 +218,7 @@ void StatsMainMove(void)
    list_type l;
    int count = 0;
    TOOLINFO ti;
+   char buf[21];
 
    ti.cbSize = sizeof(TOOLINFO);
    ti.hwnd   = cinfo->hMain;
@@ -234,7 +250,11 @@ void StatsMainMove(void)
 	 case 0: ti.lpszText = (LPSTR) IDS_HEALTH; break;
 	 case 1: ti.lpszText = (LPSTR) IDS_MANA;   break;
 	 case 2: ti.lpszText = (LPSTR) IDS_VIGOR;  break;
-	 case 3: ti.lpszText = (LPSTR) IDS_TOUGHER; break;
+	 case 3:
+      sprintf(buf, "%s: %i", GetString(hInst, IDS_XP), s->numeric.current_max);
+      ti.lpszText = (LPSTR)buf;
+      break;
+
 	 default:
 	    debug(("StatsMainMove got unknown stat number %d\n", count));
 	    ti.lpszText = 0;

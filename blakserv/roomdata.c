@@ -55,7 +55,7 @@ void ResetRooms()
          {
             temp = room->next;
             BSPFreeRoom(&room->data);
-            FreeMemory(MALLOC_ID_ROOM, room, sizeof(room_node));
+            FreeMemorySIMD(MALLOC_ID_ROOM, room, sizeof(room_node));
             room = temp;
          }
          rooms[i % INIT_ROOMTABLE_SIZE] = NULL;
@@ -85,7 +85,7 @@ int LoadRoom(int resource_id)
    /****************************************************************/
 
    // Load ROO
-   room_node* newnode = (room_node*)AllocateMemory(MALLOC_ID_ROOM, sizeof(room_node));
+   room_node* newnode = (room_node*)AllocateMemorySIMD(MALLOC_ID_ROOM, sizeof(room_node));
 
    // combine path for roo and filename
    sprintf(s, "%s%s", ConfigStr(PATH_ROOMS), r->resource_val[0]);
@@ -93,7 +93,7 @@ int LoadRoom(int resource_id)
    // try load it
    if (!BSPLoadRoom(s, &newnode->data))
    {
-      FreeMemory(MALLOC_ID_ROOM, newnode, sizeof(room_node));
+      FreeMemorySIMD(MALLOC_ID_ROOM, newnode, sizeof(room_node));
       bprintf("LoadRoomData couldn't open %s!!!\n",r->resource_val[0]);
       return NIL;
    }
@@ -145,7 +145,7 @@ void UnloadRoom(room_node *r)
    {
       rooms[room_hash] = room->next;
       BSPFreeRoom(&room->data);
-      FreeMemory(MALLOC_ID_ROOM, room, sizeof(room_node));
+      FreeMemorySIMD(MALLOC_ID_ROOM, room, sizeof(room_node));
       room = NULL;
 
       return;
@@ -162,7 +162,7 @@ void UnloadRoom(room_node *r)
          // of the room we're freeing.
          room->next = room->next->next;
          BSPFreeRoom(&temp->data);
-         FreeMemory(MALLOC_ID_ROOM, temp, sizeof(room_node));
+         FreeMemorySIMD(MALLOC_ID_ROOM, temp, sizeof(room_node));
 
          return;
       }

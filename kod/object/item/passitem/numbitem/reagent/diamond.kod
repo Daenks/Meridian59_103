@@ -18,13 +18,11 @@ resources:
 
    include diamond.lkod
 
-
    diamond_name_rsc = "diamond"
    diamond_icon_rsc = diamond.bgf
    diamond_desc_rsc = \
-   "Mined in dark and dangerous caves far below Jasper, this "
-   "diamond is brilliant and valuable."
-
+      "Mined in dark and dangerous caves far below Jasper, this "
+      "diamond is brilliant and valuable."
    diamond_name_plural_rsc = "diamonds"
 
 classvars:

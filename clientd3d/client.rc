@@ -123,21 +123,16 @@ END
 // Dialog
 //
 
-181 DIALOGEX 0, 0, 248, 188
+181 DIALOGEX 0, 0, 249, 113
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Es existiert ein Update von Meridian 59 für Dich"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDI_ICON,-1,7,7,20,20
+    ICON            IDI_ICON,-1,7,7,21,20
     EDITTEXT        1191,35,7,206,27,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
     GROUPBOX        "Update Download Informationen",-1,35,47,205,55
-    LTEXT           "(ungefähre Größe des Downloads)",1193,44,61,188,8
-    LTEXT           "(geschätzte Zeit 56.6kbps)",1194,44,73,188,8
-    LTEXT           "(geschätzte Zeit 28.8kbps)",1195,44,85,188,8
+    LTEXT           "(ungefähre Größe des Downloads)",1193,44,64,188,8
     DEFPUSHBUTTON   "&Bestätigen",1192,138,94,93,14
-    GROUPBOX        "Vorschau",-1,36,116,205,58
-    LTEXT           "Wenn Du nicht das gesamte Update haben möchtest, findest du auf openmeridian.org eine kleiner Vorschauversion.",-1,44,128,188,34
-    PUSHBUTTON      "Angebot...",1189,138,167,93,14
 END
 
 166 DIALOG 0, 0, 186, 95
@@ -265,7 +260,7 @@ BEGIN
     EDITTEXT        1150,93,114,143,13,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "Einloggen",1080,137,131,100,14
     ICON            IDI_ICON,-1,6,6,20,20
-    LTEXT           "Solltest Du noch kein Meridian59-Account haben, so kannst Du Dich auf http://openmeridian.org/ kostenfrei anmelden.",-1,36,6,206,18
+    LTEXT           "Solltest Du noch kein Meridian59-Account haben, so kannst Du Dich auf http://www.Meridian59.de kostenfrei anmelden.",-1,36,6,206,18
     GROUPBOX        "Neu in Meridian",1196,37,33,207,35
     LTEXT           "Wenn Du bisher keinen Account hast, klicke hier.",-1,45,47,87,18
     LTEXT           "Benutzername:",-1,43,88,50,10
@@ -344,7 +339,7 @@ BEGIN
     PUSHBUTTON      "Abbrechen",2,267,183,50,14
 END
 
-116 DIALOGEX 0, 0, 279, 369
+116 DIALOGEX 0, 0, 370, 346
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Meridian 59 Voreinstellungen"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -354,50 +349,54 @@ BEGIN
     CONTROL         "Hebe Rot hervor",1180,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,37,70,10
     CONTROL         "Hebe Blau hervor",1181,"Button",BS_AUTORADIOBUTTON,14,48,70,10
     CONTROL         "Hebe Grün hervor",1182,"Button",BS_AUTORADIOBUTTON,14,59,70,10
-    GROUPBOX        "Spezialeffekte",IDC_STATIC,118,6,151,72,WS_GROUP
-    CONTROL         "Schrittschwankungen anzeigen",1163,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,17,132,9
-    CONTROL         "Schmerzen bei Treffern anzeigen",1146,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,28,132,9
-    CONTROL         "Spielernamen anzeigen",1143,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,39,132,9
-    CONTROL         "Stapelgröße bei Gegenständen anzeigen",1148,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,129,49,135,18
-    CONTROL         "Wettereffekte anzeigen",1208,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,129,66,116,9
-    GROUPBOX        "Spieloptionen",IDC_STATIC,5,116,263,74,WS_GROUP
-    CONTROL         "Vorübergehender PvP-Schutz nach Tod",1209,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,128,140,9
+    GROUPBOX        "Spezialeffekte",IDC_STATIC,118,6,247,72,WS_GROUP
+    CONTROL         "Schrittschwankungen anzeigen",1163,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,19,118,9
+    CONTROL         "Schmerzen bei Treffern anzeigen",1146,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,31,118,9
+    CONTROL         "Lichteffekt beim Markieren anzeigen",1157,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,129,43,136,9
+    CONTROL         "Stapelgröße bei Gegenständen anzeigen",1148,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,129,55,114,18
+    CONTROL         "Spielernamen anzeigen",1143,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,19,91,9
+    CONTROL         "Namen der NPC anzeigen",1156,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,31,101,9
+    CONTROL         "Namen der Schilder anzeigen",1149,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,43,104,9
+    GROUPBOX        "Partikeleffekte",IDC_STATIC,6,79,359,35,WS_GROUP
+    CONTROL         "Wettereffekte anzeigen",1208,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,17,94,93,9
+    LTEXT           "Partikeldichte %",IDC_STATIC,118,94,58,10
+    CONTROL         "",IDC_PARTICLENUM,"msctls_trackbar32",TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP,169,86,192,22
+    GROUPBOX        "Spieloptionen",IDC_STATIC,5,116,360,56,WS_GROUP
+    CONTROL         "Vorübergehender PvP-Schutz nach Tod",1209,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,129,140,9
     CONTROL         "Autoaufnahme stapelbarer Gegenstände von Kills",1212,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,140,177,9
-    CONTROL         "Gegenstände automatisch kombinieren",1213,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,152,225,9
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,141,177,9
     CONTROL         "Verstaue Reagenzien automatisch in den Reagenzienbeutel",1214,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,164,237,9
-    CONTROL         "An Gruppenbildung teilnehmen",1210,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,157,128,109,9
-    CONTROL         "Zeige Zaubermacht beim zaubern",1215,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,176,237,9
-    GROUPBOX        "Audio Effekte",IDC_STATIC,6,190,263,63,WS_GROUP
-    CONTROL         "Musik",1150,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,203,35,9
-    CONTROL         "Sounds",1151,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,61,203,44,9
-    CONTROL         "Klangschleifen",1152,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,203,64,9
-    CONTROL         "Umgebungs-Sound",1154,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,203,74,9
-    LTEXT           "Sound Lautstärke",IDC_STATIC,13,219,58,10
-    CONTROL         "",IDC_SOUND_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,72,216,187,15
-    LTEXT           "Musik Lautstärke",IDC_STATIC,13,238,61,10
-    CONTROL         "",IDC_MUSIC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,72,235,186,15
-    GROUPBOX        "Oberfläche",IDC_STATIC,5,254,263,64,WS_GROUP
-    CONTROL         "Toolbar anzeigen",1165,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,267,70,9
-    CONTROL         "Übertragungsrate anzeigen",147,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,88,267,100,9
-    CONTROL         "FPS anzeigen",1211,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,189,267,56,9
-    CONTROL         "Tooltips anzeigen",1147,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,278,65,9
-    CONTROL         "Dynamische Karte",1198,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,88,278,79,10
-    CONTROL         "Kartenanmerkungen",1202,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,279,78,9
-    CONTROL         "Textfenster beim zurückscrollen einfrieren",1145,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,290,163,9
-    CONTROL         "Bunter Text",1199,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,289,53,10
-    CONTROL         "Textfilter",1173,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,302,77,9
-    PUSHBUTTON      "Filtereinstellungen",1164,101,302,142,12
-    GROUPBOX        "Web Browser",IDC_STATIC,5,320,263,31,WS_GROUP
-    LTEXT           "Programm:",IDC_STATIC,13,333,45,8
-    EDITTEXT        1155,59,332,136,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Durchsuchen",1162,208,332,49,12
-    DEFPUSHBUTTON   "Bestätigen",1,156,355,50,12,WS_GROUP
-    PUSHBUTTON      "Abbrechen",2,216,355,50,12,WS_GROUP
-    GROUPBOX        "Partikeleffekte",IDC_STATIC,6,79,263,35,WS_GROUP
-    LTEXT           "Partikeldichte %",IDC_STATIC,14,94,58,10
-    CONTROL         "",IDC_PARTICLENUM,"msctls_trackbar32",TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP,64,86,192,22
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,153,210,9
+    CONTROL         "An Gruppenbildung teilnehmen",1210,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,223,129,109,9
+    CONTROL         "Gegenstände automatisch kombinieren",1213,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,223,141,136,9
+    CONTROL         "Zeige Zaubermacht beim zaubern",1215,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,223,153,125,9
+    GROUPBOX        "Audio Effekte",IDC_STATIC,6,175,359,63,WS_GROUP
+    CONTROL         "Musik",1150,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,188,35,9
+    CONTROL         "Sounds",1151,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,200,44,9
+    CONTROL         "Klangschleifen",1152,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,212,64,9
+    CONTROL         "Umgebungs-Sound",1154,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,224,74,9
+    LTEXT           "Sound Lautstärke",IDC_STATIC,109,193,58,10
+    CONTROL         "",IDC_SOUND_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,168,190,187,15
+    LTEXT           "Musik Lautstärke",IDC_STATIC,110,213,61,10
+    CONTROL         "",IDC_MUSIC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,169,210,186,15
+    GROUPBOX        "Oberfläche",IDC_STATIC,5,239,360,52,WS_GROUP
+    CONTROL         "Toolbar anzeigen",1165,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,252,70,9
+    CONTROL         "Tooltips anzeigen",1147,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,263,65,9
+    CONTROL         "Textfenster beim zurückscrollen einfrieren",1145,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,274,163,9
+    CONTROL         "Übertragungsrate anzeigen",147,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,88,252,100,9
+    CONTROL         "XP Darstellung in Prozent",1174,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,88,263,97,9
+    CONTROL         "Kartenanmerkungen",1202,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,252,78,9
+    CONTROL         "Dynamische Karte",1198,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,263,79,10
+    CONTROL         "Bunter Text",1199,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,274,53,10
+    CONTROL         "FPS anzeigen",1211,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,275,252,56,9
+    CONTROL         "Textfilter",1173,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,275,263,45,9
+    PUSHBUTTON      "Filtereinstellungen",1164,273,274,75,12
+    GROUPBOX        "Web Browser",IDC_STATIC,5,294,360,31,WS_GROUP
+    LTEXT           "Programm:",IDC_STATIC,13,307,45,8
+    EDITTEXT        1155,59,306,242,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Durchsuchen",1162,309,306,49,12
+    DEFPUSHBUTTON   "Bestätigen",1,130,330,50,12,WS_GROUP
+    PUSHBUTTON      "Abbrechen",2,190,330,50,12,WS_GROUP
 END
 
 110 DIALOG 0, 0, 340, 140
@@ -408,7 +407,7 @@ BEGIN
     DEFPUSHBUTTON   "Bestätigen",1,148,117,44,14,WS_GROUP
     PUSHBUTTON      "&Aufheben",1140,208,117,44,14,NOT WS_TABSTOP
     PUSHBUTTON      "&Wegwerfen",1138,207,117,44,14
-    PUSHBUTTON      "Ab&legen",1003,263,117,44,14,WS_GROUP
+    PUSHBUTTON      "&Öffnen",1003,263,117,44,14,WS_GROUP
     PUSHBUTTON      "&Benutzen",1004,263,116,44,14
     PUSHBUTTON      "&Benutzen",1141,263,117,44,14
     PUSHBUTTON      "&Ablegen",1137,263,116,44,14
@@ -554,6 +553,11 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    181, DIALOG
+    BEGIN
+        RIGHTMARGIN, 248
+    END
+
     155, DIALOG
     BEGIN
         BOTTOMMARGIN, 201
@@ -566,8 +570,8 @@ BEGIN
 
     116, DIALOG
     BEGIN
-        RIGHTMARGIN, 256
-        BOTTOMMARGIN, 326
+        RIGHTMARGIN, 350
+        BOTTOMMARGIN, 303
     END
 
     110, DIALOG
@@ -705,7 +709,7 @@ BEGIN
     83                      "Objekt verwenden"
     84                      "Aktivieren"
     85                      "Software\\Classes\\http\\shell\\open\\command"
-    86                      "http://wiki.openmeridian.org/index.php/Gameplay"
+    86                      "http://wiki.meridian59.de/"
     87                      "Was bitte?"
     90                      "Entpacken ..."
     91                      "Meridian 59"
@@ -729,6 +733,10 @@ BEGIN
     109                     "Längenprobleme mit der Servernachricht."
     110                     "Es ist kein Spielecharakter ist für diesen Account angelegt. Wende Dich an den Kundenservice."
     111                     "Übertragungsfehler; versuche die Verbindung erneut aufzubauen."
+    192                     "Eine Datei mit einer Größe von %d bytes"
+    193                     "%d Dateien mit einer Größe von %d bytes."
+    194                     "%d Dateien mit einer Größe von %.1f Kb."
+    195                     "%d Dateien mit einer Größe von %.1f Mb"
 END
 
 STRINGTABLE
@@ -761,6 +769,17 @@ END
 
 STRINGTABLE
 BEGIN
+    179                     "Du kannst Dein ausgewähltes Ziel nicht sehen."
+    180                     "Wähle die Gegenstände zum Hinterlegen aus."
+    187                     "Unable to send an HTTP request for the file %s to the server %s."
+    188                     "Unable to get size of file %s from the server %s."
+    189                     "http://wiki.meridian59.de/"
+    190                     "http://wiki.meridian59.de/"
+    191                     "Kann Patchfile nicht laden %s. Fehler: %s."
+END
+
+STRINGTABLE
+BEGIN
     145                     "Ich kann das File %s nicht abspeichern."
     146                     "Ich kann das FTP-File %s nicht lesen."
     147                     "Eine sehr schnelle Verbindung"
@@ -778,21 +797,11 @@ END
 
 STRINGTABLE
 BEGIN
-    160                     "http://openmeridian.org/"
+    160                     "http://www.Meridian59.de"
     161                     "Datenaustausch zwischen Computern braucht immer eine gewisse Zeit. Dieser Zeitraum wird als Lag bezeichnet. Deine Verbindungsqualität hängt von verschiedenen Faktoren ab und kann sich jederzeit ändern."
     162                     "~r< Der Textfilter wurde aktiviert >"
     163                     "Die Nachricht wurde gefiltert.\n\nSie enthät Wörter, die im Textfilter eingegeben wurden. Bitte überprüfe Deine Nachricht."
-    164                     "http://openmeridian.org/"
-END
-
-STRINGTABLE
-BEGIN
-    179                     "Du kannst Dein ausgewähltes Ziel nicht sehen."
-    180                     "Wähle die Gegenstände zum Hinterlegen aus."
-    187                     "Unable to send an HTTP request for the file %s to the server %s."
-    188                     "Unable to get size of file %s from the server %s."
-    189                     "http://openmeridian.org/forums"
-    190                     "http://wiki.openmeridian.org/index.php/Main_Page"
+    164                     "http://www.Meridian59.de"
 END
 
 #endif    // German resources
@@ -953,7 +962,7 @@ BEGIN
     LISTBOX         IDC_QUANLIST,143,118,22,20,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_WANTKEYBOARDINPUT | NOT WS_VISIBLE | WS_TABSTOP
 END
 
-IDD_SETTINGS DIALOGEX 0, 0, 263, 345
+IDD_SETTINGS DIALOGEX 0, 0, 375, 326
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Meridian 59 Preferences"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -963,53 +972,59 @@ BEGIN
     CONTROL         "Red Highlight",IDC_TARGETHALO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,16,34,70,10
     CONTROL         "Blue Highlight",IDC_TARGETHALO2,"Button",BS_AUTORADIOBUTTON,16,45,70,10
     CONTROL         "Green Highlight",IDC_TARGETHALO3,"Button",BS_AUTORADIOBUTTON,16,56,70,10
-    GROUPBOX        "Special Effects",IDC_STATIC,110,3,147,67,WS_GROUP
-    CONTROL         """Bounce"" as you walk",IDC_BOUNCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,14,132,9
-    CONTROL         "Show your pain when you get hurt",IDC_PAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,25,132,9
+    GROUPBOX        "Special Effects",IDC_STATIC,108,3,262,67,WS_GROUP
+    CONTROL         "Show your pain when you get hurt",IDC_PAIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,16,122,9
     CONTROL         "Draw player names over their heads",IDC_DRAWNAMES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,36,132,9
-    CONTROL         "Show amounts for inventory items",IDC_INVNUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,47,132,9
-    CONTROL         "Show weather effects",IDC_WEATHER,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,118,58,132,9
-    GROUPBOX        "Game Options",IDC_STATIC,8,103,251,66,WS_GROUP
-    CONTROL         "Receive temporary angel on death",IDC_TEMPSAFE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,115,123,9
-    CONTROL         "Join building groups",IDC_GROUPING,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,152,115,75,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,28,125,9
+    CONTROL         "Draw NPC names over their heads",IDC_DRAWNPCNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,40,122,9
+    CONTROL         "Draw sign headings on top of signs",IDC_DRAWSIGNNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,117,52,131,9
+    CONTROL         "Show amounts for inventory items",IDC_INVNUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,16,120,9
+    CONTROL         """Bounce"" as you walk",IDC_BOUNCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,28,93,9
+    CONTROL         "Show targeting light effect",IDC_TARGETLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,40,98,9
+    GROUPBOX        "Particle effects",IDC_STATIC,6,71,364,31,WS_GROUP
+    CONTROL         "",IDC_PARTICLENUM,"msctls_trackbar32",TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP,181,75,179,23
+    LTEXT           "Particle density %",IDC_STATIC,121,84,56,10
+    CONTROL         "Show weather effects",IDC_WEATHER,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_GROUP | WS_TABSTOP,18,84,91,9
+    GROUPBOX        "Game Options",IDC_STATIC,6,103,364,55,WS_GROUP
+    CONTROL         "Receive temporary angel on death",IDC_TEMPSAFE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,116,123,9
+    CONTROL         "Join building groups",IDC_GROUPING,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,192,116,75,9
     CONTROL         "Autoloot stackable items from kills",IDC_AUTOLOOT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,128,123,9
-    CONTROL         "Autocombine spell items",IDC_AUTOCOMBINE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,152,128,90,9
+    CONTROL         "Autocombine spell items",IDC_AUTOCOMBINE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,192,128,90,9
     CONTROL         "Stash reagents into reagent bag automatically",IDC_REAGENTBAG,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,140,160,9
     CONTROL         "Display spellpower for spells cast",IDC_SPELLPOWER,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,15,152,160,9
-    GROUPBOX        "Audio Effects",IDC_STATIC,7,170,251,66,WS_GROUP
-    CONTROL         "Music",IDC_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,35,9
-    CONTROL         "Sounds",IDC_SOUNDFX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,53,183,44,9
-    CONTROL         "Steady Sounds",IDC_LOOPSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,98,183,64,9
-    CONTROL         "Atmospheric Sounds",IDC_RANDSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,168,183,80,9
-    LTEXT           "Sound volume",IDC_STATIC,14,199,50,10
-    CONTROL         "",IDC_SOUND_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,70,196,178,15
-    LTEXT           "Music volume",IDC_STATIC,14,218,53,10
-    CONTROL         "",IDC_MUSIC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,70,215,178,15
-    GROUPBOX        "Interface Features",IDC_STATIC,6,239,245,59,WS_GROUP
-    CONTROL         "Show toolbar",IDC_TOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,250,62,9
-    CONTROL         "Show tooltips",IDC_TOOLTIPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,260,62,9
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,192,140,119,9
+    GROUPBOX        "Audio Effects",IDC_STATIC,6,160,364,64,WS_GROUP
+    CONTROL         "Music",IDC_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,173,35,9
+    CONTROL         "Sounds",IDC_SOUNDFX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,185,44,9
+    CONTROL         "Steady Sounds",IDC_LOOPSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,197,64,9
+    CONTROL         "Atmospheric Sounds",IDC_RANDSOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,209,80,9
+    LTEXT           "Sound volume",IDC_STATIC,117,180,50,10
+    CONTROL         "",IDC_SOUND_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,173,176,178,15
+    LTEXT           "Music volume",IDC_STATIC,117,202,53,10
+    CONTROL         "",IDC_MUSIC_VOLUME,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,173,198,178,15
+    GROUPBOX        "Interface Features",IDC_STATIC,6,225,364,49,WS_GROUP
+    CONTROL         "Show toolbar",IDC_TOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,236,62,9
+    CONTROL         "Show tooltips",IDC_TOOLTIPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,247,62,9
     CONTROL         "Lock text window in place when scrolling back",IDC_SCROLLLOCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,271,159,9
-    CONTROL         "Filter text profanity",IDC_PROFANE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,284,77,9
-    CONTROL         "Show latency meter",IDS_LATENCY0,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,89,250,77,9
-    CONTROL         "Show dynamic map",IDC_DRAWMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,89,260,79,10
-    CONTROL         "Show colored text",IDC_COLORCODES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,177,250,69,10
-    CONTROL         "Map annotations",IDC_MAP_ANNOTATIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,177,260,72,10
-    CONTROL         "Show FPS",IDC_SHOWFPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,177,271,50,9
-    PUSHBUTTON      "&Profanity Options and Policy...",IDC_PROFANESETTINGS,102,282,142,12
-    GROUPBOX        "Web Browser",IDC_STATIC,7,300,251,27,WS_GROUP
-    LTEXT           "Application:",IDC_STATIC,14,311,45,8
-    EDITTEXT        IDC_BROWSER,60,311,136,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Search...",IDC_FIND,201,308,49,14
-    DEFPUSHBUTTON   "OK",IDOK,145,329,50,12,WS_GROUP
-    PUSHBUTTON      "Cancel",IDCANCEL,207,329,50,12,WS_GROUP
-    GROUPBOX        "Particle effects",IDC_STATIC,7,71,252,31,WS_GROUP
-    CONTROL         "",IDC_PARTICLENUM,"msctls_trackbar32",TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP,72,76,179,23
-    LTEXT           "Particle density %",IDC_STATIC,13,84,56,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,258,159,9
+    CONTROL         "Show latency meter",IDS_LATENCY0,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,236,77,9
+    CONTROL         "Show dynamic map",IDC_DRAWMAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,91,247,79,10
+    CONTROL         "Show colored text",IDC_COLORCODES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,179,236,69,10
+    CONTROL         "Map annotations",IDC_MAP_ANNOTATIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,179,247,72,10
+    CONTROL         "Show FPS",IDC_SHOWFPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,179,258,50,9
+    CONTROL         "Filter text profanity",IDC_PROFANE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,247,77,9
+    CONTROL         "Display XP as percent",IDC_XP_AS_PERCENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,236,87,9
+    PUSHBUTTON      "&Profanity Options and Policy...",IDC_PROFANESETTINGS,253,258,110,12
+    GROUPBOX        "Web Browser",IDC_STATIC,6,276,364,28,WS_GROUP
+    LTEXT           "Application:",IDC_STATIC,15,288,40,8
+    EDITTEXT        IDC_BROWSER,61,286,244,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Search...",IDC_FIND,311,285,49,14
+    DEFPUSHBUTTON   "OK",IDOK,131,309,50,12,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,193,309,50,12,WS_GROUP
 END
 
 IDD_COLOR DIALOG 0, 0, 201, 92
@@ -1318,21 +1333,16 @@ BEGIN
     LTEXT           "Quantity",IDC_STATIC,133,5,28,8
 END
 
-IDD_ASKDOWNLOAD DIALOGEX 0, 0, 248, 188
+IDD_ASKDOWNLOAD DIALOGEX 0, 0, 249, 116
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Meridian 59 has an update for you"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     ICON            IDI_ICON,IDC_STATIC,7,7,21,20
-    EDITTEXT        IDC_ASK_DOWNLOAD_REASON,36,7,205,35,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
-    GROUPBOX        "Update Download Information",IDC_STATIC,36,48,205,56
-    LTEXT           "(estimated size of download)",IDC_SIZE_UPDATE,44,61,188,8
-    LTEXT           "(estimated time 56.6kbps)",IDC_TIME_UPDATE_566,44,73,188,8
-    LTEXT           "(estimated time 28.8kbps)",IDC_TIME_UPDATE_288,44,85,188,8
+    EDITTEXT        IDC_ASK_DOWNLOAD_REASON,37,7,205,35,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
+    GROUPBOX        "Update Download Information",IDC_STATIC,37,48,205,56
+    LTEXT           "(estimated size of download)",IDC_SIZE_UPDATE,43,67,188,8
     DEFPUSHBUTTON   "&Update",IDC_UPDATE,138,97,93,14
-    GROUPBOX        "Preview Edition",IDC_STATIC,36,116,205,58
-    LTEXT           "If you don't want to download the whole update yet, a smaller preview edition is available which can only play with a temporary character.  To download the newest preview edition, visit our website.",IDC_STATIC,44,128,188,34
-    PUSHBUTTON      "Preview Offer...",IDC_BTN_DEMO,138,167,93,14
 END
 
 
@@ -1371,9 +1381,9 @@ BEGIN
     IDD_SETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 257
+        RIGHTMARGIN, 369
         TOPMARGIN, 6
-        BOTTOMMARGIN, 309
+        BOTTOMMARGIN, 293
     END
 
     IDD_OFFERRECEIVE, DIALOG
@@ -1493,9 +1503,9 @@ BEGIN
     IDD_ASKDOWNLOAD, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 241
+        RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 181
+        BOTTOMMARGIN, 109
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1598,7 +1608,7 @@ BEGIN
     IDS_MISSINGRESOURCE     "The game has changed since you logged in.\nSelecting ""Yes"" will automatically download the changed files.\nSelecting ""No"" will continue the game with your outdated files.\n\nAutomatically download new game files?\n\nIf you continue to receive this message, contact an administrator.\n\n"
     IDS_NOROOMFILE          "There is a problem with your file %s.  Please contact a system administrator to get the correct version."
     IDS_DUPRESOURCE         "Duplicate resource #%d in file %s."
-    IDS_SOCKETOPEN          "Unable to connect to server (port #%d on %s).\n\nThe server might be down; please check its status at http://openmeridian.org/ ."
+    IDS_SOCKETOPEN          "Unable to connect to server (port #%d on %s).\n\nThe server might be down; please check its status at http://www.Meridian59.de ."
     IDS_LOSTSERVER          "Lost server connection!"
     IDS_SOCKETMESSAGE       "Unexpected socket message type."
 END
@@ -1618,6 +1628,10 @@ BEGIN
     IDS_TOOMANYLOGINS       "Too many login attempts."
     IDS_TIMEOUT             "Login timed out."
     IDS_CANTRENAME          "Unable to move one or more files from the %s directory to the %s directory.    Make sure the directories exist, and try the download again."
+    IDC_SIZE_UPDATE_ONE_FILE "There is one file %d bytes in size."
+    IDC_SIZE_UPDATE_FILES_BYTES "There are %d files totaling %d bytes in size."
+    IDC_SIZE_UPDATE_FILES_KB "There are %d files totaling %.1f Kb in size."
+    IDC_SIZE_UPDATE_FILES_MB "There are %d files totaling %.1f Mb in size."
 END
 
 STRINGTABLE
@@ -1673,7 +1687,7 @@ BEGIN
     IDS_APPLY               "Apply object"
     IDS_ACTIVATE            "Activate"
     IDS_HTTPKEY             "Software\\Classes\\http\\shell\\open\\command"
-    IDS_HELPFILE            "http://wiki.openmeridian.org/index.php/Gameplay"
+    IDS_HELPFILE            "http://wiki.meridian59.de/"
     IDS_BADCOMMAND          "What?  (Press F1 or '?' for help.)"
     IDS_DECOMPRESSING       "Decompressing..."
     IDS_APPNAME             "Meridian 59"
@@ -1689,13 +1703,14 @@ BEGIN
     IDS_DEPOSIT_ITEMS       "Select Items to Deposit"
     IDS_CANTSENDREQUEST     "Unable to send an HTTP request for the file %s to the server %s."
     IDS_CANTGETFILESIZE     "Unable to get size of file %s from the server %s."
-    IDS_FORUMURL            "http://openmeridian.org/forums"
-    IDS_WIKIURL             "http://wiki.openmeridian.org/index.php/Main_Page"
+    IDS_FORUMURL            "http://wiki.meridian59.de/"
+    IDS_WIKIURL             "http://wiki.meridian59.de/"
+    IDS_JSONERROR           "Unable to load patch file %s. Error: %s."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_CANTUPDATE          "Unable to run the patcher to update Meridian 59.\nPlease contact the admins at http://openmeridian.org/forums."
+    IDS_CANTUPDATE          "Unable to run the patcher to update Meridian 59.\nPlease contact the admins at http://wiki.meridian59.de/"
     IDS_NEEDNEWVERSION      "You need to get an updated version of Meridian 59.\nDo you want to retrieve it automatically now?"
     IDS_CANTMOVE            "Can't move the downloaded file %s to %s.\n\nTry again?"
     IDS_LONGCMDLINE         "The automatic update program will fail because its command line is too long.\nPlease report the following command line:\n\n%s"
@@ -1739,11 +1754,11 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_LAGBOXURL           "http://openmeridian.org/"
+    IDS_LAGBOXURL           "http://www.Meridian59.de"
     IDS_LAGBOXDESC          "Sending information between computers always takes some amount of time. This time-delay is called latency. Your connection quality may vary, depending on many factors. This meter shows your current approximate latency while you play."
     IDS_PROFANITYREMOVED    "~r< ~Iprofane message blocked~I >"
     IDS_PROFANITYWARNING    "The message was blocked.\n\nIt used language listed as profanity.  Review your profanity filter options and/or reconsider your message."
-    IDS_HOMEPAGEURL         "http://openmeridian.org/"
+    IDS_HOMEPAGEURL         "http://www.Meridian59.de"
 END
 
 STRINGTABLE

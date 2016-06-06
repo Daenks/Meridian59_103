@@ -157,8 +157,11 @@ void gprintf(const char *fmt,...)
 
    char *excludedword1 = "account";
    char *excludedword2 = "ACCOUNT";
+   char *excludedword3 = "email";
 
-   if (strstr(s, excludedword1) != NULL || strstr(s, excludedword2) != NULL)
+   if (strstr(s, excludedword1) != NULL
+      || strstr(s, excludedword2) != NULL
+      || strstr(s, excludedword3) != NULL)
    {
 	   sprintf(s, "%s | Line excluded due to personal information.", TimeStr(GetTime()));
    }

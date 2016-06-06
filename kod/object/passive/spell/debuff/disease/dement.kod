@@ -25,7 +25,7 @@ resources:
       "thoughts, making spell casting more difficult for several minutes.  "
       "Requires two vials of solagh and an uncut seraphym to cast."
 
-   dement_sound = rdement.wav
+   dement_sound = rdement.ogg
 
    dement_cast_rsc = "You sense an unsavory presence."
    dement_already_enchanted = "That poor soul is already demented."
@@ -84,7 +84,7 @@ messages:
          iDuration = Send(self,@GetDuration,#iSpellPower=iSpellPower);
       }
 
-      if IsClass(oTarget,&Player)
+      if IsClass(oTarget,&User)
       {
          iIntellectChange = Send(oTarget,@AddIntellect,#points=-iIntellectChange);
 
@@ -107,16 +107,8 @@ messages:
 
    EndEnchantment(who=$,state=0,report=TRUE)
    {
-      if IsClass(who,&Player)
+      if IsClass(who,&User)
       {
-         % Handle transition from 3-element enchantment list elements to
-         % 4-element ones.
-         if state = $
-            OR state = 0
-         {
-            state = Send(who,@GetRawState,#what=self);
-         }
-
          Send(who,@AddIntellect,#points=First(state));
          if report
          {

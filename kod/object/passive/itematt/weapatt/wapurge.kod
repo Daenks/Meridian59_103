@@ -49,6 +49,8 @@ properties:
    piValue_power_modifier = 10
    piEffect_percent = 15
 
+   piSpellPower = 60
+
 messages:
 
    ItemReqUse(oItem=$,oPlayer=$)
@@ -81,22 +83,22 @@ messages:
       if Random(1,100) < piEffect_percent
       {
          oSpell = Send(SYS,@FindSpellByNum,#num=SID_PURGE);
-         
-         %% Gotta have something to try to remove....
+
+         // Gotta have something to try to remove....
          if Send(target,@IsEnchanted)
          {
-            % Try to purge off Random(25,75)% of the enchantments.
-            if Send(oSpell,@DoPurge,#who=target,#iChance=Random(25,75))
+            // Purge casts at piSpellPower
+            if Send(oSpell,@DoPurge,#who=target,#iSpellPower=piSpellPower)
             {
-               % Only tell our victim if they lost enchantments.
+               // Only tell our victim if they lost enchantments.
                Send(target,@MsgSendUser,#message_rsc=purger_worked_target,
                      #parm1=Send(wielder,@GetCapDef),
                      #parm2=Send(wielder,@GetName));
             }
 
-            % Tell the wielder every time we fired so they think it's cool.
+            // Tell the wielder every time we fired so they think it's cool.
             Send(wielder,@MsgSendUser,#message_rsc=purger_worked_user,
-                  #parm1=Send(target,@GetCapDef),
+                  #parm1=Send(target,@GetDef),
                   #parm2=Send(target,@GetName));
          }
       }

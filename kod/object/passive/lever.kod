@@ -21,12 +21,15 @@ resources:
    lever_name_rsc = "lever"
    lever_icon_rsc = lever.bgf
    default_lever_desc_rsc = \
-   "The mechanism attached to this lever appears to be almost completely rusted through.  "
-   "Whatever purpose it originally served, it's probably useless now."
-
+      "The mechanism attached to this lever appears to be almost completely "
+      "rusted through.  Whatever purpose it originally served, it's probably "
+      "useless now."
    lever_not_in_range = "The lever is not close enough to switch."
-   lever_stuck = "The lever appears to be stuck;  try as you might, you can't make it budge."
-
+   lever_not_experienced = \
+      "Your guardian angel prevents you from activating this lever."
+   lever_stuck = \
+      "The lever appears to be stuck;  try as you might, you can't "
+      "make it budge."
    lever_changed = "You switch the lever."
 
 classvars:
@@ -41,63 +44,87 @@ properties:
    vrIcon = lever_icon_rsc
 
    piState = LEVER_UP
-   pbStuck = false
+   pbStuck = FALSE
    piRange = 3
    pbBlueNameProtected = TRUE
+   pbPKillOnly = FALSE
 
 messages:
 
-   Constructor(description=default_lever_desc_rsc,icon=lever_icon_rsc,range=3,stuck=false,BlueNameProtected=TRUE)
+   Constructor(description=default_lever_desc_rsc,icon=lever_icon_rsc,range=3,
+               stuck=FALSE,BlueNameProtected=TRUE,bPKillOnly=FALSE)
    {
       vrIcon = icon;
       vrDesc = description;
       piRange = range;
       pbStuck = stuck;
       pbBlueNameProtected = BlueNameProtected;
+      pbPKillOnly = bPKillOnly;
+
       propagate;
    }
 
    TryActivate(who=$)
    "Return False only if you want user.kod to send its own error message to user."
    {
-      if (abs(send(who,@getrow)-send(self,@getrow)) > piRange)
-            or (abs(send(who,@getcol)-send(self,@getcol)) > piRange)
+      if (Abs(Send(who,@GetRow) - Send(self,@GetRow)) > piRange)
+         OR (Abs(Send(who,@GetCol) - Send(self,@GetCol)) > piRange)
       {
-         Send(who,@MsgSendUser,#message_rsc=lever_not_in_range);          
-         return True;
+         Send(who,@MsgSendUser,#message_rsc=lever_not_in_range);
+
+         return TRUE;
       }
 
-      if pbBlueNameProtected and (not isClass(who,&Admin)) and (not send(who,@CanAdvance)) {
+      if (pbPKillOnly
+         AND (NOT Send(who,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+            OR Send(who,@CheckPlayerFlag,#flag=PFLAG_TEMPSAFE)))
+      {
+         Send(who,@MsgSendUser,#message_rsc=lever_not_experienced);
+
+         return TRUE;
+      }
+
+      if pbBlueNameProtected
+         AND (NOT IsClass(who,&Admin))
+            AND (NOT send(who,@CanAdvance))
+      {
          Send(who,@DontInterfere);
-         return True;
-      }
-      if pbStuck or (not send(who,@CanAdvance)) {
-         Send(who,@MsgSendUser,#message_rsc=lever_stuck);
-         return True;
+
+         return TRUE;
       }
 
-      send(self,@SwitchLever);
-      
-      Send(who,@MsgSendUser,#message_rsc=lever_changed);          
-      
-      return True;
+      if pbStuck OR (NOT Send(who,@CanAdvance))
+      {
+         Send(who,@MsgSendUser,#message_rsc=lever_stuck);
+
+         return TRUE;
+      }
+
+      Send(self,@SwitchLever);
+      Send(who,@MsgSendUser,#message_rsc=lever_changed);
+
+      return TRUE;
    }
 
    SwitchLever()
    {
-      if piState = LEVER_UP {
+      if piState = LEVER_UP
+      {
          piState = LEVER_DOWN;
       }
-      else {
+      else
+      {
          piState = LEVER_UP;
       }
       Send(poOwner,@SomethingChanged,#what=self);
+
       return;
    }
 
    SetStuck(newstuck=false)
    {
       pbStuck = newstuck;
+
       return;
    }
 
@@ -114,6 +141,7 @@ messages:
    SendAnimation()
    {
       AddPacket(1,ANIMATE_NONE,2,piState);
+
       return;
    }
 

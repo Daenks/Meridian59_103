@@ -30,7 +30,7 @@ resources:
       "The effect lasts a few minutes.  "
       "Requires a single orc tooth to cast."
 
-   enfeeble_sound = qenfeebl.wav
+   enfeeble_sound = qenfeebl.ogg
 
 classvars:
 
@@ -94,7 +94,7 @@ messages:
       %%% All super strength spells are now dispelled before palsy begins!
       Send(oTarget,@RemoveEnchantment,#what=poStrength_spell);
 
-      if IsClass(oTarget,&Player)
+      if IsClass(oTarget,&User)
       {
          iMightChange = Send(oTarget,@AddMight,#points=-iMightChange);
 
@@ -118,16 +118,8 @@ messages:
 
    EndEnchantment(who=$,state=0,report=TRUE)
    {
-      if IsClass(who,&Player)
+      if IsClass(who,&User)
       {
-         % Handle transition from 3-element enchantment list elements to
-         % 4-element ones.
-         if state = $
-            OR state = 0
-         {
-            state = Send(who,@GetRawState,#what=self);
-         }
-
          Send(who,@AddMight,#points=First(state));
          if report
          {

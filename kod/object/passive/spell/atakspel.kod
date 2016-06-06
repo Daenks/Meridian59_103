@@ -46,7 +46,6 @@ classvars:
    viMeditate_ratio = 30
 
    vbIsRangedAttack = FALSE
-   vbIsAreaEffect = FALSE
    vbSelfHarming = FALSE
 
 properties:
@@ -162,8 +161,6 @@ messages:
    CastSpell(who=$,lTargets=$,iSpellPower=0,bItemCast=FALSE)
    {
       local i, iDamage, iManaFocus, iTemp, oRoom;
-
-      iTemp = $;
 
       % Rooms can cast earthquake, so check if we have a room for 'who'
       if IsClass(who,&Room)

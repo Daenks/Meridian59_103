@@ -320,8 +320,10 @@ resources:
    inventory_wand_class_name = "wands"
    inventory_scroll_class_name = "scrolls"
    inventory_ring_class_name = "rings"
-   
-   system_message_sound = system.wav
+
+   system_guild_rsc = "guild"
+
+   system_message_sound = system.ogg
    
 classvars:
 
@@ -334,6 +336,7 @@ properties:
    plUsers = $
    plUsers_logged_on = $
    plSpells = $
+   plNewCharSpells = $
    plSkills = $
    plItem_Attributes = $
    plItemAttTreasure = $
@@ -400,6 +403,8 @@ properties:
    phItemAtts
    % Hash table for treasure types.
    phTresTypes
+   % XP tables
+   phXPTable
 
    poMoney = $
 
@@ -424,7 +429,7 @@ properties:
    %  death.
    piLogoffPenaltyEquivDeath = 10
 
-   ptLogoffPenaltyTempDisable = $
+   ptLogPenTempDisable = $
    ptServerPopulationMonitor = $
    piLastServerPopulation = 0
 
@@ -485,9 +490,6 @@ properties:
    %  Take Nth of this list
    vlLevelPoints = $
 
-   % What server-wide flags are we using?
-   piServerFlags = 0
-   
    % A master list of all spell-casting active objects
    plSpellTotems = $
 
@@ -538,15 +540,16 @@ messages:
       Send(self,@RecreateAllSpells,#figure_totals=FALSE);
       Send(self,@RecreateAllSkills,#figure_totals=FALSE);
       Send(self,@RecreateAllItemAttributes);
-      Send(self,@recreateAllGuildCommands);
+      Send(self,@RecreateAllGuildCommands);
       Send(self,@RecreateAllBanks);
       Send(self,@RecreateAllVaults);
 
       Send(self,@RecreateAllTreasureTypes);
       Send(self,@RecreateAllBackgroundObjects);
-      Send(self,@recreateMonsterTemplates);
-      Send(self,@recreateItemTemplates);
+      Send(self,@RecreateMonsterTemplates);
+      Send(self,@RecreateItemTemplates);
       Send(self,@RecreateMoneyTemplates);
+      Send(self,@RecreateXPTables);
 
       Send(self,@RecreateLore);
       Send(self,@RecreateArtArchive);
@@ -695,6 +698,7 @@ messages:
       Send(self,@RecreateAllGuildCommands);
       Send(self,@RecreateAllTreasureTypes);
       Send(self,@RecreateAllBackgroundObjects);
+      Send(self,@RecreateXPTables);
 
       ptRecreateTimer = CreateTimer(self,@RecreateTimerPhaseThree,500);
       piRecreate_state = RECREATE_WAITING;
@@ -798,7 +802,7 @@ messages:
          Send(self,@RefigureAllAbilityTotals);
       }
 
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
       Send(self,@ReturnShrineAllegiance);
       Send(self,@RecreateStatistics);  % Must create after anything you want to measure
 
@@ -1041,7 +1045,7 @@ messages:
       Send(poHolder2,@Delete);
       poHolder2 = Create(&Holder);
 
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
 
       return;
    }
@@ -1363,24 +1367,35 @@ messages:
       return piHour;
    }
 
-   SetHour(num = $)
+   SetHour(iNum = $)
    {
-      piHour = num mod 24;
+      if (iNum = $)
+      {
+         Debug("SetHour passed $ iNum!");
+
+         return;
+      }
+
+      % Take 1 because NewGameHour will increment hour.
+      piHour = (iNum - 1) MOD 24;
       Send(self,@NewGameHour);
+
       return;
    }
 
-   NewHour()
+   NewGameHour()
    {
-      piHour = (piHour + 1) mod 24;
-      %Send(self,@RecalcLightAndWeather);
+      piHour = (piHour + 1) MOD 24;
+
+      % Tell GameEventEngine object we have a new hour.
+      Send(EVENTENGINE_OBJECT,@NewGameHour);
 
       if piHour = 0
       {
-         Send(self,@NewDay);
+         Send(self,@NewGameDay);
       }
 
-      Send(self,@NewGameHour);
+      Send(self,@SysRecalcLightAndDayPhase);
 
       % Change the color of rainbow ferns.
       Send(&RainbowFern,@ChangeColor,#iHour=piHour);
@@ -1388,49 +1403,17 @@ messages:
       return;
    }
 
-   NewDay()
-   {
-      piDay = (piDay + 1) mod 240;
-
-      if piDay = 0
-      {
-         Send(self,@NewYear);
-      }
-
-      ++pbDecay_counter;
-      ++piLogoffPenaltyDecayCounter;
-      if pbDecay_counter >= 3
-      {
-         pbDecay_counter = 0;
-         SendList(plUsers,0,@DecayPKillCount);
-      }
-
-      if piLogoffPenaltyDecayCounter >= piLogoffPenaltyDecayTime
-      {
-         piLogoffPenaltyDecayCounter = 0;
-         SendList(plUsers,0,@DecayLogoffPenaltyCount);
-      }
-
-      Send(self,@RecalcWeatherConditions);
-      Send(self,@NewGameDay);
-
-      Send(poParliament,@NewDay);
-      Send(poNodeAttack,@NewDay);
-      Send(poRentableRoomMaintenance,@NewDay);
-      Send(&SoldierShield,@NewDay);
-
-      Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewDay);
-
-      Send(self,@VerifyUsersLoggedOn);
-
-      return;
-   }
-
-   NewYear()
+   NewGameYear()
    {
       local i;
-      Send(self,@NewYearClean);
+
+      % Clean currently does nothing.
+      Send(self,@NewGameYearClean);
+
       piYear = piYear + 1;
+
+      % Tell GameEventEngine object we have a new year.
+      Send(EVENTENGINE_OBJECT,@NewGameYear);
 
       % Determine if anyone needs to lose their newbie tag.
       foreach i in plUsers
@@ -1442,10 +1425,6 @@ messages:
             Send(i,@GetAge);
          }
       }
-      
-      % Notify stat reset tokens that a game year has passed
-      % (deletes temporary tokens without unecessary timers)
-      Send(&StatsResetToken,@NewYear);
 
       return;
    }
@@ -1729,7 +1708,7 @@ messages:
             param2, param3, param4, param5, param6, param7, type5, type7,
             war_string1, war_string2, oBook, oMaster, oKillingBlow;
 
-      % Notify the event engine
+      // Notify the event engine
       Send(EVENTENGINE_OBJECT,@UserKilled,#who=what,#killer=killer);
 
       if IsClass(what,&Guest)
@@ -1747,12 +1726,13 @@ messages:
       }
       else
       {
-          oKillingBlow = system_unknown_resource;
+         oKillingBlow = system_unknown_resource;
       }
 
-      if isClass(what,&User) AND isClass(killer,&User)
+      if IsClass(what,&User)
+         AND IsClass(killer,&User)
       {
-         % Could be a war kill.  Check for it.
+         // Could be a war kill.  Check for it.
          Send(Send(SYS,@GetWarEvent),@RecordWarKill,#who=killer,#victim=what);
 
          Send(poNecromancerBalance,@IncrementPKCounter);
@@ -1766,31 +1746,26 @@ messages:
             Send(poNecromancerBalance,@IncrementHKCounter);
          }
 
-         %pvp flag set to TRUE
-         RecordStat(STAT_PLAYERDEATH, Send(what,@GetTrueName), Send(killer,@GetTrueName), Send(oRoom,@GetName), oKillingBlow, TRUE);	 
+          // PvP flag set to TRUE.
+         RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName),
+               Send(killer,@GetTrueName),Send(oRoom,@GetName),
+               oKillingBlow,TRUE);
       }
       else
-	   {
-		   RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName), Send(killer,@GetName), Send(oRoom,@GetName), oKillingBlow, FALSE);
-	   }
+      {
+         RecordStat(STAT_PLAYERDEATH,Send(what,@GetTrueName),
+               Send(killer,@GetName),Send(oRoom,@GetName),
+               oKillingBlow,FALSE);
+      }
 
       Send(Send(self,@FindRoomByNum,#num=RID_TOS_GRAVEYARD),@PlayerKilled,
-           #who=what,#killer=killer);
+            #who=what,#killer=killer);
 
-      % Nil out all our parameters we use.
-      param2 = $;
-      param3 = $;
-      param4 = $;
-      param5 = $;
-      param6 = $;
-      param7 = $;
-
-      % Resource types for the parameters.
+      // Resource types for the parameters.
       type5 = STANDARD_RESOURCE;
       type7 = STANDARD_RESOURCE;
 
-      % Default parameters.
-      rMessage = $;
+      // Default parameters.
       param2 = Send(killer,@GetIndef);
       param3 = Send(killer,@GetName);
 
@@ -1819,122 +1794,121 @@ messages:
          % Eliminate param3 that was set by default
          param3 = $;
       }
+      else if Send(what,@FindUsing,#class=&Token)
+      {
+         // Notify of a token death.
+         rMessage = system_user_killed_token;
+      }
       else
       {
-         if Send(what,@FindUsing,#class=&Token)
+         // Outlaw or murderer was killed?
+         if Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
          {
-            % Notify of a token death.
-            rMessage = system_user_killed_token;
+            rMessage = system_user_killed_outlaw;
+            // Parameters set by default
          }
-         else
+
+         if Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
          {
-            % Outlaw or murderer was killed?
-            if Send(what,@CheckPlayerFlag,#flag=PFLAG_OUTLAW)
+            rMessage = system_user_killed_pker;
+            // Parameters set by default
+         }
+
+         if IsClass(killer,&User)
+         {
+            // Was this a soldier war death?
+            oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
+
+            if oSoldierShield <> $
+               AND Send(oSoldierShield,@IsEnemyAttack,#what=killer)
             {
-               rMessage = system_user_killed_outlaw;
-               % Parameters set by default
+               rMessage = system_user_killed_shield;
+               // Parameters set by default
             }
 
-            if Send(what,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+            // A guild war?
+            oGuild = Send(what,@GetGuild);
+            oKillerGuild = Send(killer,@GetGuild);
+
+            if oGuild <> $
+               AND Send(oGuild,@IsMutualEnemy,#otherguild=oKillerGuild)
             {
-               rMessage = system_user_killed_pker;
-               % Parameters set by default
+               rMessage = system_user_killed_guild;
+               param2 = Send(oGuild,@GetDef);
+               param3 = Send(oGuild,@GetName);
+               param4 = Send(killer,@GetIndef);
+               param5 = Send(killer,@GetTrueName);
+               param6 = Send(oKillerGuild,@GetDef);
+               param7 = Send(oKillerGuild,@GetName);
+               type5 = STRING_RESOURCE;
+               type7 = STRING_RESOURCE;
+
+               // Post this death to the Guild War Standings book in
+               // Guildmasters.  NOTE: doesn't check subject length.
+
+               ClearTempString();
+               AppendTempString(param5);
+               AppendTempString(guildwar_kill_title1);
+               AppendTempString(Send(what,@GetTrueName));
+               war_string1 = SetString($,GetTempString());
+
+               ClearTempString();
+               AppendTempString(guildwar_kill_body1);
+               AppendTempString(Send(what,@GetTrueName));
+               AppendTempString(guildwar_kill_body2);
+               AppendTempString(param3);
+               AppendTempString(guildwar_kill_body3);
+               AppendTempString(param5);
+               AppendTempString(guildwar_kill_body2);
+               AppendTempString(param7);
+               AppendTempString(guildwar_kill_body4);
+               war_string2 = SetString($,GetTempString());
+
+               oBook = Send(SYS,@FindNewsByNum,#num=NID_GUILD_NEWS);
+               oMaster = Send(Send(SYS,@FindRoomByNum, #num=RID_GMHALL),@GetMaster);
+               Send(oBook,@PostNews,#what=oMaster,#title=war_string1,
+                     #body=war_string2);
             }
 
-            if IsClass(killer,&User)
+            // Notify who killed whom during frenzies.
+            if Send(self,@GetChaosNight)
             {
-               % Was this a soldier war death?
-               oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
+               rMessage = system_user_killed;
+               // Get True name instead of normal name for Frenzy action.
+               param3 = Send(killer,@GetTrueName);
+            }
 
-               if oSoldierShield <> $
-                  AND Send(oSoldierShield,@IsEnemyAttack,#what=killer)
-               {
-                  rMessage = system_user_killed_shield;
-                  % Parameters set by default
-               }
+            // If we have no other message, and killer is a murderer, and
+            //  attack wasn't made in a safe death location, then give the
+            //  mysterious murder message!
+            if rMessage = $
+               AND Send(killer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+               AND NOT Send(Send(what,@GetOwner),@SafePlayerAttack)
+            {
+               rMessage = system_user_killed_by_pker;
+               poLastMurderer = killer;
 
-               % A guild war?
-               oGuild = Send(what,@GetGuild);
-               oKillerGuild = Send(killer,@GetGuild);
-
-               if oGuild <> $
-                  AND Send(oGuild,@IsMutualEnemy,#otherguild=oKillerGuild)
-               {
-                  rMessage = system_user_killed_guild;
-                  param2 = Send(oGuild,@GetDef);
-                  param3 = Send(oGuild,@GetName);
-                  param4 = Send(killer,@GetIndef);
-                  param5 = Send(killer,@GetTrueName);
-                  param6 = Send(oKillerGuild,@GetDef);
-                  param7 = Send(oKillerGuild,@GetName);
-                  type5 = STRING_RESOURCE;
-                  type7 = STRING_RESOURCE;
-                  
-                  % Post this death to the Guild War Standings book in Guildmasters.
-                  
-                  ClearTempString();
-                  AppendTempString(param5);
-                  AppendTempString(guildwar_kill_title1);
-                  AppendTempString(Send(what,@GetTrueName));
-                  war_string1 = CreateString();
-                  setString(war_string1,GetTempString());
-                  
-                  ClearTempString();
-                  AppendTempString(guildwar_kill_body1);
-                  AppendTempString(Send(what,@GetTrueName));
-                  AppendTempString(guildwar_kill_body2);
-                  AppendTempString(param3);
-                  AppendTempString(guildwar_kill_body3);
-                  AppendTempString(param5);
-                  AppendTempString(guildwar_kill_body2);
-                  AppendTempString(param7);
-                  AppendTempString(guildwar_kill_body4);
-                  war_string2 = CreateString();
-                  setString(war_string2,GetTempString());
-                  
-                  oBook = Send(SYS,@FindNewsByNum,#num=NID_GUILD_NEWS);
-                  oMaster = Send(Send(SYS,@FindRoomByNum, #num=RID_GMHALL),@GetMaster);
-                  Send(oBook,@PostNews,#what=oMaster,#title=war_string1,#body=war_string2);
-               }
-
-               % Notify who killed whom during frenzies.
-               if Send(self,@GetChaosNight)
-               {
-                  rMessage = system_user_killed;
-                  % Get True name instead of normal name for Frenzy action.
-                  param3 = Send(killer,@GetTrueName);
-               }
-
-               % If we have no other message, and killer is a murderer, and
-               %  attack wasn't made in a safe death location, then give the
-               %  mysterious murder message!
-               if rMessage = $
-                  AND Send(killer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
-                  AND NOT Send(Send(what,@GetOwner),@SafePlayerAttack)
-               {
-                  rMessage = system_user_killed_by_pker;
-                  poLastMurderer = killer;
-
-                  % Nil out the values set by default.
-                  param2 = $;
-                  param3 = $;
-               }
+               // Nil out the values set by default.
+               param2 = $;
+               param3 = $;
             }
          }
       }
 
-      % Set a default message.
+      // Set a default message.
       if rMessage = $
       {
          rMessage = system_user_killed;
       }
 
-      % Send the proper message to all logged on, if we get a message.
+      // Send the proper message to all logged on, if we get a message.
       foreach i in plUsers_logged_on
       {
-         Send(i,@MsgSendUser,#message_rsc=rMessage,#parm1=Send(what,@GetTrueName),#type1=STRING_RESOURCE,
-              #parm2=param2,#parm3=param3,#parm4=param4,#parm5=param5,#parm6=param6,
-              #parm7=param7,#type3=STRING_RESOURCE,#type5=type5,#type7=type7);
+         Send(i,@MsgSendUser,#message_rsc=rMessage,
+               #parm1=Send(what,@GetTrueName),#type1=STRING_RESOURCE,
+               #parm2=param2,#parm3=param3,#parm4=param4,#parm5=param5,
+               #parm6=param6,#parm7=param7,#type3=STRING_RESOURCE,
+               #type5=type5,#type7=type7);
          Send(i,@WaveSendUser,#wave_rsc=system_message_sound,#what=self);
       }
 
@@ -2084,7 +2058,7 @@ messages:
       return 110;
    }
 
-   NewYearClean()
+   NewGameYearClean()
    {
       return;
    }
@@ -2171,7 +2145,7 @@ messages:
 
    SendCharInfo(session_id = $)
    {
-      local i,count;
+      local i, iCount;
 
       AddPacket(1,BP_CHARINFO);
 
@@ -2193,27 +2167,10 @@ messages:
       Send(self, @AddFaceIconsToPacket, #iGender = GENDER_FEMALE);
 
       %%% Spells
-      count=0;
-      foreach i in plSpells
-      {
-         % Don't Send non-spells (poison, diseases).
-         % Only offer 4 main spell schools to chars
-         if IsClass(i,&Spell)
-            AND Send(i,@OfferToNewCharacters)
-         {
-            count=count + 1;
-         }
-      }
+      AddPacket(4,Length(plNewCharSpells));
 
-      AddPacket(4,count);
-      foreach i in plSpells
+      foreach i in plNewCharSpells
       {
-         if (NOT IsClass(i,&Spell))
-            OR NOT Send(i,@OfferToNewCharacters)
-         {
-            continue;
-         }
-
          AddPacket(4,Send(i,@GetSpellNum));
          AddPacket(4,Send(i,@GetName));
          AddPacket(4,Send(i,@GetIntro));
@@ -2231,17 +2188,17 @@ messages:
          AddPacket(1, Send(i, @GetSchool));
       }
 
-      count=0;
+      iCount = 0;
       foreach i in plSkills
       {
          if Send(i,@GetLevel) <= 2
          {
-            count = count + 1;
+            iCount = iCount + 1;
          }
       }
 
       %%%%% Skills
-      AddPacket(4,count);
+      AddPacket(4,iCount);
 
       foreach i in plSkills
       {
@@ -2422,8 +2379,8 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_KOC_GUARDTOWER_EAST,#class=&KocatanGuardtowerEast);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_JUNGLE_BOWMAKER_HUT,#class=&BowmakerHut);
-      Send(self,@CreateOneRoomIfNew,#num=RID_JUNGLE_TRADING_Post,#class=&TradingPost);
-      Send(self,@CreateOneRoomIfNew,#num=RID_JUNGLE_TRADING_Post_CELLAR,#class=&TradingPostCellar);
+      Send(self,@CreateOneRoomIfNew,#num=RID_JUNGLE_TRADING_POST,#class=&TradingPost);
+      Send(self,@CreateOneRoomIfNew,#num=RID_JUNGLE_TRADING_POST_CELLAR,#class=&TradingPostCellar);
       Send(self,@CreateOneRoomIfNew,#num=RID_MAD_SCIENTIST_HUT,#class=&MadScientistHut);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_KA1,#class=&OutdoorsKA1);
@@ -2509,6 +2466,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_HERMITHUT,#class=&HermitHut);
       Send(self,@CreateOneRoomIfNew,#num=RID_CASTLE1,#class=&Castle1);
       Send(self,@CreateOneRoomIfNew,#num=RID_CASTLE1B,#class=&Castle1B);
+      Send(self,@CreateOneRoomIfNew,#num=RID_CASTLE1D,#class=&Castle1D);
       Send(self,@CreateOneRoomIfNew,#num=RID_THRONE1,#class=&Throne1);
       Send(self,@CreateOneRoomIfNew,#num=RID_THRONE2,#class=&Throne2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DUNGEON,#class=&DungeonVictoria);
@@ -2529,6 +2487,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST6,#class=&Guest6);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST7,#class=&Guest7);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUEST8,#class=&Guest8);
+      Send(self,@CreateOneRoomIfNew,#num=RID_GUEST9,#class=&Guest9);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB1,#class=&Newb1);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB2,#class=&Newb2);
@@ -2538,6 +2497,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB6,#class=&Newb6);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB7,#class=&Newb7);
       Send(self,@CreateOneRoomIfNew,#num=RID_NEWB8,#class=&Newb8);
+      Send(self,@CreateOneRoomIfNew,#num=RID_NEWB9,#class=&Newb9);
 
       Send(self,@CreateOneRoomIfNew,#num=RID_GUILDH1,#class=&GuildHall1);
       Send(self,@CreateOneRoomIfNew,#num=RID_GUILDH2,#class=&GuildHall2);
@@ -2599,8 +2559,8 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA1,#class=&Necropolis1);
       Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA2,#class=&Necropolis2);
       Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA3,#class=&Necropolis3);
-      Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA3a,#class=&Necropolis3a);
-      Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA3b,#class=&Necropolis3b);
+      Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA3A,#class=&Necropolis3a);
+      Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA3B,#class=&Necropolis3b);
       Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA4,#class=&Necropolis4);
       Send(self,@CreateOneRoomIfNew,#num=RID_NECROAREA5,#class=&Necropolis5);
       Send(self,@CreateOneRoomIfNew,#num=RID_LICH_MAZE,#class=&LichMaze);
@@ -2850,30 +2810,28 @@ messages:
    {
       local lRoomIcons;
 
-      lRoomIcons = $;
-
       if (flags & ROOM_NO_COMBAT)
       {
-         lRoomIcons = cons(Nth(plRoomIcons,ICON_ROOM_NO_COMBAT),lRoomIcons);
+         lRoomIcons = Cons(Nth(plRoomIcons,ICON_ROOM_NO_COMBAT),lRoomIcons);
       }
 
       if (flags & ROOM_GUILD_PK_ONLY)
       {
-         lRoomIcons = cons(Nth(plRoomIcons,ICON_ROOM_GUILD_PK_ONLY),lRoomIcons);
+         lRoomIcons = Cons(Nth(plRoomIcons,ICON_ROOM_GUILD_PK_ONLY),lRoomIcons);
       }
 
       if NOT (flags & ROOM_NO_COMBAT)
          AND NOT (flags & ROOM_GUILD_PK_ONLY)
          AND NOT (flags & ROOM_KILL_ZONE)
       {
-         lRoomIcons = cons(Nth(plRoomIcons,ICON_ROOM_KILL_ZONE),lRoomIcons);
+         lRoomIcons = Cons(Nth(plRoomIcons,ICON_ROOM_KILL_ZONE),lRoomIcons);
       }
 
       if (flags & ROOM_KILL_ZONE)
          AND NOT (flags & ROOM_NO_COMBAT)
          AND NOT (flags & ROOM_GUILD_PK_ONLY)
       {
-         lRoomIcons = cons(Nth(plRoomIcons,ICON_ROOM_KILL_ZONE),lRoomIcons);
+         lRoomIcons = Cons(Nth(plRoomIcons,ICON_ROOM_KILL_ZONE),lRoomIcons);
       }
 
       return lRoomIcons;
@@ -3167,7 +3125,7 @@ messages:
 
    CreateOneSpellIfNew(num = $,class = $)
    {
-      local oSpell;
+      local oSpell, iSchool;
 
       if Send(self,@FindSpellByNum,#num=num) = $
       {
@@ -3180,7 +3138,19 @@ messages:
 
          AddTableEntry(phSpells,Send(oSpell,@GetSpellNum),oSpell);
          plSpells = Cons(oSpell,plSpells);
+
+         // Check if we should add this spell to new char spells list.
+         if (IsClass(oSpell,&Spell)
+            AND Send(oSpell,@OfferToNewCharacters))
+         {
+            iSchool = Send(oSpell,@GetSchool);
+            if (iSchool >= SS_SHALILLE AND iSchool <= SS_JALA)
+            {
+               plNewCharSpells = Cons(oSpell,plNewCharSpells);
+            }
+         }
       }
+
       return;
    }
 
@@ -3189,7 +3159,7 @@ messages:
    "Call this to create any spells in this function that don't currently exist."
    {
       Send(self,@CreateOneSpellIfNew,#num=SID_LIGHTNING_BOLT,#class=&Lightning);
-      Send(self,@CreateOneSpellIfNew,#num=SID_MINOR_HEAL,#class=&Heal);
+      Send(self,@CreateOneSpellIfNew,#num=SID_MINOR_HEAL,#class=&MinorHeal);
       Send(self,@CreateOneSpellIfNew,#num=SID_NIGHT_VISION,#class=&NightVision);
       Send(self,@CreateOneSpellIfNew,#num=SID_FIREBALL,#class=&Fireball);
       Send(self,@CreateOneSpellIfNew,#num=SID_DMRESCUE,#class=&DMRescue);
@@ -3345,12 +3315,12 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_SHATTERLOCK,#class=&Shatterlock);
       Send(self,@CreateOneSpellIfNew,#num=SID_LIGHTNING_WALL,#class=&Lightningwall);
       Send(self,@CreateOneSpellIfNew,#num=SID_BRAMBLE_WALL,#class=&bramblewall);
-      Send(self,@CreateOneSpellIfNew,#num=SID_SUMMON_POISON_FOG,#class=&SummonPoisonFog);
+      Send(self,@CreateOneSpellIfNew,#num=SID_POISON_FOG,#class=&SummonPoisonFog);
       Send(self,@CreateOneSpellIfNew,#num=SID_FEIGN_DEATH,#class=&FeignDeath);
       Send(self,@CreateOneSpellIfNew,#num=SID_EVIL_TWIN,#class=&SummonEvilTwin);
       Send(self,@CreateOneSpellIfNew,#num=SID_BOND,#class=&Bond);
       Send(self,@CreateOneSpellIfNew,#num=SID_BLOOD_INHERITANCE,#class=&BloodInheritance);
-      Send(self,@CreateOneSpellIfNew,#num=SID_DEATHS_DOOR,#class=&DeathsDoor);
+      Send(self,@CreateOneSpellIfNew,#num=SID_SHADOW_RIFT,#class=&DeathsDoor);
 
       Send(self,@CreateOneSpellIfNew,#num=SID_BREATH_OF_LIFE,#class=&BreathOfLife);
       Send(self,@CreateOneSpellIfNew,#num=SID_RESIST_ACID,#class=&ResistAcid);
@@ -3424,6 +3394,7 @@ messages:
       % Keep arranged somewhat in order from rarest to most common,
       %  with cursed and castable spell types (like enchanted weapon) at the end
 
+      Send(self,@CreateOneItemAttIfNew,#num=IA_DM_CREATED,#class=&ItemAttDMCreated);
       Send(self,@CreateOneItemAttIfNew,#num=WA_SPELLCASTER,#class=&WeapAttSpellCaster);
       Send(self,@CreateOneItemAttIfNew,#num=WA_EXPERT,#class=&WeapAttExpert);
       Send(self,@CreateOneItemAttIfNew,#num=WA_BLINDER,#class=&WeapAttBlinder);
@@ -3437,6 +3408,7 @@ messages:
       Send(self,@CreateOneItemAttIfNew,#num=WA_FACTION,#class=&WeapAttFactionDefender);
       Send(self,@CreateOneItemAttIfNew,#num=WA_CEREMONIAL,#class=&WeapAttCeremonial);
       Send(self,@CreateOneItemAttIfNew,#num=IA_DURABLE,#class=&ItemAttDurable);
+      Send(self,@CreateOneItemAttIfNew,#num=IA_XP_KILL_BONUS,#class=&ItemAttXPKillBonus);
       Send(self,@CreateOneItemAttIfNew,#num=WA_PUNISHER,#class=&WeapAttPunisher);
       Send(self,@CreateOneItemAttIfNew,#num=IA_TRANSCENDANT,#class=&ItemAttTranscendant);
       Send(self,@CreateOneItemAttIfNew,#num=IA_SELL_INFO,#class=&ItemAttSellInfo);
@@ -3696,6 +3668,51 @@ messages:
       return;
    }
 
+   RecreateXPTables()
+   "Pre-calculate XP amounts. Because we track total XP and use set points "
+   "to determine when to gain a HP, precalculate the levels on recreate."
+   {
+      local i, iXP, hTable;
+
+      iXP = 0;
+
+      // Double table size, less collisions.
+      phXPTable = CreateTable((MAX_CALCULATED_HP - MIN_HP) * 2);
+
+      // Add zero entry for starting XP.
+      AddTableEntry(phXPTable, MIN_HP, 0);
+
+      for (i = MIN_HP + 1; i <= MAX_CALCULATED_HP + 1; ++i)
+      {
+         // Cumulative XP is hp * hp per HP.
+         iXP = iXP + i * i;
+         AddTableEntry(phXPTable, i, iXP);
+      }
+
+      return;
+   }
+
+   GetXPForLevel(iHP = 20)
+   "Returns the amount of XP needed to reach iHP, given iStamina."
+   {
+      local iXP;
+
+      iXP = GetTableEntry(phXPTable,iHP);
+
+      if (iXP = $)
+      {
+         return MAX_XP;
+      }
+
+      return iXP;
+   }
+
+   GetXPDiffForLevel(iLevel=20)
+   {
+      return Send(self,@GetXPForLevel,#iHP=iLevel + 1)
+         - Send(self,@GetXPForLevel,#iHP=iLevel);
+   }
+
    RecreateAllSpells(figure_totals = TRUE)
    "Admin supported\n"
    "Deletes all spells and then calls CreateAllSpellsIfNew."
@@ -3720,6 +3737,9 @@ messages:
          plSpells = $;
       }
 
+      // Clear new char spells. Spell objects already deleted above.
+      plNewCharSpells = $;
+
       Send(self,@CreateSpellTable);
 
       Send(self,@CreateAllSpellsIfNew);
@@ -3740,8 +3760,6 @@ messages:
    DeleteSpell(what = $)
    "Called by the spell when it is deleted, so we can remove it from our list of spells."
    {
-      local i;
-
       % any time a spell is deleted, clear its enchantment on all logged in users
       % just in case they have an enchantment of this spell
 
@@ -3751,14 +3769,18 @@ messages:
 %         Send(i,@RemoveEnchantment,#what=what);
 %      }
 
-      foreach i in plSpells
+      if (plNewCharSpells <> $
+         AND FindListElem(plNewCharSpells,what))
       {
-         if what = i
-         {
-            plSpells = DelListElem(plSpells,i);
+         plNewCharSpells = DelListElem(plNewCharSpells,what);
+      }
 
-            return;
-         }
+      if (plSpells <> $
+         AND FindListElem(plSpells,what))
+      {
+         plSpells = DelListElem(plSpells,what);
+
+         return;
       }
 
       Debug("Tried to delete spell that is not in plSpells:",
@@ -3829,6 +3851,7 @@ messages:
       phTresTypes = CreateTable(191);
 
       Create(&NoTreasure);
+      Create(&EmptyTreasure);
       Create(&NewbieAreaTreasure);
 
       Create(&WimpyTreasure);
@@ -3942,12 +3965,12 @@ messages:
    {
       ptRecreateTimer = $;
       Send(self,@RecalcWeatherConditions);
-      Send(self,@RecalcLightAndWeather);
+      Send(self,@SystemInitGameHour);
 
       return;
    }
 
-   RecalcLightAndWeather()
+   SystemInitGameHour()
    {
       local i,iTime,iDay,iMinutes;
 
@@ -3965,7 +3988,7 @@ messages:
       % That number ranges from 0 to 119, so div by 5 is our game hour
       piHour = iMinutes/5;
 
-      Send(self,@NewGameHour);
+      Send(self,@SysRecalcLightAndDayPhase);
 
       return;
    }
@@ -4032,8 +4055,8 @@ messages:
       return;
    }
 
-   NewGameHour()
-   "Recalculates the light and weather, based on piHour"
+   SysRecalcLightAndDayPhase()
+   "Recalculates the light and day phase, based on piHour"
    {
       local i,iLight_hour;
 
@@ -4055,7 +4078,7 @@ messages:
       }
 
       % shift hour so doesn't get light /dark until later
-      iLight_hour = (piHour-2) mod 24;
+      iLight_hour = (piHour - 2) MOD 24;
 
       if iLight_hour <= 12
       {
@@ -4076,7 +4099,6 @@ messages:
          piBrightness = 75;
       }
 
-
       foreach i in plBackground_objects
       {
          Send(i,@NewGameHour);
@@ -4092,6 +4114,41 @@ messages:
 
    NewGameDay()
    {
+      piDay = (piDay + 1) MOD 240;
+
+      % Tell GameEventEngine object we have a new day.
+      Send(EVENTENGINE_OBJECT,@NewGameDay);
+
+      if piDay = 0
+      {
+         Send(self,@NewGameYear);
+      }
+
+      ++pbDecay_counter;
+      ++piLogoffPenaltyDecayCounter;
+      if pbDecay_counter >= 3
+      {
+         pbDecay_counter = 0;
+         SendList(plUsers,0,@DecayPKillCount);
+      }
+
+      if piLogoffPenaltyDecayCounter >= piLogoffPenaltyDecayTime
+      {
+         piLogoffPenaltyDecayCounter = 0;
+         SendList(plUsers,0,@DecayLogoffPenaltyCount);
+      }
+
+      Send(self,@RecalcWeatherConditions);
+
+      Send(poParliament,@NewGameDay);
+      Send(poNodeAttack,@NewGameDay);
+      Send(poRentableRoomMaintenance,@NewGameDay);
+      Send(&SoldierShield,@NewGameDay);
+
+      Send(Send(self,@FindSpellByNum,#num=SID_NODEBURST),@NewGameDay);
+
+      Send(self,@VerifyUsersLoggedOn);
+
       return;
    }
 
@@ -4105,24 +4162,20 @@ messages:
    }
 
    TestGameDayTimer()
+   "Cycles to the next game midnight."
    {
       local i;
+
+      Send(self,@NewGameHour);
 
       foreach i in plUsers_logged_on
       {
          Send(i,@MsgSendUser,#message_rsc=system_new_hour,#parm1=piHour);
       }
 
-      Send(self,@NewGameHour);
-
-      piHour = (piHour + 1) mod 24;
       if piHour <> 0
       {
-         CreateTimer(self,@TestGameDayTimer,500);
-      }
-      else
-      {
-         Send(self,@RecalcLightAndWeather);
+         CreateTimer(self,@TestGameDayTimer,1500);
       }
 
       return;
@@ -4278,7 +4331,7 @@ messages:
       }
 
       if NOT StringConsistsOf(sName, 
-          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_ '!@$^&*()+=:[]{};/?|<>")
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_ '!@$^&*()+=:[]{};/?|<>¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€‹›ﬁﬂ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ˇ")
       {
          Debug("Got char name with illegal characters for user ", oUser);
 
@@ -4356,7 +4409,7 @@ messages:
 
       % Pull the string from user.  This is the name we gmail to contact
       %  our own guild.
-      if StringEqual(sName, "guild")
+      if StringEqual(sName, system_guild_rsc)
       {
             return FALSE;
       }
@@ -4949,7 +5002,7 @@ messages:
       {
          poParliament = Create(&Parliament);
          Send(poParliament,@Recreate,#initial=True);
-         Send(poParliament,@NewDay);
+         Send(poParliament,@NewGameDay);
       }
 
       return TRUE;
@@ -5162,7 +5215,7 @@ messages:
    GetChaosNight()
    "Return true if there's a chaos night (\"frenzy\") running."
    {
-      return send(EVENTENGINE_OBJECT,@IsChaosNightActive);
+      return Send(EVENTENGINE_OBJECT,@IsChaosNightActive);
    }
 
    ScheduleChaosNight(iMonth=$,iDay=$,iYear=$,
@@ -5738,9 +5791,6 @@ messages:
 
       plItemTemplates = cons(create(&ShieldRod),plItemTemplates);
       plItemTemplates = cons(create(&DamageRod),plItemTemplates);
-      plItemTemplates = cons(create(&BreakRodHold),plItemTemplates);
-      plItemTemplates = cons(create(&BreakRodBlind),plItemTemplates);
-      plItemTemplates = cons(create(&BreakRodPurge),plItemTemplates);
 
       return;
    }
@@ -5748,32 +5798,6 @@ messages:
    GetItemTemplates()
    {
       return plItemTemplates;
-   }
-
-   ReduceAllItemWeightAndBulk(iNumber=1)
-   "Reduces (or increases) the weight and bulk of all items "
-   "to the number given. Default 1. Item has to be in the "
-   "item templates list. Does not affect shillings."
-   {
-      local i;
-
-      % Check for frenzy active first, to avoid running
-      % this accidentally.
-      if (NOT Send(self,@GetChaosNight))
-      {
-         return;
-      }
-
-      foreach i in plItemTemplates
-      {
-         if NOT IsClass(i,&Money)
-         {
-            SetClassVar(i,"viBulk",iNumber);
-            SetClassVar(i,"viWeight",iNumber);
-         }
-      }
-
-      return;
    }
 
    RecreateMoneyTemplates()
@@ -6649,7 +6673,7 @@ messages:
 
    GetLogoffPenaltyEnable()
    {
-      if ptLogoffPenaltyTempDisable = $
+      if ptLogPenTempDisable = $
       {
          return pbLogoffPenaltyEnable;
       }
@@ -6658,10 +6682,10 @@ messages:
 
    SetLogoffPenaltyEnable(enable=TRUE)
    {
-      if enable AND (ptLogoffPenaltyTempDisable <> $)
+      if enable AND (ptLogPenTempDisable <> $)
       {
-         deleteTimer(ptLogoffPenaltyTempDisable);
-         ptLogoffPenaltyTempDisable = $;
+         DeleteTimer(ptLogPenTempDisable);
+         ptLogPenTempDisable = $;
       }
       pbLogoffPenaltyEnable = enable;
 
@@ -6673,42 +6697,39 @@ messages:
       return piLogoffPenaltyEquivDeath;
    }
 
-   GetLogoffPenaltyGhostTime()
-   {
-      return Send(SETTINGS_OBJECT,@GetLogoffPenaltyGhostTime);
-   }
-
    TempDisableLogoffPenalties()
    {
-      local iDisableDuration;
+      local iDuration;
 
-      if ptLogoffPenaltyTempDisable <> $
+      if ptLogPenTempDisable <> $
       {
-         deleteTimer(ptLogoffPenaltyTempDisable);
-         ptLogoffPenaltyTempDisable = $;
+         DeleteTimer(ptLogPenTempDisable);
+         ptLogPenTempDisable = $;
       }
 
-      iDisableDuration = (Send(SETTINGS_OBJECT,@GetLogoffPenaltyGhostTime)*150)/100;
+      iDuration = (Send(SETTINGS_OBJECT,@GetLogPenGhostTime) * 150) / 100;
 
-      ptLogoffPenaltyTempDisable = CreateTimer(self,@LogoffPenaltyTempDisableTrigger,iDisableDuration);
+      ptLogPenTempDisable = CreateTimer(self,@LogPenTempDisableTrigger,iDuration);
 
       return;
    }
 
-   LogoffPenaltyTempDisableTrigger()
+   LogPenTempDisableTrigger()
    {
-      ptLogoffPenaltyTempDisable = $;
+      ptLogPenTempDisable = $;
+
       return;
    }
 
    ServerPopulationMonitor()
    {
       local popDrop;
+
       ptServerPopulationMonitor = $;
 
-      popDrop = (piLastServerPopulation - length(plUsers_logged_on));
+      popDrop = (piLastServerPopulation - Length(plUsers_logged_on));
       if (popDrop > piServerPopDropThreshold)
-         AND ((popDrop*100/piLastServerPopulation)
+         AND ((popDrop * 100 / piLastServerPopulation)
               > piServerPopulationPercentDrop)
       {
          Debug("Server population dropped by more than ",
@@ -6717,7 +6738,7 @@ messages:
          Send(self,@TempDisableLogoffPenalties);
       }
 
-      piLastServerPopulation = length(plUsers_logged_on);
+      piLastServerPopulation = Length(plUsers_logged_on);
       ptServerPopulationMonitor = CreateTimer(self,@ServerPopulationMonitor,
                                               piServerPopMonitorInterval);
 
@@ -6728,6 +6749,7 @@ messages:
    FactionChanged( new_faction = $ )
    {
       local i;
+
       if new_faction = $
       {
          return;
@@ -6737,6 +6759,7 @@ messages:
       {
          Send( i, @FactionChanged, #new_fact = new_faction );
       }
+
       return;
    }
 
@@ -7451,31 +7474,6 @@ messages:
       return;
    }
 
-   %%% Server flags
-
-   SetServerFlag(flag=0, value=TRUE)
-   "Sets the flag to value.  Returns the flag value if set, returns 0 if "
-   "the flag was unset."
-   {
-      if value
-      {
-         % Set the flag to true
-         piServerFlags = piServerFlags | flag;
-      }
-      else
-      {
-         piServerFlags = piServerFlags & ~flag;
-      }
-
-      return (piServerFlags & flag);
-   }
-
-   GetServerFlag(flag=0)
-   "Returns the flag value if the flag is set, 0 otherwise."
-   {
-      return (piServerFlags & flag);
-   }      
-
    BitwiseXOR(value1 = 0, value2 = 0)
    "Returns the bitwise XOR of the two values."
    {
@@ -7788,6 +7786,128 @@ messages:
       return resistance_list;
    }
 
+#region Print Game Info
+
+   PrintSpellsBySchool()
+   "Prints all spells with mana, vigor, reagent costs, level, TP cost and "
+   "improve chance.  Spells are printed by school."
+   {
+      GodLog("Shal'ille");
+      Send(self,@PrintSpells,#iSchool=SS_SHALILLE);
+      GodLog("Qor");
+      Send(self,@PrintSpells,#iSchool=SS_QOR);
+      GodLog("Kraanan");
+      Send(self,@PrintSpells,#iSchool=SS_KRAANAN);
+      GodLog("Faren");
+      Send(self,@PrintSpells,#iSchool=SS_FAREN);
+      GodLog("Riija");
+      Send(self,@PrintSpells,#iSchool=SS_RIIJA);
+      GodLog("Jala");
+      Send(self,@PrintSpells,#iSchool=SS_JALA);
+
+      return;
+   }
+
+   PrintSpells(iSchool = 1)
+   {
+      local oReg, i, j, lReg, iLen, iLevel, iFocusTime;
+
+      iLevel = 0;
+      while (++iLevel < 7)
+      {
+         GodLog("Level ",iLevel,":");
+
+         foreach i in plSpells
+         {
+            if IsClass(i,&Trance)
+               OR NOT (Send(i,@GetSchool) = iSchool)
+               OR Send(i,@GetLevel) <> iLevel
+            {
+               continue;
+            }
+
+            ClearTempString();
+
+            iFocusTime = Send(i,@GetRawTranceTime);
+            if (iFocusTime > 0)
+            {
+               AppendTempString(", Focus time: ");
+               AppendTempString(iFocusTime);
+               AppendTempString("ms");
+            }
+
+            lReg = Send(i,@GetReagents);
+            iLen = Length(lReg);
+            
+            AppendTempString(", Reagents: ");
+            foreach j in lReg
+            {
+               oReg = Send(self,@FindTemplateItemByClass,#cClass=First(j));
+               if oReg <> $
+               {
+                  AppendTempString(Send(oReg,@GetName));
+                  AppendTempString(", ");
+                  AppendTempString(Nth(j,2));
+                  if (--iLen > 0)
+                  {
+                     AppendTempString(", ");
+                  }
+                  oReg = $;
+               }
+            }
+
+            GodLog("Name: ",Send(i,@GetName), ", Mana: ",Send(i,@GetTrueManaCost),
+               ", Vigor: ",Send(i,@GetTrueExertion),
+               ", Improve chance: ",Send(i,@GetPrimaryImproveChance),
+               ", TP cost: ", Send(i,@GetMeditateRatio),GetTempString());
+         }
+      }
+
+      return;
+   }
+
+   PrintItemWeights()
+   "Prints weight and bulk for all items."
+   {
+      SendListByClass(plItemTemplates,0,&Item,@PrintWeight);
+
+      return;
+   }
+
+   PrintMonsterInfo()
+   "Prints monster level, karma, speed and treasure list."
+   {
+      SendList(plMonsterTemplates,0,@PrintInfo);
+
+      return;
+   }
+
+   PrintSellLists()
+   "Prints NPC sell lists, including conditional items."
+   {
+      SendList(Send(Send(SYS,@GetLibrary),@GetNPCs),0,@PrintSellList);
+
+      return;
+   }
+
+   PrintMobGenerators()
+   "Prints out mob generator positions and mob classes for all rooms."
+   {
+      SendList(plRooms,0,@PrintMobGenerators);
+
+      return;
+   }
+
+   PrintNPCRooms()
+   "Uses the Library NPC list to print out all NPC names and owning rooms."
+   {
+      SendList(Send(Send(SYS,@GetLibrary),@GetNPCs),0,@PrintRoom);
+
+      return;
+   }
+
+#endregion Print Game Info
+
    RemoveAllResistances(resistance_list = $)
    "This clears the resistance list... for if someone's char is really messed "
    "up."
@@ -7796,7 +7916,8 @@ messages:
 
       foreach i in resistance_list
       {
-         resistance_list = Send(self,@RemoveResistance,#what=Nth(i,1),#value=Nth(i,2),#resistance_list=resistance_list);
+         resistance_list = Send(self,@RemoveResistance,#what=First(i),
+                                 #value=Nth(i,2),#resistance_list=resistance_list);
       }
 
       return resistance_list;
@@ -7805,11 +7926,12 @@ messages:
    RemoveResistance(what = $, value = 0, resistance_list = $)
    "Removes a resistance of type (what) and value (value)"
    {
-      resistance_list = Send(self,@AddResistance,#what=what,#value=-value,#resistance_list=resistance_list);
+      resistance_list = Send(self,@AddResistance,#what=what,#value=-value,
+                              #resistance_list=resistance_list);
 
       return resistance_list;
    }
-   
+
    GetUniqueIPs()
    {
       local i, j, lUserIPList, lIP, bFound;

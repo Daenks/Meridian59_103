@@ -24,10 +24,19 @@
     <ResourceCompile Include="club.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\util\md5.c" />
     <ClCompile Include="club.c" />
     <ClCompile Include="clubarchive.c" />
     <ClCompile Include="transfer.c" />
     <ClCompile Include="util.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="download.avi" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libjansson\jansson.vcxproj">
+      <Project>{f61a1cc1-dc47-4407-bfe0-a2221e5eecca}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3D9AA8DC-962A-437F-A90D-B544A7700981}</ProjectGuid>
@@ -73,7 +82,7 @@
       <SDLCheck>
       </SDLCheck>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>../include/libarchive</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/libarchive;../include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BLAK_PLATFORM_WINDOWS;BLAKCLIENT;WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NO_WARN_MBCS_MFC_DEPRECATION;LIBARCHIVE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ShowIncludes>false</ShowIncludes>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -84,10 +93,11 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <FloatingPointModel>Precise</FloatingPointModel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>comctl32.lib;wininet.lib;advapi32.lib;libarchive.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;wininet.lib;advapi32.lib;libarchive.lib;zlib.lib;jansson.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../lib;</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>libc</IgnoreSpecificDefaultLibraries>
@@ -97,7 +107,7 @@
       <ProfileGuidedDatabase />
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName).exe $(SolutionDir)run\localclient</Command>
+      <Command>copy "$(OutDir)$(TargetName).exe" "$(SolutionDir)run\localclient"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -110,7 +120,7 @@
       <SDLCheck>
       </SDLCheck>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>../include/libarchive</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/libarchive;../include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BLAK_PLATFORM_WINDOWS;BLAKCLIENT;WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NO_WARN_MBCS_MFC_DEPRECATION;LIBARCHIVE_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
@@ -131,7 +141,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>comctl32.lib;wininet.lib;advapi32.lib;libarchive.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;wininet.lib;advapi32.lib;libarchive.lib;zlib.lib;jansson.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../lib;</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>libc</IgnoreSpecificDefaultLibraries>
@@ -142,7 +152,7 @@
       <DataExecutionPrevention />
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName).exe $(SolutionDir)run\localclient</Command>
+      <Command>copy "$(OutDir)$(TargetName).exe" "$(SolutionDir)run\localclient"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

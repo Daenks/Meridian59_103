@@ -21,17 +21,15 @@ resources:
    Yrxlsap_name_rsc = "yrxl sap"
    Yrxlsap_icon_rsc = yrxlsap.bgf
    Yrxlsap_desc_rsc = \
-   "There is but one known Yrx'l still known to civilization, "
-   "for mages have craved the blood of the eldritch tree, which "
-   "provided the lifeblood to their more powerful spells. Now that "
-   "all are extinct on Meridian's mainland and only one exists here, "
-   "it is an unspoken rule that one shall leave the tree alone, and "
-   "allow it to provide its life blood as it chooses. "
-
+      "There is but one known Yrx'l still known to civilization, "
+      "for mages have craved the blood of the eldritch tree, which "
+      "provided the lifeblood to their more powerful spells. Now that "
+      "all are extinct on Meridian's mainland and only one exists here, "
+      "it is an unspoken rule that one shall leave the tree alone, and "
+      "allow it to provide its life blood as it chooses. "
    Yrxlsap_name_plural_rsc = "yrxl sap"
    Yrxlsap_vial_name = "vial of yrxl sap"
    Yrxlsap_vial_name_plural = "vials of yrxl sap"
-
 
 classvars:
 
@@ -55,93 +53,99 @@ messages:
    Constructor(Gathered=TRUE)
    {
       pbGathered = Gathered;
+
       propagate;
    }
-
 
    NewOwner(what = $)
    {
       if (poOwner <> $)
-         and (what <> $)
-         and Isclass(what,&Battler)
+         AND (what <> $)
+         AND IsClass(what,&Battler)
       {
          pbGathered = TRUE;
       }
-      
+
       propagate;
    }
 
    DestroyDisposable()
    {
-   if not pbGathered
-      { return FALSE; }
-   propagate;
-   }
+      if NOT pbGathered
+      {
+         return FALSE;
+      }
 
+      propagate;
+   }
 
    SendAnimation()
    {
       if pbGathered
       {
-      AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
+         AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
       }
       else
       {
-      AddPacket(1,ANIMATE_NONE,2,2);  % Ground
+         AddPacket(1,ANIMATE_NONE,2,2);  % Ground
       }
+
       return;
    }
- 
+
    SendLookAnimation()
    {
       if pbGathered
       {
-      AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
+         AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
       }
       else
       {
-      AddPacket(1,ANIMATE_NONE,2,2);  % Ground
+         AddPacket(1,ANIMATE_NONE,2,2);  % Ground
       }
+
       return;
    }
- 
+
    SendInventoryAnimation()
    {
       if pbGathered
       {
-      AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
+         AddPacket(1,ANIMATE_NONE,2,1);  % Bottled
       }
       else
       {
-      AddPacket(1,ANIMATE_NONE,2,2);  % Ground
+         AddPacket(1,ANIMATE_NONE,2,2);  % Ground
       }
+
       return;
    }
 
-   getname()
+   GetName()
    {
-   if pbGathered
+      if pbGathered
       {
-      if piNumber = 1
+         if piNumber = 1
          {
- 	 return Yrxlsap_vial_name;
+            return Yrxlsap_vial_name;
          }
-      else
+         else
          {
-   	 return Yrxlsap_vial_name_plural;
+            return Yrxlsap_vial_name_plural;
          }
       }
-   else
-      {
-      if piNumber = 1
-         {
-	 return vrName;
-         }
       else
+      {
+         if piNumber = 1
          {
-	 return vrName_plural;
+            return vrName;
+         }
+         else
+         {
+            return vrName_plural;
          }
       }
+
       propagate;
    }
 

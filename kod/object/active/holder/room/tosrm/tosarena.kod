@@ -27,11 +27,11 @@ resources:
    room_TosArena = tosarena.roo
    name_TosArena = "The Arena of Kraanan"
 
-   TosArena_music = pk_fm.mp3
+   TosArena_music = pk_fm.ogg
 
-   TosArena_commence_wav = forest.wav
-   wind_sound_tosarena = ambcntry.wav
-   wind1_sound_tosarena = rs_wind.wav
+   TosArena_commence_wav = forest1.ogg
+   wind_sound_tosarena = ambcntry.ogg
+   wind1_sound_tosarena = rs_wind.ogg
 
    TosArena_no_offer = "The Watcher says, \"Spectators and combatants may not exchange goods during matches."
    TosArena_no_attack = "You may not fight here unless you are a combatant."
@@ -85,9 +85,9 @@ resources:
    TosArena_doors_locked = "You lock the doors of the Arena of Kraanan.  Players may now only enter if a Guardian brings them here."
    TosArena_doors_unlocked = "You unlock the doors to the Arena, so that all may enter once again."
 
-   TosArena_Fanfare_Sound = fanfare1.wav
-   TosArena_Combat_Sound = arena1.wav
-   TosArena_Huzzah_Sound = huzzah.wav
+   TosArena_Fanfare_Sound = fanfare1.ogg
+   TosArena_Combat_Sound = arena1.ogg
+   TosArena_Huzzah_Sound = huzzah.ogg
 
    TosArena_booth_command = "booth"
    TosArena_lock_command = "lock"
@@ -648,7 +648,7 @@ messages:
 
    SomeoneSaid(what=$,string=$)
    {
-      if what <> $ AND isClass(what,&DM)
+      if what <> $ AND IsClass(what,&DM)
       {
          if (StringEqual(string,TosArena_booth_command) OR StringEqual(string,"booth"))
          {
@@ -657,7 +657,7 @@ messages:
             return;
          }
 
-         if Send(what,@IsActor)
+         if Send(what,@CheckDMFlag,#flag=DMFLAG_ALLOW_ARENA_CMDS)
             AND (StringEqual(string,TosArena_lock_command) OR StringEqual(string,"lock"))
          {
             if pbLocked

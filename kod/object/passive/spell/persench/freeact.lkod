@@ -2,7 +2,7 @@ FreeAction_name_rsc = de "Fairer Kampf"
 FreeAction_desc_rsc = de \
    "Kraanans Liebe zur Schlacht hilft Dir dabei, lähmende Magie abzuwehren "
    "und ermöglicht Dir somit einen gerechteren Kampf. Dieser Zauber benötigt "
-   "lila und rote Pilze."
+   "jeweils einen lila und roten Pilz."
 FreeAction_on_rsc = de \
    "Du fühlst einen Ansturm von Energie durch deinen Körper strömen."
 FreeAction_off_rsc = de "Dein seltsames Gefühl der Freiheit verlässt dich."
@@ -17,5 +17,5 @@ FreeAction_resist_caster = de \
 FreeAction_evade_caster = de \
    "Kraanans Magie verhindert, dass du im Kampf gestört wirst."
 freeaction_enchantment_rsc = de \
-   "\n\nDein aktueller %s Zauber wideresteht komplett einem Lähmenzauber "
-   "für %i%% der Zeit.  Erfolgreiche Lähmversuche werden um %i%% verringert."
+   "\n\nDein aktueller %s Zauber verhindert zu %i%% die komplette Lähmung. "
+   "Erfolgreiche Lähmversuche werden um %i%% verringert."

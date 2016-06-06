@@ -18,10 +18,10 @@ resources:
 
    include kochoh.lkod
 
-   room_Kocatanhall = Kochoh.roo
+   room_Kocatanhall = kochoh.roo
    room_name_Kocatanhall = "The Hall of Heroes"
 
-   Kocatanhall_music = extra01.mp3
+   Kocatanhall_music = extra01.ogg
 
    news_Kocatan_hall = "General News"
    news_Kocatan_hall_desc = "Find out what's happening around Meridian."
@@ -253,11 +253,11 @@ messages:
 
    UpdateStatues(lData = $)
    {
-      local i, index;
+      local i, index, oPlayer;
 
       if lData = $
       {
-         debug("bad data!");
+         Debug("bad data!");
 
          return;
       }
@@ -271,11 +271,12 @@ messages:
       index = 0;
       foreach i in plStatues
       {
-         index = index + 1;
-         if Nth(lData,index) <> $
-            AND Send(i,@GetOriginal) <> Nth(lData,index)
+         ++index;
+         oPlayer = Nth(lData,index);
+         if oPlayer <> $
+            AND Send(i,@GetOriginal) <> oPlayer
          {
-            Send(i,@SetStatue,#original=Nth(lData,index));
+            Send(i,@SetStatue,#original=oPlayer);
          }
       }
 

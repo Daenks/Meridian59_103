@@ -14,6 +14,7 @@ static const int RSC_VERSION = 5;
 static char rsc_magic[] = {0x52, 0x53, 0x43, 0x01};
 
 char *GetStringFromResource(resource_type r, int j);
+void ResourceStringModVerify(resource_type r);
 /******************************************************************************/
 /*
  * check_for_class_resource_string: Uses a resource's ID to check if the same
@@ -109,6 +110,9 @@ void write_resources(char *fname)
          {
             r = (resource_type) (l->data);
 
+            // Verify string modifiers in different language strings.
+            ResourceStringModVerify(r);
+
             // For each language string present,
             // write out language data and string.
             for (int j = 0; j < MAX_LANGUAGE_ID; j++)
@@ -141,5 +145,101 @@ char *GetStringFromResource(resource_type r, int j)
          simple_error("Unknown resource type (%d) encountered",
             r->resource[j]->type);
          return NULL;
+   }
+}
+/******************************************************************************/
+/*
+ * ResourceStringModVerify: Check each language string for a resource and warn
+ *   the user if there is a mismatch in the number or types of modifiers.
+ */
+/******************************************************************************/
+// 5 types of modifiers to check: %i, %d (deprecated), %s, %q, %r.
+// %i and %d count as one.
+#define NUM_RSCMOD_TYPES 4
+typedef struct {
+   int rsc_mod[NUM_RSCMOD_TYPES];
+   int rsc_mod_count;
+} check_rsc_type;
+
+void ResourceStringModVerify(resource_type r)
+{
+   // Sanity check, plus only check actual strings.
+   if (!r || !r->resource[0] || r->resource[0]->type != C_STRING)
+      return;
+
+   check_rsc_type check_array[MAX_LANGUAGE_ID];
+   char *str;
+
+   for (int i = 0; i < MAX_LANGUAGE_ID; ++i)
+   {
+      check_array[i].rsc_mod_count = 0;
+      for (int j = 0; j < NUM_RSCMOD_TYPES; ++j)
+         check_array[i].rsc_mod[j] = 0;
+
+      if (r->resource[i])
+      {
+         str = GetStringFromResource(r, i);
+         if (!str)
+         {
+            if (i == 0)
+            {
+               simple_warning("No English string for resource %s!", r->lhs->name);
+               return;
+            }
+            // Don't report missing strings for other languages, can be
+            // valid reasons for this (i.e. string would be a duplicate).
+            continue;
+         }
+
+         while (*str)
+         {
+            if (*str == '%')
+            {
+               ++str;
+               if (*str == 'i' || *str == 'd')
+               {
+                  check_array[i].rsc_mod[0]++;
+                  check_array[i].rsc_mod_count++;
+               }
+               else if (*str == 's')
+               {
+                  check_array[i].rsc_mod[1]++;
+                  check_array[i].rsc_mod_count++;
+               }
+               else if (*str == 'q')
+               {
+                  check_array[i].rsc_mod[2]++;
+                  check_array[i].rsc_mod_count++;
+               }
+               else if (*str == 'r')
+               {
+                  check_array[i].rsc_mod[3]++;
+                  check_array[i].rsc_mod_count++;
+               }
+            }
+            ++str;
+         }
+
+         // English resource is reference.
+         if (i == 0)
+            continue;
+         // Check total count first.
+         if (check_array[i].rsc_mod_count != check_array[0].rsc_mod_count)
+         {
+            simple_warning("Got mismatched number of string modifiers in resource %s.",
+               r->lhs->name);
+            return;
+         }
+         // Check number of each type of string modifier.
+         for (int j = 0; j < NUM_RSCMOD_TYPES; ++j)
+         {
+            if (check_array[i].rsc_mod[j] != check_array[0].rsc_mod[j])
+            {
+               simple_warning("Got mismatched types of string modifiers in resource %s.",
+                  r->lhs->name);
+               return;
+            }
+         }
+      }
    }
 }

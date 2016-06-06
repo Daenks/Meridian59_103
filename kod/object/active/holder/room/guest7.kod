@@ -19,28 +19,35 @@ resources:
    include guest7.lkod
 
    room_name_guest7 = "Eric's Stout Spirits"
-   room_guest7 = guest7.roo
-   guest7_music = login.mp3
+   room_guest7 = razabar.roo
+   guest7_music = login.ogg
 
-   guest7_signname = "health, mana and vigor"
+   guest7_signname = "Health, Mana, Vigor and XP"
    guest7_sign = \
       "In the upper right-hand corner of your screen, you'll see "
-      "three stats: health, mana, and vigor.  Health is simple--"
+      "four stats: Health, Mana, Vigor and XP.\n\nHealth is simple - "
       "you lose it when you take damage (usually in battle).  If your health is "
-      "reduced to zero, you die.  Mana determines how many spells "
-      "you can cast.  Both of these come back with time.\n\n"
-      "Vigor, the third stat, is the most important.  How fast your "
-      "health and your mana return depends largely on your vigor. "
-      "Also, running requires vigor "
-      "so you definitely want to keep your vigor high. "
-      "There are two ways to increase your vigor--by eating food ([USE] it from your inventory) "
-      "and by resting (click on the button in the toolbar).  "
-      "Resting in inns and taverns will heal your vigor "
-      "twice as quickly.  Taverns and stores also frequently sell foodstuffs "
-      "that you can take with you as you explore.\n"
-      "-----------------------\n"
-      "From here, go to the elder's home.  It is the small house "
-      "south and to the west of here."
+      "reduced to zero, you die.\n\nMana determines how many spells "
+      "you can cast.  Both Mana and Health come back with time.\n\n"
+      "Vigor, the third stat, is very important.  How fast your "
+      "Health and Mana return depends largely on your Vigor. Running requires "
+      "Vigor - if it drops below 10, you will only be able to walk.  "
+      "There are two ways to increase your vigor - by eating food "
+      "([USE] it from your inventory) and by resting (click on the button "
+      "in the toolbar above the graphics window).  Resting in inns and "
+      "taverns will heal your vigor twice as quickly.  Taverns and stores "
+      "also frequently sell foodstuffs that you can take with you as you "
+      "explore.\n\n"
+      "The last stat shows your \"experience points\" (XP) which determines "
+      "when you will gain your next maximum hit point.  Looking at the "
+      "description of a monster shows how many hit points you can get "
+      "by killing them, though you will gain a small amount of XP by "
+      "killing monsters at or a bit below your level.  Players with higher "
+      "stamina will gain more XP from kills, and you can lose XP by dying "
+      "once you lose your guardian angel (at 50 hit points).\n\n"
+      "-----------------------\n\n"
+      "From here, go to the elder's home.  It is the small hut just to the "
+      "north of this building."
              
 classvars:
 
@@ -71,7 +78,8 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 5, 2, viDemo_base + 2, 18, 56, ROTATE_NONE ],plExits);
+      plExits = Cons([ 4, 8, viDemo_base + 2, 16, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 5, 8, viDemo_base + 2, 16, 12, ROTATE_NONE ],plExits);
 
       propagate;
    }
@@ -80,42 +88,43 @@ messages:
    {
       local oSign;
 
-      send(self,@NewHold,#what=Create(&Hazarbartender),#new_row=8,#new_col=7,
-           #new_angle=ANGLE_SOUTH_WEST);
+      Send(self,@NewHold,#what=Create(&Hazarbartender),#new_row=2,#new_col=3,
+           #fine_row=40,#fine_col=0,#new_angle=ANGLE_SOUTH_WEST);
       
       oSign = Create(&Sign,#desc=guest7_sign,#newbie=TRUE,#name=guest7_signname);
-      send(self,@NewHold,#what=oSign,#new_row=4,#new_col=7);
+      Send(self,@NewHold,#what=oSign,#new_row=6,#new_col=3,
+            #fine_row=40,#fine_col=0);
 
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=6,#new_col=4,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=4,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=6,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=3,#new_col=6,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=5,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=6,
-           #fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=3,
-           #fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Stool),#new_row=4,#new_col=4,
-           #fine_row=0,#fine_col=0,#angle=ANGLE_EAST);
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=5,#new_col=4,
+           #fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=7,
+           #fine_row=8,#fine_col=32,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Stool),#new_row=7,#new_col=6,
+           #fine_row=8,#fine_col=32,#angle=ANGLE_EAST);
       Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_TALLURN),
-           #new_row=2,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);	
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=8,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=7,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCkET),
-           #new_row=6,#new_col=2,#fine_row=32,#fine_col=32,#angle=ANGLE_EAST);
-      Send(self,@NewHold,#what=Create(&Candle),#new_row=3,#new_col=6,
-           #fine_row=16,#fine_col=32,#angle=ANGLE_EAST);
+           #new_row=8,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=2,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=3,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BUCKET),
+           #new_row=4,#new_col=8,#fine_row=40,#fine_col=0,#angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&Candle),#new_row=7,#new_col=4,
+           #fine_row=56,#fine_col=0,#angle=ANGLE_EAST);
 
       % Lighting
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=2,#new_col=4,#fine_row=16,#fine_col=63); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=2,#fine_row=54,#fine_col=40); 
-      send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
-           #new_row=8,#new_col=6,#fine_row=55,#fine_col=56); 
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=8,#new_col=5,#fine_row=56,#fine_col=33);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=2,#new_col=7,#fine_row=18,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=30),
+           #new_row=2,#new_col=3,#fine_row=17,#fine_col=40);
 
       propagate;
    }

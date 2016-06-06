@@ -160,31 +160,26 @@ messages:
    {
       local i;
 
-      if StringEqual(string,MrEl_stat_window_trigger)
+      if StringEqual(string,KocatanBonePriestess_stat_window_trigger)
       {
-         if Send(what,@FindHolding,#class=&StatsResetToken) <> $
-            OR (Send(what,@GetBaseMaxHealth)
-               <= Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
-         {
-            Send(what,@SendStatChange);
-         }
+         Send(what,@SendStatChange);
+      }
 
-         if (IsClass(what,&User)) AND (type = SAY_NORMAL)
+      if (IsClass(what,&User)) AND (type = SAY_NORMAL)
+      {
+         foreach i in plSquawks
          {
-            foreach i in plSquawks
+            if (StringContain(string, i))
             {
-               if (StringContain(string, i))
-               {
-                  Send(self,@Say,#message_rsc=monster_percent_q,
-                        #parm1=Send(self,@GetRandomSquawking,
-                        #squawkLength=random(2,5)));
+               Send(self,@Say,#message_rsc=monster_percent_q,
+                     #parm1=Send(self,@GetRandomSquawking,
+                     #squawkLength=random(2,5)));
 
-                  break;
-               }
+               break;
             }
          }
-
       }
+
       propagate;
    }
 
@@ -220,8 +215,6 @@ messages:
       }
 
       % Debug("Adding learn advice for ",Send(self,@GetName));
-      lDialogue = $;
-      lTriggers = $;
 
       foreach sid in Nth(plFor_sale,3)
       {
@@ -254,8 +247,6 @@ messages:
 
    GetRandomSquawking(squawkLength = 1)
    {
-      local returnString;
-
       ClearTempString();
 
       while squawkLength > 0
@@ -269,18 +260,16 @@ messages:
       }
 
       AppendTempString("!");
-      returnString = CreateString();
-      SetString(returnString,GetTempString());
 
-      return returnString;
+      return SetString($,GetTempString());
    }
 
    AppendRandomSquawkToTempString()
    {
       local i;
 
-      i = Random(1,length(plSquawks));
-      AppendTempString(nth(plSquawks,i));
+      i = Random(1,Length(plSquawks));
+      AppendTempString(Nth(plSquawks,i));
 
       return;
    }

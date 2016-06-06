@@ -156,8 +156,9 @@ messages:
       }
 
       if IsClass(oTakerOwner,&GuildHall)
+         AND NOT Send(oTakerOwner,@ReqUseGuildChest,#who=taker)
       {
-         return Send(oTakerOwner,@ReqUseGuildChest,#who=taker);
+         return FALSE;
       }
 
       propagate;

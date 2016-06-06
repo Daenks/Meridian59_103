@@ -25,6 +25,8 @@ enum {
    AP_GETALL        = 9,
    AP_REQ_MENU      = 10,
    AP_ADMINNOTE     = 11,
+   AP_CLIENT_PATCH_OLD = 12,
+   AP_CLIENT_PATCH  = 13,
 
    AP_GETLOGIN      = 21,
    AP_GETCHOICE     = 22,
@@ -365,6 +367,8 @@ enum {
 
 
 /* Object flag values and masks */
+#define OF_DISPLAY_NAME  0x00000001    // Set if object should have name displayed
+#define OF_SIGN          0x00000002    // Set if object is an informational sign (custom name display)
 #define OF_PLAYER        0x00000004    // Set if object is a player
 #define OF_ATTACKABLE    0x00000008    // Set if object is legal target for an attack
 #define OF_GETTABLE      0x00000010    // Set if player can try to pick up object
@@ -376,6 +380,7 @@ enum {
 #define OF_BUYABLE       0x00000400    // Set if object can be bought from
 #define OF_ACTIVATABLE   0x00000800    // Set if object can be activated
 #define OF_APPLYABLE     0x00001000    // Set if object can be applied to another object
+#define OF_NPC           0x00002000    // Set if object is an NPC (not necessarily offerable/buyable)
 
 #define OF_BOUNCING      0x00010000    // If both flags on then object is bouncing
 #define OF_FLICKERING    0x00020000    // For players or objects if holding a flickering light.
@@ -415,6 +420,7 @@ enum {
 #define MM_TEMPSAFE      0x00000200    // Set if player has a temporary angel.
 #define MM_MINIBOSS      0x00000400    // Set if mob is a miniboss (survival arena).
 #define MM_BOSS          0x00000800    // Set if mob is a boss (survival arena).
+#define MM_RARE_ITEM     0x00001000    // Set if item is rare.
 
 /* Player name color sent as hex RGB value. Define constants
    for ease of use as needed. Requires OF_PLAYER boolean flag
@@ -459,6 +465,32 @@ typedef enum {
 #define CF_AUTOCOMBINE   0x0010  // Player automatically combines spell items
 #define CF_REAGENTBAG    0x0020  // Player automatically puts items into reagent bag
 #define CF_SPELLPOWER    0x0040  // Player gets spellpower readout from cast spells
+
+// Lighting constants, used by D3D renderer for dynamic lighting
+// Bright colors, 100% saturation
+#define LIGHT_BWHITE  0x7FFF
+#define LIGHT_BRED    0x7C00
+#define LIGHT_BORANGE 0x7E40
+#define LIGHT_BYELLOW 0x7FE0
+#define LIGHT_BGREEN  0x03E0
+#define LIGHT_BBLUE   0x001F
+#define LIGHT_BPURPLE 0x481F
+// Average colors, 66% saturation
+#define LIGHT_WHITE   0x5294
+#define LIGHT_RED     0x5000
+#define LIGHT_ORANGE  0x5180
+#define LIGHT_YELLOW  0x5280
+#define LIGHT_GREEN   0x0280
+#define LIGHT_BLUE    0x0014
+#define LIGHT_PURPLE  0x3014
+// Dull colors, 33% saturation
+#define LIGHT_DWHITE  0x294A
+#define LIGHT_DRED    0x2800
+#define LIGHT_DORANGE 0x28C0
+#define LIGHT_DYELLOW 0x2940
+#define LIGHT_DGREEN  0x0140
+#define LIGHT_DBLUE   0x000A
+#define LIGHT_DPURPLE 0x180A
 
 /* Effect codes */
 enum {
@@ -575,5 +607,6 @@ enum {
 #define LIGHT_FLAG_ON		0x0001
 #define LIGHT_FLAG_DYNAMIC	0x0002
 #define LIGHT_FLAG_WAVERING	0x0004
+#define LIGHT_FLAG_HIGHLIGHT 0x0008
 
 #endif /* #ifndef _PROTO_H */

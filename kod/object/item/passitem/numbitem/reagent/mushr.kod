@@ -21,8 +21,8 @@ resources:
    redmushroom_name_rsc = "red mushroom"
    redmushroom_icon_rsc = mushroom.bgf
    redmushroom_desc_rsc = \
-      "These magical mushrooms singe your nostrils with a mysterious, acrid odor."
-
+      "These magical mushrooms singe your nostrils with a mysterious, "
+      "acrid odor."
    redmushroom_name_plural_rsc = "red mushrooms"
 
 classvars:
@@ -37,7 +37,6 @@ classvars:
    viWeight = 2
    viBulk = 5
 
-
 properties:
 
    piNumber = 2
@@ -46,11 +45,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_RED,#color2=XLAT_TO_RED);
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_RED,
+                           #color2=XLAT_TO_RED);
       
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

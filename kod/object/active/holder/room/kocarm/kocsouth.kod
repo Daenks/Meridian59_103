@@ -20,7 +20,7 @@ resources:
 
    room_name_kocatansouth = "Ko'catan, the Island Settlement"
    room_kocatansouth = settle2.roo
-   kocatansouth_music = song08.mp3
+   kocatansouth_music = song08.ogg
 
    kocatansouth_northdoors = \
       "This door to the inner wall is firmly bolted shut."
@@ -38,7 +38,7 @@ resources:
       "As you touch the door, you hear the bolt mechanism slide home, "
       "locking itself.  Apparently, this door is magically safeguarded "
       "against guild non-members such as yourself."
-   kocatansouth_guild_sound_locked = doorlck.wav
+   kocatansouth_guild_sound_locked = doorlck.ogg
 
 classvars:
 

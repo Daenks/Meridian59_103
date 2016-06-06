@@ -34,10 +34,10 @@ resources:
    ent_dead_leaves_full_rsc = res0003e.bgf
    ent_dead_name_rsc = "dead remains of living tree"
 
-   ent_sound_hit = tr_atkh.wav
-   ent_sound_miss = tr_atkm.wav
-   ent_sound_death = tr_dth.wav
-   ent_sound_aware = tr_awr.wav
+   ent_sound_hit = tr_atkh.ogg
+   ent_sound_miss = tr_atkm.ogg
+   ent_sound_death = tr_dth.ogg
+   ent_sound_aware = tr_awr.ogg
 
 classvars:
 

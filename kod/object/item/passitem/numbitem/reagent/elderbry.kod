@@ -21,9 +21,8 @@ resources:
    Elderberry_name_rsc = "elderberry"
    Elderberry_icon_rsc = shrubbry.bgf
    Elderberry_desc_rsc = \
-   "These magical herbs are rich and succulent.  Bright red "
-   "berries cling to tender branches."
-
+      "These magical herbs are rich and succulent.  Bright red "
+      "berries cling to tender branches."
    Elderberry_name_plural_rsc = "elderberries"
 
 classvars:
@@ -43,7 +42,6 @@ classvars:
 properties:
 
    piNumber = 4
-
 
 messages:
 

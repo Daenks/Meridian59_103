@@ -21,6 +21,10 @@
 /* local function prototypes */
 void SynchedProtocolParse(session_node *s,client_msg *msg);
 void SynchedAcceptLogin(session_node *s,char *name,char *password);
+void SynchedSendGetClient(session_node *s);
+void SynchedSendClientPatchClassic(session_node *s);
+void SynchedSendClientPatchOgre(session_node *s);
+void SynchedSendClientPatchOldClassic(session_node *s);
 void LogUserData(session_node *s);
 void SynchedSendMenuChoice(session_node *s);
 void SynchedDoMenu(session_node *s);
@@ -122,7 +126,7 @@ void SynchedProcessSessionBuffer(session_node *s)
 
 void SynchedProtocolParse(session_node *s,client_msg *msg)
 {
-   char name[MAX_LOGIN_NAME+1],password[MAX_LOGIN_PASSWORD+1];
+   char name[MAX_LOGIN_NAME + 1], password[MAX_LOGIN_PASSWORD + 1];
    short len;
    int index;
    int last_download_time;
@@ -161,7 +165,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
    {
    case AP_LOGIN : 
       if (msg->len < 39) /* fixed size of AP_LOGIN, before strings */
-	 break;
+         break;
       s->version_major = *(char *)(msg->data+index);
       index++;
       s->version_minor = *(char *)(msg->data+index);
@@ -197,7 +201,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data + index);
       if (index + 2 + len > msg->len) /* 2 = length word len */
          break;
-      if (len > sizeof(name))
+      if (len >= sizeof(name))
          break;
       memcpy(name, msg->data + index + 2, len);
       name[len] = 0; /* null terminate string */
@@ -206,21 +210,37 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data + index);
       if (index + 2 + len > msg->len)
          break;
-      if (len > sizeof(password))
+      if (len >= sizeof(password))
          break;
       memcpy(password, msg->data + index + 2, len);
       password[len] = 0; /* null terminate string */
       index += 2 + len;
-      
+
+      // Set the first byte to 0 in case we don't get a hash.
+      s->rsb_hash[0] = 0;
+
+      // Don't break if this fails, still allow user to connect.
+      if (s->version_major == 50 && s->version_minor > 42
+         || s->version_major == 90 && s->version_minor > 6)
+      {
+         len = *(short *)(msg->data + index);
+         if (index + 2 + len > msg->len)
+            break;
+         if (len >= sizeof(s->rsb_hash))
+            break;
+         memcpy(s->rsb_hash, msg->data + index + 2, len);
+         s->rsb_hash[len] = 0; /* null terminate string */
+      }
+
       SynchedAcceptLogin(s,name,password);
-      
       break;
    case AP_GETCLIENT :
       eprintf("SynchedProtocolParse AP_GETCLIENT no longer supported\n");
       break;
    case AP_REQ_GAME :
-		lprintf("SynchedProtocolParse account %u version %u %u\n",s->account->account_id,s->version_major,s->version_minor);
-      if (s->version_major * 100 + s->version_minor < ConfigInt(LOGIN_MIN_VERSION))
+      lprintf("SynchedProtocolParse account %u version %u %u\n",
+         s->account->account_id, s->version_major, s->version_minor);
+      if (s->version_major * 100 + s->version_minor < ConfigInt(LOGIN_CLASSIC_MIN_VERSION))
       {
          AddByteToPacket(AP_MESSAGE);
          AddStringToPacket(strlen(ConfigStr(LOGIN_OLD_VERSION_STR)),
@@ -258,7 +278,7 @@ void SynchedProtocolParse(session_node *s,client_msg *msg)
       len = *(short *)(msg->data+index);
       if (index + 2 + len > msg->len)
          break;
-      if (len > sizeof(name))
+      if (len >= sizeof(name))
          break;
       memcpy(name,msg->data+index+2,len);
       name[len] = 0; /* null terminate string */
@@ -315,10 +335,17 @@ struct in6_addr check_addr;
 void CheckIPAddress(session_node *s)
 {
 	BOOL equal = 1;
+#ifdef BLAK_PLATFORM_WINDOWS
 	for (int i = 0; i < sizeof(check_addr.u.Byte); i++)
 	{
 		if (s->conn.addr.u.Byte[i] != check_addr.u.Byte[i])
 		{
+#else
+        for (int i = 0; i < sizeof(check_addr.s6_addr); i++)
+        {
+                if (s->conn.addr.s6_addr[i] != check_addr.s6_addr[i])
+                {
+#endif
 			equal = 0;
 			break;
 		}
@@ -475,6 +502,8 @@ void SendSynchedMessage(session_node *s,char *str,char logoff)
 void VerifyLogin(session_node *s)
 {
    char *str;
+   int cli_vers;
+
    LogUserData(s);
 
    s->login_verified = True;
@@ -485,34 +514,207 @@ void VerifyLogin(session_node *s)
 
    /* they're logged in now.  Check their version number, and if old tell 'em
       to update it */
-
-   if (s->version_major * 100 + s->version_minor < ConfigInt(LOGIN_INVALID_VERSION))
+   cli_vers = s->version_major * 100 + s->version_minor;
+   if (cli_vers < ConfigInt(LOGIN_INVALID_VERSION))
    {
       SendSynchedMessage(s,ConfigStr(LOGIN_INVALID_VERSION_STR),LA_LOGOFF);
       HangupSession(s);
       return;
    }
 
-
-   if (s->version_major * 100 + s->version_minor < ConfigInt(LOGIN_MIN_VERSION))
+   if (s->version_major == 50
+      && cli_vers < ConfigInt(LOGIN_CLASSIC_MIN_VERSION))
    {
-      AddByteToPacket(AP_GETCLIENT);
+#if VANILLA_UPDATER
+      SynchedSendGetClient(s);
+#else
+      // If they have an old client not capable of self-updating,
+      // give them the old protocol.
+      if (s->version_minor <= 38)
+         SynchedSendGetClient(s);
+      else if (s->version_minor <= 40)
+         SynchedSendClientPatchOldClassic(s);
+      else
+         SynchedSendClientPatchClassic(s);
+#endif
+      InterfaceUpdateSession(s);
 
-      str = LockConfigStr(UPDATE_CLIENT_MACHINE);
-      AddStringToPacket(strlen(str),str);
-      UnlockConfigStr();
-      
-      str = LockConfigStr(UPDATE_CLIENT_FILE);
-      AddStringToPacket(strlen(str),str);
-      UnlockConfigStr();
+      /* set timeout real long, since they're downloading */
+      SetSessionTimer(s, 60 * ConfigInt(INACTIVE_TRANSFER));
+   }
+   else if (s->version_major == 90
+           && cli_vers < ConfigInt(LOGIN_OGRE_MIN_VERSION))
+   {
+#if VANILLA_UPDATER
+      SynchedSendGetClient(s);
+#else
+      // If they have an old client not capable of self-updating,
+      // give them the old protocol.
+      if (s->version_minor <= 4)
+         SynchedSendGetClient(s);
+      else
+         SynchedSendClientPatchOgre(s);
+#endif
+      InterfaceUpdateSession(s);
 
-      SendPacket(s->session_id);
+      /* set timeout real long, since they're downloading */
+      SetSessionTimer(s, 60 * ConfigInt(INACTIVE_TRANSFER));
    }
    else
    {
-      SynchedDoMenu(s);
+      str = GetRsbMD5();
+      if (*str != 0
+         && s->rsb_hash[0] != 0
+         && strcmp(s->rsb_hash, str) != 0)
+      {
+         if (s->version_major == 50)
+            SynchedSendClientPatchClassic(s);
+         else if (s->version_major == 90)
+            SynchedSendClientPatchOgre(s);
+         InterfaceUpdateSession(s);
+         /* set timeout real long, since they're downloading */
+         SetSessionTimer(s, 60 * ConfigInt(INACTIVE_TRANSFER));
+      }
+      else
+         SynchedDoMenu(s);
    }
- 
+}
+
+// Send the AP_GETCLIENT protocol and data to session.
+void SynchedSendGetClient(session_node *s)
+{
+   char *str;
+
+   if (!s)
+      return;
+
+   AddByteToPacket(AP_GETCLIENT);
+
+   str = LockConfigStr(UPDATE_CLIENT_MACHINE);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLIENT_FILE);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   SendPacket(s->session_id);
+}
+
+// The AP_CLIENT_PATCH protocol sends the client details on where to access
+// a full listing of the client files plus a JSON txt file containing each
+// file name, its size, relative path and a hash to compare with local files
+// for changes. Also sends the name of the updater file, which is currently
+// always club.exe but could change one day. Implemented for both Classic
+// (major version 50) and Ogre (major version 90) clients.
+void SynchedSendClientPatchClassic(session_node *s)
+{
+   char *str;
+
+   if (!s)
+      return;
+
+   AddByteToPacket(AP_CLIENT_PATCH);
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_ROOT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_CACHE_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_TXT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_CLUB_EXE);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_DOWNLOAD_REASON);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   SendPacket(s->session_id);
+}
+
+// Send the AP_CLIENT_PATCH protocol and data to session.
+// Use ogre client download instructions.
+void SynchedSendClientPatchOgre(session_node *s)
+{
+   char *str;
+
+   if (!s)
+      return;
+
+   AddByteToPacket(AP_CLIENT_PATCH);
+
+   str = LockConfigStr(UPDATE_OGRE_PATCH_ROOT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_OGRE_PATCH_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_OGRE_PATCH_CACHE_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_OGRE_PATCH_TXT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_OGRE_CLUB_EXE);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_DOWNLOAD_REASON);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   SendPacket(s->session_id);
+}
+
+// AP_CLIENT_PATCH_OLD protocol is a transitional update protocol
+// that had the client download and parse patchinfo.txt. The old
+// protocol doesn't send the filename for the updater. Used for
+// client versions 5039 and 5040.
+void SynchedSendClientPatchOldClassic(session_node *s)
+{
+   char *str;
+
+   if (!s)
+      return;
+
+   AddByteToPacket(AP_CLIENT_PATCH_OLD);
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_ROOT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_CACHE_PATH);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_CLASSIC_PATCH_TXT);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   str = LockConfigStr(UPDATE_DOWNLOAD_REASON);
+   AddStringToPacket(strlen(str), str);
+   UnlockConfigStr();
+
+   SendPacket(s->session_id);
 }
 
 void LogUserData(session_node *s)
@@ -575,6 +777,7 @@ void LogUserData(session_node *s)
    sprintf(buf+strlen(buf),"%s",LockConfigStr(ADVERTISE_FILE2));
    UnlockConfigStr();
 
+   sprintf(buf + strlen(buf), " client version %i", s->version_major * 100 + s->version_minor);
    strcat(buf,"\n");
 
    lprintf("%s",buf);

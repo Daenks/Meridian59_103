@@ -22,7 +22,6 @@ resources:
    yellowmushroom_icon_rsc = mushroom.bgf
    yellowmushroom_desc_rsc = \
       "These magical mushrooms project an aura of tingling electricity."
-
    yellowmushroom_name_plural_rsc = "yellow mushrooms"
 
 classvars:
@@ -37,7 +36,6 @@ classvars:
    viWeight = 2
    viBulk = 5
 
-
 properties:
 
    piNumber = 1
@@ -46,11 +44,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_ORANGE,#color2=XLAT_TO_ORANGE);
-      
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_ORANGE,
+                           #color2=XLAT_TO_ORANGE);
+
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

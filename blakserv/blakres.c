@@ -30,9 +30,22 @@ static int resources_table_size;
 static int next_dynamic_rsc;
 static sihash_type resource_name_map;
 
+// Stored MD5 for the loaded RSB file.
+static char rsb_file_md5[ENCRYPT_LEN + 1];
+
 /* local function prototypes */
 void DynamicResourceChangeNotify(session_node *s);
 
+void SaveRsbMD5(char *rsb_hash)
+{
+   memcpy(rsb_file_md5, rsb_hash, ENCRYPT_LEN);
+   rsb_file_md5[ENCRYPT_LEN] = 0;
+}
+
+char * GetRsbMD5(void)
+{
+   return rsb_file_md5;
+}
 
 void InitResource(void)
 {

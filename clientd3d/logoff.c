@@ -44,53 +44,55 @@ BOOL CALLBACK TimeoutDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPara
 
       SetWindowFont(hMinutes, GetFont(FONT_INPUT), FALSE);
 
-      if (config.timeout == 0)
+      if (!config.timeoutenabled || config.timeout == 0)
       {
-	 CheckDlgButton(hDlg, IDC_TIMEOUTENABLE, FALSE);
-	 EnableWindow(hMinutes, FALSE);
-	 strcpy(temp, "120");  /* Default value */
+         CheckDlgButton(hDlg, IDC_TIMEOUTENABLE, FALSE);
+         EnableWindow(hMinutes, FALSE);
       }
-      else 
+      else
       {
-	 CheckDlgButton(hDlg, IDC_TIMEOUTENABLE, TRUE);
-	 sprintf(temp, "%d", config.timeout);
+         CheckDlgButton(hDlg, IDC_TIMEOUTENABLE, TRUE);
       }
 
+      sprintf(temp, "%d", config.timeout);
       Edit_SetText(hMinutes, temp);
       return TRUE;
-      
+
    case WM_COMMAND:
       switch(GET_WM_COMMAND_ID(wParam, lParam))
       {
-#if 0
       case IDC_TIMEOUTENABLE:
-	 EnableWindow(hMinutes, IsDlgButtonChecked(hDlg, IDC_TIMEOUTENABLE));
-	 break;
-#endif
+         EnableWindow(hMinutes, IsDlgButtonChecked(hDlg, IDC_TIMEOUTENABLE));
+         break;
 
       case IDOK:
-	 /* Get typed # of minutes, if enabled */
-	 if (!IsDlgButtonChecked(hDlg, IDC_TIMEOUTENABLE))
-	 {
-	    config.timeout = 0;
-	    LogoffTimerAbort();
-	 }
-	 else
-	 {
-	    Edit_GetText(hMinutes, temp, MAXMINUTES);
-	    config.timeout = max(atoi(temp), 0);
-	    if (state == STATE_GAME)
-	       LogoffTimerReset();
-	 }
-	 UserDidSomething();   /* Reset timer */
-	 EndDialog(hDlg, IDOK);
-	 return TRUE;
+         /* Get typed # of minutes. */
+         Edit_GetText(hMinutes, temp, MAXMINUTES);
+         config.timeout = max(atoi(temp), 0);
+
+         /* Set timer enabled/disabled, and reset or abort timer. */
+         if (IsDlgButtonChecked(hDlg, IDC_TIMEOUTENABLE))
+         {
+            config.timeoutenabled = True;
+            if (state == STATE_GAME)
+               LogoffTimerReset();
+         }
+         else
+         {
+            config.timeoutenabled = False;
+            LogoffTimerAbort();
+         }
+
+         UserDidSomething();   /* Reset timer */
+         EndDialog(hDlg, IDOK);
+         return TRUE;
 
       case IDCANCEL:
-	 EndDialog(hDlg, IDCANCEL);
-	 return TRUE;
+         EndDialog(hDlg, IDCANCEL);
+         return TRUE;
       }
    }
+
    return FALSE;
 }
 /****************************************************************************/
@@ -114,7 +116,7 @@ void LogoffTimerStart(void)
 {
    UINT delay;
 
-   if (config.timeout == 0)
+   if (!config.timeoutenabled || config.timeout == 0)
       return;
 
    delay = (UINT) (min((long) ((long) config.timeout * MS_PER_MINUTE), MAXTIMERMS));
@@ -155,6 +157,9 @@ void CALLBACK LogoffTimerProc(HWND hwnd, UINT msg, UINT timer, DWORD dwTime)
 
    KillTimer(NULL, timer_id);
 
+   if (!config.timeoutenabled || config.timeout == 0)
+      return;
+
    elapsed = GetTickCount() - last_time;
    if (elapsed >= (long) (config.timeout * MS_PER_MINUTE))
    {
@@ -169,4 +174,3 @@ void CALLBACK LogoffTimerProc(HWND hwnd, UINT msg, UINT timer, DWORD dwTime)
    if (timer_id == 0)
       ClientError(hInst, hMain, IDS_NOTIMERS);
 }
-

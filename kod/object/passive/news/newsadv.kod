@@ -21,11 +21,12 @@ resources:
    include newsadv.lkod
 
    newsadventure_name = "Tales of Adventure"
-   newsadventure_desc = "Stories from the people of Meridian, collected by Bards"
+   newsadventure_desc = \
+      "Stories from the people of Meridian, collected by Bards"
    newsadventure_icon = jbook.bgf
 
 classvars:
-   
+
 properties:
 
    vrName = newsadventure_name
@@ -36,7 +37,7 @@ messages:
 
    GetNewsPermission(what = $)
    {
-      if send(what,@isActor)
+      if IsClass(what,&DM)
       {
          return NEWS_PERMISSION_READ_WRITE;
       }

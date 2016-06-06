@@ -30,7 +30,9 @@ resources:
    "Made of carefully cut diamonds set in finely worked copper, this pendant "
    "would be anyone's best friend."
 
-   ShalilleCharm_whisper = "A voice whispers, \"~I...calm only prevails if it learns from its travails...\""
+   ShalilleCharm_whisper = \
+      "A voice whispers, \"~I...calm only prevails if it learns from "
+      "its travails...\""
 
 classvars:
 
@@ -47,11 +49,11 @@ classvars:
    viGround_group = 2
 
 properties:
-   
-   pbIn_use = False
 
-   piIntellect_change = Intellect_CHANGE
-   piStamina_change = Stamina_CHANGE
+   pbIn_use = FALSE
+
+   piIntellect_change = INTELLECT_CHANGE
+   piStamina_change = STAMINA_CHANGE
 
    piDisp_hits = 0
 
@@ -60,49 +62,59 @@ messages:
    Constructor()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewOwner()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewUsed(what = $)
-   "When the charm is put on, the wearer gets a moderate bonus to both Intellect and Stamina."
+   "When the charm is put on, the wearer gets a moderate bonus to both "
+   "Intellect and Stamina."
    {
-      piStamina_change = send(what,@addStamina,#points=Stamina_CHANGE);
-      piIntellect_change = send(what,@addIntellect,#points = Intellect_CHANGE);
+      piStamina_change = Send(what,@AddStamina,#points=STAMINA_CHANGE);
+      piIntellect_change = Send(what,@AddIntellect,#points = INTELLECT_CHANGE);
 
-      if random(1,5) = 3   %% 20% chance
-        {
-          send(what,@msgsenduser,#message_rsc=ShalilleCharm_whisper);
-        }
+      if Random(1,5) = 3   %% 20% chance
+      {
+         Send(what,@MsgSendUser,#message_rsc=ShalilleCharm_whisper);
+      }
+
       propagate;
    }
 
    NewUnused(what = $)
    "When something that can break the curse unuses the item"
    {
-      send(what,@addStamina,#points=-piStamina_change);
-      send(what,@addIntellect,#points = -piIntellect_change);
+      Send(what,@AddStamina,#points=-piStamina_change);
+      Send(what,@AddIntellect,#points=-piIntellect_change);
+
       propagate;
    }
 
    DestroyDisposable()
    {
       if piDisp_Hits = 0
-        {
-           send(self,@delete);
-           return;
-        }
-      piDisp_hits = piDisp_hits - 1;
+      {
+         Send(self,@Delete);
+
+         return;
+      }
+      --piDisp_hits;
+
       return;
+   }
+
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-

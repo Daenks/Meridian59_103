@@ -20,11 +20,13 @@ resources:
 
    room_name_tosbank = "First Royal Bank of Tos"
    room_tosbank = tosbank.roo
-   tosbank_music = bank.mp3
+   tosbank_music = bank.ogg
 
-   tosbank_sign = \
+   tosbank_sign_name = "Welcome to the Bank of Tos"
+   tosbank_sign_desc = \
       "Use the deposit, withdraw (amount), and balance commands to access "
-      "your bank account."
+      "your bank account.\n\nDeposits made here can also be accessed from "
+      "the Royal Bank of Jasper in West Jasper."
 
 classvars:
 
@@ -65,8 +67,8 @@ messages:
       Send(self,@NewHold,#what=Create(&TosBanker,#bid=BID_TOS),
            #new_row=7,#new_col=4,#new_angle=ANGLE_EAST);
 
-      Send(self,@NewHold,#what=Create(&Sign,#desc=tosbank_sign),
-           #new_row=4,#new_col=6);
+      Send(self,@NewHold,#what=Create(&Sign,#name=tosbank_sign_name,
+            #desc=tosbank_sign_desc),#new_row=4,#new_col=6);
 
       Send(self,@NewHold,#what=Create(&Brazier),
            #new_row=8,#new_col=2);

@@ -1,19 +1,17 @@
 % Quest description.
-riijaofferingqt_name_rsc = de "Riija offering quest"
+riijaofferingqt_name_rsc = de "Riija Opfer Quest"
 riijaofferingqt_desc_rsc = de \
-   "The Riija Monk has invited you to chant with him, to give strength "
-   "to Lord Riija."
+   "Der Riija Mönch hat dich eingeladen mit ihm zu singen, um Lord Riija zu stärken."
 
 riijaofferingqt_completed = de \
-   "Riija has bestowed temporary power upon you, in return for some "
-   "of your life essence.  You have also received a powerful magical "
-   "item.  When placed at one of the Shrines located around the "
-   "world, the Shrine will be dedicated to Riija and his spells "
-   "will have more power."
+   "Riija hat dir temporäre Kraft verlieren, im Gegenzug zu ein wenig deiner Lebenskraft. "
+   "Du hast ebenfalls einen mächtigen magischen Gegenstand erhalten. Wenn dieser an einem "
+   "der Schreine in der Welt platziert wird, wird er Riija geweiht und verleiht den "
+   "Zaubern Riijas mehr Kraft."
 
 % Quest resources.
 riijaoffering_assign_2 = de \
-   "%NAME, Lord Pappnase will Dich stärken? Willst Du mit mir singen?"
+   "%NAME, Lord Riija will Dich stärken!? Willst Du mit mir singen?"
 riijaoffering_trigger_2 = de "ja"
 riijaoffering_assign_3 = de \
    "Sprich diese Wörter mit mir: %CARGO.  Fühle die Macht, die bei jedem "

@@ -192,7 +192,7 @@ Bool MapFileLoadRoom(room_type *room)
  */
 Bool MapFileSaveRoom(room_type *room)
 {
-   int i, offset, temp;
+   int i, offset = 0, temp;
    BYTE byte;
 
    if (-1 == mapfile || !room || !room->tree || !room->nodes)

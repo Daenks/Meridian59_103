@@ -1011,6 +1011,13 @@ messages:
       return viObject_flags | piDrawEffectFlag;
    }
 
+   GetMinimapDotFlags()
+   "If the object should display a dot on the minimap, override this message "
+   "and return the flags to be displayed.  Default is no dot."
+   {
+      return MM_NONE;
+   }
+
    GetDrawingEffects()
    "This returns any special drawing effect the object has. Default is "
    "no drawing effect."
@@ -1052,7 +1059,7 @@ messages:
 
    SetNameColor(red=0,green=0,blue=0,rgb=$)
    "Can set the name color for any object. Currently, only objects "
-   "with OF_PLAYER set to TRUE will display a name. Can change color "
+   "with OF_DISPLAY_NAME set to TRUE will display a name. Can change color "
    "by red, green and blue value, or alternatively by rgb value."
    {
       if rgb <> $

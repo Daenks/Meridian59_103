@@ -27,7 +27,7 @@ resources:
    illusionarywounds_cast = "Your illusion takes the form of %s."
 
    illusionarywounds_off = "Hey!  Some of those wounds were illusionary!"
-   illusionarywounds_sound = riija.wav
+   illusionarywounds_sound = riija.ogg
 
 classvars:
 
@@ -209,19 +209,19 @@ messages:
 
       % Intellect boosts base damage
       iBaseDamage = Send(self,@DamageFactors,#damage=iBaseDamage,#who=who,
-         #victim=victim);
+                           #victim=victim);
 
       iHPLoss = iBaseDamage * iSpellPower / SPELLPOWER_MAXIMUM;
 
-      % Always leaves 1 HP behind, no more than 1/3 damage.
+      % Always leaves 10 HP behind (for safety), no more than 1/3 damage.
       iHPLoss = Bound(iHPLoss,0,(iMaxHps*33));
-      iHPLoss = Bound(iHPLoss,0,Send(victim,@GetExactHealth)-1);
+      iHPLoss = Bound(iHPLoss,0,Send(victim,@GetExactHealth) - 1000);
 
       if iFactor > 1
       {
          iHPLoss = iHPLoss / iFactor;
       }
-      
+
       return iHPLoss;
    }
 
@@ -240,7 +240,7 @@ messages:
    {
       local iDuration;
 
-      iDuration = 20000 + (iSpellPower * 750); 
+      iDuration = 20000 + (iSpellPower * 750);
       iDuration = Bound(iDuration,20000,80000);
 
       return iDuration;

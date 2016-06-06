@@ -29,10 +29,10 @@ resources:
    spiderbaby_dead_icon_rsc = spdrbyX.bgf
    spiderbaby_dead_name_rsc = "dead baby spider"
 
-   spiderbaby_sound_hit = bsp_atkh.wav
-   spiderbaby_sound_miss = bsp_atkm.wav
-   spiderbaby_sound_death = bsp_dth.wav
-   spiderbaby_sound_aware = bsp_awr.wav
+   spiderbaby_sound_hit = bsp_atkh.ogg
+   spiderbaby_sound_miss = bsp_atkm.ogg
+   spiderbaby_sound_death = bsp_dth.ogg
+   spiderbaby_sound_aware = bsp_awr.ogg
 
 classvars:
    vrKocName = spiderbaby_koc_name_rsc

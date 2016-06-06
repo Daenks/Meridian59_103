@@ -12,8 +12,6 @@ KriipaClaw is Reagent
 
 constants:
 
-   include blakston.khd
-
 resources:
 
    include kripclaw.lkod
@@ -21,9 +19,8 @@ resources:
    KriipaClaw_name_rsc = "kriipa claw"
    KriipaClaw_icon_rsc = kriclaw.bgf
    KriipaClaw_desc_rsc = \
-   "The weapons of the dangerous Kriipa, Perfect Kriipa claws are "
-   "hard to come by, but handy to have about."
-
+      "The weapons of the dangerous Kriipa, Perfect Kriipa claws are "
+      "hard to come by, but handy to have about."
    KriipaClaw_name_plural_rsc = "kriipa claws"
 
 classvars:
@@ -41,7 +38,6 @@ classvars:
 properties:
 
    piNumber = 3
-
 
 messages:
 

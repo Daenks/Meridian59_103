@@ -19,8 +19,8 @@ resources:
    include ka5.lkod
 
    room_name_OutdoorsKA5 = "Outside the Guard Tower"
-   room_OutdoorsKA5 = KA5.roo
-   OutdoorsKA5_music = avarwar.mp3
+   room_OutdoorsKA5 = ka5.roo
+   OutdoorsKA5_music = avarwar.ogg
 
 classvars:
 
@@ -47,7 +47,7 @@ properties:
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
 
    piGen_time = 20000
-   piGen_percent = 70
+   piGen_percent = 100
 
    piInit_count_min = 5
    piInit_count_max = 9
@@ -61,7 +61,7 @@ messages:
    Constructed()
    {
       plMonsters = [ [&Avar, 95], [&Dragonfly, 5] ];
-      plGenerators = [ [6,48], [23,41], [9,6] ];
+      plGenerators = [ [6,48], [6,36], [13,35], [23,41], [9,6] ];
 
       propagate;
    }

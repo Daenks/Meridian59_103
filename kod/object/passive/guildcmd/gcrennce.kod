@@ -13,7 +13,6 @@ GuildRenounce is GuildCommand
 constants:
 
    include blakston.khd
-   include protocol.khd
 
 resources:
 
@@ -21,15 +20,18 @@ resources:
 
    guildrenounce_name_rsc = "renounce guild"
    guildrenounce_icon_rsc = light.bgf
-   guildrenounce_desc_text_rsc = "Use this command to quit your guild.  You never liked them anyway.  Guildmasters must transfer their title before using this command."
+   guildrenounce_desc_text_rsc = \
+      "Use this command to quit your guild.  You never liked them anyway.  "
+      "Guildmasters must transfer their title before using this command."
 
-   renounce_no_gms = "Guildmasters may not renounce their ties before abdicating their titles."
+   renounce_no_gms = \
+      "Guildmasters may not renounce their ties before abdicating their titles."
    renounce_ties_renouncer = "~BYou renounce your ties to %s%q."
    renounce_ties_others = "~B%s%s renounces all ties to %s%q!"
 
-   guildrenounce_necro_nak = "~BYou have sworn a blood oath to The Order of the Necromancers.  "
+   guildrenounce_necro_nak = \
+      "~BYou have sworn a blood oath to The Order of the Necromancers.  "
       "Death is your only way out."
-
 
 classvars:
 
@@ -56,13 +58,14 @@ messages:
    "Guildmasters DO NOT have access to this command.  All other members do."
    {
       if rank = RANK_MASTER
-        {
-           send(who,@removeguildcommand,#command_num=viGuildCommand_num);
-        }
+      {
+         Send(who,@RemoveGuildCommand,#command_num=viGuildCommand_num);
+      }
       else
-        {
-           send(who,@addguildcommand,#command_num=viGuildCOmmand_num);
-        }
+      {
+         Send(who,@AddGuildCommand,#command_num=viGuildCOmmand_num);
+      }
+
       return;
    }
 
@@ -71,38 +74,42 @@ messages:
    {
       local oGuild, lMembers, i;
 
-     
-      oGuild = send(who, @getguild);
+      oGuild = Send(who, @GetGuild);
 
       if oGuild = $
-        {
-           debug("this guy belongs to no guild!");
-           return FALSE;
-        }
-      if send(oGuild,@getguildmaster) = who
-        {
-           send(who,@msgsenduser,#message_rsc=renounce_no_GMS);
-        }
-      if isClass(oGuild,&NecromancerGuild) {
-         Send(who,@MsgSendUser,#message_rsc=guildrenounce_necro_nak);
+      {
+         Debug("this guy belongs to no guild!");
+
          return FALSE;
       }
 
-      send(oGuild,@removefromguild,#who=who); 
-      send(who,@msgsenduser,#message_rsc=renounce_ties_renouncer,
-           #parm1=send(oGuild,@getdef),#parm3=send(oGuild,@getName));
+      if Send(oGuild,@GetGuildmaster) = who
+      {
+         Send(who,@MsgSendUser,#message_rsc=renounce_no_GMS);
+      }
 
-      lMembers = send(oGuild,@getmemberlist);
+      if IsClass(oGuild,&NecromancerGuild)
+      {
+         Send(who,@MsgSendUser,#message_rsc=guildrenounce_necro_nak);
+
+         return FALSE;
+      }
+
+      Send(oGuild,@RemoveFromGuild,#who=who);
+      Send(who,@MsgSendUser,#message_rsc=renounce_ties_renouncer,
+            #parm1=Send(oGuild,@GetDef),#parm3=Send(oGuild,@GetName));
+
+      lMembers = Send(oGuild,@GetMemberList);
 
       foreach i in lMembers
-         {
-             post(first(i),@msgsenduser,#message_rsc=renounce_ties_others,
-                #parm1=send(who,@getdef),
-				#parm2=send(who,@getname),#parm3=send(oguild,@getdef),
-                #parm4=send(oguild,@getname));
-         }
+      {
+         Post(First(i),@MsgSendUser,#message_rsc=renounce_ties_others,
+               #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName),
+               #parm3=Send(oguild,@GetDef),#parm4=Send(oguild,@GetName));
+      }
+
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

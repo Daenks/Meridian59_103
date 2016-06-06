@@ -12,6 +12,7 @@
 
 #include "client.h"
 #include "char.h"
+#include <string>
 
 HINSTANCE hInst;            // Handle of this DLL
 
@@ -151,6 +152,7 @@ Bool HandleCharInfo(char *ptr, long len)
    int i, num, gender;
    list_type spells, skills;
    BYTE byte;
+   std::string list_str;
 
    // *** Read face info
    ap = (CharAppearance *) SafeMalloc(sizeof(CharAppearance));
@@ -207,8 +209,19 @@ Bool HandleCharInfo(char *ptr, long len)
       Extract(&ptr, &s->name_res, SIZE_ID);
       Extract(&ptr, &s->desc_res, SIZE_ID);
       Extract(&ptr, &s->cost, 4);
-      Extract(&ptr, &s->school, 1);
+      Extract(&ptr, &byte, 1);
+      s->spell_school = (School) byte;
       s->chosen = False;
+
+      // Create the string displayed to user in
+      // character creation spell selection.
+      list_str.assign(GetSchoolString(s->spell_school));
+      if (s->cost < 25)
+         list_str.append(" 1: ");
+      else
+         list_str.append(" 2: ");
+      list_str.append(LookupNameRsc(s->name_res));
+      s->list_str = strdup(list_str.c_str());
 
       spells = list_add_item(spells, s);
    }
@@ -225,6 +238,18 @@ Bool HandleCharInfo(char *ptr, long len)
       Extract(&ptr, &s->desc_res, SIZE_ID);
       Extract(&ptr, &s->cost, 4);
       s->chosen = False;
+
+      // Create the string displayed to user in character creation
+      // skill selection. School hardcoded to weaponcraft until
+      // alternatives are available, due to incompatibility
+      // with existing protocol (school not sent for skills).
+      list_str.assign(GetSchoolString(SKS_FENCING));
+      if (s->cost < 25)
+         list_str.append(" 1: ");
+      else
+         list_str.append(" 2: ");
+      list_str.append(LookupNameRsc(s->name_res));
+      s->list_str = strdup(list_str.c_str());
 
       skills = list_add_item(skills, s);
    }
@@ -281,4 +306,33 @@ Bool WINAPI EventStateChanged(int old_state, int new_state)
       AbortCharDialogs();
    }
    return True;
+}
+
+char *GetSchoolString(School school_id)
+{
+   switch (school_id)
+   {
+   case SS_SHALILLE:
+      return GetString(hInst,IDS_SHALILLE);
+   case SS_QOR:
+      return GetString(hInst, IDS_QOR);
+   case SS_KRAANAN:
+      return GetString(hInst, IDS_KRAANAN);
+   case SS_FAREN:
+      return GetString(hInst, IDS_FAREN);
+   case SS_RIIJA:
+      return GetString(hInst, IDS_RIIJA);
+   case SS_JALA:
+      return GetString(hInst, IDS_JALA);
+   case SS_DM_COMMAND:
+      return GetString(hInst, IDS_DMSCHOOL);
+   case SKS_FENCING:
+      return GetString(hInst, IDS_FENCING);
+   case SKS_BRAWLING:
+      return GetString(hInst, IDS_BRAWLING);
+   case SKS_THIEVERY:
+      return GetString(hInst, IDS_THIEVERY);
+   }
+
+   return "Unknown";
 }

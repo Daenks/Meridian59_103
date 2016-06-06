@@ -7,11 +7,7 @@ Evaluated_Evaluate_msg = de "~b%s%s looks deeply into your eyes."
 Evaluate_desc_rsc = de \
    "This gazes deep into a person's eyes, and judges their odds of gaining "
    "another health point."
-Evaluate_message_nochance = de \
-   "%s has no chance of gaining a hit point, but will in about %i kills."
-Evaluate_Message = de \
-   "%s has a %i out of %i chance (%i percent) of gaining a health point with "
-   "each kill."
+evaluate_message = de "%s has %i XP and needs %i to reach %i HP."
 evaluate_monster = de \
    "%s should concentrate on killing monsters at about %s ability level, "
    "such as %ss and %ss."

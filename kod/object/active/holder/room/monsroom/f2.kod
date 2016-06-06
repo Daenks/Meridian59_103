@@ -18,23 +18,23 @@ resources:
 
    include f2.lkod
 
-   room_OutdoorsF2 = F2.roo
+   room_OutdoorsF2 = f2.roo
    room_name_OutdoorsF2 ="The sandy shores of the Great Ocean"
-   waterfall_soundF2 = wfall2.wav
+   waterfall_soundF2 = wfall2.ogg
 
-   OutdoorsF2_music = walk7.mp3
+   OutdoorsF2_music = walk7.ogg
 
    F2_oceanwalk = \
       "You're already up to your ankles in saltwater, and you "
       "decide that's quite enough."
    F2_icewalk = "The ice looks a bit too thin to risk going any farther out."
 
-   ocean_soundF2 = "ocean.wav"
-   wavecrash1_soundF2 = "wave1.wav"
-   wavecrash2_soundF2 = "wave2.wav"
-   wavecrash3_soundF2 = "wave3.wav"
-   wavecrash4_soundF2 = "wave4.wav"
-   seagull_soundF2 = "gulls.wav"
+   ocean_soundF2 = "ocean.ogg"
+   wavecrash1_soundF2 = "wave1.ogg"
+   wavecrash2_soundF2 = "wave2.ogg"
+   wavecrash3_soundF2 = "wave3.ogg"
+   wavecrash4_soundF2 = "wave4.ogg"
+   seagull_soundF2 = "gulls.ogg"
 
 classvars:
 

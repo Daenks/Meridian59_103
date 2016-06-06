@@ -48,7 +48,7 @@ typedef unsigned char Bool;
 enum {False = 0, True = 1};
 
 #define MAJOR_REV 50   /* Major version of client program */
-#define MINOR_REV 35  /* Minor version of client program; must be in [0, 99] */
+#define MINOR_REV 44   /* Minor version of client program; must be in [0, 99] */
 
 #define MAXAMOUNT 9     /* Max # of digits in a server integer */
 #define MAXSTRINGLEN 512 /* Max length of a string loaded from string table */
@@ -196,9 +196,9 @@ M59EXPORT void _cdecl dprintf(char *fmt,...);
 #include "d3dtypes.h"
 #include "d3dcache.h"
 #include "d3drender.h"
+#include "d3dlighting.h"
 #include "d3dparticle.h"
 #include "matrix.h"
-#include "xform.h"
 #include "d3ddriver.h"
 #include "rscload.h"
 #include "crc.h"

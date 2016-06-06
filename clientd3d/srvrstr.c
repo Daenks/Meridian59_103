@@ -196,8 +196,7 @@ Bool CheckServerMessage(char** msg, char **params, long *len, ID fmt_id)
             }
             message += num_chars;
 
-            // Reset message2 and msg2.
-            message2[MAXMESSAGE];
+            // Reset msg2.
             msg2 = message2;
 
             // Get rid of any numbered parameter formatters.
@@ -396,7 +395,7 @@ int CheckMessageOrder(char **params, long *len, ID fmt_id)
    WORD string_len;
    DWORD field;
    int fieldPos = 0, currentPos = 0, tempLen = 0;
-   char digit[1];
+   char digit[2];
    PosArray posArray;
 
    // If there's nothing to reorder (i.e. no $ modifiers) don't perform

@@ -9,9 +9,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FeyForest is MonsterRoom
-   
+
 constants:
-   
+
    include blakston.khd
 
    % Base light value for the room.
@@ -19,40 +19,42 @@ constants:
 
    % What we adjust the Karma in the room by to get the light modifier.
    LIGHT_KARMA_ADJUST = -70
-   
+
 resources:
 
-   feyforest_music_neutral = neutfor.mp3
-   feyforest_music_evil = badfor.mp3
-   feyforest_music_good = goodfor.mp3
-   
+   feyforest_music_neutral = neutfor.ogg
+   feyforest_music_evil = badfor.ogg
+   feyforest_music_good = goodfor.ogg
+
 classvars:
-   
-   % This is where this section of the faerie forest will 'aim' for on the karmic scale.
-   viEquilibrium = 50              
+
+   // This is where this section of the faerie forest will
+   // 'aim' for on the karmic scale.
+   viEquilibrium = 50
 
    viTerrain_type = TERRAIN_FOREST | TERRAIN_MYSTICAL
 
    viWeatherZone = WEATHER_ZONE_VALE
 
 properties:
-   
+
    piBaseLight = BASE_LIGHT
    piOutside_factor = 8
-   
+
    piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
 
    piGen_time = 20000
    piGen_percent = 80
-   
-   piRoom_Karma = 50                %%% Room Karma is the karma of the Faerie Forest
-                                    %%% and determines the state of the forest.
+
+   // Room Karma is the karma of the Faerie Forest
+   // and determines the state of the forest.
+   piRoom_Karma = 50
    ptFaerie = $
 
    pbSnowGroundTexture = TRUE
 
 messages:
-   
+
    Constructor()
    {
       piRoom_Karma = viEquilibrium;
@@ -60,32 +62,32 @@ messages:
 
       propagate;
    }
-   
+
    FaerieTimer()
    {
-      if not pbUser_in_room
+      if NOT pbUser_in_room
       {
          if piRoom_Karma < viEquilibrium
          {
-            piRoom_Karma = piRoom_Karma + random(1,5);
+            piRoom_Karma = piRoom_Karma + Random(1,5);
          }
          else
          {
-            piRoom_Karma = piRoom_Karma - random(1,5);
+            piRoom_Karma = piRoom_Karma - Random(1,5);
          }
-         
-         if piInit_count_max < length(plGenerators)
+
+         if piInit_count_max < Length(plGenerators)
          {
-            piInit_count_min = piInit_count_min + 1;
-            piInit_count_max = piInit_count_max + 1;	
+            ++piInit_count_min;
+            ++piInit_count_max;
          }
-      }		
+      }
 
       ptFaerie = CreateTimer(self,@FaerieTimer,piGen_time/2);
 
       return;
    }
-   
+
    Delete()
    {
       if ptFaerie <> $
@@ -96,61 +98,62 @@ messages:
 
       propagate;
    }
-   
+
    SomethingKilled(victim = $)
-   {      
+   {
       if victim = $
       {
-         debug("SomethingKilled() reached with no victim!");
+         Debug("SomethingKilled() reached with no victim!");
       }
-      
-      if isClass(victim,&Fairy) OR isClass(victim,&EvilFairy)
+
+      if IsClass(victim,&Fairy)
+         OR IsClass(victim,&EvilFairy)
       {
-         post(self,@FigureRoomKarma);
+         Post(self,@FigureRoomKarma);
       }
 
       propagate;
    }
-   
+
    LastUserLeft()
    {
       piInit_count_min = piMonster_count - 2;
-      piInit_count_max = piMonster_count + 2;	
-      
+      piInit_count_max = piMonster_count + 2;
+
       propagate;
    }
-   
+
    TryCreateMonster(initroom = FALSE,goodguy=FALSE,darkguy=FALSE,nofigure=FALSE)
    {
-      local oMonster,iRoll,iTotal,lMonster_info,iRow,iCol,lPos;
-      
+      local oMonster, iRoll, iTotal, lMonster_info, iRow, iCol, lPos;
+
       if piMonster_count >= piMonster_count_max
       {
-         return;
+         return FALSE;
       }
-      
+
       iRoll = Random(1,100);
       if (iRoll > piGen_percent) AND (initroom = FALSE)
       {
-         return;
+         return FALSE;
       }
-      
+
       iRoll = Random(1,100);
-      iRoll = iRoll + (bound((piRoom_Karma - viEquilibrium)/5,-10,10));
-      
+      iRoll = iRoll + (Bound((piRoom_Karma - viEquilibrium)/5,-10,10));
+
       if (iRoll >= piRoom_Karma AND NOT darkguy) OR goodguy
       {
          % Forest is evil.  Make it good.
          oMonster = Create(&Fairy);
-      }  
+      }
       else
       {
-         % Forest is good.  Make it evil.      
+         % Forest is good.  Make it evil.
          oMonster = Create(&EvilFairy);
       }
 
       if plGenerators = $
-      {            
+      {
          iRow = Random(1,piRows);
          iCol = Random(1,piCols);
       }
@@ -161,9 +164,9 @@ messages:
          iRow = First(lPos);
          iCol = Nth(lPos,2);
       }
-      
+
       if Send(self,@ReqNewHold,#what=oMonster,#new_row=iRow,#new_col=iCol)
-         and Send(self,@ReqSomethingMoved,#what=oMonster,#new_row=iRow,#new_col=iCol)
+         AND Send(self,@ReqSomethingMoved,#what=oMonster,#new_row=iRow,#new_col=iCol)
       {
          Send(self,@NewHold,#what=oMonster,#new_row=iRow,#new_col=iCol,
               #fine_row=FINENESS/2,#fine_col=FINENESS/2);
@@ -173,39 +176,40 @@ messages:
          Send(oMonster,@Delete);
 
          return FALSE;
-      }            
+      }
 
       if NOT noFigure
       {
-         send(self,@FigureRoomKarma);
+         Send(self,@FigureRoomKarma);
       }
-      
+
       return TRUE;
    }
-   
+
    FigureRoomKarma(bForceChange=FALSE)
    {
       local i, gCount, eCount, oldKarma, iIndex;
-      
+
       gCount = 0;
       eCount = 0;
-      oldKarma = send(self,@GetKarma);
-      
+      oldKarma = Send(self,@GetKarma);
+
       foreach i in plActive
       {
-         if isClass(first(i),&Fairy) OR isClass(first(i),&EvilFairy)
+         if IsClass(First(i),&Fairy)
+            OR IsClass(First(i),&EvilFairy)
          {
-            if send(first(i),@GetKarma) > 0
+            if Send(First(i),@GetKarma) > 0
             {
-               gCount = gCount + 1;
+               ++gCount;
             }
             else
             {
-               eCount = eCount + 1;
+               ++eCount;
             }
          }
       }
-      
+
       if gCount = 0 AND eCount = 0
       {
          gCount = 1;
@@ -213,17 +217,17 @@ messages:
       }
 
       piRoom_Karma = (100 * gCount) / (gCount+eCount);
-      
+
       % enough have died for a change in the forest.
-      if send(self,@GetKarma) <> oldKarma
+      if Send(self,@GetKarma) <> oldKarma
          OR bForceChange
-      {		              
-         send(self,@SetRoomKarma,#karma=send(self,@GetKarma));
+      {
+         Send(self,@SetRoomKarma,#karma=Send(self,@GetKarma));
       }
 
       return;
    }
-   
+
    GetKarma()
    {
       if piRoom_Karma < 20 { return KVERY_EVIL; }
@@ -233,19 +237,18 @@ messages:
 
       return KNEUTRAL;
    }
-   
+
    SetRoomKarma(karma = $)
    {
       local karma1, karma2, karma3, oCenter,rMusic,i,each_obj;
-      
+
       rMusic = feyforest_music_neutral;
 
       if karma = KVERY_EVIL
       {
          rMusic = feyforest_music_evil;
       }
-
-      if karma = KVERY_GOOD
+      else if karma = KVERY_GOOD
       {
          rMusic = feyforest_music_good;
       }
@@ -273,78 +276,78 @@ messages:
       karma1 = 8871;
       karma2 = 8860 + ((karma - 1) * 2) + 1;
       karma3 = 8860 + (karma * 2);
-      
-      send(self,@ChangeTexture,#id=2,#new_texture=karma2,#flags=CTF_NORMALWALL);
-      send(self,@ChangeTexture,#id=3,#new_texture=karma3,#flags=CTF_NORMALWALL);
-      
+
+      Send(self,@ChangeTexture,#id=2,#new_texture=karma2,#flags=CTF_NORMALWALL);
+      Send(self,@ChangeTexture,#id=3,#new_texture=karma3,#flags=CTF_NORMALWALL);
+
       if (karma = KVERY_EVIL)
       {
-         send(self,@ChangeTexture,#id=1,#new_texture=karma1,#flags=CTF_NORMALWALL);
-      }     
+         Send(self,@ChangeTexture,#id=1,#new_texture=karma1,#flags=CTF_NORMALWALL);
+      }
       else
       {
-         send(self,@ChangeTexture,#id=1,#new_texture=karma2,#flags=CTF_NORMALWALL);
+         Send(self,@ChangeTexture,#id=1,#new_texture=karma2,#flags=CTF_NORMALWALL);
       }
-      
+
       % See if we need to load the node.
-      oCenter = send(SYS,@FindRoomByNum,#num=RID_C2);    
-      send(oCenter,@KarmaChanged,#karma=karma);
+      oCenter = Send(SYS,@FindRoomByNum,#num=RID_C2);
+      Send(oCenter,@KarmaChanged,#karma=karma);
 
       % Lighten/darken the room as appropriate.
-      send(self,@SetBaseLight,#amount=BASE_LIGHT+piRoom_Karma+LIGHT_KARMA_ADJUST);
+      Send(self,@SetBaseLight,#amount=BASE_LIGHT+piRoom_Karma+LIGHT_KARMA_ADJUST);
 
       return;
    }
-   
+
    SomeoneSaid(what=$,string=$,type=$)
    {
       local i, iValue, oRoom,oCenter;
 
       iValue = -1;
-      
+
       if type <> SAY_DM
-         OR NOT isClass(what,&DM)
+         OR NOT IsClass(what,&DM)
       {
          propagate;
       }
-      
+
       % Codes to change the room Karma
       if StringEqual(string,"room very good")
       {
-         send(self,@AdjustRoomKarma,#value=100);
+         Send(self,@AdjustRoomKarma,#value=100);
       }
 
       if StringEqual(string,"room good")
       {
-         send(self,@AdjustRoomKarma,#value=75);
+         Send(self,@AdjustRoomKarma,#value=75);
       }
 
       if StringEqual(string,"room neutral")
       {
-         send(self,@AdjustRoomKarma,#value=50);
+         Send(self,@AdjustRoomKarma,#value=50);
       }
 
       if StringEqual(string,"room evil")
       {
-         send(self,@AdjustRoomKarma,#value=25);
+         Send(self,@AdjustRoomKarma,#value=25);
       }
 
       if StringEqual(string,"room very evil")
       {
-         send(self,@AdjustRoomKarma,#value=0);
+         Send(self,@AdjustRoomKarma,#value=0);
       }
       
       % Codes to spawn monsters
       if StringEqual(string,"good fey")
       {
-         send(self,@TryCreateMonster,#goodguy=TRUE);
+         Send(self,@TryCreateMonster,#goodguy=TRUE);
       }
 
       if StringEqual(string,"evil fey")
       {
-         send(self,@TryCreateMonster,#darkguy=TRUE);
+         Send(self,@TryCreateMonster,#darkguy=TRUE);
       }
-      
+
       % Codes to set forest Karma
       if StringEqual(string,"forest very good")
       {
@@ -370,74 +373,74 @@ messages:
       {
          iValue = 0;
       }
-      
+
       if iValue <> -1
       {
-         oCenter = send(SYS,@FindRoomByNum,#num=RID_C2);
-         foreach i in send(oCenter,@GetFeyForest)
+         oCenter = Send(SYS,@FindRoomByNum,#num=RID_C2);
+         foreach i in Send(oCenter,@GetFeyForest)
          {
-            oRoom = send(SYS,@FindRoomByNum,#num=i);
+            oRoom = Send(SYS,@FindRoomByNum,#num=i);
             if oRoom = $
             {
                continue;
             }
 
-            send(oRoom,@AdjustRoomKarma,#value=iValue);
+            Send(oRoom,@AdjustRoomKarma,#value=iValue);
          }
       }
 
       propagate;
    }
-   
+
    AdjustRoomKarma(value = 50)
    {
       local i, iGood, iBad;
-      
+
       piRoom_karma = value;
 
       foreach i in plActive
       {
-         if isClass(first(i),&Monster)
+         if IsClass(First(i),&Monster)
          {
-            send(first(i),@Delete);
+            Send(First(i),@Delete);
          }
       }
-      
+
       if pbUser_in_room
       {
          iGood = value / 10;
          iBad = 10 - iGood;
 
-         while iGood > 0 
+         while iGood > 0
          {
-            if send(self,@TryCreateMonster,#goodguy=TRUE,#nofigure=TRUE)
+            if Send(self,@TryCreateMonster,#goodguy=TRUE,#nofigure=TRUE)
             {
-               iGood = iGood - 1;
+               --iGood;
             }
-         } 
-         
-         while iBad > 0 
+         }
+
+         while iBad > 0
          {
-            if send(self,@TryCreateMonster,#darkguy=TRUE,#nofigure=TRUE)
+            if Send(self,@TryCreateMonster,#darkguy=TRUE,#nofigure=TRUE)
             {
-               iBad = iBad-1;
+               --iBad;
             }
-         } 
+         }
       }
 
       % Force a change, because we've pre-set the Karma value.
-      send(self,@FigureRoomKarma,#bForceChange=TRUE);
+      Send(self,@FigureRoomKarma,#bForceChange=TRUE);
 
       return;
    }
 
    CreateYellZoneList()
    {
-      plYell_zone = [RID_A1, RID_B1, RID_B2, RID_C1, RID_C2, RID_C3, RID_D2, RID_D1];
+      plYell_zone = [RID_A1, RID_B1, RID_B2, RID_C1,
+                     RID_C2, RID_C3, RID_D2, RID_D1];
 
       return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -35,13 +35,13 @@ BOOL CALLBACK PasswordDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
          DestroyWindow(hDlg);
          return TRUE;
       }
-      
+
       CenterWindow(hDlg, GetParent(hDlg));
-      
+
       hOldPasswd = GetDlgItem(hDlg, IDC_OLDPASSWD);
       hNewPasswd1 = GetDlgItem(hDlg, IDC_NEWPASSWD1);
       hNewPasswd2 = GetDlgItem(hDlg, IDC_NEWPASSWD2);
-      
+
       Edit_LimitText(hOldPasswd, MAXPASSWORD);
       Edit_LimitText(hNewPasswd1, MAXPASSWORD);
       Edit_LimitText(hNewPasswd2, MAXPASSWORD);
@@ -51,7 +51,7 @@ BOOL CALLBACK PasswordDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
       SetWindowFont(hNewPasswd2, GetFont(FONT_INPUT), FALSE);
       hPasswdDialog = hDlg;
       return TRUE;
-      
+
    case WM_COMMAND:
       switch(GET_WM_COMMAND_ID(wParam, lParam))
       {
@@ -62,35 +62,35 @@ BOOL CALLBACK PasswordDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
             SetFocus(hNewPasswd1);
             return TRUE;
          }
-         
+
          if (GetFocus() == hNewPasswd1)
          {
             SetFocus(hNewPasswd2);
             return TRUE;
          }
-         
+
          if (GetFocus() == hNewPasswd2)
             PostMessage(hDlg, WM_COMMAND, IDC_OK, 0);
          return TRUE;
-         
+
       case IDC_OK:
-         /* Send results to server */	 
+         /* Send results to server */
          Edit_GetText(hOldPasswd, oldpasswd, MAXPASSWORD + 1);
          Edit_GetText(hNewPasswd1, newpasswd1, MAXPASSWORD + 1);
          Edit_GetText(hNewPasswd2, newpasswd2, MAXPASSWORD + 1);
-         
+
          if (0 != strcmp(newpasswd1, newpasswd2))
          {
             ClientError(hInst, hDlg, IDS_PASSWDMATCH);
             return TRUE;
          }
-         
+
          if (strlen(newpasswd1) < MINPASSWORD)
          {
             ClientError(hInst, hDlg, IDS_PASSWDLENGTH, MINPASSWORD);
             return TRUE;
          }
-         
+
          // Recall this was the last attempt to change a password.
          // It's just stopping the auto-nagging feature from popping
          // up a dialog box later.
@@ -121,7 +121,7 @@ BOOL CALLBACK PasswordDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
          hPasswdDialog = NULL;
          EndDialog(hDlg, IDOK);
          return TRUE;
-         
+
       case IDCANCEL:
          hPasswdDialog = NULL;
          EndDialog(hDlg, IDCANCEL);
@@ -135,13 +135,13 @@ BOOL CALLBACK PasswordDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
 void AbortPasswordDialog(void)
 {
    if (hPasswdDialog != NULL)
-     EndDialog(hPasswdDialog, IDCANCEL);
+      EndDialog(hPasswdDialog, IDCANCEL);
 }
 /*****************************************************************************/
 void AbortPreferencesDialog(void)
 {
    if (hPreferencesDialog != NULL)
-     EndDialog(hPreferencesDialog, IDCANCEL);
+      EndDialog(hPreferencesDialog, IDCANCEL);
 }
 /*****************************************************************************/
 BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
@@ -164,9 +164,9 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          return FALSE;
       }
       hPreferencesDialog = hDlg;
-      
+
       hBrowser = GetDlgItem(hDlg, IDC_BROWSER);
-      
+
       Edit_LimitText(hBrowser, MAX_PATH);
 
       SetWindowFont(hBrowser, GetFont(FONT_INPUT), FALSE);
@@ -174,7 +174,10 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       SetWindowText(hBrowser, config.browser);
 
       CheckDlgButton(hDlg, IDC_SCROLLLOCK, config.scroll_lock);
-      CheckDlgButton(hDlg, IDC_DRAWNAMES, config.draw_names);
+      CheckDlgButton(hDlg, IDC_DRAWNAMES, config.draw_player_names);
+      CheckDlgButton(hDlg, IDC_DRAWNPCNAMES, config.draw_npc_names);
+      CheckDlgButton(hDlg, IDC_DRAWSIGNNAMES, config.draw_sign_names);
+      CheckDlgButton(hDlg, IDC_TARGETLIGHT, config.target_highlight);
       CheckDlgButton(hDlg, IDC_TOOLTIPS, config.tooltips);
       CheckDlgButton(hDlg, IDC_PAIN, config.pain);
       CheckDlgButton(hDlg, IDC_INVNUM, config.inventory_num);
@@ -193,6 +196,7 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       CheckDlgButton(hDlg, IDC_PROFANE, config.antiprofane);
       CheckDlgButton(hDlg, IDC_DRAWMAP, config.drawmap);
       CheckDlgButton(hDlg, IDC_MAP_ANNOTATIONS, config.map_annotations);
+      CheckDlgButton(hDlg, IDC_XP_AS_PERCENT, config.xp_display_percent);
 
       CheckDlgButton(hDlg, IDC_MUSIC, config.play_music);
       CheckDlgButton(hDlg, IDC_SOUNDFX, config.play_sound);
@@ -213,7 +217,7 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       Trackbar_SetRange(GetDlgItem(hDlg, IDC_MUSIC_VOLUME), 0, CONFIG_MAX_VOLUME, FALSE);
       Trackbar_SetPos(GetDlgItem(hDlg, IDC_SOUND_VOLUME), config.sound_volume);
       Trackbar_SetPos(GetDlgItem(hDlg, IDC_MUSIC_VOLUME), config.music_volume);
-      
+
       dir = (char *) SafeMalloc(MAX_PATH + 1);
       GetWorkingDirectory(dir, MAX_PATH);
 
@@ -226,10 +230,10 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       case IDC_BROWSER:
          if (GET_WM_COMMAND_CMD(wParam, lParam) != EN_CHANGE)
             break;
-         
+
          browser_changed = True;
          return TRUE;
-         
+
       case IDC_FIND:
          memset(&ofn, 0, sizeof(OPENFILENAME));
          ofn.lStructSize = sizeof(OPENFILENAME);
@@ -245,32 +249,35 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          }
          else debug(("GetOpenFileName failed, error = %d\n", CommDlgExtendedError()));
          return TRUE;
-         
+
       case IDCANCEL:
          EndDialog(hDlg, IDCANCEL);
          return TRUE;
-         
+
       case IDC_SOUNDFX:
          EnableWindow(GetDlgItem(hDlg, IDC_LOOPSOUNDS), IsDlgButtonChecked(hDlg, IDC_SOUNDFX));
          EnableWindow(GetDlgItem(hDlg, IDC_RANDSOUNDS), IsDlgButtonChecked(hDlg, IDC_SOUNDFX));
          return TRUE;
-         
+
       case IDC_PROFANESETTINGS:
          if (IDOK == DialogBox(hInst, MAKEINTRESOURCE(IDC_PROFANESETTINGS), hDlg, ProfanityDialogProc))
             CheckDlgButton(hDlg, IDC_PROFANE, TRUE);
          return TRUE;
-         
+
       case IDOK:
          Edit_GetText(hBrowser, config.browser, MAX_PATH);
-         
+
          if (browser_changed)
             config.default_browser = False;
-         
-         config.scroll_lock   = IsDlgButtonChecked(hDlg, IDC_SCROLLLOCK);
-         config.draw_names    = IsDlgButtonChecked(hDlg, IDC_DRAWNAMES);
-         config.tooltips      = IsDlgButtonChecked(hDlg, IDC_TOOLTIPS);
-         config.pain          = IsDlgButtonChecked(hDlg, IDC_PAIN);
-         config.inventory_num = IsDlgButtonChecked(hDlg, IDC_INVNUM);
+
+         config.scroll_lock       = IsDlgButtonChecked(hDlg, IDC_SCROLLLOCK);
+         config.draw_player_names = IsDlgButtonChecked(hDlg, IDC_DRAWNAMES);
+         config.draw_npc_names    = IsDlgButtonChecked(hDlg, IDC_DRAWNPCNAMES);
+         config.draw_sign_names   = IsDlgButtonChecked(hDlg, IDC_DRAWSIGNNAMES);
+         config.target_highlight  = IsDlgButtonChecked(hDlg, IDC_TARGETLIGHT);
+         config.tooltips          = IsDlgButtonChecked(hDlg, IDC_TOOLTIPS);
+         config.pain              = IsDlgButtonChecked(hDlg, IDC_PAIN);
+         config.inventory_num     = IsDlgButtonChecked(hDlg, IDC_INVNUM);
 
          if (IsDlgButtonChecked(hDlg, IDC_SAFETY))
             config.preferences |= CF_SAFETY_OFF;
@@ -311,15 +318,16 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
          config.bounce        = IsDlgButtonChecked(hDlg, IDC_BOUNCE);
          config.weather       = IsDlgButtonChecked(hDlg, IDC_WEATHER);
          config.antiprofane   = IsDlgButtonChecked(hDlg, IDC_PROFANE);
-         config.drawmap	      = IsDlgButtonChecked(hDlg, IDC_DRAWMAP);
+         config.drawmap         = IsDlgButtonChecked(hDlg, IDC_DRAWMAP);
          config.map_annotations = IsDlgButtonChecked(hDlg, IDC_MAP_ANNOTATIONS);
+         config.xp_display_percent = IsDlgButtonChecked(hDlg, IDC_XP_AS_PERCENT);
          temp                 = IsDlgButtonChecked(hDlg, IDC_TOOLBAR);
          toolbar_changed = (temp != config.toolbar);
          config.toolbar = temp;
          temp                 = IsDlgButtonChecked(hDlg, IDS_LATENCY0);
          lagbox_changed = (temp != config.lagbox);
          config.lagbox = temp;
-         
+
          if (IsDlgButtonChecked(hDlg, IDC_MUSIC) != config.play_music)
             UserToggleMusic(config.play_music);
          config.play_music = IsDlgButtonChecked(hDlg, IDC_MUSIC);
@@ -359,9 +367,9 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
             config.halocolor = 1;
          else
             config.halocolor = 2;
-         
+
          config.colorcodes = IsDlgButtonChecked(hDlg, IDC_COLORCODES);
-         
+
          // Redraw main window to reflect new settings
          if (toolbar_changed || lagbox_changed)
          {
@@ -372,14 +380,14 @@ BOOL CALLBACK PreferencesDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
             InvalidateRect(hMain, NULL, TRUE);
             RedrawAll();
          }
-         
+
          EditBoxSetNormalFormat();
-         
+
          EndDialog(hDlg, IDOK);
          return TRUE;
       }
       break;
-      
+
    case WM_DESTROY:
       // Restore working drive and directory
       if (chdir(dir) != 0)
@@ -410,29 +418,29 @@ BOOL CALLBACK ProfanityDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPa
       switch(GET_WM_COMMAND_ID(wParam, lParam))
       {
       case IDC_BUTTON1:
-	 GetDlgItemText(hDlg, IDC_EDIT1, term, sizeof(term));
-	 AddProfaneTerm(term);
-	 SetDlgItemText(hDlg, IDC_EDIT1, "");
-	 SetFocus(GetDlgItem(hDlg, IDC_EDIT1));
-	 return TRUE;
+         GetDlgItemText(hDlg, IDC_EDIT1, term, sizeof(term));
+         AddProfaneTerm(term);
+         SetDlgItemText(hDlg, IDC_EDIT1, "");
+         SetFocus(GetDlgItem(hDlg, IDC_EDIT1));
+         return TRUE;
 
       case IDC_BUTTON2:
-	 GetDlgItemText(hDlg, IDC_EDIT1, term, sizeof(term));
-	 RemoveProfaneTerm(term);
-	 SetDlgItemText(hDlg, IDC_EDIT1, "");
-	 SetFocus(GetDlgItem(hDlg, IDC_EDIT1));
-	 return TRUE;
+         GetDlgItemText(hDlg, IDC_EDIT1, term, sizeof(term));
+         RemoveProfaneTerm(term);
+         SetDlgItemText(hDlg, IDC_EDIT1, "");
+         SetFocus(GetDlgItem(hDlg, IDC_EDIT1));
+         return TRUE;
 
       case IDCANCEL:
-	 EndDialog(hDlg, IDCANCEL);
-	 return TRUE;
+         EndDialog(hDlg, IDCANCEL);
+         return TRUE;
 
       case IDOK:
-	 config.ignoreprofane = IsDlgButtonChecked(hDlg, IDC_RADIO1);
-	 config.extraprofane = IsDlgButtonChecked(hDlg, IDC_CHECK1);
-	 RecompileAllProfaneExpressions();
-	 EndDialog(hDlg, IDOK);
-	 return TRUE;
+         config.ignoreprofane = IsDlgButtonChecked(hDlg, IDC_RADIO1);
+         config.extraprofane = IsDlgButtonChecked(hDlg, IDC_CHECK1);
+         RecompileAllProfaneExpressions();
+         EndDialog(hDlg, IDOK);
+         return TRUE;
       }
       break;
    }

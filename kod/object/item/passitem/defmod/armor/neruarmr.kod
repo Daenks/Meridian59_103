@@ -28,7 +28,8 @@ resources:
    neruditearmor_male_icon_rsc = btm.bgf
    neruditearmor_female_icon_rsc = btn.bgf
 
-   neruarmor_shatters = "The nerudite armor shatters into a flurry of splinters!"
+   neruarmor_shatters = \
+      "The nerudite armor shatters into a flurry of splinters!"
 
 classvars:
 
@@ -48,8 +49,8 @@ classvars:
    vrIcon_male = neruditearmor_male_icon_rsc
    vrIcon_female = neruditearmor_female_icon_rsc
 
-   viDefense_base = -150
-   viDamage_base = 5
+   viDefense_base = -125
+   viDamage_base = 4
 
 properties:
 
@@ -62,26 +63,26 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,20],
-               [-ATCK_SPELL_SHOCK,20],
-               [-ATCK_SPELL_COLD,20],
-               [-ATCK_SPELL_ACID,20],
-               [-ATCK_SPELL_QUAKE,-20]
+      return [ [-ATCK_SPELL_FIRE,15],
+               [-ATCK_SPELL_SHOCK,15],
+               [-ATCK_SPELL_COLD,15],
+               [-ATCK_SPELL_ACID,15],
+               [-ATCK_SPELL_QUAKE,-15]
              ];
    }
 
    GetHeatDamage()
    {
-      return 2;
+      return 3;
    }
 
    DefendingHit(who = $,what = $)
    {
-      if random(1,100) < 75
+      if Random(1,100) < 75
       {
          piHits = piHits - 1;
       }
-      
+
       if piHits <= 0
       {
          send(self,@ShatterToShards);
@@ -92,7 +93,7 @@ messages:
 
    DoShatter()
    {
-      send(self,@ShatterToShards);
+      Send(self,@ShatterToShards);
 
       propagate;
    }
@@ -101,23 +102,21 @@ messages:
    {
       if poOwner <> $ and isClass(poOwner,&User)
       {
-         send(poOwner,@TryUnuseItem,#what=self);
-         send(poOwner,@MsgSendUser,#message_rsc=neruarmor_shatters);
+         Send(poOwner,@TryUnuseItem,#what=self);
+         Send(poOwner,@MsgSendUser,#message_rsc=neruarmor_shatters);
 
-         if send(poOwner,@AssessDamage,#what=self,#damage=random(15,30),
+         if Send(poOwner,@AssessDamage,#what=self,#damage=random(15,30),
                  #report=FALSE,#atype=ATCK_WEAP_NERUDITE) = $
          {
-            send(send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);
-            send(poOwner,@Killed,#what=self);
+            Send(send(poOwner,@GetOwner),@SomethingKilled,#what=self,#victim=poOwner);
+            Send(poOwner,@Killed,#what=self);
          }
 
-         send(poOwner,@SomethingChanged,#what=self);
+         Send(poOwner,@SomethingChanged,#what=self);
       }
 
       return;
    }
 
-
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

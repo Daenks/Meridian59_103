@@ -12,8 +12,6 @@ FairyWing is Reagent
 
 constants:
 
-   include blakston.khd
-
 resources:
 
    include farywing.lkod
@@ -21,10 +19,9 @@ resources:
    fairywing_name_rsc = "fairy wing"
    fairywing_icon_rsc = farywing.bgf
    fairywing_desc_rsc = \
-   "This tiny fairy wing is as delicate as aged parchment.  "
-   "It is extremely rare and is said to be a powerful "
-   "magical reagent."
-
+      "This tiny fairy wing is as delicate as aged parchment.  "
+      "It is extremely rare and is said to be a powerful "
+      "magical reagent."
    fairywing_name_plural_rsc = "fairy wings"
 
 classvars:
@@ -36,9 +33,8 @@ classvars:
    vrName_plural = fairywing_name_plural_rsc
 
    viValue_average = 20
-   viBulk = 5
+   viBulk = 2
    viWeight = 2
-
 
 properties:
 

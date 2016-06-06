@@ -36,20 +36,12 @@ classvars:
    vrDesc = JasperBlacksmith_desc_rsc
    viAttributes = \
       MOB_NOFIGHT | MOB_SELLER | MOB_BUYER | MOB_RANDOM \
-      | MOB_NOMOVE | MOB_LISTEN | MOB_TEACHER | MOB_PERM_QUESTER
+      | MOB_NOMOVE | MOB_LISTEN | MOB_TEACHER
    viOccupation = MOB_ROLE_BLACKSMITH
    viMerchant_markup = MERCHANT_BARGAIN
    viQuestID = QST_ID_SCIMITAR_PROF
 
 messages:
-
-   Constructor()
-   "We start a permanent quest for learning a skill" 
-   {
-      Send(self,@InitPermQuest);
-
-      propagate;
-   }
 
    AffectMood(what=$,why=$)
    {
@@ -71,14 +63,6 @@ messages:
       {
          Send(self,@SetMood,#new_mood=piMood+3);
       }
-
-      return;
-   }
-
-   InitPermQuest()
-   {
-      Post(Send(SYS,@GetLibrary),@CreateQuest,#type=QST_PERM,#quester=self,
-            #reward=[QST_REWARD_ID,viQuestID]);
 
       return;
    }

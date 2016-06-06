@@ -19,10 +19,12 @@ constants:
 
 resources:
 
+   include goldarrow.lkod
+
    golden_arrow_name_rsc = "golden arrows"
    golden_arrow_icon_rsc = arrowgold.bgf
    golden_arrow_desc_rsc = \
-      "These arrows are crafted from pure gold.  Undiscovered for"
+      "These arrows are crafted from pure gold.  Undiscovered for "
       "centuries, these arrows are believed to be crafted by the god "
       "Kraanan, and bestowed upon only the mightiest of mortals."
 

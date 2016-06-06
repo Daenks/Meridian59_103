@@ -16,6 +16,8 @@ constants:
 
 resources:
 
+   include acidarow.lkod
+	
    acid_arrow_name_rsc = "acidic arrows"
    acid_arrow_name_rsc_icon_rsc = arrowner.bgf
    acid_arrow_name_rsc_desc_rsc = \

@@ -20,13 +20,22 @@ resources:
   
    room_name_kocbank = "The Hungry Vaults"
    room_kocbank = kocbank.roo
-   kocbank_music = song12.mp3
+   kocbank_music = song12.ogg
 
    kocbank_locked1 = \
       "~kThe sentry barks, \"Just where do you think you are going?\""
    kocbank_locked2 = \
       "~kHuital ko'Nosak says, \"Our customers are not permitted into the "
       "vaults.  Security, you understand.\""
+
+   kocbank_sign_name = "The Ko'catan Vaults and Bank"
+   kocbank_sign_desc = \
+      "These vaults and bank work the same as their mainland counterparts, "
+      "but any deposits made here will not be accessible from the mainland.  "
+      "Deposits made to mainland vaults or banks will also be inaccessible "
+      "from Ko'catan.\n\nCasting Conveyance on items from Ko'catan or the "
+      "island will send them to these vaults.  Casting the spell from the "
+      "Orc Caves will send items to the mainland (Barloque and Jasper vaults)."
 
 classvars:
 
@@ -111,6 +120,10 @@ messages:
       oLight = Create(&DynamicLight,#iColor=LIGHT_FIRE,#iIntensity=25);
       Send(self,@NewHold,#what=oLight,#new_row=13,#new_col=9,
             #fine_row=24,#fine_col=48);
+
+      Send(self,@NewHold,#what=Create(&Sign,#name=kocbank_sign_name,
+            #desc=kocbank_sign_desc),
+            #new_row=22,#new_col=11,#fine_row=40,#fine_col=12);
 
       propagate;
    }

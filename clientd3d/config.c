@@ -38,6 +38,7 @@ static char INIPlaySound[]   = "PlaySound";
 static char INIPlayLoopSounds[]   = "PlayLoopSounds";
 static char INIPlayRandomSounds[]   = "PlayRandomSounds";
 static char INITimeout[]     = "Timeout";
+static char INITimeoutEnabled[] = "TimeoutEnabled";
 static char INIUserName[]    = "UserName";
 static char INIAnimate[]     = "Animate";
 static char INIArea[]        = "Area";
@@ -76,6 +77,7 @@ static char INILagbox[]      = "LatencyMeter";
 static char INIHaloColor[]   = "HaloColor";
 static char INIColorCodes[]  = "ColorCodes";
 static char INIMapAnnotations[] = "MapAnnotations";
+static char XPDisplay[]      = "XPDisplay";
 static char INILanguage[]    = "Language";
 static char window_section[] = "Window";         /* Section in INI file for window info */
 static char INILeft[]        = "NormalLeft";
@@ -95,7 +97,10 @@ static char INIServerNum[]   = "ServerNumber";
 static char INIDomainFormat[] = "Domain";
 
 static char users_section[]  = "Users";  /* Section for dealing with other users */
-static char INIDrawNames[]   = "DrawNames";
+static char INIDrawPlayerNames[] = "DrawPlayerNames";
+static char INIDrawNPCNames[] = "DrawNPCNames";
+static char INIDrawSignNames[] = "DrawSignNames";
+static char INIShowTargetHighlight[] = "ShowTargetHighlight";
 static char INIIgnoreAll[]   = "IgnoreAll";
 static char ININoBroadcast[] = "NoBroadcast";
 static char INIIgnoreList[]  = "IgnoreList";
@@ -118,9 +123,9 @@ static char INIQuickStart[]   = "QuickStart";
 
 static int   DefaultRedialDelay   = 60;
 static char  DefaultHostname[]    = "cheater";
-static char  DefaultDomainFormat[] = "meridian%d.openmeridian.org"; // MUST have a %d in it somewhere.
+static char  DefaultDomainFormat[] = "meridian%d.arantis.eu"; // MUST have a %d in it somewhere. meridian%d.81.169.218.192
 static char  DefaultSockPortFormat[] = "59%.2d";
-static int   DefaultServerNum     = 101;
+static int   DefaultServerNum     = 112;
 static int   DefaultTimeout       = 1440; // 1 day in minutes (60*24)
 
 /************************************************************************/
@@ -204,8 +209,11 @@ void ConfigLoad(void)
    GetPrivateProfileString(misc_section, INIBrowser, "", 
 			   config.browser, MAX_PATH, ini_file); 
    
-   config.draw_names   = GetConfigInt(users_section, INIDrawNames, True, ini_file);
-   config.ignore_all   = GetConfigInt(users_section, INIIgnoreAll, False, ini_file);
+   config.draw_player_names = GetConfigInt(users_section, INIDrawPlayerNames, True, ini_file);
+   config.draw_npc_names = GetConfigInt(users_section, INIDrawNPCNames, True, ini_file);
+   config.draw_sign_names = GetConfigInt(users_section, INIDrawSignNames, True, ini_file);
+   config.target_highlight = GetConfigInt(users_section, INIShowTargetHighlight, True, ini_file);
+   config.ignore_all = GetConfigInt(users_section, INIIgnoreAll, False, ini_file);
    config.no_broadcast = GetConfigInt(users_section, ININoBroadcast, False, ini_file);
 
    GetPrivateProfileString(users_section, INIIgnoreList, "", 
@@ -241,7 +249,8 @@ void ConfigLoad(void)
    config.halocolor    = GetConfigInt(interface_section, INIHaloColor, 0, ini_file);
    config.colorcodes   = GetConfigInt(interface_section, INIColorCodes, True, ini_file);
    config.map_annotations = GetConfigInt(interface_section, INIMapAnnotations, True, ini_file);
-   config.language     = GetConfigInt(interface_section, INILanguage, 0, ini_file);
+   config.xp_display_percent = GetConfigInt(interface_section, XPDisplay, False, ini_file);
+   config.language     = GetConfigInt(interface_section, INILanguage, 1, ini_file);
    config.guest        = GetConfigInt(misc_section, INIGuest, False, ini_file);
    config.server_low   = GetConfigInt(misc_section, INIServerLow, 0, ini_file);
    config.server_high  = GetConfigInt(misc_section, INIServerHigh, 0, ini_file);
@@ -286,6 +295,7 @@ void ConfigLoad(void)
 #endif
    config.showFPS = GetConfigInt(special_section, INIShowFPS, False, ini_file);
    config.timeout	= GetConfigInt(misc_section, INITimeout, DefaultTimeout, ini_file);
+   config.timeoutenabled = GetConfigInt(misc_section, INITimeoutEnabled, False, ini_file);
    config.technical = GetConfigInt(special_section, INITechnical, False, ini_file);
 
    TimeSettingsLoad();
@@ -304,6 +314,7 @@ void ConfigSave(void)
    WriteConfigInt(misc_section, INIPlayLoopSounds, config.play_loop_sounds, ini_file);
    WriteConfigInt(misc_section, INIPlayRandomSounds, config.play_random_sounds, ini_file);
    WriteConfigInt(misc_section, INITimeout, config.timeout, ini_file);
+   WriteConfigInt(misc_section, INITimeoutEnabled, config.timeoutenabled, ini_file);
    WriteConfigInt(misc_section, INIArea, gLargeArea, ini_file);
    WriteConfigInt(misc_section, INIAnimate, config.animate, ini_file);
    WriteConfigInt(misc_section, INIVersion, config.ini_version, ini_file);
@@ -314,7 +325,10 @@ void ConfigSave(void)
    WriteConfigInt(misc_section, INIObjectCacheMin, config.ObjectCacheMin, ini_file);
    WriteConfigInt(misc_section, INIGridCacheMin, config.GridCacheMin, ini_file);
 
-   WriteConfigInt(users_section, INIDrawNames, config.draw_names, ini_file);
+   WriteConfigInt(users_section, INIDrawPlayerNames, config.draw_player_names, ini_file);
+   WriteConfigInt(users_section, INIDrawNPCNames, config.draw_npc_names, ini_file);
+   WriteConfigInt(users_section, INIDrawSignNames, config.draw_sign_names, ini_file);
+   WriteConfigInt(users_section, INIShowTargetHighlight, config.target_highlight, ini_file);
    WriteConfigInt(users_section, INIIgnoreAll, config.ignore_all, ini_file);
    WriteConfigInt(users_section, ININoBroadcast, config.no_broadcast, ini_file);
 
@@ -348,6 +362,7 @@ void ConfigSave(void)
    WriteConfigInt(interface_section, INIHaloColor, config.halocolor, ini_file);
    WriteConfigInt(interface_section, INIColorCodes, config.colorcodes, ini_file);
    WriteConfigInt(interface_section, INIMapAnnotations, config.map_annotations, ini_file);
+   WriteConfigInt(interface_section, XPDisplay, config.xp_display_percent, ini_file);
    WriteConfigInt(interface_section, INILanguage, config.language, ini_file);
 
    // Don't write out "guest" option; user can't set it
@@ -613,7 +628,7 @@ void ConfigMenuLaunch(void)
 
 	sprintf(command_line, "%s", "m59bind.exe");
 
-	memset(&si, sizeof(si), 0);
+	memset(&si, 0, sizeof(si));
 	si.cb = sizeof(si);
 	GetStartupInfo(&si); /* shouldn't need to do this.  very weird */
 

@@ -20,14 +20,10 @@ resources:
    include body.lkod
 
    deadbody_desc_rsc = "This is a dead, decomposing %s, slain by %q."
-
    deadbody_named_mob_rsc = "The dead body of %s, slain by %q."
-   
    deadbody_player_desc_rsc = \
       "The dead body of %q, decomposing quickly in the living air of Meridian."
-
-   deadbody_assassinated_rsc = \
-      "Here lies %q, slain by an unknown assassin."
+   deadbody_assassinated_rsc = "Here lies %q, slain by an unknown assassin."
 
 classvars:
 
@@ -68,9 +64,8 @@ properties:
 
 messages:
 
-   % you gotta pass in name, icon, and description to constructor
    Constructor(victim = $,killer = $,inKocatan = FALSE, assassinated = FALSE,
-         drawfx = 0, BodyTranslation = 0, LegsTranslation = 0, 
+         drawfx = 0, BodyTranslation = 0, LegsTranslation = 0,
          PlayerBodyOverlay = $, Decomposes = TRUE)
    {
       vrName = Send(victim,@GetDeadName);
@@ -80,9 +75,9 @@ messages:
       pbAssassinated = assassinated;
       prPlayerBodyOverlay = PlayerBodyOverlay;
       piBodyTrans = BodyTranslation;
-      piLegsTrans = LegsTranslation;      
+      piLegsTrans = LegsTranslation;
       piTimeOfDeath = GetTime();
-      
+
       if Decomposes
       {
          if pbMob
@@ -94,23 +89,24 @@ messages:
          else
          {
             prPlayer_name = Send(victim,@GetName);
-            pbWas_good_player = (Send(victim,@GetKarma) > 0); 
+            pbWas_good_player = (Send(victim,@GetKarma) > 0);
             poDearlyDeparted = victim;
          }
       }
-      
+
       if pbMob
-      { 
+      {
          ptDelete = CreateTimer(self,@DeleteTimerMessage,120000);
       }
       else
       {
-         % Make player corpses hang around longer.
-         ptDelete = CreateTimer(self,@DeleteTimerMessage,600000);	    
-         Send(Send(SYS,@Findroombynum,#num=RID_UNDERWORLD),@Newdeath,#what=self,#inKocatan=inKocatan);
+         // Make player corpses hang around longer.
+         ptDelete = CreateTimer(self,@DeleteTimerMessage,600000);
+         Send(Send(SYS,@Findroombynum,#num=RID_UNDERWORLD),@NewDeath,
+               #what=self,#inKocatan=inKocatan);
       }
 
-      % only the killer can pick up things for the first 25 seconds.
+      // Only the killer can pick up things for the first 25 seconds.
       ptNoSteal = CreateTimer(self,@NoStealTimer,25000);
       propagate;
    }
@@ -128,12 +124,12 @@ messages:
       {
          return TRUE;
       }
-      
-      if send(what,@GetTrueName) = prPlayer_name
+
+      if Send(what,@GetTrueName) = prPlayer_name
       {
          return TRUE;
       }
-         
+
       return FALSE;
    }
 
@@ -146,30 +142,36 @@ messages:
    {
       if ptDelete <> $
       {
-         Send(Send(SYS,@FindRoomByNum,#num=RID_UNDERWORLD),@CorpseDecomposed,#what=self);
          DeleteTimer(ptDelete);
          ptDelete = $;
       }
-      
+
+      if (NOT pbMob)
+      {
+         Send(Send(SYS,@FindRoomByNum,#num=RID_UNDERWORLD),@CorpseDecomposed,
+               #what=self);
+      }
+
       if ptNoSteal <> $
       {
          DeleteTimer(ptNoSteal);
-         ptNoSteal=$;
+         ptNoSteal = $;
       }
-      
+
       if poOwner <> $
       {
-         send(poOwner,@CorpseFading,#corpse=self);
+         Send(poOwner,@CorpseFading,#corpse=self);
       }
-      
+
       propagate;
    }
 
    DeleteTimerMessage()
    {
       ptDelete = $;
+
       Send(self,@Delete);
-      
+
       return;
    }
 
@@ -180,7 +182,8 @@ messages:
 
    ShowDesc()
    {
-      % need to do STRING_RESOURCE for names because player might not be logged in
+      // Need to do STRING_RESOURCE for names because
+      // player might not be logged in.
       if pbMob
       {
          if NOT pbNamedMob
@@ -191,17 +194,18 @@ messages:
          }
          else
          {
-            AddPacket(4,vrNamed_Mob_Desc, 4,prMonster_name, STRING_RESOURCE,prPlayer_name);
+            AddPacket(4,vrNamed_Mob_Desc, 4,prMonster_name,
+                      STRING_RESOURCE,prPlayer_name);
          
             return;
          }
       }
-      
+
       if pbAssassinated
       {
-	      AddPacket(4,vrAssassinated_desc, STRING_RESOURCE,prPlayer_name);
+         AddPacket(4,vrAssassinated_desc, STRING_RESOURCE,prPlayer_name);
       }
-      
+
       AddPacket(4,vrPlayer_desc, STRING_RESOURCE,prPlayer_name);
 
       return;
@@ -228,9 +232,9 @@ messages:
       {
          AddPacket(1,ANIMATE_TRANSLATION, 1,piBodyTrans);
       }
-      
+
       AddPacket(1,ANIMATE_NONE, 2,1);
-      
+
       return;
    }
 
@@ -238,21 +242,21 @@ messages:
    {
       if (prPlayerBodyOverlay <> $)
       {
-         % one overlay
+         // one overlay
          AddPacket(1,1);
-         % hotspot = 1
+         // hotspot = 1
          AddPacket(4,prPlayerBodyOverlay, 1,1);
-         
+
          if piLegsTrans <> 0
          {
             AddPacket(1,ANIMATE_TRANSLATION, 1,piLegsTrans);
          }
-         
+
          AddPacket(1,ANIMATE_NONE, 2,1);
-         
+
          return;
       }
-      
+
       propagate;
    }
 
@@ -266,12 +270,12 @@ messages:
       return piTimeOfDeath;
    }
 
-   % Next two messages are for portal of life.  Checks if the body was resurrected
-   %   already or not, to prevent multiple castings.
+   // Next two messages are for portal of life.  Checks if the body was
+   // resurrected already or not, to prevent multiple castings.
    SetResurrected()
    {
       pbResurrected = TRUE;
-      
+
       return;
    }
 
@@ -279,7 +283,6 @@ messages:
    {
       return pbResurrected;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

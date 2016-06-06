@@ -27,7 +27,7 @@ resources:
    summonEvilTwin_only_one = \
       "%s is already being pursued by an evil twin."
 
-   summonEvilTwin_sound = rmirrimg.wav
+   summonEvilTwin_sound = rmirrimg.ogg
 
 classvars:
 
@@ -125,13 +125,6 @@ messages:
                      #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
             }
 
-            return FALSE;
-         }
-
-         if IsClass(who,&Player)
-               AND NOT IsClass(self,&DM)
-               AND NOT Send(who,@AllowPlayerAttack,#victim=oTarget)
-         {
             return FALSE;
          }
       }

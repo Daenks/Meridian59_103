@@ -1,13 +1,13 @@
-questtemplate_name_rsc = de "default quest"
-questtemplate_desc_rsc = de "Initial default quest description."
+questtemplate_name_rsc = de "Standard Quest"
+questtemplate_desc_rsc = de "Initial Standard Quest Beschreibung."
 
 % Resources for making the timer part of description.
 questtemplate_time_header = de \
-   "\n\nYou have %r%r%r%r%r%r%r remaining to complete this quest."
+   "\n\nDu hast noch %r%r%r%r%r%r%r übrig für dieses Quest."
 questtemplate_time_header_complete = de \
-   "\n\nYou can complete this quest again in %r%r%r%r%r%r%r."
+   "\n\nDu kannst das Quest noch einmal beginnen in %r%r%r%r%r%r%r."
 questtemplate_outoftime_rsc = de \
-   "\n\nYou are almost out of time!"
+   "\n\nDie Zeit ist fast verstrichen!"
 
 questtemplate_master_time_rsc = de "%r%r"
 

@@ -24,7 +24,6 @@ classvars:
 
 properties:
 
-
 messages:
 
    GetNewsPermission(what = $)
@@ -33,12 +32,13 @@ messages:
 
       oCaramo = Send(SYS,@GetCaramo);
 
-      if what=oCaramo
+      if what = oCaramo
+         OR what = Send(oCaramo,@GetJusticar)
          OR IsClass(what,&DM)
-      {	 
+      {
          return NEWS_PERMISSION_READ_WRITE;
       }
-      
+
       return NEWS_PERMISSION_READ;
    }
 

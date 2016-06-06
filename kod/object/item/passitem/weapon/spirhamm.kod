@@ -23,12 +23,12 @@ resources:
    spirithammer_desc_rsc = \
       "Inherently having holy blessings, this hammer is even more powerful "
       "than the standard variation."
-
    spirithammer_expires = \
       "Your spiritual hammer disappears in a puff of smoke!"
-
    spirithammer_window_overlay_rsc = povhamr.bgf
    spirithammer_player_overlay = hamrov.bgf
+   spirithammer_time_header_rsc = \
+      "\n\nYour spiritual hammer expires in %r%r%r%r%r%r%r."
 
 classvars:
    vrName = spirithammer_name_rsc
@@ -58,7 +58,6 @@ properties:
    piAttack_type = ATCK_WEAP_MAGIC+ATCK_WEAP_BLUDGEON
    ptLongevity
    piItem_flags = 10
-
    piHitBonus = 0
 
 messages:
@@ -85,11 +84,33 @@ messages:
       propagate;
    }
 
+   AppendDesc()
+   {
+      if ptLongevity <> $
+      {
+         Send(self,@SendTimeRemaining,
+               #iTime=GetTimeRemaining(ptLongevity) / 1000);
+      }
+      else
+      {
+         AddPacket(4,system_blank_resource);
+      }
+
+      return;
+   }
+
+   SendTimeRemainingHeader(parm1=$)
+   {
+      AddPacket(4,spirithammer_time_header_rsc);
+
+      return;
+   }
+
    WeaponExpires()
    {
       ptLongevity = $;
-      
-      if IsClass(poOwner,&Player)
+
+      if IsClass(poOwner,&User)
       {
          Send(poOwner,@MsgSendUser,#message_rsc=spirithammer_expires);
       }

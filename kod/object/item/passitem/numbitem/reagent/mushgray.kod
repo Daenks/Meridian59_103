@@ -22,7 +22,6 @@ resources:
    graymushroom_icon_rsc = mushroom.bgf
    graymushroom_desc_rsc = \
       "These magical mushrooms reek of rot and death."
-
    graymushroom_name_plural_rsc = "gray mushrooms"
 
 classvars:
@@ -37,7 +36,6 @@ classvars:
    viWeight = 2
    viBulk = 5
 
-
 properties:
 
    piNumber = 1
@@ -46,11 +44,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_GRAY,#color2=XLAT_TO_GRAY);
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_GRAY,
+                           #color2=XLAT_TO_GRAY);
       
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

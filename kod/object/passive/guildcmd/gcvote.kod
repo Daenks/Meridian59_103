@@ -13,7 +13,6 @@ GuildVote is GuildCommand
 constants:
 
    include blakston.khd
-   include protocol.khd
 
 resources:
 
@@ -21,12 +20,13 @@ resources:
 
    guildvote_name_rsc = "vote"
    guildvote_icon_rsc = light.bgf
-   guildvote_desc_text_rsc = "Use this command to swing your support for leadership of the guild for one person in particular."
-
-   vote_no_gms = "Guildmasters may not vote their ties before abdicating their titles."
+   guildvote_desc_text_rsc = \
+      "Use this command to swing your support for leadership of the "
+      "guild for one person in particular."
+   vote_no_gms = \
+      "Guildmasters may not vote their ties before abdicating their titles."
    vote_ties_renouncer = "You renounce your ties to %s%s."
    vote_ties_others = "%s renounces all ties to %s%s!"
-
 
 classvars:
 
@@ -54,11 +54,12 @@ messages:
    {
       local oGuild;
 
-      oGuild = send(who,@getguild);
+      oGuild = Send(who,@GetGuild);
 
-      send(oGuild,@vote,#who=who,#candidate = oTarget);
+      Send(oGuild,@Vote,#who=who,#candidate=oTarget);
+
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

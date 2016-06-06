@@ -1,10 +1,10 @@
-SurvivalRoom_name = de "Die Survival Arena"
+SurvivalRoom_name = de "Die Überlebens-Arena"
 welcome_message = de \
-   "Als Du den Raum betrittst, merkst Du, dass mächtige Energien vorhanden "
-   "sind, undes sehr gefährlich sein kann sich hier aufzuhalten. Du spürst, "
-   "dass du aus der Realitätgerissen wurdest und es hier keine Unterwelt "
-   "gibt."
-beginning_in_sixty = de "~BDer Angriff beginnt in 60 Sekunden."
+   "~IAls Du den Raum betrittst, merkst Du, dass mächtige Energien vorhanden "
+   "sind. Es kann sehr gefährlich sein, sich hier aufzuhalten! Du spürst, "
+   "dass du aus der Realität gerissen wurdest und der Tot keine folgen haben "
+   "wird.\nSage \"verlasse survial\" um die Überlebens-Arena zu verlassen."
+survivalroom_solo_starttime = de "~BDer Angriff beginnt in %i Sekunden."
 next_level_in_seconds = de \
    "~BDie %i. Welle wurde besiegt. Die nächste beginnt in %i Sekunden."
 begin_level = de "~BWelle %i der gegnerischen Macht ist eingetroffen."
@@ -12,7 +12,7 @@ you_died_to_monster = de "%s steht triumphierend über deinem toten Körper."
 player_died_to_monster = de "~B%s wurde durch %s%s getötet!"
 you_were_booted = de \
    "Die Energie des Kampes verlässt dich und du kehrst zurück heim."
-player_was_booted = de "%s wurde aus der Realität gezaubert."
+player_was_booted = de "%s wurde aus der Realität befördert."
 lives_remain_update = de \
    "Du spürst, dass der Tot um %i weitere Male betrogen werden kann."
 one_life_remains = de \
@@ -20,7 +20,7 @@ one_life_remains = de \
 no_lives_remain = de \
    "Von jetzt an wird dich der tot von hier in die Realität verbannen."
 survival_no_cast_rsc = de "Du kannst hier nicht %s zaubern."
-goals_header = de "Um diese gegnerische Welle zu besiegen müsst ihr:"
+goals_header = de "Um diese gegnerische Welle zu besiegen, müsst ihr:"
 kill_goal_msg = de "%i Gegner töten."
 boss_goal_msg = de "Einen Boss töten."
 minibosses_goal_msg = de "%i Minibosse töten."
@@ -36,9 +36,13 @@ gain_a_life_msg = de \
    "~BDu hast es geschafft ein extra Leben zu bekommen! Du hast nun %i Leben."
 wall_blitz_activated = de "~BEine Welle von Energie überkommt die Gruppe!"
 fixed_reward_msg = de \
-   "Es scheint als ob eine der getöteten Gegner %s auf dem Schlachtfeld fallengelassen "
-   "hat!"
+   "~BEs scheint als ob eine der getöteten Gegner %s auf dem Schlachtfeld "
+   "fallengelassen hat!"
 your_lives_remain = de "Du hast %i ausstehende Leben."
 spectator_only_msg = de \
    "Der Kampf hat bereits begonnen. Du kannst Zuschauen bis alle Teilnehmer "
    "gestorben sind."
+survivalroom_cant_leave_yet = de \
+   "Du musst %i Sekunden warten, bis du die Überlebens-Arena wieder "
+   "verlassen kannst."
+survivalroom_user_say_leave = de "verlasse survival"

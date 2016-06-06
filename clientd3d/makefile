@@ -26,7 +26,7 @@ LIBS = \
     ws2_32.lib comctl32.lib advapi32.lib \
     winmm.lib wininet.lib ole32.lib \
     d3d9.lib dxerr.lib irrklang.lib \
-    rscload.lib libpng.lib zlib.lib libarchive.lib 
+    rscload.lib libpng.lib zlib.lib libarchive.lib
 
 DEFFILE  = $(SOURCEDIR)\client.def
 
@@ -126,10 +126,10 @@ OBJS = \
     $(OUTDIR)\fixed.obj \
     $(OUTDIR)\d3dcache.obj \
     $(OUTDIR)\d3ddriver.obj \
+    $(OUTDIR)\d3dlighting.obj \
     $(OUTDIR)\d3dparticle.obj \
     $(OUTDIR)\d3drender.obj \
-    $(OUTDIR)\matrix.obj \
-    $(OUTDIR)\xform.obj
+    $(OUTDIR)\matrix.obj
 
 
 $(OUTDIR)\trig.c $(OUTDIR)\trig.h: $(OUTDIR)\maketrig.exe
@@ -139,10 +139,10 @@ $(OUTDIR)\pal.c: $(OUTDIR)\makepal.exe $(PALETTEFILE)
 	$(OUTDIR)\makepal $(PALETTEFILE) $(OUTDIR)
 
 $(OUTDIR)\crc.obj : $(TOPDIR)\util\crc.c
-	$(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\vc90.pdb /FpCpch -c $**
+	$(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /FpCpch -c $**
 
 $(OUTDIR)\md5.obj : $(TOPDIR)\util\md5.c
-	$(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\vc90.pdb /FpCpch -c $**
+	$(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /FpCpch -c $**
 
 $(OUTDIR)\meridian.exe: $(OBJS) $(DEFFILE) $(OUTDIR)\client.res
 	$(LINK) $(LINKFLAGS) @<<

@@ -217,7 +217,7 @@ messages:
       {
          % No bonus if it wasn't an enemy or if for some reason we didn't
          %  attack any one "recently" (IE, our owner can be helped by mules).
-         if NOT Send(self,@IsEnemyAttack,#who=what,#what=poOwner)
+         if NOT Send(self,@IsEnemyAttack,#what=what)
             OR Send(poOwner,@CanHelpPlayer)
          {
             return;
@@ -261,7 +261,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    "Called every new M59 day."
    {
       piDaysUntilRankLoss = piDaysUntilRankLoss - 1;
@@ -289,18 +289,10 @@ messages:
    {
       local oSoldierShield;
 
-      oSoldierShield = $;
-      if poLastEnemyToAttack <> $
-      {
-         oSoldierShield = Send(poLastEnemyToAttack,@FindUsing,
-                               #class=&SoldierShield);
-      }
-
       % logoff is used for logoff ghosts to thump us a good one for being
       %  cowardly.
       if logoff
-         OR (oSoldierShield <> $
-            AND Send(oSoldierShield,@IsEnemyAttack,#who=poOwner,#what=what))
+         OR Send(self,@IsEnemyAttack,#what=what)
       {
          % If we're rank 3 or below, then we lose our item for slacking.
          if piFactionRank <= 3
@@ -316,8 +308,10 @@ messages:
          % Give the last person to attack us a bonus for forcing owner off if
          %  logged
          if logoff
-            AND oSoldierShield <> $
+            AND poLastEnemyToAttack <> $
          {
+            oSoldierShield = Send(poLastEnemyToAttack,@FindUsing,
+                                  #class=&SoldierShield);
             Send(oSoldierShield,@KilledSomething,#what=poOwner);
          }
       }
@@ -325,31 +319,22 @@ messages:
       return;
    }
 
-   IsEnemyAttack(who=$,what=$,damage=FALSE)
+   IsEnemyAttack(what=$,damage=FALSE)
    "Returns TRUE if what is an enemy (opposing faction soldier)."
    {
       local oSoldierShield;
 
-      % Who is the defender.
-      % What is the attacker.
-      % This obj is the attacker's shield.
-      % oSoldierShield is the defender's shield.
-
-      if who <> $
-         AND IsClass(who,&Player)
-         AND who <> poOwner
+      if what <> $
+         AND IsClass(what,&Player)
+         AND what <> poOwner
       {
-         oSoldierShield = Send(who,@FindUsing,#class=&SoldierShield);
+         oSoldierShield = Send(what,@FindUsing,#class=&SoldierShield);
 
          % Gotta have a shield, and it can't be the same faction as us.
          if oSoldierShield <> $
             AND Send(oSoldierShield,@GetFaction) <> viFaction
          {
-            if damage = TRUE
-            {
-               % Tell defender's shield it was attacked by our owner.
-               Send(oSoldierShield,@AttackedByEnemy,#what=what);
-            }
+            Send(oSoldierShield,@AttackedByEnemy,#who=what);
 
             return TRUE;
          }
@@ -358,9 +343,9 @@ messages:
       return FALSE;
    }
 
-   AttackedByEnemy(what=$)
+   AttackedByEnemy(who=$)
    {
-      poLastEnemyToAttack = what;
+      poLastEnemyToAttack = who;
 
       return;
    }
@@ -631,6 +616,11 @@ messages:
       }
 
       return damage - iDamageReduce;
+   }
+
+   GetHeatDamage()
+   {
+      return 2;
    }
 
    GetBaseSpellModifier(oSpell=$)

@@ -1,15 +1,16 @@
 firestorm_name_rsc = de "Feuersturm"
 firestorm_desc_rsc = de \
-   "Call upon the magic of Faren and propel forth a devastating barrage of "
-   "fireballs, searing the flesh of those around you.  Requires two orc teeth, "
-   "two red mushrooms and a green mushroom."
+   "Ruft die Magie von Faren herbei und wirft eine Flut von Feuerkugeln herab, "
+   "die das Fleisch deiner Gegner in deiner nahen Umgebung anbraten. "
+   "Dazu braucht man zwei Orkzähne, zwei rote Pilze sowie einen grünen Pilz. "
 firestorm_first_rsc = de \
-   "You channel the power of Faren and unleash a barrage of fire!"
+   "Du rufst die Magie Farens herbei und eine Flut von Feuerkugeln trifft deine Gegner!"
 firestorm_third_rsc = de \
-   "%s%s channels the power of Faren and unleashes a barrage of fire!"
-firestorm_killed_someone = de "The ice shards fatally wound %s%s."
+   "%s%s ruft die Magie Farens herbei und erzeugt eine Flut von Feuerkugeln!"
+firestorm_killed_someone = de "Die Feuerkugeln treffen %s%s tödlich."
 firestorm_cast_rsc = de \
-   "You let out a cry of pain as flames sear your flesh, causing ~r~B%i~n "
-   "damage."
+   "Du schreist vor Schmerzen, als die Feuerkugeln auf deine Haut treffen! Die Feuerkugeln "
+   "verursachen ~r~B%i~n Schaden."
 firestorm_hit_rsc = de \
-   "%s%s lets out a cry of pain as flames sear %s flesh for ~k~B%i~n damage."
+   "%s%s schreit vor Schmerzen, als die Feuerkugeln auf %s Haut treffen und "
+   "~k~B%i~n Schaden verursachen."

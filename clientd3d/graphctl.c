@@ -49,7 +49,8 @@ typedef struct {
 
 extern HPALETTE hPal;
 
-static char *GraphCtlName = "BlakGraph";  /* Class name for graph controls; use in CreateWindowx */
+/* Class name for graph controls; use in CreateWindowx */
+static char *GraphCtlName = "BlakGraph";
 
 /* local function prototypes */
 long CALLBACK GraphCtlWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -85,9 +86,10 @@ Bool GraphCtlRegister(HINSTANCE hInst)
       wc.style         = CS_DBLCLKS | CS_VREDRAW | CS_HREDRAW | CS_GLOBALCLASS;
       
       if (RegisterClass(&wc) != 0)
-	 registered = True;
+         registered = True;
       else debug(("Registering graph class failed\n"));
    }
+
    return registered;
 }
 /*****************************************************************************/
@@ -106,7 +108,6 @@ char *GraphCtlGetClassName(void)
 {
    return GraphCtlName;
 }
-
 /*****************************************************************************/
 /*
  * GraphCtlWndProc:  Main window procedure for graph controls.
@@ -140,12 +141,12 @@ long CALLBACK GraphCtlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
    case WM_ERASEBKGND:
       /* don't repaint background */
-	  return TRUE; /* yes, we repainted the background, honest */
+      return TRUE; /* yes, we repainted the background, honest */
       break;
-      
+
    case WM_CANCELMODE:
       if (GetCapture() == hwnd)
-	     ReleaseCapture();
+        ReleaseCapture();
       break;
 
    case WM_GETDLGCODE:  // Handle arrow keys
@@ -157,9 +158,8 @@ long CALLBACK GraphCtlWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       /* Redraw so that highlight is added or removed */
       InvalidateRect(hwnd, NULL, FALSE);
       break;
-      
 
-   default: 
+   default:
       return DefWindowProc(hwnd, msg, wParam, lParam);
    }
 
@@ -264,10 +264,10 @@ void GraphCtlPaint(HWND hwnd)
    int i, x;
    long bar_pos, value_pos;
    POINT triangle[3] = { { 0, 0}, {GRAPH_SLIDER_HEIGHT / 2, GRAPH_SLIDER_HEIGHT - 1},
-			 { - GRAPH_SLIDER_HEIGHT / 2, GRAPH_SLIDER_HEIGHT - 1} };
+          { - GRAPH_SLIDER_HEIGHT / 2, GRAPH_SLIDER_HEIGHT - 1} };
    POINT points[3];
    Bool focus;
-   char temp[MAXAMOUNT + 1];
+   char temp[MAXAMOUNT * 2 + 1];
 
 
    info = (GraphCtlStruct *) GetWindowLong(hwnd, GWL_GRAPHCTLMEM);
@@ -283,9 +283,9 @@ void GraphCtlPaint(HWND hwnd)
    {
       /* If color is default, get system color from defaults */
       if (info->colors[i] == -1)
-	 colors[i] = GetSysColor(color_defaults[i]);
+         colors[i] = GetSysColor(color_defaults[i]);
       else colors[i] = info->colors[i];
-      pens[i] = CreatePen(PS_SOLID, 1, colors[i]);
+         pens[i] = CreatePen(PS_SOLID, 1, colors[i]);
    }
 
    bar_brush = CreateSolidBrush(colors[GRAPHCOLOR_BAR]);
@@ -301,21 +301,21 @@ void GraphCtlPaint(HWND hwnd)
       rect.right -= GRAPH_SIDE_BORDER;
       rect.bottom -= GRAPH_SLIDER_HEIGHT;
    }
-   
+
    Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
 
    /* Draw bar */
    if (info->min_value == info->max_value)
       bar_pos = 1000;
-   else 
+   else
    {
-      bar_pos = (info->current_value - info->min_value) * 1000 / 
-	 (info->max_value - info->min_value);
+      bar_pos = (info->current_value - info->min_value) * 1000 /
+         (info->max_value - info->min_value);
       // Bring within legal range, in case current_value is outside limits
-      bar_pos = min(max(0, bar_pos), 1000);	    
+      bar_pos = min(max(0, bar_pos), 1000);
    }
-   
-   bar_pos = bar_pos * (rect.right - rect.left - 2) / 1000 + rect.left + 1;  /* Skip border */ 
+
+   bar_pos = bar_pos * (rect.right - rect.left - 2) / 1000 + rect.left + 1;  /* Skip border */
    value_pos = bar_pos;
    bar_rect.left   = rect.left + 1;
    bar_rect.right  = bar_pos;
@@ -330,8 +330,8 @@ void GraphCtlPaint(HWND hwnd)
 
       bar_rect.left  = bar_pos;
 
-      bar_pos = (info->limit_value - info->min_value) * 1000 / 
-	 (info->max_value - info->min_value);
+      bar_pos = (info->limit_value - info->min_value) * 1000 /
+         (info->max_value - info->min_value);
       bar_pos = bar_pos * (rect.right - rect.left - 2) / 1000 + rect.left + 1;
 
       // Bring within legal range, in case limit_value is outside limits
@@ -351,7 +351,16 @@ void GraphCtlPaint(HWND hwnd)
    // Draw value of stat, if appropriate
    if (info->style & GCS_NUMBER)
    {
-      sprintf(temp, "%d", info->current_value);
+      if (info->style & GCS_XP)
+      {
+         if (config.xp_display_percent)
+            sprintf(temp, "%d%%", info->current_value * 100 / info->max_value);
+         else
+            sprintf(temp, "%d XP / %d XP", info->current_value, info->max_value);
+
+      }
+      else
+         sprintf(temp, "%d", info->current_value);
 
       SetBkMode(hdc, TRANSPARENT);
       SelectObject(hdc, GetFont(FONT_STATNUM));
@@ -359,14 +368,16 @@ void GraphCtlPaint(HWND hwnd)
       GetTextExtentPoint32(hdc, temp, strlen(temp), &size);
 
       // If there's room past the bar, put it there, otherwise put it in bar
-      if (rect.right - value_pos > size.cx)
-	 x = value_pos + 1;
+      if (rect.right - value_pos > size.cx && !(info->style & GCS_XP))
+         x = value_pos + 1;
+      else if (info->style & GCS_XP)
+         x = bar_rect.right - 2 - size.cx;
       else
-	 x = value_pos - size.cx - 1;
+         x = value_pos - size.cx - 1;
 
       TextOut(hdc, x, max(0, (rect.bottom - size.cy) / 2), temp, strlen(temp));
    }
-   
+
    /* Draw slider if appropriate */
    DeleteObject(bkgnd_brush);
    if (info->style & GCS_SLIDER)
@@ -382,14 +393,14 @@ void GraphCtlPaint(HWND hwnd)
       /* Draw new slider */
       for (i=0; i < 3; i++)
       {
-	 points[i].x = triangle[i].x + bar_pos;
-	 points[i].y = triangle[i].y + rect.bottom;
+         points[i].x = triangle[i].x + bar_pos;
+         points[i].y = triangle[i].y + rect.bottom;
       }
       SelectObject(hdc, pens[GRAPHCOLOR_SLIDER]);
-      
+
       /* If we have the focus, fill the slider */
       if (focus)
-	 SelectObject(hdc, bar_brush);
+    SelectObject(hdc, bar_brush);
       Polygon(hdc, points, 3);
 
       DeleteObject(bkgnd_brush);
@@ -416,7 +427,7 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       /* Control-specific messages */
    case GRPH_RANGESET:
       if ((int) wParam > (int) lParam)
-	 return 0;
+    return 0;
 
       info->min_value = (int) wParam;
       info->max_value = (int) lParam;
@@ -431,11 +442,11 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
    case GRPH_MAXGET:
       return info->max_value;
-      
+
    case GRPH_POSSETUSER:
       // Verify new value
       if (lParam < info->min_value || lParam > info->max_value)
-	 return -1;
+    return -1;
 
       // Fall through
 
@@ -450,8 +461,8 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       /* Force repaint if value changed */
       if (retval != info->current_value)
       {
-	 InvalidateRect(hwnd, NULL, FALSE);
-	 UpdateWindow(hwnd);
+         InvalidateRect(hwnd, NULL, FALSE);
+         UpdateWindow(hwnd);
       }
       return retval;
 
@@ -465,10 +476,10 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       /* Force repaint if value changed */
       if (retval != info->limit_value)
       {
-	 InvalidateRect(hwnd, NULL, FALSE);
-	 UpdateWindow(hwnd);
+         InvalidateRect(hwnd, NULL, FALSE);
+         UpdateWindow(hwnd);
       }
-      
+
       return retval;
 
    case GRPH_LIMITGET:
@@ -476,7 +487,7 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
    case GRPH_COLORSET:
       if (wParam >= GRAPH_NUMCOLORS)
-	 return 0L;
+         return 0L;
 
       color = info->colors[wParam];
       info->colors[wParam] = (COLORREF) lParam;
@@ -489,13 +500,12 @@ long GraphCtlMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       
    case GRPH_COLORGET:
       if (wParam >= GRAPH_NUMCOLORS)
-	 return 0L;
+         return 0L;
       return (long) info->colors[wParam];
    }
 
    return 0L;
 }
-
 /*****************************************************************************/
 /* Update bar when user clicks at x-coordinate x */
 void GraphCtlMoveBar(HWND hwnd, GraphCtlStruct *info, int x)
@@ -512,9 +522,9 @@ void GraphCtlMoveBar(HWND hwnd, GraphCtlStruct *info, int x)
       bar_value = info->min_value;
    else if (x >= rect.right - 1)
       bar_value = info->max_value;
-   else      
+   else
       bar_value = info->min_value + (x - rect.left - 1) * 
-	 (info->max_value - info->min_value) / (rect.right - rect.left - 2);
+         (info->max_value - info->min_value) / (rect.right - rect.left - 2);
 
    /* Bring into range */
    bar_value = max(min(bar_value, info->max_value), info->min_value);

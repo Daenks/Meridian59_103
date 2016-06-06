@@ -21,8 +21,7 @@ resources:
    FaceMask_name_rsc = "mask"
    FaceMask_icon_male_rsc = mmskl.bgf
    FaceMask_icon_female_rsc = mfskl.bgf
-   FaceMask_desc_rsc = \
-      "This mask can be used as a disguise."   
+   FaceMask_desc_rsc = "This mask can be used as a disguise."
 
 classvars:
 
@@ -52,16 +51,19 @@ messages:
 
    GetOverlay(animation = $)
    {
-      if send(poOwner,@GetGender) = GENDER_FEMALE
+      if Send(poOwner,@GetGender) = GENDER_FEMALE
       {
          return vrFemaleIcon;
       }
-      
-      return vrMaleIcon; 
+
+      return vrMaleIcon;
    }
 
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-

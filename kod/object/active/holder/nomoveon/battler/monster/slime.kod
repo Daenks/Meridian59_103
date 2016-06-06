@@ -29,10 +29,10 @@ resources:
    slime_dead_icon_rsc = amoebaX.bgf
    slime_dead_name_rsc = "dead slime"
 
-   slime_sound_hit = slm_atkh.wav
-   slime_sound_miss = slm_atkm.wav
-   slime_sound_death = slm_dth.wav
-   slime_sound_aware = slm_awr.wav
+   slime_sound_hit = slm_atkh.ogg
+   slime_sound_miss = slm_atkm.ogg
+   slime_sound_death = slm_dth.ogg
+   slime_sound_aware = slm_awr.ogg
 
 classvars:
 

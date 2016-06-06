@@ -20,7 +20,7 @@ resources:
 
    room_name_barvault = "Office of the Barloque Vaultman"
    room_barvault = barvault.roo
-   BarVault_music = smithy.mp3
+   BarVault_music = smithy.ogg
 
    BarVault_sign_name = "Welcome to the Barloque Vaults"
    BarVault_sign_desc = \
@@ -28,7 +28,12 @@ resources:
       "A list of your inventory will appear, and you can choose the items you "
       "wish to deposit.  To retrieve these items, simply use the WITHDRAW "
       "command.  Note that this service is not free (the cost will be automatically "
-      "removed from your purse), and that I will not store shillings."
+      "removed from your purse), and that I will not store shillings.\n\n"
+      "Using the Conveyance spell on a stackable item (food, reagents) in "
+      "your inventory will also send your item to the vaults, provided "
+      "you carry enough shillings to cover the fee.\n\n"
+      "Any items you deposit here can also be accessed from the Jasper "
+      "Vaults in West Jasper."
 
 classvars:
 

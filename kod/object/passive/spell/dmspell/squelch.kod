@@ -32,19 +32,21 @@ resources:
    Squelch_globes_message = "post on the Newsglobes"
    Squelch_says_message = "speak aloud"
    Squelch_all_message = "communicate"
-
+   squelch_mails_message = "send mail"
+   squelch_appeals_message = "send appeals"
    Squelch_msg_target_on = \
       "Your ability to %s has been taken away."
    Squelch_msg_target_off = \
       "Your ability to %s has been restored."
    Squelch_help_rsc = \
       "You have 20 seconds to name a type of squelch to apply and a player to "
-      "apply it to. Players don't have to be logged on. Available types are "
-      "'`rbroadcasts`n', '`rtells`n', '`rsays`n' and '`rglobes`n'. If no type "
-      "is given, all forms of communication will be blocked for that player. "
-      "For example, if you say `rglobes test`n, the player 'test' will lose "
-      "the ability to post. If the player has any communication blocked, "
-      "saying just the name will remove all current blocks on that player."
+      "apply it to. Players don't have to be logged on. Available types are:\n "
+      "'`rbroadcasts`n', '`rtells`n', '`rsays`n', '`rglobes`n','`rmails`n' and "
+      "'`rappeals`n'. If no type is given, all forms of communication (except "
+      "appeals) will be blocked for that player.  For example, if "
+      "you say `rglobes test`n, the player 'test' will lose the ability to "
+      "post.  If the player has any communication blocked, saying just the "
+      "name will remove all current blocks on that player."
    Squelch_bad_target = "Invalid name."
    Squelch_no_self = "You can't use this on yourself!"
 
@@ -53,6 +55,8 @@ resources:
    Squelch_tells = "tells"
    Squelch_globes = "globes"
    Squelch_says = "says"
+   squelch_mails = "mails"
+   squelch_appeals = "appeals"
 
 classvars:
 
@@ -116,6 +120,18 @@ messages:
          iFlag = PFLAG2_SQUELCHED_SAYS;
          StringSubstitute(string,Squelch_says," ");
          rSquelchType = Squelch_says_message;
+      }
+      else if StringContain(string,squelch_mails)
+      {
+         iFlag = PFLAG2_SQUELCHED_MAIL;
+         StringSubstitute(string,squelch_mails," ");
+         rSquelchType = squelch_mails_message;
+      }
+      else if StringContain(string,Squelch_appeals)
+      {
+         iFlag = PFLAG2_SQUELCHED_APPEAL;
+         StringSubstitute(string,squelch_appeals," ");
+         rSquelchType = squelch_appeals_message;
       }
       else
       {

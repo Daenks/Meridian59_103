@@ -9,14 +9,14 @@ TOPDIR=..
 # Additional compiler flags (see common.mak)
 # /TP           Compile as C++ code
 # /arch:SSE2    Use SSE2 instructions (VS2013+ default to SSE2)
-CFLAGS = $(CFLAGS) /arch:SSE2 /TP
+CFLAGS = $(CFLAGS) /arch:SSE2 /TP /Zi
 
 # ----------------------------------------------------------------------
 # Additional linker flags (see common.mak)
 # /SUBSYSTEM:WINDOWS",5.01" UI Windows XP (5.01)
 # /STACK  Stacksize in bytes
 # /map    Generate mapfile
-LINKFLAGS = $(LINKFLAGS) /SUBSYSTEM:WINDOWS",6.00" /STACK:0x180000 /map
+LINKFLAGS = $(LINKFLAGS) /SUBSYSTEM:WINDOWS",5.01" /STACK:0x180000 /map /DEBUG
 
 SOURCEDIR = .
 
@@ -24,6 +24,7 @@ LIBS = gdi32.lib user32.lib wsock32.lib winmm.lib comctl32.lib libmysql.lib libc
 
 OBJS =  \
     $(OUTDIR)\main.obj \
+    $(OUTDIR)\main_windows.obj \
     $(OUTDIR)\loadkod.obj \
     $(OUTDIR)\class.obj \
     $(OUTDIR)\message.obj \
@@ -42,6 +43,7 @@ OBJS =  \
     $(OUTDIR)\commcli.obj \
     $(OUTDIR)\string.obj \
     $(OUTDIR)\async.obj \
+    $(OUTDIR)\async_windows.obj \
     $(OUTDIR)\loadgame.obj \
     $(OUTDIR)\game.obj \
     $(OUTDIR)\term.obj \
@@ -73,7 +75,7 @@ OBJS =  \
     $(OUTDIR)\version.obj \
     $(OUTDIR)\systimer.obj \
     $(OUTDIR)\memory.obj \
-    $(OUTDIR)\interface.obj \
+    $(OUTDIR)\interface_windows.obj \
     $(OUTDIR)\intrlock.obj \
     $(OUTDIR)\chanbuf.obj \
     $(OUTDIR)\debug.obj \
@@ -90,25 +92,28 @@ OBJS =  \
     $(OUTDIR)\intstringhash.obj \
     $(OUTDIR)\files.obj \
     $(OUTDIR)\sprocket.obj \
+    $(OUTDIR)\mutex_windows.obj \
+    $(OUTDIR)\thdmsgqueue_windows.obj \
     $(OUTDIR)\database.obj \
 
 all : makedirs $(OUTDIR)\blakserv.exe
 
 $(OUTDIR)\rscload.obj : $(TOPDIR)\util\rscload.c
-    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\vc90.pdb /FpCpch -c $**
+    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /FpCpch -c $**
 
 $(OUTDIR)\crc.obj : $(TOPDIR)\util\crc.c
-    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\vc90.pdb /FpCpch -c $**
+    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /FpCpch -c $**
 
 $(OUTDIR)\md5.obj : $(TOPDIR)\util\md5.c
-    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\vc90.pdb /Fpmd5pch -c $**
+    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /Fpmd5pch -c $**
 
 $(OUTDIR)\blakserv.exe: $(OBJS) $(OUTDIR)\blakserv.res
-    $(CC) $(CFLAGS) -Fo$(OUTDIR)/ /FpCpch /Fd$(OUTDIR)\vc90.pdb -c $(SOURCEDIR)\version.c
+    $(CC) $(CFLAGS) -Fo$(OUTDIR)/ /FpCpch /Fd$(OUTDIR)\ -c $(SOURCEDIR)\version.c
     $(LINK)	$** $(LIBS) -OUT:$@ $(LINKFLAGS)
     $(CP) $@ $(BLAKSERVRUNDIR)
+    $(CP) $(OUTDIR)\*.pdb $(BLAKSERVRUNDIR) >nul
+    $(CP) $(OUTDIR)\*.map $(BLAKSERVRUNDIR) >nul
     $(CP) $(BLAKLIBDIR)\libmysql.dll $(BLAKSERVRUNDIR) >nul
     $(CP) $(BLAKBINDIR)\libcurl.dll $(BLAKSERVRUNDIR) >nul
-    $(CP) $(BLAKBINDIR)\jansson.dll $(BLAKSERVRUNDIR) >nul
 
 !include $(TOPDIR)\rules.mak

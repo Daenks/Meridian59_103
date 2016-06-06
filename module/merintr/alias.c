@@ -25,6 +25,7 @@
 typedef struct
 {
    WORD  key;       // Key to assign alias to
+   int defaultText; // Default text resource for alias
    char  text[MAX_ALIASLEN + 1];      // Text command for alias
    Bool  cr;        // True iff alias is a self-contained command (add CR to end)
 } HotkeyAlias;
@@ -37,36 +38,24 @@ typedef struct
 
 static HotkeyAlias aliases[] =
 {
-   { VK_F1,   "help",     True, },
-   { VK_F2,   "rest",     True, },
-   { VK_F3,   "stand",    True, },
-   { VK_F4,   "neutral",  True, },
-   { VK_F5,   "happy",    True, },
-   { VK_F6,   "sad",      True, },
-   { VK_F7,   "wry",      True, },
-   { VK_F8,   "wave",     True, },
-   { VK_F9,   "point",    True, },
-   { VK_F10,  "addgroup", True, },
-   { VK_F11,  "mail",     True, },
-   { VK_F12,  "quit",     True, },
+   { VK_F1, IDS_ALIAS_HELP,    "", True, },
+   { VK_F2, IDS_ALIAS_REST,    "", True, },
+   { VK_F3, IDS_ALIAS_STAND,   "", True, },
+   { VK_F4, IDS_ALIAS_NEUTRAL, "", True, },
+   { VK_F5, IDS_ALIAS_HAPPY,   "", True, },
+   { VK_F6, IDS_ALIAS_SAD,     "", True, },
+   { VK_F7, IDS_ALIAS_WRY,     "", True, },
+   { VK_F8, IDS_ALIAS_WAVE,    "", True, },
+   { VK_F9, IDS_ALIAS_POINT,   "", True, },
+   { VK_F10, IDS_ALIAS_ADDGRP, "", True, },
+   { VK_F11, IDS_ALIAS_MAIL,   "", True, },
+   { VK_F12, IDS_ALIAS_QUIT,   "", True, },
 };
 
 static VerbAlias* _apVerbAliases = NULL;
 static int _nVerbAliases = 0;
 static int _nAllocated = 0;
 #define CHUNKSIZE 10
-
-static char _szDefaultVerbAliases[] =
-   "chuckle=emote chuckles.\0"
-   "giggle=emote giggles.\0"
-   "hail=tellguild Hail Guildmembers!\0"
-   "laugh=emote laughs.\0"
-   "laughat=emote laughs at ~~!\0"
-   "smile=emote smiles.\0"
-   "smileat=emote smiles at ~~.\0"
-   "wink=emote winks.\0"
-   "winkat=emote winks at ~~.\0"
-   "\0";
 
 static char alias_section[] = "Aliases";   // Section for aliases in INI file
 static char command_section[] = "CommandAliases";   // Section for aliases in INI file
@@ -127,19 +116,21 @@ void AliasInit(void)
    // Hot-Key Aliases
    for (i = 0; i < NUM_ALIASES; i++)
    {
+      // Set the default string first
+      strcpy(aliases[i].text, GetString(hInst, aliases[i].defaultText));
       // Read function key aliases
       sprintf(temp, "F%d", i + 1);
       //GetPrivateProfileString(alias_section, temp, aliases[i].text,
-	  GetPrivateProfileString(fullSection, temp, aliases[i].text,
+      GetPrivateProfileString(fullSection, temp, aliases[i].text,
       aliases[i].text, MAX_ALIASLEN, cinfo->ini_file);
 
       // Check for CR
       len = strlen(aliases[i].text);
       if (len > 0 && aliases[i].text[len - 1] == '~')
       {
-	 command = A_TEXTINSERT;
-	 aliases[i].text[len - 1] = 0;
-	 aliases[i].cr = False;
+         command = A_TEXTINSERT;
+         aliases[i].text[len - 1] = 0;
+         aliases[i].cr = False;
       }
       else 
       {
@@ -191,7 +182,7 @@ void CmdAliasInit(void)
     
     pVerb = pSection;
     if (!pSection || !pSection[0])
-       pVerb = _szDefaultVerbAliases;
+       pVerb = GetString(hInst, IDS_VERB_ALIAS);
     
     while (*pVerb)
     {

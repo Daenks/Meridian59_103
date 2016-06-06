@@ -24,7 +24,7 @@ resources:
       "~IYou have an uneasy feeling that one of your nodes is being "
       "threatened."
    NodeAttack_location_attack_rsc = "~BThe node at %s is under attack!"
-   NodeAttack_attack_sound_rsc = ndanger.wav
+   NodeAttack_attack_sound_rsc = ndanger.ogg
    NodeAttack_killed_rsc = "a Xeochicatl attack"
    NodeAttack_room_message_rsc = \
       "~IThe area shakes violently as several Xeochicatl pull themselves "
@@ -34,7 +34,7 @@ resources:
       "~BThe Xeochicatl retreat from %s.  The node has been saved!"
    NodeAttack_failure_rsc = \
       "~BThe node at %s has been drained by the attacking Xeochicatl!"
-   NodeAttack_failure_sound_rsc = ndrained.wav
+   NodeAttack_failure_sound_rsc = ndrained.ogg
 
    NodeAttack_loss_rsc = \
       "~IYour head aches as you feel the loss of one of your nodes."
@@ -186,7 +186,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       local iDelay, iIndex, iNodeNumber, bNodeActivated;
 
@@ -288,7 +288,7 @@ messages:
       else
       {
          iIndex = FindListElem(plAttackableNodes,iNode);
-         if iIndex = $
+         if NOT iIndex
          {
             Debug("NodeAttack::DoNodeAttack called with bad iNode");
 

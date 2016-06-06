@@ -5,39 +5,43 @@ rem Create a shortcut that can connect to localhost.
 call :makeshortcut
 
 echo Post-Build started.
-for /F "tokens=1-6 usebackq delims=:" %%a in ("%ProgramW6432%\Open Meridian\settings.txt") do (
-   set string=%%a
-   set string=!string: =!
-   if !string! == "ClientFolder" (
-      set m59path=%%b%%c%%d%%e%%f
-      set m59path=!m59path:\\=\!
-      set m59driveletter=!m59path:~2,1!
-      set m59path=!m59path:~1,-2!
-      set m59path=!m59path:~2,255!
-      set m59path=!m59driveletter!:!m59path!
+set foundcli=0
 
-      rem These two filetypes are the important ones. We could check for the music,
-      rem but I've heard more than one user say they deleted it from their resource
-      rem folder for various reasons.
-      if EXIST "!m59path!\resource\*.bgf" if EXIST "!m59path!\resource\*.bsf" (
-         call :copying
-         if %ERRORLEVEL% LSS 8 goto found
-      )
-      echo Copy failed from !m59path!, trying next location...
-   )
+rem Step 1: Try 64-bit Program Files
+set m59path=%ProgramW6432%\Open Meridian\Meridian 105
+
+if EXIST !m59path! (
+   call :copying
+   if %ERRORLEVEL% LSS 8 goto found
 )
 
-echo No graphics found, Please download the client (and graphics) using the patcher from openmeridian.org.
+rem Step 2: try 32-bit Program Files(x86)
+set m59path=%ProgramFiles(x86)%\Open Meridian\Meridian 105
+
+if EXIST !m59path! (
+   call :copying
+   if %ERRORLEVEL% LSS 8 goto found
+)
+
+rem Step 3: try AppData\Local
+set m59path=%LocalAppData%\Open Meridian\Meridian 105
+
+if EXIST !m59path! (
+   call :copying
+   if %ERRORLEVEL% LSS 8 goto found
+)
+
+echo No graphics found, Please download the classic client from https://www.meridiannext.com/play/.
 exit /b 0
 
 :copying
 echo Copying live graphics from !m59path! to client folder.
 rem The error check after this is currently redundant, but kept in case
 rem further copying code is added.
-robocopy "!m59path!\resource" ".\run\localclient\resource" *.bsf *.bgf *.wav *.mp3 /R:0 /MT /XO > postbuild.log
+robocopy "!m59path!\resource" ".\run\localclient\resource" *.bsf *.bgf *.ogg /R:0 /MT /XO > postbuild.log
 if %ERRORLEVEL% GTR 7 goto:eof
 rem These extensions aren't used.
-rem robocopy "!m59path!\resource" ".\run\localclient\resource" *.mid *.xmi /R:0 /MT /XO > nul
+rem robocopy "!m59path!\resource" ".\run\localclient\resource" *.mid *.xmi *.wav *.mp3 /R:0 /MT /XO > nul
 rem if %ERRORLEVEL% GTR 7 goto:eof
 goto:eof
 

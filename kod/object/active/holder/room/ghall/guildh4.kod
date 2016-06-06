@@ -37,7 +37,7 @@ resources:
    room_name_guildh4 = "The Wryn's Keep"
    room_guildh4 = guildh4.roo
 
-   guildhall4_sound = down2.wav
+   guildhall4_sound = down2.ogg
 
    news_guild4_name = "news"
    news_guild4_desc = "This is the guild newsgroup."
@@ -463,7 +463,7 @@ messages:
    {
       ptLighting = CreateTimer(self,@LightFlicker,1000);
 
-      return;
+      propagate;
    }
 
    LightFlicker()
@@ -495,13 +495,13 @@ messages:
    {
       if ptLighting <> $
       {
-         deletetimer(ptLighting);
+         DeleteTimer(ptLighting);
          ptLighting = $;
       }
 
       Send(self,@SetBaseLight,#amount=FLICKER_NONE);
 
-      return;
+      propagate;
    }
 
    ClaimGuildHall()

@@ -16,7 +16,7 @@ include blakston.khd
 
 messages:
 
-   TryAddToQuestEngine()
+   TryAddToLibrary()
    "This returns FALSE for the people of newbieville, so they never "
    "have quests that are connected with the rest of the world."
    {

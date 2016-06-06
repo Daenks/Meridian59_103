@@ -30,9 +30,9 @@ resources:
    skeleton_dead_icon_rsc = skelX.bgf
    skeleton_dead_name_rsc = "pile of bones"
 
-   skeleton_sound_miss = skl_atkm.wav
-   skeleton_sound_death = skl_dth.wav
-   skeleton_sound_aware = skl_awr.wav
+   skeleton_sound_miss = skl_atkm.ogg
+   skeleton_sound_death = skl_dth.ogg
+   skeleton_sound_aware = skl_awr.ogg
 
 classvars:
 
@@ -43,8 +43,8 @@ classvars:
    vrDead_icon = skeleton_dead_icon_rsc
    vrDead_name = skeleton_dead_name_rsc
    
-   viCashmin = -1000
-   viCashmax = 1500
+   viCashmin = 50
+   viCashmax = 400
    viTreasure_type = TID_TOUGH
    viSpeed = SPEED_AVERAGE
    viAttack_type = ATCK_WEAP_THRUST

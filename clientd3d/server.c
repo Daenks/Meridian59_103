@@ -18,7 +18,7 @@
 
 #include "client.h"
 
-extern Bool				gD3DRedrawAll;
+extern Bool            gD3DRedrawAll;
 
 static handler_struct connecting_handler_table[] = {
 { 0, NULL},   // must end table this way
@@ -44,6 +44,7 @@ static handler_struct login_handler_table[] = {
 { AP_DELETEALLRSC,      HandleDeleteAllRsc },
 { AP_NOCHARACTERS,      HandleNoCharacters },
 { AP_GUEST,             HandleGuest },
+{ AP_CLIENT_PATCH,      HandleClientPatch },
 { 0, NULL},   // must end table this way
 }; 
 
@@ -109,8 +110,8 @@ static handler_struct game_handler_table[] = {
 { BP_ROUNDTRIP1,        HandleRoundtrip },
 { BP_CHANGE_TEXTURE,    HandleChangeTexture },
 { BP_SECTOR_LIGHT,      HandleSectorLight },
-{ BP_SET_VIEW,		HandleSetView },
-{ BP_RESET_VIEW,	HandleResetView },
+{ BP_SET_VIEW,      HandleSetView },
+{ BP_RESET_VIEW,   HandleResetView },
 { 0, NULL},   // must end table this way
 };
 
@@ -123,21 +124,21 @@ static ID _redbook = 0;
 
 void ResetSecurityToken()
 {
-	_redbook = 0;
+   _redbook = 0;
 
-	if (_redbookstring)
-	   free(_redbookstring);
-	_redbookstring = NULL;
+   if (_redbookstring)
+      free(_redbookstring);
+   _redbookstring = NULL;
 
-	server_secure_token = 0;
-	server_sliding_token = NULL;
+   server_secure_token = 0;
+   server_sliding_token = NULL;
 }
 
 void UpdateSecurityRedbook(ID idRedbook)
 {
-	if (_redbookstring)
-	   free(_redbookstring);
-	_redbookstring = NULL;
+   if (_redbookstring)
+      free(_redbookstring);
+   _redbookstring = NULL;
 
    _redbook = idRedbook;
    if (_redbook)
@@ -146,7 +147,7 @@ void UpdateSecurityRedbook(ID idRedbook)
    if (_redbook && !_redbookstring)
    {
       debug(("UpdateSecurityRedbook: can't load resource %i for redbook\n", _redbook));
-	  _redbook = 0;
+     _redbook = 0;
    }
 
    if (_redbookstring)
@@ -169,7 +170,7 @@ char* GetSecurityRedbook()
 void Extract(char **buf, void *result, UINT numbytes)
 {
    memcpy(result, *buf, numbytes);
-   *buf += numbytes;	 
+   *buf += numbytes;    
 }
 /********************************************************************/
 /* 
@@ -303,17 +304,17 @@ void ExtractOverlay(char **ptr, Overlay *overlay)
 
 void ExtractDLighting(char **ptr, d_lighting *dLighting)
 {
-	Extract(ptr, &dLighting->flags, 2);
+   Extract(ptr, &dLighting->flags, 2);
 
-	if (LIGHT_FLAG_NONE == dLighting->flags)
-	{
-		dLighting->color = 0;
-		dLighting->intensity = 0;
-		return;
-	}
+   if (LIGHT_FLAG_NONE == dLighting->flags)
+   {
+      dLighting->color = 0;
+      dLighting->intensity = 0;
+      return;
+   }
 
-	Extract(ptr, &dLighting->intensity, 1);
-	Extract(ptr, &dLighting->color, 2);
+   Extract(ptr, &dLighting->intensity, 1);
+   Extract(ptr, &dLighting->color, 2);
 }
 /********************************************************************/
 /* 
@@ -550,9 +551,9 @@ Bool DesecureByServerToken(char *message, int len)
    if (server_sliding_token)
    {
       server_secure_token += ((*server_sliding_token) & 0x7F);
-	  server_sliding_token++;
-	  if (*server_sliding_token == '\0')
-	     server_sliding_token = GetSecurityRedbook();
+     server_sliding_token++;
+     if (*server_sliding_token == '\0')
+        server_sliding_token = GetSecurityRedbook();
    }
 
    return True;
@@ -584,7 +585,7 @@ Bool HandleMessage(char *message, int len)
    case STATE_GAME:
       // See if a module wants to handle the message
       if (ModuleEvent(EVENT_SERVERMSG, message, len) == False)
-	 return True;
+    return True;
 
       table = game_handler_table;
       break;
@@ -618,26 +619,26 @@ Bool LookupMessage(char *message, int len, HandlerTable table)
 
    /* Look for message handler in table */
    index = 0;
-	while (table[index].msg_type != 0)
-	{
-		if (table[index].msg_type == type)
-		{
-			if (table[index].handler != NULL)
-			{                           
-				/* Don't count type byte in length for handler */
-				success = (*table[index].handler)(ptr, len - SIZE_TYPE);
-				if (!success)
-				{
-					// Don't print error message for "subprotocols"; these handle themselves
-					if (type != BP_USERCOMMAND)
-						debug(("Error in message of type %d from server\n", type));
-					return False;
-				}
-			}
-		break;
-		}
-	index++;
-	}
+   while (table[index].msg_type != 0)
+   {
+      if (table[index].msg_type == type)
+      {
+         if (table[index].handler != NULL)
+         {                           
+            /* Don't count type byte in length for handler */
+            success = (*table[index].handler)(ptr, len - SIZE_TYPE);
+            if (!success)
+            {
+               // Don't print error message for "subprotocols"; these handle themselves
+               if (type != BP_USERCOMMAND)
+                  debug(("Error in message of type %d from server\n", type));
+               return False;
+            }
+         }
+      break;
+      }
+   index++;
+   }
 
    if (table[index].msg_type == 0)
       return False;
@@ -967,7 +968,7 @@ Bool HandleWait(char *ptr,long len)
    if (len != 0)
       return False;
 
-   //	System is saving - clear user selected target as the ID will be invalid afterwards.
+   //   System is saving - clear user selected target as the ID will be invalid afterwards.
    SetUserTargetID( INVALID_ID );
 
    GameWait();
@@ -1259,7 +1260,7 @@ Bool HandleBuyList(char *ptr, long len)
    {
       buy_obj = (buy_object *) ZeroSafeMalloc(sizeof(buy_object));
       ExtractObject(&ptr, &buy_obj->obj);
-//	  ExtractDLighting(&ptr, &buy_obj->obj.dLighting);
+//     ExtractDLighting(&ptr, &buy_obj->obj.dLighting);
       Extract(&ptr, &buy_obj->cost, SIZE_COST);
 
       list = list_add_item(list, buy_obj);
@@ -1754,7 +1755,7 @@ Bool HandleEchoPing(char *ptr, long len)
    if (len > 0 && ptr != NULL)
    {
       char ch;
-	  int id;
+     int id;
 
       Extract(&ptr, &ch, 1);
       Extract(&ptr, &id, 4);
@@ -2026,6 +2027,31 @@ Bool HandleGetClient(char *ptr, long len)
    debug(("server = %s, filename = %s\n", hostname, filename));
 
    DownloadNewClient(hostname, filename);
+
+   return True;
+}
+/********************************************************************/
+Bool HandleClientPatch(char *ptr, long len)
+{
+   char patchhost[MAXMESSAGE], patchcachepath[MAXMESSAGE], patchpath[MAXMESSAGE];
+   char cachefile[MAXMESSAGE], clubfile[MAXMESSAGE], reason[MAXMESSAGE];
+   debug(("Got ClientPatch\n"));
+
+   if ((len = ExtractString(&ptr, len, patchhost, MAXMESSAGE)) == -1)
+      return False;
+   if ((len = ExtractString(&ptr, len, patchpath, MAXMESSAGE)) == -1)
+      return False;
+   if ((len = ExtractString(&ptr, len, patchcachepath, MAXMESSAGE)) == -1)
+      return False;
+   if ((len = ExtractString(&ptr, len, cachefile, MAXMESSAGE)) == -1)
+      return False;
+   if ((len = ExtractString(&ptr, len, clubfile, MAXMESSAGE)) == -1)
+      return False;
+   if ((len = ExtractString(&ptr, len, reason, MAXMESSAGE)) == -1)
+      return False;
+
+   DownloadClientPatch(patchhost, patchpath, patchcachepath, cachefile,
+      clubfile, reason);
 
    return True;
 }

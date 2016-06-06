@@ -118,29 +118,34 @@ messages:
       return;
    }
 
-   GenerateItemWithAttribute(who=$)
+   GenerateItemWithAttribute(who=$,diff_seed=1)
    {
       local i, index, jindex, random_x, oItem;
 
       index = 0;
+
       foreach i in plItems_to_Attribute
       {
-         index = index + nth(i,2);
+         index = index + Nth(i,2);
       }
 
-      jindex = Send(who,@GetBaseMaxhealth)/10;
-      if index < jindex+1  { index = jindex + 1; }
+      jindex = Bound(Send(who,@GetBaseMaxhealth)/10,2,30);
+      if index < jindex + 1
+      {
+         index = jindex + 1;
+      }
 
-      random_x = random(jindex + 1,index);
+      random_x = Random(jindex + 1,index);
 
       %% Okay, now we have a random number, see what it corresponds to.
       foreach i in plItems_to_Attribute
       {
-         random_x = random_x - nth(i,2);
+         random_x = random_x - Nth(i,2);
          if random_x < 1         %% we have a winner!
          {
             oItem = Create(First(i));
-            Send(self,@AddSelfToRandomItem,#oItem=oItem,#who=who);
+            Send(self,@AddSelfToRandomItem,#oItem=oItem,#who=who,
+                  #diff_seed=diff_seed);
 
             break;
          }
@@ -175,16 +180,16 @@ messages:
       return TRUE;
    }
 
-   AddSelfToRandomItem(oItem=$,who=$)
+   AddSelfToRandomItem(oItem=$,who=$,diff_seed=1)
    {
       if oItem = $
       {
          return FALSE;
       }
-      
+
       if Send(self,@ReqAddToItem,#oItem=oItem)
       {
-         Send(self,@AddToItem,#oItem=oItem); 
+         Send(self,@AddToItem,#oItem=oItem,#diff_seed=diff_seed);
       }
 
       return;
@@ -292,7 +297,8 @@ messages:
       return FALSE;
    }
 
-   AddToItem(oItem=$,state1=$,state2=$,state3=$,timer_duration=$,random_gen=TRUE,iPower=$)
+   AddToItem(oItem = $, state1 = $, state2 = $, state3 = $, timer_duration = $,
+             random_gen = TRUE, iPower = $, diff_seed = 1)
    {
       local lData, iValue;
 
@@ -330,8 +336,8 @@ messages:
          lData = Cons(iValue,lData);
       }
 
-      iValue = Send(self,@SetCompound,#random_gen=random_gen,
-                     #oItem=oItem,#iPower=iPower);
+      iValue = Send(self,@SetCompound,#random_gen=random_gen,#oItem=oItem,
+                     #iPower=iPower,#diff_seed=diff_seed);
       lData = Cons(iValue,lData);
 
       Send(self,@AddEffects,#oItem=oItem,#lData=lData,#state1=state1);
@@ -381,13 +387,12 @@ messages:
       return;
    }
 
-   SetCompound(random_gen=TRUE,oItem=$,iPower=$)
-   "The compound is a three part variable.  The first variable "
-   "is a bitflag, which currently contains 1 option (whether or "
-   "not the attribute has been ID'd yet).  The second bit is the "
-   "'power' bit, which is usually a number from 1 to 3."
-   "In the Hundreds/thousands column, we store the WA or IA of the "
-   "attribute, identifying it."
+   SetCompound(random_gen = TRUE, oItem = $, iPower = $, diff_seed = 1)
+   "The compound is a three part variable.  The first variable is a bitflag, "
+   "which currently contains 1 option (whether or not the attribute has been "
+   "ID'd yet).  The second bit is the 'power' bit, which is usually a number "
+   "from 1 to 3.  In the Hundreds/thousands column, we store the WA or IA of "
+   "the attribute, identifying it."
    {
       local bIdent, iCompound;
 
@@ -399,11 +404,11 @@ messages:
 
       if iPower = $
       {
-         %% tens digit = power.  Number from 1 to 10?
-         iPower = Send(self,@InitialPower,#oItem=oItem);
+         %% tens digit = power.  Number from 1 to 9?
+         iPower = Send(self,@InitialPower,#oItem=oItem,#diff_seed=diff_seed);
       }
 
-      iCompound = iCompound + (10 * iPower);
+      iCompound = iCompound + (10 * Bound(iPower,0,9));
 
       %% hundreds, thousands digit = ID constant
       %% starting in WA_ or IA_
@@ -478,8 +483,8 @@ messages:
 
       %% power is the tens column.
 
-      iPower = iCompound/10;
-      iPower = iPower mod 10;
+      iPower = iCompound / 10;
+      iPower = iPower MOD 10;
 
       return iPower;
    }

@@ -1,0 +1,87 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Castle1D is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_castle1d = "Far'Nohl's Chambers"
+   room_castle1d = castle1d.roo
+   castle1d_music = castle.ogg
+
+classvars:
+
+   vrName = room_name_castle1d
+
+   viTeleport_row = 8
+   viTeleport_col = 13
+
+   viTerrain_type = TERRAIN_CASTLE
+
+   viWeatherZone = WEATHER_ZONE_CV
+   viWeatherMask = WEATHER_MASK_MOUNTAINS
+
+properties:
+
+   prMusic = castle1d_music
+
+   piBaseLight = LIGHT_ALMOST_NONE
+   piOutside_factor = 0
+
+   prRoom = room_castle1d
+   piRoom_num = RID_CASTLE1D
+
+messages:
+
+   Constructed()
+   {
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      // Left row of braziers
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=13,#new_col=5,
+           #fine_row=42,#fine_col=44);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=13,#new_col=9,
+           #fine_row=42,#fine_col=52);
+
+      // Right row of braziers
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=1,#new_col=5,
+           #fine_row=48,#fine_col=42);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=1,#new_col=9,
+           #fine_row=48,#fine_col=52);
+
+      // Door braziers
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=4,#new_col=15,
+           #fine_row=36,#fine_col=18);
+      Send(self,@NewHold,#what=Create(&Brazier),#new_row=10,#new_col=15,
+           #fine_row=62,#fine_col=18);
+
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      plExits = Cons([ 6, 16, RID_CASTLE1, 13, 2, ROTATE_NONE ],plExits);
+      plExits = Cons([ 7, 16, RID_CASTLE1, 13, 2, ROTATE_NONE ],plExits);
+      plExits = Cons([ 8, 16, RID_CASTLE1, 13, 2, ROTATE_NONE ],plExits);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

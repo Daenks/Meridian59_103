@@ -18,6 +18,9 @@
 
 // Info about each file to download
 typedef struct {
+#if !VANILLA_UPDATER
+   char path[MAX_PATH + 1];
+#endif
    char filename[FILENAME_MAX + 1];
    int  time;           // Download time of file
    int  flags;          // Flags that say what to do with the file
@@ -48,5 +51,7 @@ void DownloadSetTime(int new_time);
 Bool DownloadBferHandleMessage(char *ptr, long len);
 
 void DownloadNewClient(char *hostname, char *filename);
+void DownloadClientPatch(char *patchhost, char *patchpath, char *patchcachepath,
+                         char *cachefile, char *clubfile, char *reason);
 
 #endif /* #ifndef _DOWNLOAD_H */

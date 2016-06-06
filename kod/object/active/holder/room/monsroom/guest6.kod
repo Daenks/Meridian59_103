@@ -43,12 +43,12 @@ resources:
    include guest6.lkod
 
    room_name_guest6 = "Mausoleum"
-   room_guest6 = guest6.roo
-   guest6_music = nec03.mp3
+   room_guest6 = razacrypt.roo
+   guest6_music = nec03.ogg
 
-   guest6_signname = "spells"
+   guest6_signname = "Spells"
    guest6_sign = \
-      "There are more than 120 spells in the Meridian universe.  We've given you "
+      "There are more than 140 spells in the Meridian universe.  We've given you "
       "one of the higher level ones to practice: the fireball spell.\n\n"
       "Below you, there is a pit full of mummies just wandering around.  First, you "
       "need to be able to see them.  Press the PAGEDOWN key until your view lowers "
@@ -64,7 +64,7 @@ resources:
       "red mushrooms and orc teeth).  Fortunately, the mummies that you kill elsewhere "
       "provide the reagents you need."
 
-   guest6_signname2 = "fighting"
+   guest6_signname2 = "Fighting"
    guest6_sign2 = \
       "Combat is essential in Meridian 59, but it's also "
       "pretty easy.  If you push your 'E' key by default, you will swing at "
@@ -72,64 +72,70 @@ resources:
       "you don't have a weapon armed, you should do so now, because "
       "punching is not an effective way to kill much of anything.\n\n"
       "However, if you are a mage and have learned one of the touch attack "
-      "spells (acid touch, icy fingers, holy touch, touch of flame and zap), "
-      "your unarmed attacks will be transformed into powerful elemental "
-      "assaults for the duration of the spell! If you run out of reagents to "
-      "cast your spells, see Ravi - the town's apothecary - to resupply yourself.\n\n"
+      "spells (acid touch, icy fingers, holy touch, touch of flame, unholy "
+      "touch and zap), your unarmed attacks will be transformed into powerful "
+      "elemental assaults for the duration of the spell!  If you run out of "
+      "reagents to cast your spells, see Ravi - the town's apothecary - to "
+      "resupply yourself.\n\n"
       "While fighting, be sure to keep an eye on your Health bar, marked "
       "by a cross in the top-right corner of the screen.  If it gets too low, "
-      "don't hesitate to run away!  Then "
-      "rest or eat some food to get your strength up faster. "
-      "Keep in mind that you can neither fight nor "
+      "don't hesitate to run away!  Then rest or eat some food to get your "
+      "strength up faster.  Keep in mind that you can neither fight nor "
       "run while resting, so you want to be sure you find a safe place to "
       "hide while you heal.\n\n"
       "Monsters you kill will frequently drop treasure behind which can either "
-      "be sold or used. Be sure to get whatever they drop, by either using the "
-      "GET command, or dragging and dropping the items from the floor to your "
-      "inventory.\n\n"
+      "be sold or used. Be sure to get whatever they drop, by using the "
+      "GET command, or by pressing 'G'.\n\n"
       "You have already learned that you can [USE] armor and weapons to equip "
-      "them, but it doesn't stop there! For example, you may also encounter "
-      "magical potions, scrolls and wands on your journey. Try using them! "
+      "them, but it doesn't stop there!  For example, you may also encounter "
+      "magical potions, scrolls and wands on your journey.  Try using them!  "
       "Remember that you can use the [Space] key to quickly use the item that "
-      "you have currently selected. Also, keep in mind that wands require a "
-      "target - be it one of your foes, your allies or even yourself."
-      
+      "you have currently selected in your inventory.  Also, keep in mind "
+      "that wands require a target - be it one of your foes, your allies "
+      "or even yourself."
 
-   guest6_signname3 = "targetting"
+   guest6_signname3 = "Targeting"
    guest6_sign3 = \
-      "Now that you are familiar with fighting and spellcasting, you're ready to "
-      "try out the advanced targetting feature.\n"
-      "Press [ or ] while facing a monster or player to activate the targetting "
-      "system.  You should see your target "
-      "outlined in color (you can set the color in your preferences).  As long as "
-      "a target is outlined, the game will assume that all attacks or spells "
-      "are to be directed at that target.  Note that this is true regardless of "
-      "whether you can hit or even see your target, so be careful about leaving "
-      "inaccessible enemies targetted!\n"
-      "Pressing [ or ] will cycle through your available targets, and pressing Esc "
-      "will clear your current target and return you to the default attack/spell mode.\n\n"
-      "With a little practise, you'll see how useful targetting can be, especially "
-      "when casting spells.  Just set up a hotkey to the spell of your choice, "
-      "highlight a target and fire away!"
+      "Now that you are familiar with fighting and spellcasting, you're "
+      "ready to try out the advanced targeting feature.\n\n"
+      "Press the '[' or ']' keys while facing a monster or player to activate "
+      "the targeting system.  You should see your target outlined in color "
+      "(you can set the color in your Preferences from the Game option in the "
+      "top menu bar).  As long as a target is outlined, the game will assume "
+      "that all attacks or spells are to be directed at that target.  Note "
+      "that this is true regardless of whether you can hit or even see your "
+      "target, so be careful about leaving inaccessible enemies targetted!\n\n"
+      "Pressing '[' or ']' will cycle through your available targets, and "
+      "pressing ESC will clear your current target and return you to the "
+      "default attack/spell mode.\n\n"
+      "With a little practise, you'll see how useful targeting can be, "
+      "especially when casting spells.  Just set up a hotkey to the spell "
+      "of your choice, highlight a target and fire away!"
 
-   guest6_signname4 = "jumping"
+   guest6_signname4 = "Jumping"
    guest6_sign4 = \
-      "Jumping in Meridian 59 is especially tricky as there is no jump key or command.  "
-      "Consider it more like falling at an angle.  There will be many places in the world "
-      "that will require you to leap from one area to the next.  To cross these areas, "
-      "like the one ahead, get a running start by holding down the SHIFT key while using "
-      "your arrow keys to guide your avatar.  Just aim where you are trying to land and "
-      "run from one ledge to the next.  If you fail the jump on your first try, "
-      "you can go around and try again."
-   
-   guest6_bones_name = "pile of bones"
-   guest6_bones_icon = bonepile.bgf
-   guest6_bones_desc = \
-      "This pile of bones is no doubt the result of a dead body that has been decomposing "
-      "for dozens of Meridian years."
+      "Jumping in Meridian 59 is especially tricky as there is no jump key "
+      "or command.  Consider it more like falling at an angle.  There will "
+      "be many places in the world that will require you to leap from one "
+      "area to the next.  To cross these areas, like the one ahead, get a "
+      "running start then just aim where you are trying to land and run from "
+      "one ledge to the next.  If you fail the jump on your first try, you "
+      "can go around and try again."
 
-   guest6_door1_rsc = down2.wav
-   
+   guest6_signname5 = "Using objects"
+   guest6_sign5 = \
+      "The two levers you see before you will open the wooden gate if both "
+      "are pulled at the same time.  Other objects in this world, mainly "
+      "levers, guild hall switches and light sources, can be interacted with "
+      "to produce some effect.\n\nTo pull the lever, right-click it and click "
+      "\"use\", or type use into the chatbox while standing close to it.\n\n"
+      "You may find you are not quick enough to pull both levers in time to "
+      "open the door.  If so, you can use the \"broadcast\" chat command to "
+      "find another player to help you, or continue killing monsters in the "
+      "rest of the mausoleum (there are only a few behind the gate)."
+
+   guest6_door1_rsc = down2.ogg
+
 classvars:
 
    vrName = room_name_guest6
@@ -163,7 +169,9 @@ properties:
 
    prMusic = guest6_music
 
-   piMonster_count_max = 25
+   piInit_count_min = 12
+   piInit_count_max = 15
+   piMonster_count_max = 35
 
    piPit_Monsters = 0        % Number of monsters currently in the pit area
 
@@ -204,7 +212,7 @@ messages:
    {
       plExits = $;
 
-      plExits = Cons([ 11, 17, viDemo_base + 2, 7, 43, SET_ANGLE_WEST, DISTANCE_NORMAL ],plExits);
+      plExits = Cons([ 11, 17, viDemo_base + 2, 28, 24, SET_ANGLE_EAST, DISTANCE_NORMAL ],plExits);
 
       propagate;
    }
@@ -213,69 +221,59 @@ messages:
    {
       local oSign;
 
-      oSign = Create(&sign,#desc=vrSignText,#newbie=TRUE,#name=vrSignName);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=2,#fine_col=48);
+      oSign = Create(&Sign,#desc=vrSignText,#newbie=TRUE,#name=vrSignName);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=2,#fine_col=48);
 
-      oSign = Create(&sign,#desc=guest6_sign2,#newbie=TRUE,#name=guest6_signname2);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=14,#fine_row=32,#fine_col=48);
-      
-      oSign = Create(&sign,#desc=guest6_sign3,#newbie=TRUE,#name=guest6_signname3);
-      send(self,@NewHold,#what=oSign,#new_row=11,#new_col=3,#fine_row=32,#fine_col=32);
+      oSign = Create(&Sign,#desc=guest6_sign2,#newbie=TRUE,#name=guest6_signname2);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=14,#fine_row=32,#fine_col=48);
 
-      oSign = Create(&sign,#desc=guest6_sign4,#newbie=TRUE,#name=guest6_signname4);
-      send(self,@NewHold,#what=oSign,#new_row=29,#new_col=30,#fine_row=0,#fine_col=32);
-      
+      oSign = Create(&Sign,#desc=guest6_sign3,#newbie=TRUE,#name=guest6_signname3);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=3,#fine_row=32,#fine_col=32);
+
+      oSign = Create(&Sign,#desc=guest6_sign4,#newbie=TRUE,#name=guest6_signname4);
+      Send(self,@NewHold,#what=oSign,#new_row=29,#new_col=30,#fine_row=0,#fine_col=32);
+
+      oSign = Create(&Sign,#desc=guest6_sign5,#newbie=TRUE,#name=guest6_signname5);
+      Send(self,@NewHold,#what=oSign,#new_row=24,#new_col=12,#fine_row=45,#fine_col=14);
+
       oSign = Create(&Skull);
       Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=21,#fine_row=32,#fine_col=40);
 
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=3,#new_col=18,#fine_row=0,#fine_col=8);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=5,#new_col=14,#fine_row=32,#fine_col=40);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=19,#new_col=18,#fine_row=0,#fine_col=40);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=22,#new_col=11,#fine_row=24,#fine_col=56);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=23,#new_col=8,#fine_row=40,#fine_col=16);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=25,#new_col=14,#fine_row=0,#fine_col=40);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=32,#new_col=14,#fine_row=0,#fine_col=40);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=30,#new_col=40,#fine_row=0,#fine_col=24);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=27,#new_col=33,#fine_row=40,#fine_col=0);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=19,#new_col=32,#fine_row=40,#fine_col=0);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=17,#new_col=40,#fine_row=0,#fine_col=24);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=13,#new_col=40,#fine_row=0,#fine_col=24);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=9,#new_col=34,#fine_row=0,#fine_col=24);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=4,#new_col=28,#fine_row=40,#fine_col=0);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=2,#new_col=26,#fine_row=0,#fine_col=40);
-      oSign = Create(&sign,#desc=guest6_bones_desc,#name=guest6_bones_name,
-                     #icon=guest6_bones_icon);
-      Send(self,@NewHold,#what=oSign,#new_row=2,#new_col=40,#fine_row=0,#fine_col=24);
+      // Piles of bones
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=3,#new_col=18,#fine_row=0,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=3,#new_col=18,#fine_row=0,#fine_col=8);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=5,#new_col=14,#fine_row=32,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=19,#new_col=18,#fine_row=0,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=22,#new_col=11,#fine_row=24,#fine_col=56);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=23,#new_col=8,#fine_row=40,#fine_col=16);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=25,#new_col=14,#fine_row=0,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=32,#new_col=14,#fine_row=0,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=30,#new_col=40,#fine_row=0,#fine_col=24);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=27,#new_col=33,#fine_row=40,#fine_col=0);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=19,#new_col=32,#fine_row=40,#fine_col=0);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=17,#new_col=40,#fine_row=0,#fine_col=24);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=13,#new_col=40,#fine_row=0,#fine_col=24);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=9,#new_col=34,#fine_row=0,#fine_col=24);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=4,#new_col=28,#fine_row=40,#fine_col=0);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=2,#new_col=26,#fine_row=0,#fine_col=40);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BONES_RAZA),
+           #new_row=2,#new_col=40,#fine_row=0,#fine_col=24);
 
       Send(self,@NewHold,#what=Create(&Brazier),#new_row=9,#new_col=18,
            #fine_row=0,#fine_col=48);
@@ -297,13 +295,15 @@ messages:
       if poLever1 = $
       {
          poLever1 = Create(&GuestLever);
-         Send(self,@NewHold,#what=poLever1,#new_row=27,#new_col=4);
+         Send(self,@NewHold,#what=poLever1,#new_row=26,#new_col=4,
+               #fine_row=32,#fine_col=40);
       }
       
       if poLever2 = $
       {
          poLever2 = Create(&GuestLever);
-         Send(self,@NewHold,#what=poLever2,#new_row=27,#new_col=9);
+         Send(self,@NewHold,#what=poLever2,#new_row=26,#new_col=9,
+               #fine_row=32,#fine_col=40);
       }
 
       return;
@@ -443,14 +443,12 @@ messages:
       return;
    }
 
-
    ResetPuzzle()
    {
       send(self,@SlamTimer);
       
       return;
    }
-
 
    SlamTimer()
    {
@@ -549,7 +547,6 @@ messages:
       return;
    }
 
-
    CountInFinal(count = COUNT_PLAYERS)
    "With count = COUNT_MONSTERS, count monsters in region.\n"
    "With count = COUNT_PLAYERS, count players in region."
@@ -629,7 +626,6 @@ messages:
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

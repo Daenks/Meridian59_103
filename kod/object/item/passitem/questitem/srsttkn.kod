@@ -23,12 +23,15 @@ resources:
    StatsResetToken_desc_rsc = \
       "This is a Trinket of the Elders, said to be handed to them by the Gods. "
       "Legend holds that these Ancient Trinkets contain the power to change "
-      "the very structure of a Mortal. Surely the Elders would greatly "
-      "reward anyone who returns this Trinket to them."
+      "the very structure of a Mortal.  Surely the Elders would greatly "
+      "reward anyone who returns this Trinket to them.\n\nTake this ancient "
+      "trinket to Ran er'Hoth in Marion, Afiera D'xor in Jasper, Rodric "
+      "d'Stane in Raza or the Bone Priestess in Ko'catan and they will assist "
+      "you in changing your statistics."
    StatsResetToken_desc_append = \
-      "\n\nThis token will expire in %i Meridian years.%s"
+      "\n\nThis trinket will expire in %i days.%s"
    StatsResetToken_desc_noTrade = \
-      "\n\nNo Trade"
+      "\n\nThis trinket cannot be traded or dropped."
 
 classvars:
 
@@ -43,7 +46,8 @@ classvars:
 properties:
 
    pbTemporary
-   piGameYearsRemaining
+   // Real-life days.
+   piDaysRemaining
    pbTradeable
 
 messages:
@@ -56,18 +60,18 @@ messages:
       % Just assign 2 years if not temporary, it won't decrease anyway.
       if NOT pbTemporary
       {
-         piGameYearsRemaining = 2;
+         piDaysRemaining = 40;
 
          propagate;
       }
 
       if lifetime <> -1
       {
-         piGameYearsRemaining = lifetime;
+         piDaysRemaining = lifetime;
       }
       else
       {
-         piGameYearsRemaining = Send(SETTINGS_OBJECT,@GetStatResetTokenLife);
+         piDaysRemaining = Send(SETTINGS_OBJECT,@GetStatResetTokenLife);
       }
 
       propagate;
@@ -120,13 +124,13 @@ messages:
       return FALSE;
    }
 
-   NewYear()
+   NewDay()
    {
       if pbTemporary
       {
-         piGameYearsRemaining = piGameYearsRemaining - 1;
-      
-         if piGameYearsRemaining <= 0
+         --piDaysRemaining;
+
+         if piDaysRemaining <= 0
          {
             Send(self,@Delete);
          }
@@ -141,14 +145,14 @@ messages:
       {
          if pbTradeable
          {
-            AddPacket(4,StatsResetToken_desc_append,4,piGameYearsRemaining,
+            AddPacket(4,StatsResetToken_desc_append,4,piDaysRemaining,
                       4,system_blank_resource);
 
             return;
          }
          else
          {
-            AddPacket(4,StatsResetToken_desc_append,4,piGameYearsRemaining,
+            AddPacket(4,StatsResetToken_desc_append,4,piDaysRemaining,
                       4,StatsResetToken_desc_noTrade);
 
             return;
@@ -162,6 +166,22 @@ messages:
       else
       {
          AddPacket(4,StatsResetToken_desc_noTrade);
+      }
+
+      return;
+   }
+
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
+   }
+
+   FixToken()
+   {
+      if (piDaysRemaining = $)
+      {
+         piDaysRemaining = 40;
       }
 
       return;

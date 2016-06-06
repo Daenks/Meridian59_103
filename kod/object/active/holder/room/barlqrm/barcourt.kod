@@ -28,7 +28,22 @@ resources:
    BarloqueCourt_sign_name = "Justicar information"
    BarloqueCourt_sign_icon = newbsign.bgf
 
-   BarloqueCourt_sign_desc = \
+   BarloqueCourt_sign_none_desc = \
+      "Etched into the sign is the following text:\n\n"
+      "By decree of the Council and Princess Kateriina, the position of the "
+      "Justicar has been eliminated due to a long history of excessive corruption. "
+      "\n\n"
+      "However, the office of the Justicar will continue to adjudicate legal "
+      "matters throughout the land, serving the citizens of Meridian in a "
+      "variety of capacities."
+      "\n\n"
+      "Any citizen may now request another citizen's legal record by "
+      "stating the person's name aloud."
+      "\n\n"
+      "Citizens can also ask for a legal \"name change\" by deed poll, for "
+      "a high cost.  Caramo will provide more information if asked.\n"
+
+   BarloqueCourt_sign_bribe_only_desc = \
       "Etched into the sign is the following text:\n\n"
       "By decree of the Council and Princess Kateriina, the position of the "
       "Justicar has been eliminated due to a long history of excessive corruption. "
@@ -45,6 +60,68 @@ resources:
       "state. Any murderer seeking reduction to outlaw status need only make "
       "a generous donation directly to Caramo and immediate reprieve shall "
       "be theirs."
+      "\n\n"
+      "Citizens can also ask for a legal \"name change\" by deed poll, for "
+      "a high cost.  Caramo will provide more information if asked.\n"
+
+   BarloqueCourt_sign_justicar_only_desc = \
+      "Etched into the sign is the following text:\n\n"
+      "The office of Justicar is very important.  It is the duty of the "
+      "Justicar to give pardons to those who no longer deserve the scorn "
+      "of being an outlaw or a murderer.  The Justicar is elected by the "
+      "people of the land."
+      "\n\n"
+      "To vote, buy a ballot from Caramo the royal clerk.  Write the name of "
+      "the person that you wish to vote for on the ballot and hand it back to "
+      "her.  Note that outlaws, murderers, and individuals still under "
+      "Shal'ille's protection are not able to vote for or hold the office of "
+      "Justicar."
+      "\n\n"
+      "If elected Justicar, Caramo will send you a mail with details about "
+      "the abilities and responsibilities of the office."
+      "\n\n"
+      "Caramo announces when there is a new vote for Justicar.  If you wish "
+      "to be told when there is a new vote, say 'advertise' to Caramo.  If "
+      "you no longer wish to be notified, say 'no advertise' to her instead.  "
+      "Outlaws and murderers will not be notified of the vote, since they "
+      "cannot properly participate."
+      "\n\n"
+      "Any citizen may now request another citizen's legal record by "
+      "stating the person's name aloud."
+      "\n\n"
+      "Citizens can also ask for a legal \"name change\" by deed poll, for "
+      "a high cost.  Caramo will provide more information if asked.\n"
+
+   BarloqueCourt_sign_both_desc = \
+      "Etched into the sign is the following text:\n\n"
+      "The office of Justicar is very important.  It is the duty of the "
+      "Justicar to give pardons to those who no longer deserve the scorn "
+      "of being an outlaw or a murderer.  The Justicar is elected by the "
+      "people of the land."
+      "\n\n"
+      "To vote, buy a ballot from Caramo the royal clerk.  Write the name of "
+      "the person that you wish to vote for on the ballot and hand it back to "
+      "her.  Note that outlaws, murderers, and individuals still under "
+      "Shal'ille's protection are not able to vote for or hold the office of "
+      "Justicar."
+      "\n\n"
+      "If elected Justicar, Caramo will send you a mail with details about "
+      "the abilities and responsibilities of the office."
+      "\n\n"
+      "Caramo announces when there is a new vote for Justicar.  If you wish "
+      "to be told when there is a new vote, say 'advertise' to Caramo.  If "
+      "you no longer wish to be notified, say 'no advertise' to her instead.  "
+      "Outlaws and murderers will not be notified of the vote, since they "
+      "cannot properly participate."
+      "\n\n"
+      "Also, given the curious and temporary nature of death in our world, "
+      "pardons will now be issued as reward for generous indulgences to the "
+      "state. Any murderer seeking reduction to outlaw status need only make "
+      "a generous donation directly to Caramo and immediate reprieve shall "
+      "be theirs."
+      "\n\n"
+      "Any citizen may now request another citizen's legal record by "
+      "stating the person's name aloud."
       "\n\n"
       "Citizens can also ask for a legal \"name change\" by deed poll, for "
       "a high cost.  Caramo will provide more information if asked.\n"
@@ -101,8 +178,6 @@ messages:
 
    CreateStandardObjects()
    {
-      local oSign;
-
       % The clerk
       poCaramo = Send(SYS,@GetCaramo);
       if poCaramo = $
@@ -117,6 +192,9 @@ messages:
       Send(self,@NewHold,#what=poCaramo,
            #new_row=12,#new_col=12,#fine_row=32,#fine_col=36,
            #new_angle=ANGLE_WEST);
+
+      // Add the sign.
+      Send(self,@CreateJusticarSign);
 
       % A guard
       Send(self,@NewHold,#what=Create(&DukeGuard),
@@ -135,13 +213,6 @@ messages:
            #new_row=2,#new_col=11,#fine_row=44,#fine_col=44,
            #new_angle=ANGLE_SOUTH_WEST);
 
-      % A information sign
-      oSign = Create(&Sign,#name=BarloqueCourt_sign_name,
-                     #icon=BarloqueCourt_sign_icon,
-                     #desc=BarloqueCourt_sign_desc);
-      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=12,
-           #fine_row=0,#fine_col=32);
-
       % Braziers
       Send(self,@NewHold,#what=Create(&Brazier),#new_row=1,#new_col=6,
            #fine_row=28,#fine_col=60);
@@ -159,6 +230,54 @@ messages:
       propagate;
    }
 
+   CreateJusticarSign()
+   "Call this message to add or change the sign in Justicar office."
+   {
+      local i, oObj, oSign, rSignText;
+
+      // Since we can use this message to change signs, check for a previous
+      // sign first. Works because there's only one sign here, if that changes,
+      // this message should also!
+      foreach i in plPassive
+      {
+         oObj = First(i);
+         if (IsClass(oObj,&Sign))
+         {
+            Send(oObj,@Delete);
+
+            break;
+         }
+      }
+
+      // Content of sign depends on which system is active.
+      rSignText = BarloqueCourt_sign_none_desc;
+      if (poCaramo <> $)
+      {
+         if (Send(poCaramo,@JusticarElectionsActive))
+         {
+            if (Send(poCaramo,@IndulgenceActive))
+            {
+               rSignText = BarloqueCourt_sign_both_desc;
+            }
+            else
+            {
+               rSignText = BarloqueCourt_sign_justicar_only_desc;
+            }
+         }
+         else if (Send(poCaramo,@IndulgenceActive))
+         {
+            rSignText = BarloqueCourt_sign_bribe_only_desc;
+         }
+      }
+
+      oSign = Create(&Sign,#name=BarloqueCourt_sign_name,
+                  #icon=BarloqueCourt_sign_icon,#desc=rSignText);
+      Send(self,@NewHold,#what=oSign,#new_row=11,#new_col=12,
+            #fine_row=0,#fine_col=32);
+
+     return;
+   }
+
    CreateStandardExits()
    {
       plExits = $;
@@ -170,6 +289,13 @@ messages:
       % GALLERY GATE
       plExits = Cons([ 6, 11, RID_BAR_COURT, 8, 11, ROTATE_NONE ],plExits); %% to court
       plExits = Cons([ 7, 11, RID_BAR_COURT,  5, 11, ROTATE_NONE ],plExits); %% to gallery
+
+      propagate;
+   }
+
+   RecalcLightAndWeather()
+   {
+      Send(poCaramo,@NewGameHour);
 
       propagate;
    }

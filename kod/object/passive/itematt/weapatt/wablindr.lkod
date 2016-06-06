@@ -1,4 +1,6 @@
-weapattblinder_desc = de " Q's Insignien schmücken das Metall dieser Waffe."
-blinder_fail_use = de "Du bist nicht bereit %s%s zu nutzen."
-blinder_worked = de "%s%s stolpert davon, schreiend und klammert %s Augen!"
+weapattblinder_desc = de \
+   " Wenn Du Deinen Blick auf diese Waffe richtest, scheint Deine Sehkraft nachzulassen. "
+   "Das einzige, was Du klar erkennen kannst, sind die eingelassenen Insignien von Q."
+blinder_fail_use = de "%s%s entgleitet Deinen Händen, da Du noch nicht so weit bist diese Waffe zu benutzen."
+blinder_worked = de "%s%s stolpert schreiend und %s Augen bedeckend davon!"
 blinder_dm = de "Blender"

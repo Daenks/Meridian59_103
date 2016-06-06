@@ -38,10 +38,10 @@ resources:
    OrcPitBoss_dead_icon_rsc = OrcPitbX.bgf
    OrcPitBoss_dead_name_rsc = "dead orc pit boss"
 
-   OrcPitBoss_sound_hit = orc_atkh.wav
-   OrcPitBoss_sound_miss = orc_atkm.wav
-   OrcPitBoss_sound_death = por_dth.wav
-   OrcPitBoss_sound_aware = por_awr.wav
+   OrcPitBoss_sound_hit = orc_atkh.ogg
+   OrcPitBoss_sound_miss = orc_atkm.ogg
+   OrcPitBoss_sound_death = por_dth.ogg
+   OrcPitBoss_sound_aware = por_awr.ogg
 
 classvars:
 

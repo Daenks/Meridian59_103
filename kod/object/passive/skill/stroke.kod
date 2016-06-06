@@ -27,16 +27,16 @@ resources:
 
    stroke_miss_attacker = "%sYour %s misses %s%s."
    stroke_miss_defender = "%s%s misses you."
-   stroke_miss_sound = swordmis.wav
+   stroke_miss_sound = swordmis.ogg
 
    stroke_hit_attacker = "%sYour %s hits %s%s."
    stroke_hit_defender = "%s%s hits you."
 
-   stroke_hit_sound = patk.wav
+   stroke_hit_sound = patk.ogg
 
-   stroke_swish1 = swswish1.wav
-   stroke_swish2 = swswish2.wav
-   stroke_swish3 = swswish3.wav
+   stroke_swish1 = swswish1.ogg
+   stroke_swish2 = swswish2.ogg
+   stroke_swish3 = swswish3.ogg
 
 classvars:
 
@@ -62,13 +62,14 @@ classvars:
 
    vbAutomatic = FALSE
 
-   viMaxProficiencyDamage = 5     % What's the max damage the proficiency can add for this stroke?
+   % What's the max damage the proficiency can add for this stroke?
+   viMaxProficiencyDamage = 5
 
 properties:
 
    plPrerequisites = $
 
-messages:  
+messages:
 
    % General combat messages:
 
@@ -94,28 +95,31 @@ messages:
 
    ImproveStroke(who=$,use_weapon=$,target=$)
    {
-     local prof, target_level;
+      local prof, target_level;
 
-     target_level = send(target,@GetLevel);
-     prof=send(use_weapon,@GetProfNumber);
+      target_level = Send(target,@GetLevel);
+      prof=Send(use_weapon,@GetProfNumber);
 
-     if random(1,100) > 60 or not send(who,@HasSkill,#num=prof)
-     {
-        if send(who,@GetSkillAbility,#skill_num=viSkill_num) < 100
-          {
-             % checking for stroke advancement
-             send(self,@ImproveAbility,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
-          }
-     }
-     else
-     {
-        if send(use_weapon,@getprof,#who=who) < 100
-          {
-             % checking for weapon proficiency advancement
-             send(use_weapon,@ImproveProficiency,#who=who,#target=target,#bonus=Send(who,@GetWeaponSwingBonus));
-          }
-     }
-     
+      if Random(1,100) > 60
+         OR NOT Send(who,@HasSkill,#num=prof)
+      {
+         if Send(who,@GetSkillAbility,#skill_num=viSkill_num) < 100
+         {
+            % checking for stroke advancement
+            Send(self,@ImproveAbility,#who=who,#target=target,
+                  #bonus=Send(who,@GetWeaponSwingBonus));
+         }
+      }
+      else
+      {
+         if Send(use_weapon,@getprof,#who=who) < 100
+         {
+            % checking for weapon proficiency advancement
+            Send(use_weapon,@ImproveProficiency,#who=who,#target=target,
+                  #bonus=Send(who,@GetWeaponSwingBonus));
+         }
+      }
+
      return;
    }
 
@@ -132,10 +136,11 @@ messages:
    {
       local oOwner, i;
 
-      if not send(who,@HasVigor,#amount=viSkillExertion) and vbCheck_Exertion = TRUE
+      if NOT Send(who,@HasVigor,#amount=viSkillExertion)
+         AND vbCheck_Exertion
       {
-         send(who,@MsgSendUser, #message_rsc=skill_too_tired,#parm1=vrName);
-         
+         Send(who,@MsgSendUser,#message_rsc=skill_too_tired,#parm1=vrName);
+
          return FALSE;
       }
 
@@ -144,12 +149,12 @@ messages:
 
    GetAttackType(weapon_used=$)
    {
-     return send(weapon_used,@getAttackType);
+     return Send(weapon_used,@getAttackType);
    }
 
    GetAttackSpell(weapon_used=$)
    {
-     return send(weapon_used,@getAttackSpell);
+     return Send(weapon_used,@getAttackSpell);
    }
 
    GetExertion()
@@ -159,13 +164,6 @@ messages:
       return viSkill_Exertion;
    }
 
-   CheckSpecial(who=$,victim=$)
-   "Checks to see if there are any special circumstances which prevents"
-   "the target player from performing this skill."
-   {
-      return TRUE;
-   }
-
    CheckWeaponAndDoAnimation(who=$,weapon_used=$,victim=$)
    "Can the user's weapon be used with this weapon stroke?  \n"
    "Default is TRUE unless the player is unarmed."
@@ -173,13 +171,13 @@ messages:
    {
       if weapon_used = $
       {
-         send(who,@msgsenduser,#message_rsc=stroke_need_weapon_rsc);
-          
+         Send(who,@msgsenduser,#message_rsc=stroke_need_weapon_rsc);
+
          return FALSE;
       }
 
       % while you're here, be sure weapon is undamaged.
-      return send(weapon_used,@ReqWeaponAttack,#what=victim);
+      return Send(weapon_used,@ReqWeaponAttack,#what=victim);
    }
 
    ToHitImprovers(raw_hitroll=0)
@@ -187,29 +185,29 @@ messages:
    "the stroke.  Example, if a player has renweed, that may boost his thrust"
    "Default, return the hitroll raw."
    {
-      return Raw_hitroll; 
+      return Raw_hitroll;
    }
 
    GetRange(weapon_used = $)
    "May be tuned later on if we expand on the stroke system."
    {
-      return send(weapon_used,@getrange);
+      return Send(weapon_used,@getrange);
    }
 
    FindDamage(weapon_used=$, who=$, victim=$)
    "We put this here so that we can vary a stroke's damage per weapon."
    {
       local skill_ability, damage;
-      
+
       % base weapon damage
-      damage = send(weapon_used,@GetDamage,#who=who,#target=victim);
-      
+      damage = Send(weapon_used,@GetDamage,#who=who,#target=victim);
+
       % convert to high precision
       damage = damage*100;
-      
-      damage = send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=weapon_used);
 
-      return bound(damage,0,$);
+      damage = Send(self,@DamageFactors,#damage=damage,#who=who,#weapon_used=weapon_used);
+
+      return Bound(damage,0,$);
    }
 
    SendMissMessageToAttacker(who=$,victim=$,weapon_used = $,color_rsc = $,bText = TRUE)
@@ -219,26 +217,25 @@ messages:
       %% Text messages
       if bText
       {
-         send(who,@msgsenduser,#message_rsc=vrMissed_Message_Attacker,#parm1=color_rsc,
-              #parm2=vrName,#parm3=send(victim,@getdef),#parm4=send(victim,@getname));
+         Send(who,@msgsenduser,#message_rsc=vrMissed_Message_Attacker,#parm1=color_rsc,
+              #parm2=vrName,#parm3=Send(victim,@GetDef),#parm4=Send(victim,@GetName));
       }
 
       %% 'miss' sound
-      if IsClass(victim,&Monster) or weapon_used = $
+      if IsClass(victim,&Monster)
+         OR weapon_used = $
       {
          iRoll = Random(1,3);
-         
+
          if iRoll = 1
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish1);
          }
-         
-         if iRoll = 2
+         else if iRoll = 2
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish2);
          }
-         
-         if iRoll = 3
+         else
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish3);
          }
@@ -251,49 +248,46 @@ messages:
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish1);
          }
-         
-         if iRoll = 2
+         else if iRoll = 2
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish2);
          }
-         
-         if iRoll = 3
+         else if iRoll = 3
          {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,#wave_rsc=stroke_swish3);
          }
-         
-         if iRoll >= 4
-         {   
+         else
+         {
             Send(Send(who,@GetOwner),@SomethingWaveRoom,#what=who,
-                 #wave_rsc=Send(victim,@GetSomethingMissedYouSound,#what=who,
-                 #weapon_used=weapon_used)); 
+                  #wave_rsc=Send(victim,@GetSomethingMissedYouSound,#what=who,
+                  #weapon_used=weapon_used));
          }
       }
-      
+
       return;
    }
 
    SendMissMessageToDefender(who=$,attacker=$)
    {
-      send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
-           #parm1=send(attacker,@getcapdef),#parm2=send(attacker,@getname));
-           
+      Send(who,@MsgSendUser,#message_rsc=vrMissed_Message_Defender,
+            #parm1=Send(attacker,@GetCapDef),#parm2=Send(attacker,@GetName));
+
       return;
    }
 
    PlayerHitSomethingMsg(who=$,victim=$,damage=$,color_rsc=$)
    {
-      send(who,@msgsenduser,#message_rsc=vrPlayer_hit_something,#parm1=color_rsc,#parm2=vrName,
-           #parm3=send(victim,@getdef),#parm4=send(victim,@getname));
-           
+      Send(who,@msgsenduser,#message_rsc=vrPlayer_hit_something,#parm1=color_rsc,
+            #parm2=vrName,#parm3=Send(victim,@GetDef),#parm4=Send(victim,@GetName));
+
       return;
    }
 
    PlayerWasHitMsg(who=$,attacker=$,damage=$,color_rsc=$)
    {
-       send(who,@msgsenduser,#message_rsc=vrPlayer_was_hit,#parm1=color_rsc,
-            #parm2=send(attacker,@getcapdef),#parm3=send(attacker,@getname));
-            
+       Send(who,@msgsenduser,#message_rsc=vrPlayer_was_hit,#parm1=color_rsc,
+            #parm2=Send(attacker,@GetCapDef),#parm3=Send(attacker,@GetName));
+
        return;
    }
 
@@ -305,10 +299,10 @@ messages:
       {
          return FALSE;
       }
-       
-      send(who,@msgsenduser,#message_rsc=vrPlayer_killed_something,
-            #parm1=send(victim,@getCapdef),#parm2=send(victim,@getname));
-            
+
+      Send(who,@msgsenduser,#message_rsc=vrPlayer_killed_something,
+            #parm1=Send(victim,@GetCapDef),#parm2=Send(victim,@GetName));
+
       return TRUE;
    }
 
@@ -320,17 +314,17 @@ messages:
       {
          return FALSE;
       }
-      
-      send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
-           #parm1=send(attacker,@GetDef),#parm2=send(attacker,@GetName));
-           
+
+      Send(who,@MsgSendUser,#message_rsc=vrPlayer_was_killed,
+            #parm1=Send(attacker,@GetDef),#parm2=Send(attacker,@GetName));
+
       return TRUE;
    }
 
    DamageFactors(damage=0, who=$, weapon_used = $)
    "Different skills/strokes are affected by stats differently."
    {
-      local iDamage, stat, weapProf, profAbility, bonusPercentage;
+      local iDamage, iMight, iStat, weapProf, profAbility, bonusPercentage;
 
       iDamage = damage;
       if weapon_used <> $
@@ -341,23 +335,25 @@ messages:
       else
       {
          weapProf = Send(SYS,@FindSkillByNum,#num=SKID_BRAWLING);
-         profAbility = send(who,@GetSkillAbility,#skill_num=SKID_BRAWLING)+1;
+         profAbility = Send(who,@GetSkillAbility,#skill_num=SKID_BRAWLING)+1;
       }
 
       % Add a portion of the proficiency damage based on skill level. 
       % Proficiency damage is converted to high precision.
       iDamage = iDamage + profAbility * viMaxProficiencyDamage;
-      
+
       % Get the relevant amount of primary stat for our proficiency. This will 
       % be our base bonus percentage.
-      stat = send(weapProf,@GetRequisiteStat,#who=who) - 25;
-      
+      iStat = Send(weapProf,@GetRequisiteStat,#who=who) - 25;
+      iMight = Send(who,@GetMight) - 25;
+      iStat = (iStat + iMight) / 2;
+
       % Scale down the bonus damage percentage if the user is not fully 
       % proficient in the weapon.
-      bonusPercentage = 100 + bound(stat * profAbility / 100, 0, 40);
+      bonusPercentage = 100 + Bound(iStat * profAbility / 100, 0, 40);
 
       iDamage = iDamage * bonusPercentage / 100;
-      
+
       return iDamage;
    }
 
@@ -365,7 +361,6 @@ messages:
    {
       return stroke_hit_sound;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

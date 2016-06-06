@@ -28,10 +28,10 @@ resources:
    troll_dead_icon_rsc = trollX.bgf
    troll_dead_name_rsc = "dead troll"
 
-   troll_sound_hit = trl_atkh.wav
-   troll_sound_miss = trl_atkm.wav
-   troll_sound_death = trl_dth.wav
-   troll_sound_aware = trl_awr.wav
+   troll_sound_hit = trl_atkh.ogg
+   troll_sound_miss = trl_atkm.ogg
+   troll_sound_death = trl_dth.ogg
+   troll_sound_aware = trl_awr.ogg
 
 classvars:
 

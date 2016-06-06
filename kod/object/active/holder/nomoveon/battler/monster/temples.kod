@@ -30,31 +30,18 @@ classvars:
    % Mob doesn't move and cannot be attacked.
    viDefault_behavior = AI_NPC | AI_NOMOVE
 
+   viObject_flags = OF_ATTACKABLE | OF_DISPLAY_NAME | OF_NPC
+
    viSpeed = SPEED_SLOW
    viQuestID = 0
    viGender = GENDER_FEMALE
    vrTeach_quest_needed = priestess_teach_quest_needed
 
+properties:
+
+   piNameColor = NC_NPC
+
 messages:
-
-   InitPermQuest()
-   {
-      if viQuestID <> 0
-      {
-         Post(Send(SYS,@GetLibrary),@CreateQuest,#type=QST_PERM,#quester=self,
-            #reward= [QST_REWARD_ID,viQuestID]);
-      }
-
-      return;
-   }
-
-   Constructor()
-   "We start a permanent quest for becoming a disciple"
-   {
-      Send(self,@InitPermQuest);
-
-      propagate;
-   }
 
    CanAddSpell(who=$,num=0,report=FALSE)
    "We require that a quest be done before 3-5 level spells can be learned."

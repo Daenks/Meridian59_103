@@ -77,7 +77,7 @@ messages:
 
    Constructor()
    {
-      send(self,@UpdateColor);
+      Send(self,@UpdateColor);
 
       propagate;
    }
@@ -133,14 +133,14 @@ messages:
          iFaction = FACTION_NEUTRAL;
 
          % Check for shield
-         oSoldierShield = send(poOwner,@FindUsing,#class=&SoldierShield);
+         oSoldierShield = Send(poOwner,@FindUsing,#class=&SoldierShield);
 
          % Sling it on the back if it's there.
          %  Also, record faction so we can set our bands if needed.
          if oSoldierShield <> $
          {
-            iFaction = send(oSoldierShield,@GetFaction);
-            send(oSoldierShield,@SlingOnBack);
+            iFaction = Send(oSoldierShield,@GetFaction);
+            Send(oSoldierShield,@SlingOnBack);
          }
 
          if iFaction = FACTION_NEUTRAL
@@ -161,20 +161,22 @@ messages:
             {
                iTranslation = XLAT_TO_PURPLE;
             }
-
-            if iFaction = FACTION_PRINCESS
+            else if iFaction = FACTION_PRINCESS
             {
                iTranslation = XLAT_TO_ORANGE;
             }
-
-            if iFaction = FACTION_REBEL
+            else if iFaction = FACTION_REBEL
             {
                iTranslation = XLAT_TO_RED;
+            }
+            else if iFaction = FACTION_NECROMANCER
+            {
+               iTranslation = XLAT_TO_GRAY;
             }
 
          }
 
-         send(self,@UpdateColor,#iFactionColor=iTranslation);
+         Send(self,@UpdateColor,#iFactionColor=iTranslation);
       }
 
       vrWeapon_window_overlay = prBowOverlay;
@@ -295,12 +297,11 @@ messages:
    {
       local iTranslation;
       
-      iTranslation = send(SYS,@EncodeTwoColorXlat,#color1=iFactionColor,#color2=viBaseXLAT);
-      send(self,@SetPaletteTranslation,#translation=iTranslation);
+      iTranslation = Send(SYS,@EncodeTwoColorXlat,#color1=iFactionColor,#color2=viBaseXLAT);
+      Send(self,@SetPaletteTranslation,#translation=iTranslation);
 
       return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

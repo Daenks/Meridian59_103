@@ -12,8 +12,6 @@ DarkAngelFeather is Reagent
 
 constants:
 
-   include blakston.khd
-
 resources:
 
    include dangfeth.lkod
@@ -21,9 +19,8 @@ resources:
    darkangelfeather_name_rsc = "dark angel feather"
    darkangelfeather_icon_rsc = dangfeth.bgf
    darkangelfeather_desc_rsc = \
-   "This feather, nearly a foot long, must have come from a "
-   "truly awesome beast."
-
+      "This feather, nearly a foot long, must have come from a "
+      "truly awesome beast."
    darkangelfeather_name_plural_rsc = "dark angel feathers"
 
 classvars:

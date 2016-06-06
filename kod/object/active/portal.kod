@@ -48,6 +48,13 @@ properties:
    piDest_fine_row = FINENESS_HALF
    piDest_fine_col = FINENESS_HALF
 
+   // Will contain the coordinates in which a user can be teleported, in
+   // the form [ minrow, maxrow, mincol, maxcol ]. Calculated when the
+   // portal first enters a room or is moved.
+   plTeleportArea = $
+
+   ptAnimate = $
+
 messages:
 
    Constructor(dest_room_num = RID_DEFAULT, dest_row = 1, dest_col = 1,
@@ -74,6 +81,54 @@ messages:
       propagate;
    }
 
+   Delete()
+   {
+      if (ptAnimate <> $)
+      {
+         DeleteTimer(ptAnimate);
+         ptAnimate = $;
+      }
+
+      propagate;
+   }
+
+   NewOwner(what=$)
+   {
+      if (what <> $
+         AND IsClass(what,&Room))
+      {
+         // Post this so portal is in the room when area is calculated.
+         Post(self,@CalculatePortalArea);
+      }
+
+      propagate;
+   }
+
+   CalculatePortalArea()
+   "Pre-calculate the area around the portal in which a user can be teleported."
+   {
+      local iRow, iCol, iRowDec, iColDec;
+
+      iRow = Send(self,@GetRow);
+      iCol = Send(self,@GetCol);
+
+      if (iRow = $
+         OR iCol = $)
+      {
+         Debug("Portal ",self," in room ",Send(poOwner,@GetName),
+               " trying to calculate position with $ row/col!");
+
+         return;
+      }
+
+      iRowDec = iRow * 100 + Send(self,@GetFineRow) * 15625 / 10000;
+      iColDec = iCol * 100 + Send(self,@GetFineCol) * 15625 / 10000;
+
+      plTeleportArea = [iRowDec - 100, iRowDec + 100, iColDec - 100, iColDec + 100];
+
+      return;
+   }
+
    ShowDesc()
    {
       if pbAnimate
@@ -96,27 +151,48 @@ messages:
       return;
    }
 
-   SomethingMoved(what = $,new_row = $,new_col = $)
+   ReanimatePortal(timer=$)
+   "Turns the portal's animation back on."
    {
-      local iRow,iCol;
-      
-      iRow = Send(self,@GetRow);
-      iCol = Send(self,@GetCol);
-
-      if new_row = iRow AND new_col = iCol
+      if (timer <> ptAnimate)
       {
-         if NOT pbAnimate
-         {
-            return;
-         }
+         DeleteTimer(ptAnimate);
+      }
 
-         if what = self
-         {
-            return;
-         }
+      ptAnimate = $;
 
-         % Something moved on top of us.
-         Send(self,@TeleportSomething,#what=what);
+      Send(self,@SetAnimation,#what=TRUE);
+
+      return;
+   }
+
+   SomethingMoved(what = $)
+   {
+      if what = self
+      {
+         // If the portal moved, recalculate the teleporting area.
+         Post(self,@CalculatePortalArea);
+
+         return;
+      }
+
+      if NOT pbAnimate
+         OR plTeleportArea = $
+      {
+         return;
+      }
+
+      if (Send(poOwner,@IsUserInArea,#who=what,#lArea=plTeleportArea))
+      {
+         // Turn the portal off for a short time during transport.
+         // Done in case a portal tries to repeatedly teleport
+         // the same player.
+         Send(self,@SetAnimation,#what=FALSE);
+         ptAnimate = CreateTimer(self,@ReanimatePortal,500);
+
+         // Something moved on top of us. Post this so the user's
+         // new coordinates get set correctly if moving in the same room.
+         Post(self,@TeleportSomething,#what=what);
       }
 
       return;
@@ -133,11 +209,11 @@ messages:
                   #new_angle=piDest_angle, #max_distance=viMaxDistance,
                   #do_move=FALSE)
       {
-         debug("Portal",self,"unable to move",what);
+         Debug("Portal",self,"unable to move",what);
       }
       else
       {
-         % Now actually do the move		 
+         % Now actually do the move
          Send(SYS,@UtilGoNearSquare,#what=what,
               #where=Send(SYS,@FindRoomByNum,#num=piDest_room),
               #new_row=piDest_row,#new_col=piDest_col,
@@ -196,7 +272,6 @@ messages:
 
       return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -20,7 +20,8 @@ resources:
 
    inscript_name_rsc = "slip of parchment"
    inscript_icon_rsc = scroll.bgf
-   inscript_desc_blank_rsc = "A fresh bit of parchment paper, without a mark on it."
+   inscript_desc_blank_rsc = \
+      "A fresh bit of parchment paper, without a mark on it."
    inscript_desc_written_rsc = \
       "A small sheet of parchment paper, with something scrawled across it."
 
@@ -60,8 +61,7 @@ messages:
    {
       if (string = GetTempString())
       {
-         psInscription = CreateString();
-         SetString(psInscription, string);
+         psInscription = SetString($,string);
       }
       else
       {
@@ -77,7 +77,7 @@ messages:
    {
       local oOwner;
 
-      oOwner=send(self,@GetOwner);
+      oOwner=Send(self,@GetOwner);
 
       if IsClass(self,&BallotItem)
          OR IsClass(self,&Book)
@@ -86,7 +86,7 @@ messages:
          return FALSE;
       }
 
-      if send(oOwner,@IsActor)
+      if IsClass(oOwner,&DM)
       {
          return TRUE;
       }
@@ -94,9 +94,9 @@ messages:
       return FALSE;
    }
 
-   NewApplied()  
+   NewApplied()
    {
-      local oOwner,oletter,rString;
+      local oOwner, oletter, rString;
 
       rString=psInscription;
       if rString = $
@@ -104,13 +104,13 @@ messages:
          return;
       }
 
-      oOwner=send(self,@GetOwner);
-      if send(oOwner,@IsActor)
+      oOwner = Send(self,@GetOwner);
+      if IsClass(oOwner,&DM)
       {
-         oLetter=create(&bardletter);
-         send(oLetter,@SetDesc,#desc=rString);
-         send(oOwner,@NewHold,#what=oLetter);
-         send(self,@Delete);
+         oLetter = Create(&bardletter);
+         Send(oLetter,@SetDesc,#desc=rString);
+         Send(oOwner,@NewHold,#what=oLetter);
+         Send(self,@Delete);
       }
 
       return;
@@ -149,7 +149,6 @@ messages:
 
       return;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

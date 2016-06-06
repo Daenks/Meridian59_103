@@ -1,13 +1,13 @@
 duskrat_koc_name_rsc = de "teotnapyijoa"
-duskrat_name_rsc = de "dusk rat"
+duskrat_name_rsc = de "Schwarze Ratte"
 duskrat_desc_rsc = de \
-   "The air around the rat is dark and thick with evil.  The smell of death "
-   "and disease linger on its fetid breath as it darts towards its target.  "
-   "The origins of this abomination are unknown.  The only definite knowledge "
-   "known is of the deadly poison it carries in its bite."
+   "Die Luft um die Ratte ist dunkel und erfüllt mit Bösem. Der Geruch von "
+   "Seuchen und Tod liegt auf ihrem stinkendem Atem als sie auf ihr Ziel "
+   "zuschnellt. Die Herkunft dieser Abscheulichkeit ist unbekannt. Das einzige "
+   "wirkliche Wissen besteht über das tödliche Gift, welches sie mit "
+   "ihren Bissen überträgt. "
 duskrat_poisoned_add_rsc = de \
-   "As the poison travels to your head, you begin to feel a little light-headed.  "
-   "The room spins around you."
+   "Als das Gift deinen Körper durchströmt, beginnst du dich etwas komisch zu fühlen. "
 duskrat_illusion_poisoned = de \
-   "%s%s reels as poison from your attack courses through %s veins."
-duskrat_dead_name_rsc = de "dead dusk rat"
+   "%s%s taumelt als Gift in den Adern von %s fließt. "
+duskrat_dead_name_rsc = de "Tote Schwarze Ratte"

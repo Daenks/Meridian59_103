@@ -29,9 +29,7 @@ resources:
 classvars:
 
    vrName = corpseportal_name_rsc
-
    viMoveOn_type = MOVEON_TELEPORTER
-
    viAnimationSpeed = 400
 
 properties:
@@ -47,7 +45,7 @@ messages:
 
    Constructor(Corpse = $, SpellPower = 20)
    {
-      local duration;
+      local iDuration;
 
       if Corpse = $
       {
@@ -58,9 +56,9 @@ messages:
          poCorpse = Corpse;
       }
 
-      duration = (10 + (SpellPower / 2)) * 1000;
+      iDuration = (10 + (SpellPower / 2)) * 1000;
 
-      ptExpire = CreateTimer(self,@Expire,duration);
+      ptExpire = CreateTimer(self,@Expire,iDuration);
 
       propagate;
    }

@@ -26,10 +26,10 @@ resources:
    bunny_dead_icon_rsc = bunny2X.bgf
    bunny_dead_name_rsc = "dead bunny"
 
-   bunny_sound_hit = bunny_atkh.wav
-   bunny_sound_miss = bunny_atkh.wav
-   bunny_sound_death = bunny_dth.wav
-   bunny_sound_aware = bunny_awr.wav
+   bunny_sound_hit = bunny_atkh.ogg
+   bunny_sound_miss = bunny_atkh.ogg
+   bunny_sound_death = bunny_dth.ogg
+   bunny_sound_aware = bunny_awr.ogg
 
 classvars:
 

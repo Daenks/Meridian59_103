@@ -6,32 +6,28 @@
 //
 // Meridian is a registered trademark.
 /*
- * download.c:  Handle downloading files.  The actual file reading is done in transfer.c.
- */
+* download.c:  Handle downloading files.  The actual file reading is done in transfer.c.
+*/
 
 #include "client.h"
 #include "archive.h"
 #include "archive_entry.h"
 
-// Have to disable 4091 when including shlobj.h due to a bug in VS2015.
-// https://connect.microsoft.com/VisualStudio/feedback/details/976983
-#pragma warning(disable:4091)
-#include "shlobj.h"
-#pragma warning(default:4091)
-
 static DownloadInfo *info;  // Info on download
 
-static char download_dir[]    = "download";
-static char resource_dir[]    = "resource";
-static char help_dir[]        = "help";
-static char mail_dir[]        = "mail";
-static char run_dir[]         = ".";
-static char ad_dir[]          = "ads";
+static char download_dir[] = "download";
+static char resource_dir[] = "resource";
+static char help_dir[] = "help";
+static char mail_dir[] = "mail";
+static char run_dir[] = ".";
+static char ad_dir[] = "ads";
 
 static HWND hDownloadDialog = NULL;   /* Non-NULL if download dialog is up */
 
 static Bool abort_download = FALSE;   // True if user aborts download
 static Bool advert = FALSE;           // True if user aborts download
+bool download_in_progress = false;
+bool retry_download = false;
 static int  extraction_error = 0;        // Resource id of error string; 0 if none
 
 static int total = 0;
@@ -39,10 +35,7 @@ static char format[256];
 
 extern int  connection;        /* Type of connection (serial, etc.) */
 
-// URL to download the patcher if not installed.
-static char update_internet[]  = "http://openmeridian.org/patcher";
-// Program to run to update the client executable
-static char update_program[] = "\\OpenMeridian\\Open Meridian Patch and Client Management.appref-ms";
+static char update_program[] = "club.exe";  // Program to run to update the client executable
 static char update_filename[] = "blakston.arq"; // Name to call updated archive
 
 #define PING_DELAY 30000       // # of milliseconds between pings to server
@@ -58,11 +51,14 @@ static void AbortDownloadDialog(void);
 static Bool DownloadDone(DownloadFileInfo *file_info);
 static Bool DownloadDeleteFile(char *filename);
 static Bool DownloadUnarchiveFile(char *zip_name, char *dir);
+
+static void DownloadUpdater(DownloadInfo *params);
+static void DownloadUpdaterFile(DownloadInfo *params);
 /*****************************************************************************/
 bool FileExists(const char *filename)
 {
-  struct stat buffer;   
-  return stat(filename, &buffer) == 0;
+   struct stat buffer;
+   return stat(filename, &buffer) == 0;
 }
 /*****************************************************************************/
 /*
@@ -79,8 +75,8 @@ void DownloadFiles(DownloadInfo *params)
    debug(("machine = %s\n", info->machine));
    debug(("path = %s\n", info->path));
    for (i = 0; i < info->num_files; i++)
-      debug(("file = %s, time = %d, flags = %d\n", 
-	     info->files[i].filename, info->files[i].time, info->files[i].flags));
+      debug(("file = %s, time = %d, flags = %d\n",
+      info->files[i].filename, info->files[i].time, info->files[i].flags));
 
    // If downloading only advertisements, show a different dialog to avoid the appearance
    // of a "real" download.
@@ -99,7 +95,7 @@ void DownloadFiles(DownloadInfo *params)
       switch (retval) {
       case 3: // do the demo button
          WebLaunchBrowser(info->demoPath);
-         SendMessage(hMain,WM_SYSCOMMAND,SC_CLOSE,0);
+         SendMessage(hMain, WM_SYSCOMMAND, SC_CLOSE, 0);
          return;
       case IDOK: // proceed with download
          retval = DialogBox(hInst, MAKEINTRESOURCE(dialog), NULL, DownloadDialogProc);
@@ -108,7 +104,7 @@ void DownloadFiles(DownloadInfo *params)
          {
             MainSetState(STATE_LOGIN);
             i = (((MAJOR_REV * 100) + MINOR_REV) * P_CATCH) + P_CATCH;
-            RequestGame(config.download_time,i,config.comm.hostname);
+            RequestGame(config.download_time, i, config.comm.hostname);
             return;
          }
          break;
@@ -128,7 +124,7 @@ void DownloadFiles(DownloadInfo *params)
    // If we were hung up, just leave
    if (state != STATE_DOWNLOAD)
       return;
-   
+
    MainSetState(STATE_LOGIN);
 
    switch (retval)
@@ -183,8 +179,7 @@ Bool DownloadCheckDirs(HWND hParent)
 BOOL CALLBACK AskDownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
 {
    char buffer[256];
-   int i,size;
-   double hours, minutes, seconds;
+   int i, size;
    double bytes, kb, mb;
 
    switch (message)
@@ -193,53 +188,30 @@ BOOL CALLBACK AskDownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG l
       CenterWindow(hDlg, hMain);
       ShowWindow(hMain, SW_HIDE);
       hDownloadDialog = hDlg;
-      SetWindowText(GetDlgItem(hDlg,IDC_ASK_DOWNLOAD_REASON),info->reason);
+      SetWindowText(GetDlgItem(hDlg, IDC_ASK_DOWNLOAD_REASON), info->reason);
       size = 0;
       for (i = 0; i < (int)info->num_files; i++)
          size += info->files[i].size;
-      
+
       bytes = (double)size;
       kb = bytes / 1024;
       mb = kb / 1024;
+
       if ((int)info->num_files < 2)
-         sprintf(buffer,"There is one file %d bytes in size.",size);
+         sprintf(buffer, GetString(hInst, IDC_SIZE_UPDATE_ONE_FILE), size);
       else if (kb < 1.0)
-         sprintf(buffer,"There are %d files totaling %d bytes in size.",(int)info->num_files,size);
+         sprintf(buffer, GetString(hInst, IDC_SIZE_UPDATE_FILES_BYTES), (int)info->num_files, size);
       else if (mb < 1.0)
-         sprintf(buffer,"There are %d files totaling %.1f Kb in size.",(int)info->num_files,kb);
+         sprintf(buffer, GetString(hInst, IDC_SIZE_UPDATE_FILES_KB), (int)info->num_files, kb);
       else
-         sprintf(buffer,"There are %d files totaling %.1f Mb in size.",(int)info->num_files,mb);
-      SetWindowText(GetDlgItem(hDlg,IDC_SIZE_UPDATE),buffer);
-      
-      seconds = floor(bytes / 5600.0 + 10.0);
-      minutes = seconds / 60.0;
-      hours = minutes / 60.0;
-      
-      if (hours > 1.0)
-         sprintf(buffer,"Estimating %.1f hours with a 56k modem.",hours);
-      else if (minutes > 1.0)
-         sprintf(buffer,"Estimating %.1f minutes with a 56k modem.",minutes);
-      else 
-         sprintf(buffer,"Estimating %.0f seconds with a 56k modem.",seconds);
-      SetWindowText(GetDlgItem(hDlg,IDC_TIME_UPDATE_566),buffer);
-      
-      seconds = floor(bytes / 2800.0 + 10.0);
-      minutes = seconds / 60.0;
-      hours = minutes / 60.0;
-      
-      if (hours > 1.0)
-         sprintf(buffer,"Estimating %.1f hours with a 28k modem.",hours);
-      else if (minutes > 1.0)
-         sprintf(buffer,"Estimating %.1f minutes with a 28k modem.",minutes);
-      else 
-         sprintf(buffer,"Estimating %.0f seconds with a 28k modem.",seconds);
-      SetWindowText(GetDlgItem(hDlg,IDC_TIME_UPDATE_288),buffer);
-      
+         sprintf(buffer, GetString(hInst, IDC_SIZE_UPDATE_FILES_MB), (int)info->num_files, mb);
+      SetWindowText(GetDlgItem(hDlg, IDC_SIZE_UPDATE), buffer);
+
       //SetWindowText(GetDlgItem(hDlg,IDC_BTN_DEMO),info->demoPath);
-      
+
       break;
    case WM_COMMAND:
-      switch(GET_WM_COMMAND_ID(wParam, lParam))
+      switch (GET_WM_COMMAND_ID(wParam, lParam))
       {
       case IDC_BTN_DEMO:
          EndDialog(hDlg, 3);
@@ -275,7 +247,7 @@ BOOL CALLBACK DownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
          ShowWindow(hMain, SW_HIDE);
       }
       hDownloadDialog = hDlg;
-      
+
       // Set up graph bar limits
       hGraph = GetDlgItem(hDlg, IDC_GRAPH);
       SendMessage(hGraph, GRPH_RANGESET, 0, 100);
@@ -342,7 +314,7 @@ BOOL CALLBACK DownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
       if (total != 0)
          fraction = lParam * 100 / total;
       fraction = (fraction + 100 * info->current_file) / info->num_files;
-      
+
       // Update overall progress indicator.
       SendDlgItemMessage(hDlg, IDC_FILEGRAPH, GRPH_POSSET, 0, fraction);
 
@@ -354,7 +326,7 @@ BOOL CALLBACK DownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
          AbortDownloadDialog();
          return TRUE;
       }
-      
+
       if (DownloadDone(&info->files[lParam]))
       {
          if (abort_download)
@@ -362,10 +334,10 @@ BOOL CALLBACK DownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
             AbortDownloadDialog();
             return TRUE;
          }
-         
+
          // Set download time
          DownloadSetTime(info->files[lParam].time);
-         
+
          // If we're a guest, there may be additional files that we are supposed to skip.
          // If so, we should set our download time to the last file, so that we will skip
          // the download on the next entry into the game.
@@ -376,23 +348,23 @@ BOOL CALLBACK DownloadDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
                   break;
                DownloadSetTime(info->files[i].time);
             }
-         
+
          info->current_file++;
-         
+
          // Tell transfer thread to continue
          TransferContinue();
-         
+
          TransferMessage(GetString(hInst, IDS_RETRIEVING));
       }
       else AbortDownloadDialog();
       return TRUE;
-      
-   case BK_TRANSFERDONE: 
+
+   case BK_TRANSFERDONE:
       EndDialog(hDlg, IDOK);
       return TRUE;
-      
+
    case WM_COMMAND:
-      switch(GET_WM_COMMAND_ID(wParam, lParam))
+      switch (GET_WM_COMMAND_ID(wParam, lParam))
       {
       case IDCANCEL:
          abort_download = True;
@@ -414,8 +386,8 @@ void _cdecl TransferMessage(char *fmt, ...)
    if (hDownloadDialog == NULL)
       return;
 
-   va_start(marker,fmt);
-   vsprintf(s,fmt,marker);
+   va_start(marker, fmt);
+   vsprintf(s, fmt, marker);
    va_end(marker);
 
    SetDlgItemText(hDownloadDialog, IDC_MESSAGE, s);
@@ -448,13 +420,15 @@ void AbortDownloadDialog(void)
  */
 Bool DownloadDone(DownloadFileInfo *file_info)
 {
+   download_in_progress = false;
+#if VANILLA_UPDATER
    char zip_name[MAX_PATH + FILENAME_MAX];    // Name of uncompressed file
    char *destination_dir;
 
    // If we're a guest, skip non-guest files
    if (config.guest && !(file_info->flags & DF_GUEST))
       return True;
- 
+
    sprintf(zip_name, "%s\\%s", download_dir, file_info->filename);
 
    switch (DownloadLocation(file_info->flags))
@@ -515,7 +489,7 @@ Bool DownloadDone(DownloadFileInfo *file_info)
       debug(("Got unknown download command %d\n", DownloadCommand(file_info->flags)));
       break;
    }
-
+#endif
    debug(("Got file successfully\n"));
 
    return True;
@@ -534,7 +508,7 @@ Bool DownloadDeleteFile(char *filename)
    // Ignore if file doesn't exist
    if (stat(filename, &s) != 0)
       return True;
-   
+
    while (!done)
    {
       if (!DeleteFile(filename))
@@ -549,21 +523,21 @@ Bool DownloadDeleteFile(char *filename)
 /*****************************************************************************/
 static int CopyArchiveData(struct archive *ar, struct archive *aw)
 {
-  const void *buff;
-  size_t size;
-  __int64 offset;
+   const void *buff;
+   size_t size;
+   __int64 offset;
 
-  while (true)
-  {
-     int r = archive_read_data_block(ar, &buff, &size, &offset);
-     if (r == ARCHIVE_EOF)
-        return ARCHIVE_OK;
-     if (r != ARCHIVE_OK)
-        return r;
-     r = archive_write_data_block(aw, buff, size, offset);
-     if (r != ARCHIVE_OK)
-        return r;
-  }
+   while (true)
+   {
+      int r = archive_read_data_block(ar, &buff, &size, &offset);
+      if (r == ARCHIVE_EOF)
+         return ARCHIVE_OK;
+      if (r != ARCHIVE_OK)
+         return r;
+      r = archive_write_data_block(aw, buff, size, offset);
+      if (r != ARCHIVE_OK)
+         return r;
+   }
 }
 /*****************************************************************************/
 bool ExtractArchive(const char *zip_file, const char *out_dir)
@@ -589,7 +563,7 @@ bool ExtractArchive(const char *zip_file, const char *out_dir)
    char original_dir[MAX_PATH];
    getcwd(original_dir, sizeof(original_dir));
    chdir(out_dir);
-   
+
    bool retval = true;
    while (true)
    {
@@ -597,7 +571,7 @@ bool ExtractArchive(const char *zip_file, const char *out_dir)
       r = archive_read_next_header(input, &entry);
       if (r == ARCHIVE_EOF)
          break;
-      
+
       if (r != ARCHIVE_OK)
       {
          debug(("Error reading archive header: %s\n", archive_error_string(input)));
@@ -635,7 +609,7 @@ bool ExtractArchive(const char *zip_file, const char *out_dir)
       }
 
       debug(("Archive file %s extracted\n", archive_entry_pathname(entry)));
-      
+
       // Extraction went OK; process Windows messages
       ClearMessageQueue();  // Check for user hitting abort button
 
@@ -679,13 +653,13 @@ Bool DownloadUnarchiveFile(char *zip_name, char *dir)
       TransferMessage(GetString(hInst, IDS_DECOMPRESSING));
 
       ExtractArchive(zip_name, dir);
-      
+
       if (extraction_error == 0)
          // This means the user hit the abort button
          break;
-      
-      if (!AreYouSure(hInst, hDownloadDialog, YES_BUTTON, IDS_CANTUNCOMPRESS, 
-                      zip_name, GetString(hInst, extraction_error)))
+
+      if (!AreYouSure(hInst, hDownloadDialog, YES_BUTTON, IDS_CANTUNCOMPRESS,
+         zip_name, GetString(hInst, extraction_error)))
       {
          retval = False;
          break;
@@ -737,45 +711,179 @@ void DownloadExit(void)
 
 /*****************************************************************************/
 /*
- * DownloadNewClient:  Open patcher from the default location if installed,
- *                     otherwise send user to OpenMeridian.org webpage to
- *                     download it.
+ * DownloadNewClient:  Spawn external program to get new client executable.
+ *   Arguments are passed as command line paramenters to external program.
  */
 void DownloadNewClient(char *hostname, char *filename)
 {
    SHELLEXECUTEINFO shExecInfo;
-   TCHAR szPath[MAX_PATH];
+   char command_line[MAX_CMDLINE];
+   char exe_name[MAX_PATH];
+   char client_directory[MAX_PATH];
+   char update_program_path[MAX_PATH];
+   char *ptr;
+   SystemInfo sysinfo;
 
    if (AreYouSure(hInst, hMain, YES_BUTTON, IDS_NEEDNEWVERSION))
    {
-      // No longer use club.exe to update the Meridian executable, instead
-      // we run the patcher if installed, otherwise send the user to download it.
+      // Make download dir if not already there
+      DownloadCheckDirs(hMain);
 
-      if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROGRAMS, NULL, 0, szPath)))
-         strcat(szPath, TEXT(update_program));
+      // Destination directory is wherever client executable is running.
+      // Because of UAC, this is likely not the current working directory.
+      GetModuleFileName(NULL, exe_name, MAX_PATH);
+      strcpy(client_directory, exe_name);
+      ptr = strrchr(client_directory, '\\');
+      if (ptr != NULL)
+         *ptr = 0;
+
+      // Due to UAC (and arguably a bad design decision), the club binary is
+      // in Program Files by default, where we can't necessarily update it.
+      // We can, however, update anything in the current directory (usually
+      // in the user's private directory).  So we first look for club.exe there,
+      // and only fall back to the one in Program files if it's not there.
+      sprintf(update_program_path, "%s\\%s", run_dir, update_program);
+      if (!FileExists(update_program_path))
+         sprintf(update_program_path, "%s\\%s", client_directory, update_program);
+
+      sprintf(command_line, "\"%s\" UPDATE \"%s\" \"%s\" \"%s\\%s\" \"%s\"",
+         exe_name, hostname, filename, download_dir, update_filename,
+         client_directory);
+
+      // Using full pathname of client can overrun 128 character DOS command line limit
+      GetSystemStats(&sysinfo);
+      if (strlen(command_line) >= 127 &&
+         (sysinfo.platform == VER_PLATFORM_WIN32_WINDOWS))
+      {
+         ClientError(hInst, hMain, IDS_LONGCMDLINE, command_line);
+      }
 
       shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
       shExecInfo.fMask = 0;
       shExecInfo.hwnd = NULL;
-      shExecInfo.lpVerb = TEXT("open");
-
-      shExecInfo.lpFile = TEXT(szPath);
-      shExecInfo.lpParameters = NULL;
-
+      shExecInfo.lpVerb = "runas";
+      shExecInfo.lpFile = update_program_path;
+      shExecInfo.lpParameters = command_line;
+      // Run in parent of resource directory; club will take care of copying
+      // exes to Program Files if necessary.
       shExecInfo.lpDirectory = NULL;
-      shExecInfo.nShow = SW_SHOW;
+      shExecInfo.nShow = SW_NORMAL;
       shExecInfo.hInstApp = NULL;
 
       if (!ShellExecuteEx(&shExecInfo))
-      {
-         // Running patcher failed, send them to the webpage. If that fails,
-         // throw an error (telling the user to contact us at the forums) and exit.
-         shExecInfo.lpFile = TEXT(update_internet);
-         if (!ShellExecuteEx(&shExecInfo))
-            ClientError(hInst, hMain, IDS_CANTUPDATE);
-      }
+         ClientError(hInst, hMain, IDS_CANTUPDATE, update_program);
    }
 
    // Quit client
    PostMessage(hMain, WM_DESTROY, 0, 0);
+}
+/*****************************************************************************/
+/*
+ * DownloadClientPatch:  Got version mismatch with the server, so we need to
+ *   update. The client downloads a new version of the updater (given in
+ *   clubfile), saves the update info and its own filename into a text file
+ *   then runs the updater with the location of the text file.
+ */
+void DownloadClientPatch(char *patchhost, char *patchpath, char *patchcachepath,
+                         char *cachefile, char *clubfile, char *reason)
+{
+   FILE *fp;
+   SHELLEXECUTEINFO shExecInfo;
+   char dl_info[MAX_CMDLINE];
+   char exe_name[MAX_PATH];
+   char client_directory[MAX_PATH];
+   char update_program_path[MAX_PATH];
+   char *ptr;
+
+   if (AreYouSure(hInst, hMain, YES_BUTTON, IDS_NEEDNEWVERSION))
+   {
+      // Make download dir if not already there
+      DownloadCheckDirs(hMain);
+
+      // Destination directory is wherever client executable is running.
+      GetModuleFileName(NULL, exe_name, MAX_PATH);
+      strcpy(client_directory, exe_name);
+      ptr = strrchr(client_directory, '\\');
+      if (ptr != NULL)
+         *ptr = 0;
+
+      DownloadInfo *dinfo;
+      dinfo = (DownloadInfo *)ZeroSafeMalloc(sizeof(DownloadInfo));
+      dinfo->files = (DownloadFileInfo *)ZeroSafeMalloc(sizeof(DownloadFileInfo));
+      dinfo->num_files = 1;
+      strcpy(dinfo->machine, patchhost); // Host machine to connect to.
+      strcpy(dinfo->path, patchpath); // Path to get updater.
+      strcpy(dinfo->reason, reason); // Download reason.
+      strcpy(dinfo->files[0].filename, clubfile); // Updater filename.
+      strcpy(dinfo->files[0].path, client_directory); // Download to client dir.
+      dinfo->files[0].size = 0; // Size is updated when file download starts.
+      dinfo->files[0].flags = 0; // Saved to client dir, no flags.
+      DownloadUpdater(dinfo);
+
+      // Create strings for updater program and arguments (download info).
+      // Save download info to a file so club can restart a failed download,
+      // but also use these to start the program (in case the file can't be saved).
+
+      sprintf(update_program_path, "%s\\%s", client_directory, update_program);
+      sprintf(dl_info, "\"%s\" UPDATE \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"",
+         exe_name, patchhost, patchpath, patchcachepath, cachefile,
+         client_directory);
+
+      // Save download info to a file.
+      fp = fopen("dlinfo.txt", "w");
+      if (fp)
+      {
+         fwrite(dl_info, strlen(dl_info), 1, fp);
+         fclose(fp);
+      }
+
+      shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+      shExecInfo.fMask = 0;
+      shExecInfo.hwnd = NULL;
+      shExecInfo.lpVerb = "runas";
+      shExecInfo.lpFile = update_program_path;
+      // Run in parent of resource directory; club will take care of copying
+      // exes to Program Files if necessary.
+      // Running club with no parameters will cause it to search for dlinfo.txt.
+      // Use parameters here in case the file couldn't be saved.
+      shExecInfo.lpParameters = dl_info;
+      shExecInfo.lpDirectory = NULL;
+      shExecInfo.nShow = SW_NORMAL;
+      shExecInfo.hInstApp = NULL;
+      if (!ShellExecuteEx(&shExecInfo))
+         ClientError(hInst, hMain, IDS_CANTUPDATE, update_program);
+   }
+
+   // Quit client
+   PostMessage(hMain, WM_DESTROY, 0, 0);
+}
+
+void DownloadUpdater(DownloadInfo *params)
+{
+   DownloadUpdaterFile(params);
+   while (download_in_progress)
+   {
+   }
+}
+
+void DownloadUpdaterFile(DownloadInfo *params)
+{
+   int retval;
+
+   info = params;
+   info->current_file = 0;
+   MainSetState(STATE_DOWNLOAD);
+
+   download_in_progress = true;
+   retval = DialogBox(hInst, MAKEINTRESOURCE(IDD_DOWNLOAD), NULL, DownloadDialogProc);
+   if (retval == IDOK)
+      return;
+
+   download_in_progress = false;
+   abort_download = True;
+   config.quickstart = FALSE;
+   //MainSetState(STATE_OFFLINE);
+   Logoff();
+   ShowWindow(hMain, SW_SHOW);
+   UpdateWindow(hMain);
 }

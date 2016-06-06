@@ -44,7 +44,7 @@ classvars:
    viQuestID = QST_ID_FAREN_DISCIPLE
    viAttributes = \
       MOB_NOFIGHT | MOB_LISTEN | MOB_RANDOM | MOB_RECEIVE \
-      | MOB_TEACHER | MOB_COND_SELLER | MOB_NOMOVE | MOB_PERM_QUESTER
+      | MOB_TEACHER | MOB_COND_SELLER | MOB_NOMOVE
    viOccupation = MOB_ROLE_PRIESTESS
 
 messages:
@@ -78,9 +78,9 @@ messages:
             SID_BRITTLE,
             SID_FIREBALL,
             SID_EARTHQUAKE,
-            SID_SHATTER,
+            SID_ICE_NOVA,
             SID_SAND_STORM,
-            SID_SUMMON_FOG,
+            SID_FOG,
             SID_MYSTIC_TOUCH
          ],
       $];

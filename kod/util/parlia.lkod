@@ -1,57 +1,51 @@
 parliament_price_up = de \
-   "~IDurch die Beziehung zu %s bekommst Du den bestmöglichsten Preis."
+   "~IDeine Beziehungen zu %s verschaffen Dir den bestmöglichen Preis."
 parliament_dam_up = de \
-   "~IErlente Techniken von %s helfen Dir mehr Schaden zu verursachen."
-parliament_hit_up = de "~IErlernte Techniken von %s hilft Dir bei der Attacke."
+   "~ITechniken, erlernt von %s, helfen Dir, mehr Schaden anzurichten."
+parliament_hit_up = de "~ITechniken, erlernt am Hof von %s, lassen Dich besser treffen."
 parliament_learn_up = de \
-   "~IInspiriert durch %s, nimmst du Dir einen Moment Zeit um zu überlegen "
-   "wie du Dich verbessern kannst."
+   "~IInspiriert von %s, denkst Du einen Moment darüber nach, wie Du Dich " 
+   "verbessern könntest."
 parliament_spell_up = de \
-   "~IErlernte Techniken von %s gibt Deinem Zauber mehr Kraft."
+   "~ITechniken, erlernt am Hof von %s, verbessern die Effektivität Deiner Zaubersprüche."
 parliament_defense_up = de \
-   "~I%s's Techniken helfen Dir Dich vor Schaden besser zu schützen."
+   "~I%s's Techniken helfen Dir, Dich vor Schaden besser zu schützen."
 parliament_regen_up = de \
-   "~I%s's Führung hilft dir, Dich schneller zu regenerieren."
-parliament_vigor_up = de "~I%s's Führung hilft dir, Dich schneller zu erholen."
+   "~I%s's Führung hilft dir dabei, Dich schneller zu regenerieren."
+parliament_vigor_up = de "~I%s's Führung hilft dir dabei, Dich schneller zu erholen."
 parliament_price_down = de \
-   "~IVielleicht, wenn %s beliebter wäre, würdest Du bei den Händlern bessere "
-   "Preise bekommen."
+   "~IMöglicherweise wären die Preise besser, wenn %s mehr Einfluß hätte."
 parliament_dam_down = de \
-   "~IVielleicht, wenn %s belieber wäre, würde es möglich sein das Du mehr "
-   "Schaden verursachst.."
+   "~IMöglicherweise würdest Du mehr Schaden anrichten, wenn %s mehr Einfluß hätte."
 parliament_hit_down = de \
-   "~IWenn %s beliebter wäre, würdest Du die Möglichkeit haben besser zu "
-   "treffen.."
+   "~IMöglicherweise würdest Du besser Treffen, wenn %s mehr Einfluß hätte."
 parliament_learn_down = de \
-   "~IVielleicht, wenn %s beliebter wäre, würdest Du schneller lernen."
+   "~IMöglicherweise würdest Du schneller Lernen, wenn %s mehr Einfluß hätte."
 parliament_spell_down = de \
-   "~IWenn %s beliebter wäre, würden Deine Zauber stärker sein."
+   "~IMöglicherweise hätten Deine Zaubersprüche mehr Effektivität, wenn %s mehr Einfluß hätte."
 parliament_defense_down = de \
-   "~IWenn %s beliebter wäre, würdest du Dich besser verteidigen können."
+   "~IMöglicherweise könntest Du Dich besser verteidigen, wenn %s mehr Einfluß hätte."
 parliament_regen_down = de \
-   "~IVielleicht, wenn %s beliebter wäre, würdest du Dich schneller regenerieren."
+   "~IMöglicherweise könntest Du Dich schneller Regenerieren, wenn %s mehr Einfluß hätte."
 parliament_vigor_down = de \
    "~IVielleicht, wenn %s beliebter wäre, würdest Du langsamer Ausdauer verlieren."
 parliament_Duke_name = de "Herzog Akardius"
 parliament_Princess_name = de "Prinzessin Kateriina"
 parliament_Rebel_name = de "Jonas D'Accor"
 parliament_nodukeprice_down = de \
-   "~IVielleicht, wenn Du %s dienen würdest, würdest Du bessere Preise bekommen."
+   "~IAls Anhänger von %s würdest Du bessere Preise bekommen."
 parliament_nodukedam_down = de \
-   "~IWenn Du %s dienen würdest, würdest Du vielleicht Tricks gezeigt bekommen "
-   "um mehr Schaden zu machen."
+   "~IAls Anhänger von %s würde man Dir Tricks zeigen, um mehr Schaden anzurichten."
 parliament_noprinhit_down = de \
-   "~IWenn Du Prinzessin Kateriina folgen würdest, würde man Dir Tricks zeigen "
-   "um öfter zu treffen."
+   "~IAls Anhänger der Prinzessin würdest Du vielleicht besser treffen."
 parliament_noprinlearn_down = de \
-   "~IWenn Du Prinzessin Kateriina folgen würdest, würdest Du vielleicht "
-   "schneller lernen."
-neutral_faction_preface = de "Zur Zeit im Gericht, der fraktionslose %s."
+   "~IWenn Du ein Anhänger der Prinzessin wärst, würdest Du möglicherweise "
+   "schneller lernen. "
+neutral_faction_preface = de "Im Moment sollen Leute, die weder dem Herzog noch der Prinzessin dienen, %s. "
 duke_faction_preface = de \
-   "Ich habe gehört, dass der Herzog und seine Knechte jetzt %s."
+   "Ich habe gehört, dass der Herzog und seine Anhänger %s."
 princess_faction_preface = de \
-   "Hast Du gehört, dass Prinzessin Kateriina und ihre Anhänger vor kurzem "
-   "%s?"
+   "Hast Du gehört, dass die Prinzessin und ihre Gefolgsleute %s?"
 rebel_faction_preface = de "Das Gerücht über Jonas sagt, dass seine Rebellen %s"
 strongly_in_suffix = de \
    "besitzt unübertrefflichen Einfluss auf den Rat von Meridian"
@@ -72,11 +66,11 @@ parliament_large_number = de \
    "eine große Anzahl aber bekommen nur wenig individuelle Aufmerksamkeit."
 parliament_huge_number = de "eine unglaublich große und widerspenstige Gruppe"
 faction_power_shift = de \
-   "~IMan spürt eine Verschiebung der Machtverhältnisse im königlichem Rat."
-parliament_scandalous_behavior = de \
-   "Es gibt Gerüchte, dass ein Mitglied aus dem Rat von Meridian Gefallen "
-   "annimmt im Austausch für seine Stimme. Oh! Skandal!"
-parliament_name = de "Parlament Bericht"
+   "~IDu fühlst eine Verschiebung der Machtverhältnisse am königlichen Hof."
+parliament_scandalous_behavior = de \   
+   "Es gibt Gerüchte, dass ein Ratsmitglied Bestechungen von Fraktionsmitgliedern "
+   "annimmt. Was für ein Skandal!"
+parliament_name = de "Gerichtsbericht"
 parliament_info_mail = de \
    "Report:\nAnhänger der Prinzessin: %i\nAnhänger des Herzogs: %i\nAnhänger "
    "der Rebellen: %i\nFraktionslose Anhänger: %i\nIntriganten Gesamt: %i\n\nMacht "

@@ -52,38 +52,42 @@ messages:
    DoCommand(who=$, otarget = $)
    "Declares the target an enemy to your guild!"
    {
-      local yourGuild,myguild,i,lmembers;
+      local yourGuild, myguild, i, lmembers;
 
-      if not isClass(oTarget,&guild)
-        {
-          send(who,@msgsenduser,#message_rsc=DeclareEnemy_non_user,
-            #parm1 = send(oTarget,@getcapdef), #parm2 = send(oTarget,@getname));
-          return FALSE;
-        }
+      if NOT IsClass(oTarget,&Guild)
+      {
+         Send(who,@MsgSendUser,#message_rsc=DeclareEnemy_non_user,
+               #parm1=Send(oTarget,@GetCapDef),#parm2=Send(oTarget,@GetName));
 
-      yourGuild= oTarget;
-      myGuild = send(who, @getguild);
+         return FALSE;
+      }
+
+      yourGuild = oTarget;
+      myGuild = Send(who,@GetGuild);
 
       if yourguild = myguild
-        {
-          send(who,@msgsenduser,#message_rsc=DeclareEnemy_your_guild,
-              #parm1=send(oTarget,@getname));
-          return FALSE;
-        }
-       
-      if yourguild = $ 
-        {
-          send(who,@msgsenduser,#message_rsc=DeclareEnemy_not_member,
-              #parm1=send(oTarget,@getname));
-          return FALSE;
-        }
+      {
+         Send(who,@MsgSendUser,#message_rsc=DeclareEnemy_your_guild,
+               #parm1=Send(oTarget,@GetName));
 
-      if send(myGuild,@canEnemy,#otherguild = yourguild, #rep = who)
-        {
-           send(myGuild,@NewEnemy,#otherguild = yourguild);
-        }
+         return FALSE;
+      }
+
+      if yourguild = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=DeclareEnemy_not_member,
+               #parm1=Send(oTarget,@GetName));
+
+         return FALSE;
+      }
+
+      if Send(myGuild,@CanEnemy,#otherguild=yourguild,#rep=who)
+      {
+         Send(myGuild,@NewEnemy,#otherguild=yourguild);
+      }
+
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

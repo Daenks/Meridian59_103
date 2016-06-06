@@ -28,11 +28,13 @@ resources:
    purify_icon_rsc = ipurify.bgf
    purify_desc_rsc = \
       "Removes harmful personal enchantments on the target. "
-      "Requires emeralds and elderberries to cast."
-   
-   purify_on = "A bright, holy light is trying to cleanse your soul of impure effects."
-   purify_not_enchanted = "%s%s is not affected by any negative magical energies."
-   purify_spell_intro = "Shal'ille Lv. 4: Removes harmful personal enchantments on the target."
+      "Requires two emeralds and an elderberry to cast."
+   purify_on = \
+      "A bright, holy light is trying to cleanse your soul of impure effects."
+   purify_not_enchanted = \
+      "%s%s is not affected by any negative magical energies."
+   purify_spell_intro = \
+      "Shal'ille Lv. 4: Removes harmful personal enchantments on the target."
    purify_spell_self_cast_rsc = "You may only cast %s on yourself."
 
 classvars:
@@ -47,10 +49,10 @@ classvars:
    viSchool = SS_SHALILLE
    viSpell_level = 4
    viMana = 10
-   viChance_To_Increase = 10
+   viChance_To_Increase = 20
    viMeditate_ratio = 30
-   
-   viFlash = FLASH_GOOD   
+
+   viFlash = FLASH_GOOD
 
 properties:
 
@@ -62,7 +64,7 @@ messages:
    {
       plReagents = $;
       plReagents = Cons([&Emerald,2],plReagents);
-      plReagents = Cons([&Elderberry,2],plReagents);
+      plReagents = Cons([&Elderberry,1],plReagents);
 
       return;
    }
@@ -80,35 +82,35 @@ messages:
 
    CanPayCosts(who = $, lTargets = $, bItemCast = FALSE)
    {
-      local target, i, lEnchantment, bHasEnchantment, oSpell;
+      local oTarget, i, lEnchantment, bHasEnchantment, oSpell;
 
       % If it's only self cast, spoof self as target for following code
       if NOT pbCan_Cast_on_others
       {
-         lTargets = Cons(who, lTargets);
+         lTargets = Cons(who,lTargets);
       }
-      
+
       % Can cast spell if the 1 target item is a user
       if Length(lTargets) <> 1
       {
          return FALSE;
-      }  
+      }
 
-      target = First(lTargets);
+      oTarget = First(lTargets);
 
-      if not IsClass(target, &User)
+      if NOT IsClass(oTarget, &User)
       {
-         if not bItemCast
+         if NOT bItemCast
          {
-            Send(who,@MsgSendUser,#message_rsc=spell_bad_target, 
-                 #parm1=vrName,#parm2=Send(target,@GetDef),#parm3=Send(target,@GetName));
+            Send(who,@MsgSendUser,#message_rsc=spell_bad_target,#parm1=vrName,
+                  #parm2=Send(oTarget,@GetDef),#parm3=Send(oTarget,@GetName));
          }
          
          return FALSE;
       }
 
       % The target must have an enchantment
-      lEnchantment = send(target,@GetEnchantmentList);
+      lEnchantment = Send(oTarget,@GetEnchantmentList);
       bHasEnchantment = IsClass(who,&DM);
 
       if lEnchantment <> $
@@ -117,11 +119,11 @@ messages:
          {
             oSpell = Nth(i,2);
             if Send(oSpell,@IsPersonalEnchantment)
-               AND send(oSpell,@CanBeRemovedByPlayer)
-               AND send(oSpell,@IsHarmful)
+               AND Send(oSpell,@CanBeRemovedByPlayer)
+               AND Send(oSpell,@IsHarmful)
             {
                bHasEnchantment = TRUE;
-               
+
                break;
             }
          }
@@ -129,21 +131,24 @@ messages:
 
       if NOT bHasEnchantment
       {
-         Send(who,@MsgSendUser,#message_rsc=purify_not_enchanted, 
-              #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
-              
+         Send(who,@MsgSendUser,#message_rsc=purify_not_enchanted,
+               #parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
          return FALSE;
       }
 
       % Can only cast purify on yourself, to curb massive mule abuse.
-      if NOT pbCan_cast_on_others AND target <> who
+      if NOT pbCan_cast_on_others
+         AND oTarget <> who
       {
          Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
-         Send(who,@MsgSendUser,#message_rsc=purify_spell_self_cast_rsc,#parm1=vrName);
-      	return FALSE;
+         Send(who,@MsgSendUser,#message_rsc=purify_spell_self_cast_rsc,
+               #parm1=vrName);
+
+         return FALSE;
       }
 
-      propagate;   
+      propagate;
    }
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0)
@@ -155,15 +160,15 @@ messages:
       {
          lTargets = Cons(who, lTargets);
       }
-      
+
       oTarget = First(lTargets);
       if oTarget <> who
       {
          Send(who,@MsgSendUser,#message_rsc=spell_cast_on_target,
-              #parm1=Send(self,@GetName),#parm2=Send(oTarget,@GetDef),
-              #parm3=Send(oTarget,@GetName));
+               #parm1=Send(self,@GetName),#parm2=Send(oTarget,@GetDef),
+               #parm3=Send(oTarget,@GetName));
       }
-      
+
       Send(oTarget,@MsgSendUser,#message_rsc=purify_on);
 
       % keep tabs on guides/bards, but not admins.
@@ -172,17 +177,18 @@ messages:
          if GetClass(who) = &DM
             AND who <> oTarget
          {
-            debug(send(who,@GetTrueName)," cast purify on ",send(oTarget,@GetName));
+            Debug(Send(who,@GetTrueName)," cast purify on ",
+                  Send(oTarget,@GetName));
          }
 
-         if send(who,@PlayerIsImmortal)
+         if Send(who,@PlayerIsImmortal)
          {
             % If they're immortal, let them clear everything.
             iSpellPower = $;
          }
       }
 
-      send(self,@DoPurify,#who=oTarget,#iChance=iSpellPower);
+      Send(self,@DoPurify,#who=oTarget,#iChance=iSpellPower);
 
       propagate;
    }
@@ -190,8 +196,8 @@ messages:
    DoPurify(who=$, iChance=$)
    "Remove negative enchantments on who with a given chance to remove each one."
    {
-      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment, oSpell,
-            lList, bRemovedSomething;
+      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment,
+            oSpell, lList, bRemovedSomething;
 
       if who = $
       {
@@ -207,29 +213,29 @@ messages:
       }
 
       bRemovedSomething = FALSE;
-      lEnchantments = $;
-      lList = send(who,@GetEnchantmentList);
+
+      lList = Send(who,@GetEnchantmentList);
 
       foreach oEnchantment in lList
       {
          oSpell = Nth(oEnchantment,2);
 
          if Send(oSpell,@IsPersonalEnchantment)
-            AND send(oSpell,@CanBeRemovedByPlayer)
-            AND send(oSpell,@IsHarmful)
+            AND Send(oSpell,@CanBeRemovedByPlayer)
+            AND Send(oSpell,@IsHarmful)
          {
-            lEnchantments = cons(oSpell,lEnchantments);
+            lEnchantments = Cons(oSpell,lEnchantments);
          }
       }
-      
-      iNumEnchantments = length(lEnchantments);
+
+      iNumEnchantments = Length(lEnchantments);
 
       % Anti-clumpy code: If there is at least two enchantments in the room and the chance to
       %  dispell is greater than 60%, then auto-remove one enchantment.
       if iNumEnchantments >= MIN_ENCHANTMENTS_FOR_AUTOREMOVE
          AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
       {
-         oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
+         oEnchantment = Nth(lEnchantments,Random(1,iNumEnchantments));
          Send(who,@RemoveEnchantment,#what=oEnchantment);
          lEnchantments = DelListElem(lEnchantments,oEnchantment);
          iNumEnchantments = iNumEnchantments - 1;
@@ -240,21 +246,20 @@ messages:
       {
          iModifiedChance = iChance;
 
-         if iChance = $ OR iModifiedChance > random(1,100)
+         if iChance = $ OR iModifiedChance > Random(1,100)
          {
             Send(who,@RemoveEnchantment,#what=oEnchantment);
             bRemovedSomething = TRUE;
          }
       }
-      
+
       return bRemovedSomething;
    }
-   
+
    GetPotionClass()
    {
       return &PurifyPotion;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

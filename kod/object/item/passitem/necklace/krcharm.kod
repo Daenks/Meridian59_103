@@ -28,10 +28,11 @@ resources:
    KraananCharm_name_rsc = "steel torc"
    KraananCharm_icon_rsc = krcharm.bgf
    KraananCharm_desc_rsc = \
-   "Made not for ornamentation but for protection, this torc looks more than "
-   "suitable for stopping any blow headed towards the throat."
-
-   KraananCharm_whisper = "You hear a voice whisper, \"~I...dodge all they want, a mighty warrior need only hit them once...\""
+      "Made not for ornamentation but for protection, this torc looks more "
+      "than suitable for stopping any blow headed towards the throat."
+   KraananCharm_whisper = \
+      "You hear a voice whisper, \"~I...dodge all they want, a mighty "
+      "warrior need only hit them once...\""
 
 classvars:
 
@@ -48,11 +49,11 @@ classvars:
    viGround_group = 2
 
 properties:
-   
-   pbIn_use = False
+
+   pbIn_use = FALSE
 
    piMight_change = MIGHT_CHANGE
-   piAgility_change = Agility_CHANGE
+   piAgility_change = AGILITY_CHANGE
 
    piDisp_hits = 0
 
@@ -61,49 +62,59 @@ messages:
    Constructor()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewOwner()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewUsed(what = $)
-   "When the charm is put on, the wearer gets a moderate bonus to both might and Agility."
+   "When the charm is put on, the wearer gets a moderate bonus to both "
+   "might and Agility."
    {
-      piAgility_change = send(what,@addAgility,#points=Agility_CHANGE);
-      piMight_change = send(what,@addmight,#points = MIGHT_CHANGE);
+      piAgility_change = Send(what,@AddAgility,#points=AGILITY_CHANGE);
+      piMight_change = Send(what,@AddMight,#points=MIGHT_CHANGE);
 
-      if random(1,5) = 3   %% 20% chance
-        {
-          send(what,@msgsenduser,#message_rsc=KraananCharm_whisper);
-        }
+      if Random(1,5) = 3   %% 20% chance
+      {
+         Send(what,@MsgSendUser,#message_rsc=KraananCharm_whisper);
+      }
+
       propagate;
    }
 
    NewUnused(what = $)
    "When something that can break the curse unuses the item"
    {
-      send(what,@addAgility,#points=-piAgility_change);
-      send(what,@addmight,#points = -piMight_change);
+      Send(what,@AddAgility,#points=-piAgility_change);
+      Send(what,@AddMight,#points=-piMight_change);
+
       propagate;
    }
 
    DestroyDisposable()
    {
       if piDisp_Hits = 0
-        {
-           send(self,@delete);
-           return;
-        }
-      piDisp_hits = piDisp_hits - 1;
+      {
+         Send(self,@Delete);
+
+         return;
+      }
+      --piDisp_hits;
+
       return;
+   }
+
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-

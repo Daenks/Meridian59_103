@@ -59,7 +59,7 @@ messages:
       oGuild = Send(who,@GetGuild);
 
       % Can't disband the necromancer guild
-      if isClass(oGuild,&NecromancerGuild)
+      if IsClass(oGuild,&NecromancerGuild)
       {
          Send(who,@MsgSendUser,#message_rsc=guilddisband_necro_nak);
 
@@ -73,12 +73,12 @@ messages:
          if oUser = who
          {
             Send(oUser,@MsgSendUser,#message_rsc=guilddisband_disband_master,
-            #parm1=Send(oGuild,@GetDef),#parm2=Send(oGuild,@GetName));
+                  #parm1=Send(oGuild,@GetDef),#parm2=Send(oGuild,@GetName));
          }
          else
          {
             Send(oUser,@MsgSendUser,#message_rsc=guilddisband_disband_users,
-            #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
+                  #parm1=Send(who,@GetDef),#parm2=Send(who,@GetName));
          }
       }
 

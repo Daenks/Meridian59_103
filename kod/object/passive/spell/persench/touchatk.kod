@@ -33,11 +33,11 @@ resources:
    touchattack_enchantment_rsc = \
       "\n\nYour current %s enchantment will deal %i - %i base %s damage."
 
-   TouchAttack_missed1_sound = swswish1.wav
-   TouchAttack_missed2_sound = swswish2.wav
-   TouchAttack_missed3_sound = swswish3.wav
+   TouchAttack_missed1_sound = swswish1.ogg
+   TouchAttack_missed2_sound = swswish2.ogg
+   TouchAttack_missed3_sound = swswish3.ogg
 
-   TouchAttack_hit_sound = patk.wav
+   TouchAttack_hit_sound = patk.ogg
 
 classvars:
 
@@ -103,6 +103,11 @@ properties:
 
    plPrerequisites = $
    plReagents = $
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 15
 
 messages:
 
@@ -250,13 +255,6 @@ messages:
    "This returns the range of the spell.  Usually, this hovers around 2-3."
    {
       return viRange;
-   }
-
-   CheckSpecial(who=$,victim=$)
-   "Checks to see if there are any special circumstances which prevents"
-   "the target player from performing this spell."
-   {
-      return TRUE;
    }
 
    FindMinDamage(who=$)

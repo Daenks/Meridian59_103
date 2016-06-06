@@ -33,9 +33,11 @@ resources:
    qorcharm_name_rsc = "monocle"
    qorcharm_icon_rsc = qrcharm.bgf
    qorcharm_desc_rsc = \
-   "In your hand rests a copper-edged lens.  The glass feels surreally cool in your hand."
-
-   qorcharm_whisper = "A voice whispers, \"~I...the vile's aim must be true, for assassins rarely get second chances...\""
+      "In your hand rests a copper-edged lens.  The glass feels surreally "
+      "cool in your hand."
+   qorcharm_whisper = \
+      "A voice whispers, \"~I...the vile's aim must be true, for assassins "
+      "rarely get second chances...\""
 
 classvars:
 
@@ -52,8 +54,8 @@ classvars:
    viGround_group = 2
 
 properties:
-   
-   pbIn_use = False
+
+   pbIn_use = FALSE
 
    piMight_change = MIGHT_CHANGE
    piAim_change = AIM_CHANGE
@@ -65,61 +67,73 @@ messages:
    Constructor()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewOwner()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewUsed(what = $)
-   "When the charm is put on, the wearer gets a moderate bonus to both might and aim."
+   "When the charm is put on, the wearer gets a moderate bonus to "
+   "both might and aim."
    {
-      piAim_change = send(what,@addaim,#points=AIM_CHANGE);
-      piMight_change = send(what,@addmight,#points = MIGHT_CHANGE);
+      piAim_change = Send(what,@AddAim,#points=AIM_CHANGE);
+      piMight_change = Send(what,@AddMight,#points = MIGHT_CHANGE);
 
-      if random(1,5) = 3   %% 20% chance
-        {
-          send(what,@msgsenduser,#message_rsc=QorCharm_whisper);
-        }
+      if Random(1,5) = 3   %% 20% chance
+      {
+         Send(what,@MsgSendUser,#message_rsc=QorCharm_whisper);
+      }
+
       propagate;
    }
 
    NewUnused(what = $)
    "When something that can break the curse unuses the item"
    {
-      send(what,@addaim,#points=-piAim_change);
-      send(what,@addmight,#points = -piMight_change);
+      Send(what,@AddAim,#points=-piAim_change);
+      Send(what,@AddMight,#points=-piMight_change);
+
       propagate;
    }
 
    DestroyDisposable()
    {
       if piDisp_Hits = 0
-        {           
-           send(self,@delete);
-           return;
-        }
-      piDisp_hits = piDisp_hits - 1;
+      {
+         Send(self,@Delete);
+
+         return;
+      }
+      --piDisp_hits;
+
       return;
    }
 
    SendInventoryAnimation()
    {
       AddPacket(1,ANIMATE_NONE,2,3);
+
       return;
    }
 
    SendLookAnimation()
    {
       AddPacket(1,ANIMATE_NONE,2,1);
+
       return;
+   }
+
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-

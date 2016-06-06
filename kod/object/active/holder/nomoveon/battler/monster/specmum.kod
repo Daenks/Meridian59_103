@@ -32,10 +32,10 @@ resources:
    SpectralMummy_dead_icon_rsc = mummyX.bgf
    SpectralMummy_dead_name_rsc = "dead spectral mummy"
 
-   SpectralMummy_sound_hit = mum_atkh.wav
-   SpectralMummy_sound_miss = mum_atkm.wav
-   SpectralMummy_sound_death = mum_die.wav
-   SpectralMummy_sound_aware = mum_awr2.wav
+   SpectralMummy_sound_hit = mum_atkh.ogg
+   SpectralMummy_sound_miss = mum_atkm.ogg
+   SpectralMummy_sound_death = mum_die.ogg
+   SpectralMummy_sound_aware = mum_awr2.ogg
 
 classvars:
 

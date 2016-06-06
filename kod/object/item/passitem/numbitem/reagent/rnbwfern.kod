@@ -30,10 +30,10 @@ resources:
    rainbowfern_name_rsc = "rainbow fern"
    rainbowfern_icon_rsc = fern.bgf
    rainbowfern_desc_rsc = \
-   "This jungle plant was once as common as weeds throughout "
-   "the Koniman Jungle, until its strength as a spell reagent was "
-   "discovered. Now, amateur herbologists plunder the jungle in "
-   "search of its benefits. "
+      "This jungle plant was once as common as weeds throughout "
+      "the Koniman Jungle, until its strength as a spell reagent was "
+      "discovered. Now, amateur herbologists plunder the jungle in "
+      "search of its benefits. "
 
    rainbowfern_name_plural_rsc = "rainbow ferns"
 
@@ -47,7 +47,7 @@ classvars:
 
    viValue_average = 20
    viWeight = 2
-   viBulk = 4
+   viBulk = 3
 
 properties:
 

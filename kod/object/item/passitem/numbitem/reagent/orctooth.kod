@@ -21,8 +21,8 @@ resources:
    orctooth_name_rsc = "orc tooth"
    orctooth_icon_rsc = orctooth.bgf
    orctooth_desc_rsc = \
-   "This yellowed fang is nearly four inches in length.  Bits of dried flesh cling to its base."
-
+      "This yellowed fang is nearly four inches in length.  Bits of "
+      "dried flesh cling to its base."
    orctooth_name_plural_rsc = "orc teeth"
 
 classvars:
@@ -39,7 +39,6 @@ classvars:
    viWeight = 3
    viBulk = 3
 
-
 properties:
 
    piNumber = 3
@@ -48,4 +47,3 @@ messages:
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

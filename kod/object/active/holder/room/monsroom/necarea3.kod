@@ -21,7 +21,7 @@ resources:
 
    room_name_Necropolis3 = "Decaying City of Brax"
    room_Necropolis3 = necarea3.roo
-   Necropolis3_music = nec02.mp3
+   Necropolis3_music = nec02.ogg
 
    Necropolis3_locked_gate = \
       "The gate has no visible means of opening, and the spikes atop it serve as a "
@@ -30,7 +30,7 @@ resources:
    Necropolis3_locked_door = \
       "The massive stone door won't budge, no matter how hard you push it."
 
-   Necropolis3_loop = necloop4.wav
+   Necropolis3_loop = necloop4.ogg
 
    Necropolis3_no_rift = "Casting shadow rift here would be pointless."
 

@@ -27,6 +27,8 @@ classvars:
    % Mob doesn't move and cannot be attacked.
    viDefault_behavior = AI_NPC | AI_NOMOVE
 
+   viObject_flags = OF_ATTACKABLE | OF_DISPLAY_NAME | OF_NPC
+
    viSpeed = SPEED_AVERAGE
 
 properties:
@@ -34,6 +36,8 @@ properties:
    % Palette translations; used only for NPCs that use player face parts
    piFace_translation = PT_GRAY_TO_SKIN1
    piHair_translation = PT_HAIR_DKBROWN
+
+   piNameColor = NC_NPC
 
 messages:
 

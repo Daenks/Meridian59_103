@@ -24,10 +24,10 @@ resources:
    room_name_guildhall5 ="Konima's Abandoned Dwelling"
    room_guildhall5 = guildh5.roo
 
-   guildhall5_sound = down2.wav
-   guildhall5_door_up = woodup1.wav
-   guildhall5_door_down = wooddn1.wav
-   water_soundguildhall5 = boil.wav
+   guildhall5_sound = down2.ogg
+   guildhall5_door_up = woodup1.ogg
+   guildhall5_door_down = wooddn1.ogg
+   water_soundguildhall5 = boil.ogg
 
    guildhall5_privacy_command = "privacy"
    guildhall5_no_privacy_command = "no privacy"

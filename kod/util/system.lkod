@@ -1,20 +1,20 @@
-system_user_killed = de "### %q ist gerade gestorben. %s%q war zu stark."
-system_user_killed_by_pker = de "### %q ist kaltblütig umgebracht worden."
+system_user_killed = de "~B~U~k[###]~n ~B~v%q ist gerade gestorben. %s%q war zu stark."
+system_user_killed_by_pker = de "~B~U~k[###]~n ~B~v%q ist kaltblütig umgebracht worden."
 system_user_killed_pker = de \
-   "### %q ist als Mörder getötet worden! %s%q war im Kampf siegreich."
+   "~B~U~k[###]~n ~B~v%q ist als Mörder getötet worden! %s%q war im Kampf siegreich."
 system_user_killed_outlaw = de \
-   "### %q war gesetzlos und ist ermordet worden. %s%q hat die gerechte Strafe "
+   "~B~U~k[###]~n ~B~v%q war gesetzlos und ist ermordet worden. %s%q hat die gerechte Strafe "
    "ausgeführt."
 system_killed_self = de \
    "~B~U~k[###]~n ~B~v%q ist durch eigene Dummheit an %s gestorben."
 system_user_killed_room = de \
-   "### %s haben sich noch eine weitere arme Seele geholt: %q."
+   "~B~U~k[###]~n ~B~v%s haben sich noch eine weitere arme Seele geholt: %q."
 system_user_killed_bridge_faith = de \
-   "### %q stürzte sich von den Riija-Klippen in ein feuchtes Grab."
-system_user_killed_token = de "### %q hat ein Artefakt an %s%q verloren."
-system_user_killed_shield = de "### %q wurde vom Fraktionsrivalen %s%q besiegt."
+   "~B~U~k[###]~n ~B~v%q stürzte sich von den Riija-Klippen in ein feuchtes Grab.%s$0"
+system_user_killed_token = de "~B~U~k[###]~n ~B~v%q hat ein Artefakt an %s%q verloren."
+system_user_killed_shield = de "~B~U~k[###]~n ~B~v%q wurde vom Fraktionsrivalen %s%q besiegt."
 system_user_killed_guild = de \
-   "### %q von %s%q wurde von %s%q von %s%q im Gildenkampf abgeschlachtet."
+   "~B~U~k[###]~n ~B~v%q von %s%q wurde von %s%q von %s%q im Gildenkampf abgeschlachtet."
 guildwar_kill_title1 = de " has slaughtered "
 guildwar_kill_body1 = de "Let it be known that "
 guildwar_kill_body2 = de " of the "
@@ -153,3 +153,4 @@ inventory_potion_class_name = de "Tränke"
 inventory_wand_class_name = de "Stäbe"
 inventory_scroll_class_name = de "Schriftrollen"
 inventory_ring_class_name = de "Ringe"
+system_guild_rsc = de "gilde"

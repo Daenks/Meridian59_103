@@ -17,10 +17,10 @@ constants:
 resources:
 
    include e4.lkod
-   waterfall_sounde4 = wfall2.wav
-   room_OutdoorsE4 = E4.roo
+   waterfall_sounde4 = wfall2.ogg
+   room_OutdoorsE4 = e4.roo
    room_name_OutdoorsE4 ="East Merchant Way through Ilerian Woods"
-   OutdoorsE4_music = forest.mp3
+   OutdoorsE4_music = forest.ogg
 
 classvars:
 

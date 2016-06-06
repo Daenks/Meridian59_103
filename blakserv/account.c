@@ -36,6 +36,8 @@ void InitAccount(void)
    console_account->name = ConfigStr(CONSOLE_ADMINISTRATOR);
    console_account->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,1);
    console_account->password[0] = 0;
+   console_account->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,1);
+   console_account->email[0] = 0;
 
    console_account->type = ACCOUNT_ADMIN;
    console_account->last_login_time = 0;
@@ -53,6 +55,7 @@ void ResetAccount(void)
       temp = a->next;
       FreeMemory(MALLOC_ID_ACCOUNT,a->name,strlen(a->name)+1);
       FreeMemory(MALLOC_ID_ACCOUNT,a->password,strlen(a->password)+1);
+      FreeMemory(MALLOC_ID_ACCOUNT,a->email,strlen(a->email)+1);
       FreeMemory(MALLOC_ID_ACCOUNT,a,sizeof(account_node));
       a = temp;
    }
@@ -64,7 +67,6 @@ account_node * GetConsoleAccount()
 {
    return console_account;
 }
-
 
 /* GetNextAccountID - used for show status admin command only */
 int GetNextAccountID(void)
@@ -111,7 +113,15 @@ void InsertAccount(account_node *a)
    }
 }
 
-Bool CreateAccount(char *name,char *password,int type,int *account_id)
+// Just basic check (no : because it gets used in savegame, must have @)
+bool AccountValidateEmail(char *email)
+{
+   if (!email || strchr(email, ':') || !strchr(email,'@'))
+      return false;
+   return true;
+}
+
+Bool CreateAccount(char *name,char *password,char *email,int type,int *account_id)
 {
    char buf[ENCRYPT_LEN+1];
    account_node *a;
@@ -124,11 +134,17 @@ Bool CreateAccount(char *name,char *password,int type,int *account_id)
 
    a->name = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(name)+1);
    strcpy(a->name,name);
- 
+
    MDString(password,(unsigned char *) buf);
    buf[ENCRYPT_LEN] = 0;
    a->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(buf)+1);
    strcpy(a->password,buf);
+
+   if (!email || !AccountValidateEmail(email))
+      email = "\0";
+
+   a->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(email)+1);
+   strcpy(a->email,email);
 
    a->type = type;
    a->last_login_time = 0;
@@ -141,7 +157,7 @@ Bool CreateAccount(char *name,char *password,int type,int *account_id)
 	return True;
 }
 
-int CreateAccountSecurePassword(char *name,char *password,int type)
+int CreateAccountSecurePassword(char *name,char *password,char *email,int type)
 {
    char buf[100],*ptr;
    int index;
@@ -166,6 +182,12 @@ int CreateAccountSecurePassword(char *name,char *password,int type)
    a->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(buf)+1);
    strcpy(a->password,buf);
 
+   if (!email || !AccountValidateEmail(email))
+      email = "\0";
+
+   a->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(email)+1);
+   strcpy(a->email,email);
+
    a->type = type;
    a->last_login_time = 0;
    a->suspend_time = 0;
@@ -176,7 +198,7 @@ int CreateAccountSecurePassword(char *name,char *password,int type)
    return a->account_id;
 }
 
-int RecreateAccountSecurePassword(int account_id,char *name,char *password,int type)
+int RecreateAccountSecurePassword(int account_id,char *name,char *password,char *email,int type)
 {
    char buf[100],*ptr;
    int index;
@@ -211,6 +233,12 @@ int RecreateAccountSecurePassword(int account_id,char *name,char *password,int t
    a->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(buf)+1);
    strcpy(a->password,buf);
 
+   if (!email || !AccountValidateEmail(email))
+      email = "\0";
+
+   a->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(email)+1);
+   strcpy(a->email,email);
+
    a->type = type;
    a->last_login_time = 0;
    a->suspend_time = 0;
@@ -221,8 +249,8 @@ int RecreateAccountSecurePassword(int account_id,char *name,char *password,int t
    return a->account_id;
 }
 
-void LoadAccount(int account_id,char *name,char *password,int type,int last_login_time,
-		 int suspend_time, int credits)
+void LoadAccount(int account_id,char *name,char *password,char *email,int type,
+                 int last_login_time,int suspend_time, int credits)
 {
    account_node *a;
 
@@ -237,11 +265,17 @@ void LoadAccount(int account_id,char *name,char *password,int type,int last_logi
    a->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(password)+1);
    strcpy(a->password,password);
 
+   if (!email || !AccountValidateEmail(email))
+      email = "\0";
+
+   a->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(email)+1);
+   strcpy(a->email,email);
+
    a->type = type;
    a->last_login_time = last_login_time;
    a->suspend_time = suspend_time;
    a->credits = credits;
-
+   a->next = NULL;
    InsertAccount(a);
 }
 
@@ -260,6 +294,7 @@ Bool DeleteAccount(int account_id)
       
       FreeMemory(MALLOC_ID_ACCOUNT,a->name,strlen(a->name)+1);
       FreeMemory(MALLOC_ID_ACCOUNT,a->password,strlen(a->password)+1);
+      FreeMemory(MALLOC_ID_ACCOUNT,a->email,strlen(a->email)+1);
       FreeMemory(MALLOC_ID_ACCOUNT,a,sizeof(account_node));
       return True;
    }
@@ -274,6 +309,7 @@ Bool DeleteAccount(int account_id)
 
 	 FreeMemory(MALLOC_ID_ACCOUNT,temp->name,strlen(temp->name)+1);
 	 FreeMemory(MALLOC_ID_ACCOUNT,temp->password,strlen(temp->password)+1);
+    FreeMemory(MALLOC_ID_ACCOUNT,temp->email,strlen(temp->email)+1);
 	 FreeMemory(MALLOC_ID_ACCOUNT,temp,sizeof(account_node));
 	 return True;
       }
@@ -306,6 +342,13 @@ void SetAccountPasswordAlreadyEncrypted(account_node *a,char *password)
    FreeMemory(MALLOC_ID_ACCOUNT,a->password,strlen(a->password)+1);
    a->password = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(password)+1);
    strcpy(a->password,password);
+}
+
+void SetAccountEmail(account_node *a,char *email)
+{
+   FreeMemory(MALLOC_ID_ACCOUNT,a->email,strlen(a->email)+1);
+   a->email = (char *)AllocateMemory(MALLOC_ID_ACCOUNT,strlen(email)+1);
+   strcpy(a->email,email);
 }
 
 Bool SuspendAccountAbsolute(account_node *a, int suspend_time)
@@ -423,6 +466,22 @@ account_node * GetAccountByName(char *name)
    return NULL;
 }
 
+// Returns only the first account with that email.
+account_node * GetAccountByEmail(char *email)
+{
+   account_node *a;
+
+   a = accounts;
+   while (a != NULL)
+   {
+      if (!stricmp(a->email,email))
+         return a;
+      a = a->next;
+   }
+
+   return NULL;
+}
+
 account_node * AccountLoginByName(char *name)
 {
    account_node *a;
@@ -495,6 +554,18 @@ void ForEachAccount(void (*callback_func)(account_node *a))
    }
 }
 
+void ForEachAccountWithString(void(*callback_func)(account_node *a, char *str), char *str)
+{
+   account_node *a;
+
+   a = accounts;
+   while (a != NULL)
+   {
+      callback_func(a,str);
+      a = a->next;
+   }
+}
+
 void DeleteAccountAndAssociatedUsersByID(int account_id)
 {
    account_node *a;
@@ -539,6 +610,20 @@ void DeleteAccountAndAssociatedUsersByID(int account_id)
    {
       lprintf("Delete of account %i successful\n",
 	      account_id);
+   }
+}
+
+// Iterate through accounts and remove unused ones.
+void DeleteAccountsIfUnused()
+{
+   account_node *a, *temp;
+
+   a = accounts;
+   while (a != NULL)
+   {
+      temp = a;
+      a = a->next;
+      DeleteAccountIfUnused(temp);
    }
 }
 

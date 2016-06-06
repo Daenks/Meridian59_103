@@ -16,7 +16,7 @@ constants:
 
    % What do we adjust 
    ROW_ADJUST = 2
-   COL_ADJUST = 1
+   COL_ADJUST = 0
 
 resources:
 
@@ -69,9 +69,9 @@ messages:
          % Give them the warning and bump them, then record that we warned them.
          Send(what,@MsgSendUser,#message_rsc=newbportal_warning);
          Send(SYS,@UtilGoNearSquare,#what=what,#where=poOwner,
-               #new_row=Send(self,@GetRow)+ROW_ADJUST,
-               #new_col=Send(self,@GetCol)+COL_ADJUST,
-               #new_angle=ANGLE_NORTH);
+               #new_row=Send(self,@GetRow) - ROW_ADJUST,
+               #new_col=Send(self,@GetCol) - COL_ADJUST,
+               #new_angle=ANGLE_SOUTH);
          plWarnedList = Cons(what,plWarnedList);
       }
       else

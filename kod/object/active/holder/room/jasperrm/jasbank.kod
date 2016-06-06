@@ -20,11 +20,13 @@ resources:
 
    room_name_jasbank = "The Royal Bank of Jasper"
    room_jasbank = jasbank.roo
-   jasbank_music = bank.mp3
+   jasbank_music = bank.ogg
 
-   jasbank_sign = \
+   jasbank_sign_name = "Welcome to the Bank of Jasper"
+   jasbank_sign_desc = \
       "Use the deposit, withdraw (amount), and balance commands to access "
-      "your bank account."
+      "your bank account.\n\nDeposits made here can also be accessed from "
+      "the First Royal Bank of Tos in East Tos."
 
 classvars:
 
@@ -65,10 +67,12 @@ messages:
    CreateStandardObjects()
    {
       Send(self,@NewHold,#what=Create(&JasperBanker,#bid=BID_TOS),
-           #new_row=8,#new_col=5,#fine_row=44, #fine_col=36,#new_angle=ANGLE_SOUTH_EAST);
+            #new_row=8,#new_col=5,#fine_row=44,#fine_col=36,
+            #new_angle=ANGLE_SOUTH_EAST);
 
-      Send(self,@NewHold,#what=Create(&Sign,#desc=jasbank_sign),
-           #new_row=5,#new_col=8,#fine_row=24,#fine_col=16);
+      Send(self,@NewHold,#what=Create(&Sign,#name=jasbank_sign_name,
+            #desc=jasbank_sign_desc),
+            #new_row=5,#new_col=8,#fine_row=24,#fine_col=16);
 
       Send(self,@NewHold,#what=Create(&Firepit),#new_row=9,#new_col=4,
            #fine_row=44,#fine_col=20);

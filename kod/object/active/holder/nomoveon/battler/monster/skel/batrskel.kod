@@ -32,9 +32,9 @@ resources:
    BatteredSkeleton_dead_icon_rsc = skelX.bgf
    BatteredSkeleton_dead_name_rsc = "pile of bones"
 
-   BatteredSkeleton_sound_miss = skl2_atk.wav
-   BatteredSkeleton_sound_death = skl2_die.wav
-   BatteredSkeleton_sound_aware = skl2_awr.wav
+   BatteredSkeleton_sound_miss = skl2_atk.ogg
+   BatteredSkeleton_sound_death = skl2_die.ogg
+   BatteredSkeleton_sound_aware = skl2_awr.ogg
 
 classvars:
 
@@ -55,8 +55,8 @@ classvars:
    viKarma = -70
    viDefault_behavior = \
       AI_FIGHT_AGGRESSIVE | AI_FIGHT_SWITCHALOT | AI_MOVE_FLEE_FRIGHTENERS
-   viCashmin = 100
-   viCashmax = 320
+   viCashmin = 50
+   viCashmax = 280
    vrSound_miss = BatteredSkeleton_sound_miss
    vrSound_aware = BatteredSkeleton_sound_aware
    vrSound_death = BatteredSkeleton_sound_death

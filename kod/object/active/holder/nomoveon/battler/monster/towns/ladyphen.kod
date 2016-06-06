@@ -523,7 +523,7 @@ messages:
 
       if piColor = COLOR_BLUE
       {
-         iFlags = iFlags | OF_PLAYER;
+         iFlags = iFlags | OF_DISPLAY_NAME;
       }
 
       return iFlags;

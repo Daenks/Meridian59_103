@@ -94,11 +94,6 @@ void CreateInitialSysTimers()
 		  60*ConfigInt(AUTO_KOD_PERIOD));
    CreateSysTimer(SYST_SAVE,60*ConfigInt(AUTO_SAVE_TIME),
 		  60*ConfigInt(AUTO_SAVE_PERIOD));
-   /*
-	  no garbage collection now
-   CreateSysTimer(SYST_GARBAGE,60*ConfigInt(AUTO_GARBAGE_TIME),
-		  60*ConfigInt(AUTO_GARBAGE_PERIOD));
-	*/
 }
 
 void ProcessSysTimer(int time)

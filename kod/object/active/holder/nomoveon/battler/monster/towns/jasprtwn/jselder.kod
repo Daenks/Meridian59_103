@@ -48,7 +48,7 @@ classvars:
    vrDesc = JasperElder_desc_rsc
    viAttributes = \
       MOB_RANDOM | MOB_LISTEN | MOB_RECEIVE | MOB_NOFIGHT \
-      | MOB_NOMOVE | MOB_TEACHER | MOB_PERM_QUESTER
+      | MOB_NOMOVE | MOB_TEACHER
    viOccupation = MOB_ROLE_ELDER
 
    viQuestID = QST_ID_DEMENTIA_SPELL
@@ -64,12 +64,7 @@ messages:
    {
       if StringEqual(string,JsEl_stat_window_trigger)
       {
-         if Send(what,@FindHolding,#class=&StatsResetToken) <> $
-            OR (Send(what,@GetBaseMaxHealth)
-               <= Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
-         {
-            Send(what,@SendStatChange);
-         }
+         Send(what,@SendStatChange);
       }
 
       propagate;
@@ -90,20 +85,10 @@ messages:
       return;
    }
 
-   InitPermQuest()
-   {
-      Post(Send(SYS,@GetLibrary),@CreateQuest,#type=QST_PERM,#quester=self,
-           #reward= [QST_REWARD_ID,viQuestID]);
-
-      return;
-   }
-
    Constructor()
    "We start a permanent quest for learning a spell" 
    {
       plWantedItems = [&StatsResetToken];
-      
-      Send(self,@InitPermQuest);
 
       propagate;
    }

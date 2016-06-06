@@ -1,0 +1,72 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MinorHeal is Heal
+
+constants:
+   include blakston.khd
+
+resources:
+
+   include minheal.lkod
+
+   heal_name_rsc = "minor heal"
+   heal_icon_rsc = iheal.bgf
+   heal_desc_rsc = \
+      "The compassionate power of Shal'ille heals the wounds of the caster "
+      "or another person.  Is particularly potent on those protected by "
+      "guardian angels.  Shal'ille gives a small reward toward the karma "
+      "of the mage who heals another good soul.  "
+      "Requires one herb to cast."
+   heal_spell_intro = \
+      "Shal'ille Lv. 1: Bestows the healing touch of Shal'ille, restoring "
+      "points of health."
+
+classvars:
+
+   vrName = heal_name_rsc
+   vrIcon = heal_icon_rsc
+   vrDesc = heal_desc_rsc
+   vrSpell_intro = heal_spell_intro
+
+   viSpell_num = SID_MINOR_HEAL
+   viSchool = SS_SHALILLE
+   viSpell_level = 1
+   viMana = 9
+
+   viMeditate_ratio = 10
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+      plReagents = Cons([&Herbs,1],plReagents);
+
+      return;
+   }
+
+   GetHealAmount(oTarget=$,iSpellPower=1)
+   {
+      if (oTarget = $)
+      {
+         Debug("Trying to get heal amount for $ target!");
+
+         return 1;
+      }
+
+      return Bound(Random(100,500) + ((iSpellPower + 1) * 5)
+               + (Send(oTarget,@GetKarma) * 5),0,1000);
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

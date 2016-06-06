@@ -24,7 +24,7 @@ resources:
 
    room_name_RiijaTemple = "The Temple of Riija"
    room_RiijaTemple = ke1.roo
-   riijatemple_music = bridge.mp3
+   riijatemple_music = bridge.ogg
 
    riijatemple_door1 = "~kThe Monk of Riija says, \"~BNo ~rone ~B~bmay ~Ienter ~kmy ~g~Badytum~n~k.\""
    riijatemple_door2 = "~kThe Monk of Riija says, \"~BCease.  ~I~bYour ~rsanity ~gwould not remain ~B~kintact ~B~bif you were to enter ~I~rthe Library of the ~BGibbering Maelstrom.\""
@@ -33,10 +33,10 @@ resources:
    riijatemple_door5 = "~kThe Monk of Riija says, \"~rIt would be best if you avoided ~b`Ithat`I~r door~n~k.\""
    riijatemple_door6 = "~kThe Monk of Riija says, \"~BThat ~rdoor ~gleads ~bnowhere.  ~IThat is ~I~gnot to say ~kan empty ~rroom ~Bor ~B~ga blank wall ~rlies beyond it.  ~b`INowhere`I ~gis an infinate purgatory ~Bthat ~rswallows all that enter~n~k.\""
 
-   riijatemple_sound = down2.wav
+   riijatemple_sound = down2.ogg
 
-   riijaplayer_death_male_wav = malefall822m.wav
-   riijaplayer_death_female_wav = femalefall822m.wav
+   riijaplayer_death_male_wav = malefall822m.ogg
+   riijaplayer_death_female_wav = femalefall822m.ogg
 
    riijadeadmessage0a = "Ouch, that last step was a doozy.\nYou awaken, dazed, in what appears to be an inn."
    riijadeadmessage0b = "Ouch, that last step was a doozy."

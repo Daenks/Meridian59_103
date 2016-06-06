@@ -6,14 +6,14 @@ idwandqt_desc_rsc = de \
 idwandqt_nodetwo_rsc = de \
    "%s%s hat vor kurzem einen Zauberstan erhalten. %s ist nicht in der Lage ihn zu identifizieren, "
    "und fragt nach deiner Hilfe.  Biete den Zauberstab  "
-   "%s%s an und schau ob %s bei der Aufgabe helfen kann."
+   "%s%s an und schau ob%ser bei der Aufgabe helfen kann."
 
 idwandqt_nodethree_rsc = de \
    "%s%s hat den Zauberstab identifiziert. Geh zurück zu %s%s und "
    "biete %s den nun identifizierten Zauberstab an um deine Belohnung zu erhalten."
 
 idwandqt_completed_rsc = de \
-   "You have completed the wand identification quest."
+   "Du hast das Zauberstab Identifikations Quest erfolgreich abgeschlossen."
 
 % Quest resources.
 wand_identify_assign_1 = de \
@@ -25,7 +25,7 @@ wand_identify_assign_1 = de \
 wand_identify_assign_2 = de \
    "Ein Zauberstab, nicht wahr? Nun lass mal sehen.... ah ha! Siehst Du diese "
    "Runen hier.... entlang am Griff....  Die Runen sagen, dass es ein %CARGO "
-   "ist.  ERlaube mir, ein Etikett mit der Übersetzung draufzukleben, damit "
+   "ist.  Erlaube mir, ein Etikett mit der Übersetzung draufzukleben, damit "
    "%NPC weiß um welchen es sich handelt."
 wand_identify_success = de \
    "Fabehlaft.  Ein %CARGO wird sich sicherlich als nützlich erweisen.  Lass "

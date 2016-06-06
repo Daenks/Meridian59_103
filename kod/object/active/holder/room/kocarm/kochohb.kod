@@ -19,7 +19,7 @@ resources:
 
    include kochohb.lkod
 
-   room_KocatanHallB = Kochohb.roo
+   room_KocatanHallB = kochohb.roo
    room_name_KocatanHallB = "The Hall of Heroes East"
 
    kochistory_book_name = "History of the Settlement"
@@ -75,7 +75,7 @@ resources:
    "   Ko'catan is strong and with the spirit of Konima at its heart, "
    "we shall never fall."
 
-   KocatanHallB_music = extra01.mp3
+   KocatanHallB_music = extra01.ogg
 
 classvars:
 

@@ -13,7 +13,6 @@ GuildSetPassword is GuildCommand
 constants:
 
    include blakston.khd
-   include protocol.khd
 
 resources:
 
@@ -21,12 +20,13 @@ resources:
 
    guildsetpassword_name_rsc = "set password"
    guildsetpassword_icon_rsc = light.bgf
-
    guildsetpassword_lieutenant = "Changes a guild hall's password."
-
-   setpassword_not_guilded = "You are not a member of a guild, and have no password to change!"
-   setpassword_cant_setpassword = "Only guildmasters may change a guild's password!"
-   setpassword_no_hall = "You cannot set your guild hall's password, if you have no guild hall!"
+   setpassword_not_guilded = \
+      "You are not a member of a guild, and have no password to change!"
+   setpassword_cant_setpassword = \
+      "Only guildmasters may change a guild's password!"
+   setpassword_no_hall = \
+      "You cannot set your guild hall's password, if you have no guild hall!"
 
 classvars:
 
@@ -46,15 +46,17 @@ messages:
 
    ResetCommand(who=$)
    {
-     local oGuild;
+      local oGuild;
 
-     oGuild = send(who,@getguild);
-     if send(oGuild,@getguildhall) = $
-        {
-           send(who,@removeguildcommand,#command_num=viGuildCOmmand_num);
-           return;
-        }
-     propagate;
+      oGuild = Send(who,@GetGuild);
+      if Send(oGuild,@GetGuildhall) = $
+      {
+         Send(who,@RemoveGuildCommand,#command_num=viGuildCOmmand_num);
+
+         return;
+      }
+
+      propagate;
    }
 
    DoCommand(who=$, data = $)
@@ -69,31 +71,34 @@ messages:
          return;
       }
 
-      oGuild = send(who,@getguild);
+      oGuild = Send(who,@GetGuild);
 
       if oGuild = $
-        {
-          send(who,@msgsenduser,#message_rsc=setpassword_not_guilded);
-          return FALSE;
-        }
+      {
+         Send(who,@MsgSendUser,#message_rsc=setpassword_not_guilded);
 
-      if send(oGUild,@getrank,#who=who) < RANK_MASTER
-        {
-          send(who,@msgsenduser,#message_rsc=setpassword_cant_setpassword);
-          return FALSE;
-        }
+         return FALSE;
+      }
 
-      oHall = send(oGuild,@getguildhall);
+      if Send(oGuild,@GetRank,#who=who) < RANK_MASTER
+      {
+         Send(who,@MsgSendUser,#message_rsc=setpassword_cant_setpassword);
+
+         return FALSE;
+      }
+
+      oHall = Send(oGuild,@GetGuildhall);
       if oHall = $
-        {
-          send(who,@msgsenduser,#message_rsc=setpassword_no_hall);
-          return FALSE;          
-        }
+      {
+         Send(who,@MsgSendUser,#message_rsc=setpassword_no_hall);
 
-      send(oGuild,@changePassword,#password=data);
+         return FALSE;
+      }
+
+      Send(oGuild,@ChangePassword,#password=data);
 
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

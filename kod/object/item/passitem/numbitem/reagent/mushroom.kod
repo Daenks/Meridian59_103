@@ -22,7 +22,6 @@ resources:
    mushroom_icon_rsc = mushroom.bgf
    mushroom_desc_rsc = \
       "These mushrooms are a common magical reagent."
-
    mushroom_name_plural_rsc = "mushrooms"
 
 classvars:
@@ -45,11 +44,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKIN4,#color2=XLAT_TO_SKIN4);
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_SKIN4,
+                           #color2=XLAT_TO_SKIN4);
       
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

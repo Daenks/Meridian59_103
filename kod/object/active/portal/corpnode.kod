@@ -25,7 +25,6 @@ resources:
    corpsenode_desc_rsc = \
       "You know not where this leads, for you see naught but insanity through "
       "the gaping rip in reality."
-
    corpsenode_already_melded = "You have already bonded with the corpsenode."
    corpsenode_nothing = "Nothing seems to happen."
    corpsenode_meld = \
@@ -34,7 +33,7 @@ resources:
       "Yet, when you regain your equilibrium, you feel the course of magic flow "
       "through your veins."
 
-   uworld_meld_sound = nodeup.wav
+   uworld_meld_sound = nodeup.ogg
 
 classvars:
 
@@ -64,7 +63,7 @@ messages:
 
    TeleportSomething(what = $,new_row = $,new_col = $)
    {
-      send(poOwner,@ZapToCorpse,#who=what);
+      Send(poOwner,@ZapToCorpse,#who=what);
 
       return;
    }
@@ -79,28 +78,28 @@ messages:
 
    NodeAppear(where=$,row=0,col=0,fine_row=0,fine_col=0)
    {
-      if NOT isClass(where,&room)
+      if NOT IsClass(where,&Room)
       {
-         DEBUG("Not a room!");
+         Debug("Not a room!");
 
          return;
       }
 
       if poOwner <> $
       {
-         DEBUG("Already has an owner!");
+         Debug("Already has an owner!");
 
          return;
       }
 
       if row = 0 OR col = 0
       {
-         DEBUG("Bad coordinates!");
+         Debug("Bad coordinates!");
 
          return;
       }
 
-      send(where,@NewHold,#what=self,#new_row=row,#new_col=col);
+      Send(where,@NewHold,#what=self,#new_row=row,#new_col=col);
 
       return;
    }
@@ -113,12 +112,12 @@ messages:
    {
       if poOwner = $
       {
-         DEBUG("NodeDisappear called with null owner!");
+         Debug("NodeDisappear called with null owner!");
 
          return;
       }
-      
-      send(poOwner,@LeaveHold,#what=self);
+
+      Send(poOwner,@LeaveHold,#what=self);
       poOwner = $;
 
       return;
@@ -129,35 +128,35 @@ messages:
    {
       if poOwner = $
       {
-         DEBUG("TryActivate called with nil owner!");
+         Debug("TryActivate called with nil owner!");
 
          return TRUE;
       }
-    
-      if isClass(who,&User) AND poOwner = send(who,@GetOwner)
+
+      if IsClass(who,&User) AND poOwner = send(who,@GetOwner)
       {
-         if abs(send(who,@GetRow)-send(self,@GetRow)) < CORPSENODE_RANGE
-            AND abs(send(who,@GetCol)-send(self,@GetCol)) < CORPSENODE_RANGE
+         if Abs(Send(who,@GetRow) - Send(self,@GetRow)) < CORPSENODE_RANGE
+            AND Abs(Send(who,@GetCol) - Send(self,@GetCol)) < CORPSENODE_RANGE
          {
             if piNode_num = 0
             {
-               debug("this mana node was not assigned an ID!  Invalid!");
+               Debug("this mana node was not assigned an ID!  Invalid!");
 
                return FALSE;
             }
 
-            if send(who,@GetNodeList) & piNode_num
+            if Send(who,@GetNodeList) & piNode_num
             {
-               send(who,@MsgSendUser,#message_rsc=corpsenode_already_melded);          
+               Send(who,@MsgSendUser,#message_rsc=corpsenode_already_melded);
 
                return TRUE;
             }
 
-            send(self,@Meld,#who=who);
+            Send(self,@Meld,#who=who);
          }
          else
          {
-            send(who,@MsgSendUser,#message_rsc=corpsenode_nothing);          
+            Send(who,@MsgSendUser,#message_rsc=corpsenode_nothing);
          }
       }
 
@@ -168,16 +167,18 @@ messages:
    {
       local mysticism;
 
-      send(who,@MsgSendUser,#message_rsc=corpsenode_meld);          
-      send(who,@WaveSendUser,#wave_rsc=uworld_meld_sound);
-      send(who,@NewMaxMana,#amount=Send(self,@GetManaAdjust,#who=who),#node_num=piNode_num);
+      Send(who,@MsgSendUser,#message_rsc=corpsenode_meld);
+      Send(who,@WaveSendUser,#wave_rsc=uworld_meld_sound);
+      Send(who,@NewMaxMana,#amount=Send(self,@GetManaAdjust,#who=who),
+            #node_num=piNode_num);
 
       return;
    }
 
    UnMeld(who=$)
    {
-      Send(who,@NewMaxMana,#amount=(-1*Send(self,@GetManaAdjust,#who=who)),#node_num=piNode_num);
+      Send(who,@NewMaxMana,#amount=(-1 * Send(self,@GetManaAdjust,#who=who)),
+            #node_num=piNode_num);
 
       return;
    }
@@ -189,14 +190,13 @@ messages:
 
    GetManaAdjust(who=$)
    {
-      return (((5 + send(who,@GetMysticism)) / 10) + 3);
+      return (((5 + Send(who,@GetMysticism)) / 10) + 3);
    }
 
    ReqNewOwner(what = $)
    {
       return FALSE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

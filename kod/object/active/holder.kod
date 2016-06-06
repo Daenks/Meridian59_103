@@ -30,8 +30,8 @@ messages:
    Delete()
    {
       % Kill off the inventory, too
-      send(self,@DeleteHolding);
-      
+      Send(self,@DeleteHolding);
+
       propagate;
    }
 
@@ -64,31 +64,32 @@ messages:
 
    PossessesA(class = $)
    {
-      local i,each_obj;
-      
+      local i, each_obj;
+
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isclass(each_obj,class)
+         if IsClass(each_obj,class)
          {
             return TRUE;
          }
       }
-      
+
       return FALSE;
    }
 
    FindHolding(class = &Object, sequence = 1)
-   "Finds the 'sequence'th (default first) entry of type 'class' in the passive list."
+   "Finds the 'sequence'th (default first) entry of type 'class' "
+   "in the passive list."
    {
       local i, each_obj, iFound;
 
       iFound = sequence;
-      
+
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isclass(each_obj,class)
+         if IsClass(each_obj,class)
          {
             if iFound <= 1
             {
@@ -96,25 +97,26 @@ messages:
             }
             else
             {
-               iFound = iFound - 1;
+               --iFound;
             }
          }
       }
-      
+
       return $;
    }
-   
+
    FindHoldingActive(class = &Object, sequence = 1)
-   "Finds the 'sequence'th (default first) entry of type 'class' in the active list."
+   "Finds the 'sequence'th (default first) entry of type 'class' "
+   "in the active list."
    {
       local i, each_obj, iFound;
-      
+
       iFound = sequence;
-      
+
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isclass(each_obj,class)
+         if IsClass(each_obj,class)
          {
             if iFound <= 1
             {
@@ -122,11 +124,11 @@ messages:
             }
             else
             {
-               iFound = iFound - 1;
+               --iFound;
             }
          }
       }
-      
+
       return $;
    }
 
@@ -152,14 +154,14 @@ messages:
             return TRUE;
          }
       }
-      
+
       return FALSE;
    }
 
    CountHoldingHowMany(class = $)
    "Does not count quantity in a numbitem (500 apples counts as 1)"
    {
-      local n,i,each_obj;
+      local n, i, each_obj;
 
       if class = $
       {
@@ -171,18 +173,18 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isClass(each_obj, class)
+         if IsClass(each_obj, class)
          {
-            n = n + 1;
+            ++n;
          }
       }
 
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if isClass(each_obj, class)
+         if IsClass(each_obj, class)
          {
-            n = n + 1;
+            ++n;
          }
       }
 
@@ -198,18 +200,18 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if send(each_obj,@IsSummoned)
+         if Send(each_obj,@IsSummoned)
          {
-            n = n + 1;
+            ++n;
          }
       }
 
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if send(each_obj,@IsSummoned)
+         if Send(each_obj,@IsSummoned)
          {
-            n = n + 1;
+            ++n;
          }
       }
 
@@ -220,7 +222,7 @@ messages:
    {
       return viBulk_hold_max;
    }
-   
+
    GetWeightMax()
    {
       return viWeight_hold_max;
@@ -279,8 +281,8 @@ messages:
       }
 
       if NOT Send(what,@ReqNewOwner,#what=self)
-         OR NOT send(self,@CanHoldWeightAndBulk,#weight=send(what,@GetWeight),
-                     #bulk=send(what,@GetBulk))
+         OR NOT Send(self,@CanHoldWeightAndBulk,#weight=Send(what,@GetWeight),
+                     #bulk=Send(what,@GetBulk))
       {
          return FALSE;
       }
@@ -298,8 +300,14 @@ messages:
    }
 
    CanHoldWeightAndBulk(weight = 0, bulk = 0)
-   "Returns whether the holder can accept the additional weight and bulk specified."
+   "Returns whether the holder can accept the additional "
+   "weight and bulk specified."
    {
+      if (Send(SYS,@GetChaosNight))
+      {
+         return TRUE;
+      }
+
       if Send(self,@GetWeightMax) <> $
          AND (((Send(self,@GetWeightHold) + weight) > Send(self,@GetWeightMax))
             AND weight <> 0)
@@ -329,9 +337,13 @@ messages:
          return $;
       }
 
-      return Send(what,@GetNumberCanHold,
-                  #weight=Bound(Send(self,@GetWeightMax)-Send(self,@GetWeightHold),0,$),
-                  #bulk=Bound(Send(self,@GetBulkMax)-Send(self,@GetBulkHold),0,$));
+      iBulk_can_hold = Bound(Send(self,@GetBulkMax)
+                           - Send(self,@GetBulkHold),0,$);
+      iWeight_can_hold = Bound(Send(self,@GetWeightMax)
+                           - Send(self,@GetWeightHold),0,$);
+
+      return Send(what,@GetNumberCanHold,#weight=iWeight_can_hold,
+                  #bulk=iBulk_can_hold);
    }
 
    NewHold(what = $)
@@ -349,7 +361,7 @@ messages:
          foreach i in plPassive
          {
             each_obj = Send(self,@HolderExtractObject,#data=i);
-            
+
             if each_obj <> what
             {
                if GetClass(what) = GetClass(each_obj)
@@ -358,6 +370,7 @@ messages:
 
                   Send(each_obj,@AddNumber,#number=Send(what,@GetNumber));
                   Send(what,@Delete);
+
                   return;
                }
             }
@@ -372,7 +385,7 @@ messages:
    NewHoldObject(what = $)
    {
       Send(self,@HolderAddNode,#node=what);
-      
+
       return;
    }
 
@@ -380,15 +393,14 @@ messages:
    "Called by something we contain when it changes bulk or weight.  "
    "Mostly number items when their number changes."
    {
-
       return;
    }
 
    ReqLeaveHold(what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
-      if not Send(what,@ReqLeaveOwner)
+      if NOT Send(what,@ReqLeaveOwner)
       {
          return FALSE;
       }
@@ -396,33 +408,35 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if not Send(each_obj,@ReqSomethingLeft,#where=self,#what=what)
+         if NOT Send(each_obj,@ReqSomethingLeft,#where=self,#what=what)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
    LeaveHold(what = $)
    {
       local i,each_obj, iRow, iCol;
-      iRow = 0; iCol = 0;
+
+      iRow = 0;
+      iCol = 0;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if each_obj = what
-         {  
-            if isClass(self,&room)
+         {
+            if IsClass(self,&Room)
             {
-               iRow=nth(i,3);
-               iCol=nth(i,4);               
+               iRow = Nth(i,3);
+               iCol = Nth(i,4);
             }
-            
+
             plActive = DelListElem(plActive,i);
-            
+
             break;
          }
       }
@@ -432,14 +446,14 @@ messages:
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if each_obj = what
          {
-            if isClass(self,&room)
+            if IsClass(self,&Room)
             {
-               iRow=nth(i,3);
-               iCol=nth(i,4);
+               iRow = Nth(i,3);
+               iCol = Nth(i,4);
             }
-            
+
             plPassive = DelListElem(plPassive,i);
-            
+
             break;
          }
       }
@@ -447,67 +461,68 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         Send(each_obj,@SomethingLeft,#where=self,#what=what,#iRow=iRow,#iCol=iCol);
+         Send(each_obj,@SomethingLeft,#where=self,#what=what,
+               #iRow=iRow,#iCol=iCol);
       }
-      
+
       return;
    }
 
    ReqSomethingEntered(where = $,what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if not Send(each_obj,@ReqSomethingEntered,#where=where,#what=what)
+         if NOT Send(each_obj,@ReqSomethingEntered,#where=where,#what=what)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
-   
+
    SomethingEntered(where = $,what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingEntered,#where=where,#what=what);
       }
-      
+
       return;
    }
-   
+
    ReqSomethingLeft(where = $,what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if not Send(each_obj,@ReqSomethingLeft,#where=where,#what=what)
+         if NOT Send(each_obj,@ReqSomethingLeft,#where=where,#what=what)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
-   
+
    SomethingLeft(where = $,what = $)
-   {      
-      local i,each_obj;
+   {
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingLeft,#where=where,#what=what);
       }
-      
+
       return;
    }
 
@@ -516,13 +531,13 @@ messages:
       local i, each_obj;
 
       %%% This MUST propagate to set owners properly
-      
+
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@OwnerChangedOwner,#what=self,#where=$);
       }
-      
+
       propagate;
    }
 
@@ -538,7 +553,7 @@ messages:
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
@@ -554,13 +569,15 @@ messages:
          {
             continue;
          }
-		 if NOT Send(each_obj,@ReqSomethingMoved,#what=what,#new_row=new_row,
-                     #new_col=new_col,#new_finerow=new_finerow,#new_finecol=new_finecol)
+
+         if NOT Send(each_obj,@ReqSomethingMoved,#what=what,#new_row=new_row,
+                     #new_col=new_col,#new_finerow=new_finerow,
+                     #new_finecol=new_finecol)
          {
-		   return FALSE;
+            return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
@@ -571,21 +588,24 @@ messages:
       local i,each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if what = each_obj or not non_monsters_only or not IsClass(each_obj,&Monster)
+         if what = each_obj
+            OR NOT non_monsters_only
+            OR NOT IsClass(each_obj,&Monster)
          {
-            Send(each_obj,@SomethingMoved,#what=what,#new_row=new_row,#new_col=new_col,
-                 #fine_row=fine_row,#fine_col=fine_col,#cause=cause,#speed=speed);
+            Send(each_obj,@SomethingMoved,#what=what,#new_row=new_row,
+                  #new_col=new_col,#fine_row=fine_row,#fine_col=fine_col,
+                  #cause=cause,#speed=speed);
          }
       }
-      
+
       return;
    }
 
    ReqSomethingDeleted(what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
@@ -595,26 +615,27 @@ messages:
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
-   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,parm4= $,
-               parm5 = $,parm6 = $,parm7 = $,parm8 = $)
+   SomeoneSaid(what = $,type = $,string = $,parm1 = $,parm2 = $,parm3 = $,
+               parm4= $, parm5 = $,parm6 = $,parm7 = $,parm8 = $)
    {
       local i,each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
+
          if Send(self,@SayRangeCheck,#talker=what,#hearer=each_obj,#type=type)
          {
             Send(each_obj,@SomeoneSaid,#what=what,#type=type,#string=string,
-                 #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
-                 #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
+                  #parm1=parm1,#parm2=parm2,#parm3=parm3,#parm4=parm4,
+                  #parm5=parm5,#parm6=parm6,#parm7=parm7,#parm8=parm8);
          }
       }
-      
+
       return;
    }
 
@@ -626,17 +647,16 @@ messages:
          return FALSE;
       }
 
-
       % if we have user->monster or monster->user and the monster is
       % not range-unlimited, and they are too far apart, return FALSE.
       % For any other case, there is no need to clip, so return TRUE.
 
-      if ( (isClass(talker,&User)
-            AND isClass(hearer,&Monster)
+      if ((IsClass(talker,&User)
+            AND IsClass(hearer,&Monster)
             AND NOT Send(hearer,@IsFullTalk))
-          OR (isClass(hearer,&User)
-              AND isClass(talker,&Monster)
-              AND (NOT Send(talker,@IsFullTalk))) )
+         OR (IsClass(hearer,&User)
+              AND IsClass(talker,&Monster)
+              AND (NOT Send(talker,@IsFullTalk))))
          AND (type <> SAY_YELL
             AND Send(talker,@SquaredDistanceTo,#what=hearer) > SAY_RADIUS)
       {
@@ -648,7 +668,7 @@ messages:
 
    ReqSomethingAttack(what = $,victim = $,use_weapon = $,stroke_obj = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       if use_weapon = $
       {
@@ -658,49 +678,52 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if not Send(each_obj,@ReqSomethingAttack,#what=what,#victim=victim,#use_weapon=use_weapon)
+
+         if NOT Send(each_obj,@ReqSomethingAttack,#what=what,#victim=victim,
+                     #use_weapon=use_weapon)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
    SomethingAttacked(what = $,victim = $,use_weapon = $,stroke_obj=$)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       if use_weapon = $
       {
          use_weapon = stroke_obj;
       }
-      
+
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         Send(each_obj,@SomethingAttacked,#what=what,#victim=victim,#use_weapon=use_weapon);
+         Send(each_obj,@SomethingAttacked,#what=what,#victim=victim,
+               #use_weapon=use_weapon);
       }
-      
+
       return;
    }
 
    SomethingKilled(what = $,victim = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingKilled,#what=what,#victim=victim);
       }
-      
+
       return;
    }
 
    ReqSomethingUse(what = $,use_item = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
@@ -710,47 +733,49 @@ messages:
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
    SomethingUsed(what = $,use_item = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingUsed,#what=what,#use_item=use_item);
       }
-      
+
       return;
    }
 
    ReqSomethingApply(what = $,use_item = $,apply_on = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if NOT Send(each_obj,@ReqSomethingApply,#what=what,#use_item=use_item,#apply_on=apply_on)
+         if NOT Send(each_obj,@ReqSomethingApply,#what=what,#use_item=use_item,
+                     #apply_on=apply_on)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
    SomethingApplied(what = $,use_item = $,apply_on = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         Send(each_obj,@SomethingApplied,#what=what,#use_item=use_item,#apply_on=apply_on);
+         Send(each_obj,@SomethingApplied,#what=what,#use_item=use_item,
+               #apply_on=apply_on);
       }
 
       return;
@@ -758,49 +783,50 @@ messages:
 
    ReqSpellCast(who = $, oSpell = $, lItems = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if NOT Send(each_obj,@ReqSpellCast,#who=who, #oSpell=oSpell, #lItems=lItems)
+         if NOT Send(each_obj,@ReqSpellCast,#who=who,#oSpell=oSpell,
+                     #lItems=lItems)
          {
             return FALSE;
          }
       }
-      
+
       return TRUE;
    }
 
    SpellCast(who = $, oSpell = $, lItems = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SpellCast,#who=who,#oSpell=oSpell,#lItems=lItems);
       }
-      
+
       return;
    }
 
    SomethingChanged(what = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingChanged,#what=what);
       }
-      
+
       return;
    }
 
    SomethingTryGo(what = $,row = $,col = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
@@ -814,27 +840,26 @@ messages:
       % Ignore passive items for now
 
       return FALSE;
-
    }
 
    SomethingShot(who = $, target = $, projectile = $, flags = 0, lighting = 0)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         Send(each_obj,@SomethingShot,#who=who,#target=target, 
-              #projectile=projectile,#flags=flags,#lighting=lighting);
+         Send(each_obj,@SomethingShot,#who=who,#target=target,
+               #projectile=projectile,#flags=flags,#lighting=lighting);
       }
-      
+
       return;
    }
 
    SomethingShotRadius(who=$,projectile=$,flags=PROJ_FLAG_NONE,
                  iLightIntensity=0,iLightColor=0,range=0,number=0,speed=0)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
@@ -849,14 +874,14 @@ messages:
 
    SomethingDidAction(what = $, action = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@SomethingDidAction,#what=what,#action=action);
       }
-      
+
       return;
    }
 
@@ -867,25 +892,27 @@ messages:
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         if Send(each_obj,@SomeoneTryUserCommand,#who=who,#command=command,#data=data)
+         if Send(each_obj,@SomeoneTryUserCommand,#who=who,#command=command,
+                  #data=data)
          {
             return TRUE;
          }
       }
-      
+
       return FALSE;
    }
 
    FirstUserEntered(what = $,new_row = $,new_col = $)
    {
-      local i,each_obj;
+      local i, each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
-         Send(each_obj,@FirstUserEntered,#what=what,#new_row=new_row,#new_col=new_col);
+         Send(each_obj,@FirstUserEntered,#what=what,#new_row=new_row,
+               #new_col=new_col);
       }
-      
+
       return;
    }
 
@@ -894,11 +921,11 @@ messages:
       local i,each_obj;
 
       foreach i in plActive
-      {     
+      {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          Send(each_obj,@LastUserLeft,#what=what);
       }
-      
+
       return;
    }
 
@@ -919,7 +946,7 @@ messages:
 
    HolderAddNode(node = $)
    {
-      local i,oThing,each_obj;
+      local i, oThing, each_obj;
 
       oThing = Send(self,@HolderExtractObject,#data=node);
 
@@ -932,7 +959,7 @@ messages:
             each_obj = Send(self,@HolderExtractObject,#data=i);
             Send(each_obj,@SomethingEntered,#where=self,#what=oThing);
          }
-         
+
          return;
       }
 
@@ -945,10 +972,10 @@ messages:
             each_obj = Send(self,@HolderExtractObject,#data=i);
             Send(each_obj,@SomethingEntered,#where=self,#what=oThing);
          }
-         
+
          return;
       }
-      
+
       Debug("Object is neither active nor passive:",oThing);
       return;
    }
@@ -964,7 +991,7 @@ messages:
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if IsClass(each_obj,&Item)
          {
-            j = j + 1;
+            ++j;
          }
       }
 
@@ -973,10 +1000,10 @@ messages:
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if IsClass(each_obj,&Item)
          {
-            j = j + 1;
+            ++j;
          }
       }
-      
+
       return j;
    }
 
@@ -987,49 +1014,46 @@ messages:
       iN_items = Send(self,@CountItems);
       if iN_items = 0
       {
-         return $ ;
+         return $;
       }
-      
+
       iGet = Random(1,iN_items);
-      
+
       j = 0;
       foreach i in plPassive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if IsClass(each_obj,&Item)
-         {  
-            j = j + 1;  
-            if j = iGet
+         {
+            if ++j = iGet
             {
                return each_obj;
             }
          }
       }
-      
+
       foreach i in plActive
       {
          each_obj = Send(self,@HolderExtractObject,#data=i);
          if IsClass(each_obj,&Item)
-         {  
-            j = j + 1;  
-            if j = iGet
+         {
+            if ++j = iGet
             {
                return each_obj;
             }
          }
       }
-      
+
       % Should never be reached
-      debug("Inconsistancy in plActive or plPassive");
-      
-      return;    
+      Debug("Inconsistancy in plActive or plPassive");
+
+      return;
    }
-   
+
    ReqTaker()
    {
       return TRUE;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

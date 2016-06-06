@@ -27,10 +27,10 @@ resources:
    wolf_dead_icon_rsc = wolfX.bgf
    wolf_dead_name_rsc = "dead wolf"
 
-   wolf_sound_hit = wolf_atkh.wav
-   wolf_sound_miss = wolf_atkh.wav
-   wolf_sound_death = wolf_dth.wav
-   wolf_sound_aware = wolf_awr.wav
+   wolf_sound_hit = wolf_atkh.ogg
+   wolf_sound_miss = wolf_atkh.ogg
+   wolf_sound_death = wolf_dth.ogg
+   wolf_sound_aware = wolf_awr.ogg
 
 classvars:
 

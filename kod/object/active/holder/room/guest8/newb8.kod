@@ -20,14 +20,14 @@ resources:
 
    room_name_Newb8 = "The Grand Museum of Raza"
 
-   Newbie8_signname = "into the realm"
+   Newbie8_signname = "Exploring the World"
    Newbie8_sign = "The teleporter near this sign will lead you to a "
       "safe town so you can start to enjoy the world of Meridian "
       "59.\n\n"  
       "At this time, it might be wise to consult some other sources "
       "of information.  Your guardian angel has sent you mail, including "
       "some hints and tips.  If you haven't read it yet, type MAIL to do "
-      "so.  Also, the Meridian help file is a treasure trove of information.\n\n"
+      "so.\n\n"
       "Finally, a last bit of parting advice: make friends.  Meridian 59 "
       "is a virtual community, and the adventurer with powerful allies "
       "is likely to last far longer than one who stands alone.\n\n"
@@ -42,7 +42,7 @@ classvars:
 
 properties:
 
-   piRoom_num = RID_Newb8
+   piRoom_num = RID_NEWB8
 
 messages:
 
@@ -56,23 +56,17 @@ messages:
    CreateStandardObjects()
    {
       local oSign;
-      
-      send(self,@NewHold,#what=Create(&NewbPortal),#new_row=2,#new_col=11,
-           #fine_row=32,#fine_col=32,#new_angle=ANGLE_SOUTH);
-      oSign=Create(&Sign,#name=newbie8_signname,#desc=newbie8_sign,#newbie=TRUE);
-      send(self,@newhold,#what=oSign,#new_row=2,#new_col=12,#fine_row=16,
-           #fine_col=16,#new_angle=ANGLE_SOUTH);
+
+      Send(self,@NewHold,#what=Create(&NewbPortal),#new_row=14,#new_col=11,
+            #fine_row=56,#fine_col=36,#new_angle=ANGLE_NORTH);
+
+      oSign = Create(&Sign,#name=newbie8_signname,
+                     #desc=newbie8_sign,#newbie=TRUE);
+      Send(self,@NewHold,#what=oSign,#new_row=15,#new_col=10,#fine_row=16,
+            #fine_col=48,#new_angle=ANGLE_SOUTH);
 
       propagate;
    }
-
-   ModifyChanceToImprove(who=$,oSpellSkill=$,chance=0)
-   "This takes a spell/skill that who is trying to advance and modifies the improve_chance."
-   {
-      % Give a general bonus to the nice newbies.
-      return (chance * 3)/2;
-   }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

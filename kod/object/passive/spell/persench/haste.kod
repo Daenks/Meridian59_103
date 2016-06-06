@@ -38,7 +38,7 @@ resources:
    Haste_spell_intro = \
       "Kraanan Lv. 2: Allows you to use less stamina as you run."
 
-   Haste_sound = khaste.wav
+   Haste_sound = khaste.ogg
 
 classvars:
 
@@ -65,6 +65,11 @@ classvars:
    vrSucceed_wav = Haste_sound
 
 properties:
+
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 90
 
 messages:
 

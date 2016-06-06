@@ -56,7 +56,7 @@ classvars:
 
 properties:
 
-   piAttack_Type = ATCK_WEAP_NONMAGIC+ATCK_WEAP_PIERCE
+   piAttack_Type = ATCK_WEAP_NONMAGIC + ATCK_WEAP_PIERCE
 
 messages:
 
@@ -81,7 +81,6 @@ messages:
       return viAmmo_type;
    }
 
-
    GetAttackType()
    {
       local iAttackType, ammotype, i;
@@ -94,14 +93,14 @@ messages:
       iAttackType = 0;
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if send(i,@GetAmmoType) = ammotype
-               { 
-                 iAttackType = send(i,@GetAttackType);
+               if Send(i,@GetAmmoType) = ammotype
+               {
+                 iAttackType = Send(i,@GetAttackType);
 
                   break;
                }
@@ -109,7 +108,7 @@ messages:
          }
       }
 
-      iAttackType = iAttackType |  piAttack_Type;
+      iAttackType = iAttackType | piAttack_Type;
 
       return iAttackType;
    }
@@ -124,17 +123,17 @@ messages:
       }
 
       iAttackType = 0;
-      ammotype = send(self,@GetAmmoType);
+      ammotype = Send(self,@GetAmmoType);
 
       if IsClass(poOwner,&User)
       {
-         foreach i in send(poOwner,@GetPlayerUsing)
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
-               { 
-                  iAttackType = send(i,@GetAttackSpell);
+               if (Send(i,@GetAmmoType) = ammotype)
+               {
+                  iAttackType = Send(i,@GetAttackSpell);
 
                   break;
                }
@@ -161,19 +160,19 @@ messages:
       }
       else
       {
-         hit_roll = hit_roll + ((viHit_roll_modifier*piHits)/piHits_Init);
+         hit_roll = hit_roll + ((viHit_roll_modifier * piHits) / piHits_Init);
       }
 
       iWeapHit = hit_roll;
 
       foreach i in plItem_Attributes
       {
-         oWeapAtt = send(SYS,@FindItemAttByNum,
-                         #num=send(self,@GetNumFromCompound,#compound=first(i)));
+         oWeapAtt = Send(SYS,@FindItemAttByNum,
+                        #num=Send(self,@GetNumFromCompound,#compound=First(i)));
          if isClass(oWeapAtt,&WeaponAttribute)
          {
-            hit_roll = send(oWeapAtt,@ModifyHitRoll,#hitroll=hit_roll,#wielder=poOwner,
-                            #target=target,#lData=i);
+            hit_roll = Send(oWeapAtt,@ModifyHitRoll,#hitroll=hit_roll,
+                              #wielder=poOwner,#target=target,#lData=i);
          }
       }
 
@@ -193,14 +192,15 @@ messages:
 
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetDamage,#who=who,#target=target);
+                  iDamage = Send(i,@GetDamage,#who=who,#target=target);
+
                   break;
                }
             }
@@ -236,14 +236,15 @@ messages:
 
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMinDamage);
+                  iDamage = Send(i,@GetMinDamage);
+
                   break;
                }
             }
@@ -266,17 +267,17 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMaxDamage);
+                  iDamage = Send(i,@GetMaxDamage);
+
                   break;
                }
             }
@@ -299,17 +300,17 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMinDamage);
+                  iDamage = Send(i,@GetMinDamage);
+
                   break;
                }
             }
@@ -318,10 +319,11 @@ messages:
 
       iDamage = (iDamage + viWeaponDamage)*100;
 
-      If IsClass(poOwner,&User)
+      if IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
+         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,
+                        #weapon_used=self)/100;
       }
       else
       {
@@ -342,29 +344,30 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMaxDamage);
+                  iDamage = Send(i,@GetMaxDamage);
+
                   break;
                }
             }
          }
       }
 
-      iDamage = (iDamage + viWeaponDamage)*100;
+      iDamage = (iDamage + viWeaponDamage) * 100;
 
-      If IsClass(poOwner,&User)
+      if IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
+         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,
+                        #weapon_used=self) / 100;
       }
       else
       {
@@ -385,17 +388,17 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMinSpecialDamage);
+                  iDamage = Send(i,@GetMinSpecialDamage);
+
                   break;
                }
             }
@@ -408,12 +411,13 @@ messages:
          return 0;
       }
 
-      iDamage = (iDamage + viWeaponDamage)*100;
+      iDamage = (iDamage + viWeaponDamage) * 100;
 
-      If IsClass(poOwner,&User)
+      if IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
+         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,
+                        #weapon_used=self) / 100;
       }
       else
       {
@@ -434,17 +438,17 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMaxSpecialDamage);
+                  iDamage = Send(i,@GetMaxSpecialDamage);
+
                   break;
                }
             }
@@ -459,10 +463,11 @@ messages:
 
       iDamage = (iDamage + viWeaponDamage)*100;
 
-      If IsClass(poOwner,&User)
+      if IsClass(poOwner,&User)
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@GetDefaultStrokeNumber));
-         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,#weapon_used=self)/100;
+         iDamage = Send(oSkill,@DamageFactors,#damage=iDamage,#who=poOwner,
+                        #weapon_used=self) / 100;
       }
       else
       {
@@ -487,14 +492,15 @@ messages:
 
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMinSpecialDamage);
+                  iDamage = Send(i,@GetMinSpecialDamage);
+
                   break;
                }
             }
@@ -523,17 +529,17 @@ messages:
 
       iDamage = 0;
 
-
       if IsClass(poOwner,&User)
       {
-         ammotype = send(self,@GetAmmoType);
-         foreach i in send(poOwner,@GetPlayerUsing)
+         ammotype = Send(self,@GetAmmoType);
+         foreach i in Send(poOwner,@GetPlayerUsing)
          {
-            if send(i,@GetItemUseType) = ITEM_USE_QUIVER
+            if Send(i,@GetItemUseType) = ITEM_USE_QUIVER
             {
-               if (send(i,@GetAmmoType) = ammotype)
+               if (Send(i,@GetAmmoType) = ammotype)
                {
-                  iDamage = send(i,@GetMaxSpecialDamage);
+                  iDamage = Send(i,@GetMaxSpecialDamage);
+
                   break;
                }
             }

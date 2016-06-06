@@ -26,10 +26,10 @@ resources:
    include barln.lkod
 
    room_name_barloquenorth = "North Barloque"
-   room_barloquenorth = barlN.roo
-   barloquenorth_music = corloth.mp3
+   room_barloquenorth = barln.roo
+   barloquenorth_music = corloth.ogg
 
-   barloquenorth_sound_rsc = down2.wav
+   barloquenorth_sound_rsc = down2.ogg
 
 classvars:
 

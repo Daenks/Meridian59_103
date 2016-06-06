@@ -8,7 +8,8 @@ OUTDIR = $(TOPDIR)\resource\graphics
 
 .SUFFIXES: .bbg
 
-DIRS = keen\
+DIRS = daenks\
+		 keen\
 		 mark \
 		 diggie \
 		 delerium \

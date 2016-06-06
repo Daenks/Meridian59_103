@@ -44,8 +44,7 @@ classvars:
    vrDesc = barloque_apothecary_desc_rsc
    viAttributes = \
       MOB_NOFIGHT | MOB_SELLER | MOB_NOMOVE | MOB_RANDOM | MOB_LISTEN \
-      | MOB_RECEIVE | MOB_TEACHER | MOB_PERM_QUESTER \
-      | MOB_LAWFUL | MOB_COND_SELLER
+      | MOB_RECEIVE | MOB_TEACHER | MOB_LAWFUL | MOB_COND_SELLER
    viOccupation = MOB_ROLE_APOTHECARY
    viMerchant_markup = MERCHANT_DISCOUNT
    viQuestID = QST_ID_FADE_SPELL
@@ -105,22 +104,6 @@ messages:
       }
 
       return;
-   }
-
-   InitPermQuest()
-   {
-      Post(Send(SYS,@GetLibrary),@CreateQuest,#type=QST_PERM,#quester=self,
-            #reward=[QST_REWARD_ID,viQuestID]);
-
-      return;
-   }
-
-   Constructor()
-   "We start a permanent quest for learning a spell" 
-   {
-      Send(self,@InitPermQuest);
-
-      propagate;
    }
 
    CanAddSpell(who=$,num=0)

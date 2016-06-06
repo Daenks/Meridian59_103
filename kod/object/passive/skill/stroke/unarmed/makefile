@@ -5,6 +5,6 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\unarmed.bof
-BOFS = punch.bof kick.bof monsstrk.bof
+BOFS = punch.bof kick.bof
 
 !include $(KODDIR)\kod.mak

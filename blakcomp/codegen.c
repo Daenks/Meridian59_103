@@ -402,30 +402,29 @@ int codegen_switch(switch_stmt_type s, int numlocals)
       case_stmt = (stmt_type)case_list->data;
       if (case_stmt->type == S_DEFAULTCASE)
          continue;
+
+      // Should always be E_CONSTANT, check anyway
+      if (case_stmt->value.case_stmt_val->condition->type != E_CONSTANT)
+         codegen_error("Case expression not a constant value on line %i!",
+            case_stmt->value.case_stmt_val->condition->lineno);
+
       for (case_list2 = s->body; case_list2 != NULL; case_list2 = case_list2->next)
       {
          case_stmt2 = (stmt_type)case_list2->data;
          if (case_stmt2 == case_stmt || case_stmt2->type == S_DEFAULTCASE)
             continue;
-         if (case_stmt->value.case_stmt_val->condition->type
-            == case_stmt2->value.case_stmt_val->condition->type)
+
+         // Should always be E_CONSTANT, check anyway
+         if (case_stmt2->value.case_stmt_val->condition->type != E_CONSTANT)
+            codegen_error("Case expression not a constant value on line %i!",
+               case_stmt2->value.case_stmt_val->condition->lineno);
+
+         if (case_stmt->value.case_stmt_val->condition->value.constval->value.numval
+            == case_stmt2->value.case_stmt_val->condition->value.constval->value.numval)
          {
-            if (case_stmt->value.case_stmt_val->condition->type == E_CONSTANT
-               && case_stmt->value.case_stmt_val->condition->value.constval->value.numval
-               == case_stmt2->value.case_stmt_val->condition->value.constval->value.numval)
-            {
-               codegen_error("Duplicate constant %i in switch statement, line %i",
-                  case_stmt->value.case_stmt_val->condition->value.constval->value.numval,
-                  s->condition->lineno);
-            }
-            if (case_stmt->value.case_stmt_val->condition->type == E_IDENTIFIER
-               && case_stmt->value.case_stmt_val->condition->value.idval->idnum
-               == case_stmt->value.case_stmt_val->condition->value.idval->idnum)
-            {
-               codegen_error("Duplicate ID %i in switch statement, line %i",
-                  case_stmt->value.case_stmt_val->condition->value.idval->idnum,
-                  s->condition->lineno);
-            }
+            codegen_error("Duplicate constant %i in switch statement, line %i",
+               case_stmt->value.case_stmt_val->condition->value.constval->value.numval,
+               s->condition->lineno);
          }
       }
    }

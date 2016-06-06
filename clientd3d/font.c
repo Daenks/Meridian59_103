@@ -179,7 +179,7 @@ void FontsCreate(Bool use_defaults)
 /************************************************************************/
 void DestroyFont(WORD font)
 {
-   if (font > MAXFONTS)
+   if (font >= MAXFONTS)
    {
       debug(("Illegal font #%u", font));
       return;
@@ -199,7 +199,7 @@ void FontsDestroy(void)
 /************************************************************************/
 HFONT GetFont(WORD font)
 {
-   if (font > MAXFONTS)
+   if (font >= MAXFONTS)
    {
       debug(("Illegal font #%u\n", font));
       return hDefaultFont;
@@ -213,7 +213,7 @@ HFONT GetFont(WORD font)
  */
 Bool SetFont(WORD font, LOGFONT *lf)
 {
-   if (font > MAXFONTS)
+   if (font >= MAXFONTS)
    {
       debug(("Illegal font #%u\n", font));
       return False;
@@ -274,7 +274,7 @@ void UserSelectFont(WORD font)
    CHOOSEFONT cf;
    LOGFONT newfont;
 
-   if (font > MAXFONTS)
+   if (font >= MAXFONTS)
    {
       debug(("Illegal font #%u", font));
       return;

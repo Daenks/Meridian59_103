@@ -30,14 +30,13 @@ resources:
    discordance_name_rsc = "discordance"
    discordance_icon_rsc = idiscord.bgf
    discordance_desc_rsc = \
-      "Magical energy is unleashed "
-      "which tries to destroy magical enchantments on the room.  "
-      "Requires sapphires to cast."
-   
+      "Magical energy is unleashed which tries to destroy magical "
+      "enchantments on the room.  Requires two sapphires to cast."
    discordance_on = \
-      "The fabric of space twists subtly, just enough to damage the brittle mana field."
+      "The fabric of space twists subtly, just enough to damage the "
+      "brittle mana field."
 
-   discordance_sound = kdiscord.wav
+   discordance_sound = kdiscord.ogg
 
 classvars:
 
@@ -55,7 +54,11 @@ classvars:
    viChance_To_Increase = 15
    viMeditate_ratio = 50
 
+   vbIsAreaEffect = TRUE
+
 properties:
+
+   pbAllowEmptyCast = TRUE
 
 messages:
 
@@ -74,12 +77,15 @@ messages:
 
    CanPayCosts(who=$)
    {
-      if send(send(who,@GetOwner),@GetEnchantmentList) = $
-         AND send(who,@GetRadiusEnchantments) = $
+      if NOT pbAllowEmptyCast
+         AND Send(Send(who,@GetOwner),@GetEnchantmentList) = $
+         AND Send(who,@GetRadiusEnchantments) = $
       {
-         Send(who, @MsgSendUser, #message_rsc=spell_bad_location, #parm1=vrName);
+         Send(who,@MsgSendUser,#message_rsc=spell_bad_location,#parm1=vrName);
+
          return FALSE;
       }
+
       propagate;
    }
 
@@ -87,11 +93,11 @@ messages:
    {
       local oRoom, i, lState;
 
-      if isClass(who,&Room)
+      if IsClass(who,&Room)
       {
          %% this way a room can automatically discord.
          oRoom = who;
-      }    
+      }
       else
       {
          oRoom = Send(who,@GetOwner);
@@ -102,10 +108,11 @@ messages:
       {
          if GetClass(who) = &DM
          {
-            debug(send(who,@GetTrueName)," cast discordance in ",send(oRoom,@GetName));
+            Debug(Send(who,@GetTrueName)," cast discordance in ",
+                  Send(oRoom,@GetName));
          }
 
-         if send(who,@PlayerIsImmortal)
+         if Send(who,@PlayerIsImmortal)
          {
             % If they're immortal, let them clear everything.
             iSpellPower = $;
@@ -120,22 +127,24 @@ messages:
          if iSpellPower = $
             OR Random(1,100) < iSpellPower
          {
-            Send(Nth(i,1),@CancelRadiusEnchantment,#source=Nth(i,3),#event=EVENT_STEER);
+            Send(First(i),@CancelRadiusEnchantment,#source=Nth(i,3),
+                  #event=EVENT_STEER);
          }
       }
-      
-      if not IsClass(who,&Player)
+
+      if NOT IsClass(who,&Player)
       {
          return;
       }
-           
+
       propagate;
    }
 
    DoDiscordance(oRoom = $,iChance = $)
    "Remove enchantments in the room with a given chance to remove each one."
    {
-      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment, oSpell, bRemovedSomething;
+      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment,
+            oSpell, bRemovedSomething;
 
       if oRoom = $
       {
@@ -152,43 +161,41 @@ messages:
       }
 
       bRemovedSomething = FALSE;
-      lEnchantments = send(oRoom,@GetEnchantmentList);
-      iNumEnchantments = length(lEnchantments);
+      lEnchantments = Send(oRoom,@GetEnchantmentList);
+      iNumEnchantments = Length(lEnchantments);
 
       % Anti-clumpy code: If dispell is greater than 60%, then auto-remove one enchantment.
       if iNumEnchantments >= MIN_ENCHANTMENTS_FOR_AUTOREMOVE
          AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
       {
-         oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
+         oEnchantment = Nth(lEnchantments,Random(1,iNumEnchantments));
          Send(oRoom,@RemoveEnchantment,#what=Nth(oEnchantment,2));
          bRemovedSomething = TRUE;
 
          % Re-get the information
-         lEnchantments = send(oRoom,@GetEnchantmentList);
-         iNumEnchantments = length(lEnchantments);
+         lEnchantments = Send(oRoom,@GetEnchantmentList);
+         iNumEnchantments = Length(lEnchantments);
       }
 
       foreach oEnchantment in lEnchantments
       {
          oSpell = Nth(oEnchantment,2);
          iModifiedChance = iChance;
-         if send(oSpell,@GetSchool) = SS_JALA
+         if Send(oSpell,@GetSchool) = SS_JALA
          {
             % Only half chance to discord a Jala song
             iModifiedChance = (iModifiedChance * JALA_PERCENT) / 100;
          }
          
-         if iChance = $ OR iModifiedChance > random(1,100)
+         if iChance = $ OR iModifiedChance > Random(1,100)
          {
             Send(oRoom,@RemoveEnchantment,#what=oSpell);
             bRemovedSomething = TRUE;
          }
       }
-      
-      return bRemovedSomething;
-   }   
 
+      return bRemovedSomething;
+   }
 
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -164,5 +164,38 @@ messages:
       propagate;
    }
 
+   PrintRoom()
+   "Prints the wanderer's name, and the names of the rooms the "
+   "wanderer can visit."
+   {
+      local i, iCount, iLength, oRoom;
+
+      iLength = Length(plDestinations);
+      iCount = 1;
+
+      ClearTempString();
+
+      foreach i in plDestinations
+      {
+         oRoom = Send(SYS,@FindRoomByNum,#num=First(i));
+         if (oRoom = $)
+         {
+            ++iCount;
+
+            continue;
+         }
+
+         AppendTempString(Send(oRoom,@GetName));
+         if (iCount++ < iLength)
+         {
+            AppendTempString(", ");
+         }
+      }
+
+      GodLog("NPC: ",Send(self,@GetName),", Maps: ",GetTempString());
+
+      return;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

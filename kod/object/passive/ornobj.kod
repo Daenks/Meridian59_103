@@ -388,6 +388,9 @@ resources:
    oo_bones_desc = \
       "These are the splintered, well-gnawed remains of some unlucky, and probably unwise, "
       "explorer.  You shudder to think of the fate that must have befallen this poor soul."
+   oo_bones_raza_desc = \
+      "This pile of bones is no doubt the result of a dead body that has "
+      "been decomposing for dozens of Meridian years."
 
    oo_nestobj1_name = "mound of dirt"
    oo_nestobj1_icon = nestobj1.bgf
@@ -730,7 +733,13 @@ resources:
    oo_vjournal_name = "dusty journal"
    oo_vjournal_icon = book1.bgf
    oo_vjournal_desc = "A dusty journal containing the inventory of the vault."
-   
+
+   oo_mummy_name = "mummified corpse"
+   oo_mummy_icon = mummyX.bgf
+   oo_mummy_desc = \
+      "The spectral mummies that haunt this crypt were once simple "
+      "mummified corpses like this one."
+
 classvars:
 
 properties:
@@ -738,6 +747,7 @@ properties:
    vrName = $
    vrIcon = $
    vrDesc = $
+   vrInsc = $
 
    pbHanging = FALSE
    pbNoMoveOn = FALSE
@@ -749,26 +759,27 @@ properties:
 
 messages:
 
-   Constructor(type=0, rName=$, rIcon=$, rDesc=$)
+   Constructor(type=0, rName=$, rIcon=$, rDesc=$, rInsc = $)
    {
       if (type = 0) AND (rName = $ OR rIcon = $ OR rDesc = $)
       {
-         debug("Not assigned an id!");
+         Debug("Not assigned an id!");
 
          return;
       }
 
       if type <> 0
       {
-         send(self,@ResetObjectType,#type=type,#const=TRUE);
+         Send(self,@ResetObjectType,#type=type,#const=TRUE);
       }
       else
       {
          vrName = rName;
          vrIcon = rIcon;
          vrDesc = rDesc;
+         vrInsc = rInsc;
       }
-      
+
       piType = type;
 
       propagate;
@@ -778,7 +789,24 @@ messages:
    {
       return piType;
    }
-   
+
+   HasInscription()
+   {
+      return (vrInsc <> $);
+   }
+
+   GetInscription()
+   {
+      return vrInsc;
+   }
+
+   ShowInscription()
+   {
+      AddPacket(4, vrInsc);
+
+      return;
+   }
+
    GetObjectFlags()
    {
       local f;
@@ -1316,6 +1344,19 @@ messages:
          vrDesc = oo_vjournal_desc;
       }
 
+      if type = OO_BONES_RAZA
+      {
+         vrName = oo_bones_name;
+         vrIcon = oo_bones_icon;
+         vrDesc = oo_bones_raza_desc;
+      }
+
+      if type = OO_MUMMY
+      {
+         vrName = oo_mummy_name;
+         vrIcon = oo_mummy_icon;
+         vrDesc = oo_mummy_desc;
+      }
 
       %% tell the room we changed, unless this is in constructor
       if (NOT const) AND poOwner <> $

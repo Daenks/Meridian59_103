@@ -49,6 +49,7 @@ resources:
       "of %d uses with %d power."
    spellitem_cannot_use_yet = "You cannot use that item yet."
    spellitem_disabled = "This item is currently disabled."
+   spellitem_no_mana = "You don't have enough mana left to use %s%s!"
 
 classvars:
 
@@ -117,12 +118,9 @@ messages:
          {
             model = $;
          }
-         else
+         else if Send(model,@IsLabelled)
          {
-            if Send(model,@IsLabelled)
-            {
-               vrName = vrLabelName;
-            }
+            vrName = vrLabelName;
          }
       }
 
@@ -151,9 +149,9 @@ messages:
 
          piSkill = Bound(((Ability / 25) + 1),1,4);
          if piSkill = 1 { piLabelColor = XLAT_TO_GREEN; }
-         if piSkill = 2 { piLabelColor = XLAT_TO_YELLOW; }
-         if piSkill = 3 { piLabelColor = XLAT_TO_PURPLE; }
-         if piSkill = 4 { piLabelColor = XLAT_TO_RED; }
+         else if piSkill = 2 { piLabelColor = XLAT_TO_YELLOW; }
+         else if piSkill = 3 { piLabelColor = XLAT_TO_PURPLE; }
+         else if piSkill = 4 { piLabelColor = XLAT_TO_RED; }
       }
 
       if viColor <> $
@@ -194,10 +192,10 @@ messages:
       }
 
       % Prevent use if you can't fight.
-      if IsClass(what,&Player)
+      if IsClass(what,&User)
       {
          if Send(what,@CheckPlayerFlag,#flag=PFLAG_NO_FIGHT)
-            OR (IsClass(apply_on,&Player)
+            OR (IsClass(apply_on,&User)
                AND Send(apply_on,@IsInCannotInteractMode))
          {
             return FALSE;
@@ -236,9 +234,39 @@ messages:
    "Casts the spell set by the spell object"
    {
       local oSpell, iSpellPower, iRand, iInt, lTargets, lRadiusState,
-            oModifierSpell, iSPLoss;
+            oModifierSpell, iSPLoss, oRoom, iCost;
 
       oSpell = Send(SYS,@FindSpellByNum,#num=viSpellEffect);
+
+      % Karma check?
+      if pbCheckKarma AND NOT Send(oSpell,@KarmaCheck,#who=poOwner)
+      {
+         Post(what,@MsgSendUser,#message_rsc=SpellItem_bad_karma,
+               #parm1=Send(self,@GetDef),#parm2=Send(self,@GetName));
+
+         return;
+      }
+
+      if piSpellPower = $
+      {
+         iSpellPower = Random(piMinSpellPower,piMaxSpellPower);
+      }
+      else
+      {
+         iSpellpower = piSpellpower;
+      }
+
+      // Mana check
+      iCost = Send(oSpell,@GetManaCost,#who=what,#iSpellPower=iSpellPower,
+                     #bItemCast=TRUE);
+      if (iCost > 0
+         AND Send(what,@GetMana) < iCost)
+      {
+         Send(what,@MsgSendUser,#message_rsc=spellitem_no_mana,
+               #parm1=Send(self,@GetDef),#parm2=Send(self,@GetName));
+
+         return;
+      }
 
       % Get proper targets according to spell, assume that apply_on is our basic target.
       lTargets = Send(oSpell,@GetTargets,#who=what,#lTargets=[apply_on]);
@@ -250,33 +278,14 @@ messages:
          return;
       }
 
-      % Karma check?
-      if pbCheckKarma AND NOT Send(oSpell,@KarmaCheck,#who=poOwner)
-      {
-         Post(what,@MsgSendUser,#message_rsc=SpellItem_bad_karma,
-               #parm1=Send(self,@GetDef),
-               #parm2=Send(self,@GetName));
+      oRoom = Send(poOwner,@GetOwner);
 
-         return;
-      }
-
-      if piSpellPower = $
+      // AMA modifies item spellpower.
+      if Send(oRoom,@CheckRoomFlag,#flag=ROOM_ANTI_MAGIC)
       {
-         iSpellPower = random(piMinSpellPower,piMaxSpellPower);
-      }
-      else
-      {
-         iSpellpower = piSpellpower;
-      }
-
-      % AMA modifies item spellpower.
-      lRadiusState = Send(poOwner,@GetMostPowerfulRadiusEnchantmentState,
-                           #byClass=&AntiMagicAura);
-      if lRadiusState <> $
-      {
-         iSpellPower = Send(First(lRadiusState),@ModifySpellpower,#who=poOwner,
-                              #oSpell=oSpell,#state=lRadiusState,
-                              #iSpellPower=iSpellPower);
+         oModifierSpell = Send(SYS,@FindSpellByNum,#num=SID_ANTIMAGIC_AURA);
+         iSpellPower = Send(oModifierSpell,@ModifySpellPower,
+                              #oRoom=oRoom,#oSpell=oSpell);
       }
 
       % Mana convergence adds spellpower.
@@ -308,6 +317,7 @@ messages:
                    OR Send(Send(what,@GetOwner),@ReqSomethingAttack,#what=what,
                             #victim=apply_on)) )
       {
+         Send(what,@LoseMana,#amount=iCost);
          Send(oSpell,@CastSpell,#who=poOwner,#lTargets=lTargets,
                #iSpellPower=iSpellPower,#bItemCast=TRUE);
       }

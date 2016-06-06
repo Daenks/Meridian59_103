@@ -4,7 +4,7 @@ apothecaryqt_desc_rsc = de \
    "Ein Apotheker hat nichts mehr im Lager. Bringe ihm etwas für sein Lager"
 
 apothecaryqt_deliver_rsc = de \
-   "%s%s benötigt %i %s, also hat %s%s danach gefragt sie zu %s zu liefern.  "
+   "%s%s benötigt %i %s. Also hat %s%s danach gefragt sie Ihm%s zu liefern.  "
    "Behalte nichts für dich, denn sonst wirst Du bestraft!"
 
 apothecaryqt_completed_rsc = de \
@@ -12,7 +12,7 @@ apothecaryqt_completed_rsc = de \
 
 % Quest resources.
 apothecary_assign_2 = de \
-   "%NPC benötigt diese %INDEF_CARGO%CARGO, bitte überbringe sie %HIMHER_NPC.  "
+   "%NPC benötigt diese %INDEF_CARGO%CARGO, bitte überbringe sie%HIMHER_NPC.  "
    "Diebstahl in jeglicher Form wird dazu führen, dass Du als Gesetzesloser "
    "deklariert wirst.  Ich habe mit %NPC eine Vereinbarung getroffen, dass "
    "er Dich für deine Zeit bezahlt.  Du hast einen Meridian Tag um die Waren "
@@ -26,7 +26,7 @@ apothecary_success_2 = de \
    "Vielen dank, für Deine schnelle Lieferung.  Das Geschäft boomt in letzter "
    "Zeit!  Ich wundere mich warum?  Na ja, hier ist deine Bezahlung.  Vielleicht "
    "kommst Du später mal wieder um diesen Dienst noch einmal durchzuführen.  "
-   "Du hast mir in der meiner Beziehung zu %SOURCE_NPC geholfen."
+   "Du hast mir in meiner Beziehung zu %SOURCE_NPC geholfen."
 apothecary_failure_2 = de \
    "Betreff: Dieb!\nDein Diebstahl von %INDEF_CARGO%CARGO hat Dich als Gesetzesloser "
    "deklariert."

@@ -28,7 +28,7 @@ resources:
       "one dedicated destination of their choosing."
       "Requires four dark angel feathers to cast."
 
-   DeathRift_sound = qdthdoor.wav
+   DeathRift_sound = qdthdoor.ogg
 
    DeathRift_no_angeled = \
       "You cannot call upon such an evil pact while your guardian "
@@ -60,7 +60,7 @@ classvars:
    viSpell_level = 6
    viMana = 20
    viSpellExertion = 15
-   viCast_time = 60000
+   viCast_time = 15000
 
    viChance_To_Increase = 10
    viMeditate_ratio = 100

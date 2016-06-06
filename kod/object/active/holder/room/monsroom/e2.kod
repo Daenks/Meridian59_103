@@ -19,8 +19,8 @@ resources:
    include e2.lkod
 
    room_name_OutdoorsE2 = "The Great Ocean"
-   room_OutdoorsE2 = E2.roo
-   OutdoorsE2_music = walk7.mp3
+   room_OutdoorsE2 = e2.roo
+   OutdoorsE2_music = walk7.ogg
 
    E2_oceanwalk = \
       "You decide you don't like saltwater enough to go swimming "
@@ -36,8 +36,8 @@ classvars:
 
    viTerrain_type = TERRAIN_FOREST | TERRAIN_BEACH
 
-   viFlag_row = 36
-   viFlag_col = 51
+   viFlag_row = 63
+   viFlag_col = 5
 
    viWeatherZone = WEATHER_ZONE_BARLOQUE
 
@@ -55,10 +55,11 @@ properties:
    pbSnowGroundTexture = TRUE
 
    piGen_time = 20000
-   piGen_percent = 70
+   piGen_percent = 100
 
-   piInit_count_min = 2
+   piInit_count_min = 3
    piInit_count_max = 5
+   piMonster_count_max = 15
 
 messages:
 

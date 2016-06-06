@@ -30,7 +30,9 @@ resources:
    "Unorthodox and ornate, this choker is wondrous to look at, but it doesn't "
    "look like much fun to wear."
 
-   RiijaCharm_whisper = "A voice whispers, \"~I...the key to making mischief is being smart enough to avoid the consequences...\""
+   RiijaCharm_whisper = \
+      "A voice whispers, \"~I...the key to making mischief is being smart "
+      "enough to avoid the consequences...\""
 
 classvars:
 
@@ -47,8 +49,8 @@ classvars:
    viGround_group = 2
 
 properties:
-   
-   pbIn_use = False
+
+   pbIn_use = FALSE
 
    piIntellect_change = INTELLECT_CHANGE
    piAgility_change = AGILITY_CHANGE
@@ -60,49 +62,59 @@ messages:
    Constructor()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewOwner()
    {
       piDisp_hits = viMax_disp_hits;
+
       propagate;
    }
 
    NewUsed(what = $)
-   "When the charm is put on, the wearer gets a moderate bonus to both Intellect and Agility."
+   "When the charm is put on, the wearer gets a moderate bonus to both "
+   "Intellect and Agility."
    {
-      piAgility_change = send(what,@addAgility,#points=AGILITY_CHANGE);
-      piIntellect_change = send(what,@addIntellect,#points = INTELLECT_CHANGE);
+      piAgility_change = Send(what,@AddAgility,#points=AGILITY_CHANGE);
+      piIntellect_change = Send(what,@AddIntellect,#points = INTELLECT_CHANGE);
 
-      if random(1,5) = 3   %% 20% chance
-        {
-          send(what,@msgsenduser,#message_rsc=RiijaCharm_whisper);
-        }
+      if Random(1,5) = 3   %% 20% chance
+      {
+         Send(what,@MsgSendUser,#message_rsc=RiijaCharm_whisper);
+      }
+
       propagate;
    }
 
    NewUnused(what = $)
    "When something that can break the curse unuses the item"
    {
-      send(what,@addAgility,#points=-piAgility_change);
-      send(what,@addIntellect,#points = -piIntellect_change);
+      Send(what,@AddAgility,#points=-piAgility_change);
+      Send(what,@AddIntellect,#points=-piIntellect_change);
+
       propagate;
    }
 
    DestroyDisposable()
    {
       if piDisp_Hits = 0
-        {
-           send(self,@delete);
+      {
+           Send(self,@Delete);
+
            return;
-        }
-      piDisp_hits = piDisp_hits - 1;
+      }
+      --piDisp_hits;
+
       return;
+   }
+
+   GetMinimapDotFlags()
+   {
+      // Special item, add minimap dot.
+      return MM_RARE_ITEM;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-

@@ -15,12 +15,14 @@ constants:
    include blakston.khd
 
 classvars:
-   
+
    viDefinite = ARTICLE_NONE
    viIndefinite = ARTICLE_NONE
 
    % Mob doesn't move and cannot be attacked.
    viDefault_behavior = AI_NPC | AI_NOMOVE
+
+   viObject_flags = OF_ATTACKABLE | OF_DISPLAY_NAME | OF_NPC
 
    viSpeed = SPEED_SLOW
    viQuestID = 0
@@ -32,25 +34,11 @@ classvars:
    viMyFR = 32
    viMyFC = 32
 
+properties:
+
+   piNameColor = NC_NPC
+
 messages:
-
-   InitPermQuest()
-   {
-      if viQuestID<> 0
-      {
-         Post(Send(SYS,@GetLibrary),@CreateQuest,#type=QST_PERM,#quester=self,
-               #reward= [QST_REWARD_SERVICE,viQuestID]);
-      }
-
-      return;
-   }
-
-   Constructor()
-   {
-      Send(self,@InitPermQuest);
-      
-      propagate;
-   }
 
    Delete()
    {

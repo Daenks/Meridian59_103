@@ -22,7 +22,6 @@ resources:
    bluemushroom_icon_rsc = mushroom.bgf
    bluemushroom_desc_rsc = \
       "These magical mushrooms pulse with energy."
-
    bluemushroom_name_plural_rsc = "blue mushrooms"
 
 classvars:
@@ -45,11 +44,11 @@ messages:
 
    Constructor()
    {
-      piItem_flags = send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_BLUE,#color2=XLAT_TO_BLUE);
-      
+      piItem_flags = Send(SYS,@EncodeTwoColorXLAT,#color1=XLAT_TO_BLUE,
+                           #color2=XLAT_TO_BLUE);
+
       propagate;
    }
-
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

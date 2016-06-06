@@ -29,7 +29,7 @@ resources:
       "This dark spell feeds off the souls of any poor creature that should "
       "happen to fall in your vicinity.  Any lives you take are merely "
       "transfers of energy - good and evil mean nothing.  Requires a vial "
-      "of shaman blood and a single polished seraphym to cast."
+      "of shaman blood and a dark angel feather to cast."
    
    deathlink_already_enchanted_rsc = \
       "You are already linked with death."
@@ -38,7 +38,7 @@ resources:
    deathlink_off_rsc = "Your link to death dissipates."
    deathlink_feed_rsc = "You feed on the life force of the fallen."
 
-   deathlink_sound = qdeathlk.wav
+   deathlink_sound = qdeathlk.ogg
 
 classvars:
 
@@ -65,15 +65,27 @@ classvars:
 
 properties:
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 40
+
 messages:
 
    ResetReagents()
    {
       plReagents = $;
       plReagents = Cons([&ShamanBlood,1],plReagents);
-      plReagents = Cons([&PolishedSeraphym,1],plReagents);
+      plReagents = Cons([&DarkAngelFeather,1],plReagents);
 
       return;
+   }
+
+   GetStateValue(iSpellpower=$,target=$,who=$)
+   {
+      Send(target,@AddAttackModifier,#what=self);
+
+      return iSpellpower;
    }
 
    CastSpell(who=$,iSpellPower=0,lTargets=$)
@@ -85,13 +97,6 @@ messages:
       }
 
       propagate;
-   }
-
-   GetStateValue(iSpellpower=$,target=$,who=$)
-   {
-      Send(target,@AddAttackModifier,#what=self);
-
-      return iSpellpower;
    }
 
    GiveKilledBenefits(caster=$,victim=$)

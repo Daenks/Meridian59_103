@@ -34,7 +34,7 @@ properties:
    piItemFactor = 100
 
    % Modifier to the chance for items to be generated.
-   piMagicItemModifier = 100
+   piMagicItemModifier = 50
 
    % Changed the wait for monsters to spawn.  A decrease means things
    %  spawn faster (less time waiting between spawns).
@@ -47,7 +47,7 @@ properties:
    % If true, you can't take any objects out of the newbie area.
    pbCleanNewbieInventoryOnEnteringRealWorld = FALSE
 
-   piKillKarmaSwingNeutral = 2
+   piKillKarmaSwingNeutral = 3
    piKillKarmaSwingMonster = 6
    piKillKarmaSwingPlayer = 10
 
@@ -59,7 +59,7 @@ properties:
    pbStatsResetEnabled = TRUE
    piStatsResetPenalty = -2
    piFreeStatsResetCap = 19
-   piStatResetTokenLife = 2
+   piStatResetTokenLife = 40
 
    % Stat reset token has a 1 in (piStatResetTokenDropFactor / monster_level)
    % chance to drop, with monster_level bound between 50 and 150.
@@ -79,17 +79,14 @@ properties:
    piAdvancementRate = 100
 
    % The training points we grant players each day to reward them for logging on.
-   piLogonBonus = 200
+   piLogonBonus = 50
 
-   % Multiplier for the amount of %s each mob you kill adds to your levelup chance.
-   piHPGainMultiplier = 1
+   % XP percent awarded, can be raised to give a bonus.
+   piXPPercent = 100
    
    % How far up the food chain can basic players learn?  See player for more
    %  specific information on what this number means.
    piMaxLearnPoints = 16
-
-   % Do building group member kills allow tougher rolls?
-   pbGroupToughers = FALSE
 
    % The default time for building group membership.
    piDefaultGroupTime = 60000
@@ -98,6 +95,10 @@ properties:
    % help. Prevents people making mistakes in a fit of rage, or suiciding
    % hacked accounts.
    piMaxSuicideHP =  60
+
+   // FALSE if newbies never drop loot, TRUE if they do if they don't have
+   // the "new to the lands" tag.
+   pbNewbiesDropLoot = FALSE
 
    %
    % Spell settings
@@ -117,17 +118,17 @@ properties:
    piTeleportAttackDelaySec = 240
 
    % Rescue always takes at least this long to cast
-   piRescueBaseDelaySec = 15
-
-   % Time in milliseconds that ghosts will last before taking a penalty
-   piLogoffPenaltyGhostTime = 480 * 1000
-
-   % Time in milliseconds that outlaw / murderer ghosts will last before taking a penalty
-   piOutlawMurdererLogoffPenaltyGhostTime = 180 * 1000
+   piRescueBaseDelaySec = 5
 
    % If true, spellpower and duration are displayed for all spells cast.
    pbDisplaySpellData = FALSE
-   
+
+   % If true, JoF regains hits when players kill mobs.
+   pbFrozRechargeOnKill = TRUE
+
+   // Spell items cost this much compared to casting the actual spell.
+   piItemManaCostPct = 75
+
    %
    % Guild hall settings
    %
@@ -152,7 +153,50 @@ properties:
    
    % Maximum amount of tokens in the movement bucket
    piMovementBucketMax = 15000000
-   
+
+   //
+   // Penalties
+   //
+
+   //If enabled, unsafe penalties send the player to their last safe place.
+   // This is intended to prevent being players 'kept offline' by enemies.
+   pbReturnToSafetyPenaltiesEnable = TRUE
+
+   // If enabled, unsafe penalties send angeled players to their last safe
+   // place. This is intended to prevent being players 'scouting' with mules.
+   pbAngelReturnToSafetyPenaltiesEnable = TRUE
+
+   // If this is enabled a player will lose half their mana and all buffs
+   // when they log off in a safe zone. This is to prevent 'character trains'
+   // with pre-buffed characters
+   pbLogSafePenaltyEnable = FALSE
+
+   // If enabled, logoff penalties do not rise exponentially, and instead
+   // remain flat. Separate booleans for red/white players, orange handled
+   // as white.
+   pbFlatPenaltiesWhite = TRUE
+   pbFlatPenaltiesRed = TRUE
+
+   // Possible to lose XP if a penalty is harsh enough?
+   pbLoseXPOnPenalty = TRUE
+
+   // Time in milliseconds that ghosts will last before taking a penalty
+   piLogPenGhostTime = 480 * 1000
+
+   // Time in milliseconds that outlaw / murderer ghosts will last
+   // before taking a penalty
+   piOutlawMurdererLogPenGhostTime = 180 * 1000
+
+   // Seconds for which we consider the player 'active' in PvP. This includes
+   // attacking or being attacked.
+   piRecentPvPTimeSec = 900
+
+   // Booleans for whether we bypass the pen system for players who have not
+   // participated in PvP in piRecentPvPTimeSec seconds. White and red handled
+   // separately, orange players handled as white.
+   pbFreeNoPvPPenActiveWhite = TRUE
+   pbFreeNoPvPPenActiveRed = TRUE
+
    %
    % Miscellaneous
    %
@@ -172,18 +216,6 @@ properties:
 
    % Cost for Caramo to change a player's name.
    piNameChangeCost = 3000000
-
-   % If enabled, unsafe penalties send the player to their last safe place.
-   % This is intended to prevent being players 'kept offline' by enemies.
-   pbReturnToSafetyPenaltiesEnable = TRUE
-   
-   % If enabled, unsafe penalties send angeled players to their last safe place.
-   % This is intended to prevent being players 'scouting' with mules.
-   pbAngelReturnToSafetyPenaltiesEnable = TRUE
-   
-   % If this is enabled a player will lose half their mana and all buffs when they log off in a safe zone.
-   % This is to prevent 'character trains' with pre-buffed characters
-   pbLogSafePenaltyEnable = FALSE
 
    % If disabled, outlaws & murderers will not be afforded the 1/3-hp damage cap protection.
    pbDamageCapProtectionMurderersEnable = FALSE
@@ -208,25 +240,19 @@ properties:
    piIntrigueEnableHP = 50
    
    % If set to true, Resist Rings will lose durability upon taking an appropriate elemental hit.
-   piResistRingLoseDurability = FALSE
-
-   % If enabled, logoff penalties do not rise exponentially, and instead remain flat
-   pbFlatPenalties = TRUE
+   piResistRingLoseDurability = TRUE
 
    % Length of hold effect players experience when logging or phasing in
    piLogonDelay = 2500
    
    % Length of time the temporary guardian angel lasts, in minutes
-   piTempSafeMinutes = 180
+   piTempSafeMinutes = 360
 
    % Revenant speed setting
    piRevSpeed = 18
 
-   % Alternate Justicar system - buying a pardon with an indulgence
-   % is now possible for a flat fee (initially 1 million).
-   piPardonIndulgenceCost = 1000000
-
-   % The divisor for all skill post-softcap imp rates. Higher means harder. One means softcaps don't matter at all.
+   % The divisor for all skill post-softcap imp rates. Higher means harder.
+   % One means softcaps don't matter at all.
    piSkillSoftcapPenalty = 5
 
    % The divisor for all spell post-softcap imp rates.
@@ -245,56 +271,32 @@ properties:
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
 
-   % Jasper vault access
-   pbJasperVault = FALSE
-
-   % chance for stormy weather
-   piStormChance = 25
-
-   % If this is set to true, soldier shields will give their specialized
-   % bonuses under all conditions. If it is false, they will only apply
-   % when attacking or being attacked by another soldier to prevent
-   % scenario overlap.
-   pbAlwaysApplySoldierBonus = TRUE
+   % Chance for stormy weather
+   piStormChance = 15
 
    % Setting to allow users to remove their own posts.
    pbCanUserRemoveOwnPosts = TRUE
 
+   % How many rods can be picked up at one time.
+   piRodMax = 5
+
+   % Do safe rooms recharge rods?
+   pbInnsRechargeRods = FALSE
+
+   // Determines whether players lose faction for attacking each other
+   // in a way that requires turning safety off.
+   pbFactionLoss = FALSE
+
+   // Do all users get "logged on for first time" messages?
+   pbMsgAllForNewUser = FALSE
+
+   // Do soldiers attack all factioned players?
+   pbTroopsAttackNonShielded = FALSE
+
 messages:
 
    Constructor()
-   "Apply the appropriate settings for a given server number"
    {
-      local server_num;
-
-      server_num = Send(SYS,@GetServerNumber);
-
-      % Apparently at some point someone decided this was a better value
-      piKillKarmaSwingNeutral = 3;
-
-      % Settings retrieved from running servers on 12/29/2010
-      if server_num <> $
-      {
-         if server_num = 101
-         {
-            piDefaultDeathCost   = 90;
-            piAdvancementRate    = 125;
-            piMoneyFactor        = 120;
-            piItemFactor         = 125;
-            piMagicItemModifier  = 80;
-            piSpawnRate          = 80;
-         }
-
-         if server_num = 102
-         {
-            piDefaultDeathCost   = 60;
-            piAdvancementRate    = 190;
-            piMoneyFactor        = 100;
-            piItemFactor         = 175;
-            piMagicItemModifier  = 100;
-            piSpawnRate          = 85;
-         }
-      }
       return;
    }
 
@@ -397,9 +399,9 @@ messages:
       return piLogonBonus;
    }
 
-   GetHPGainMultiplier()
+   GetXPPercent()
    {
-      return piHPGainMultiplier;
+      return piXPPercent;
    }
 
    GetKillKarmaSwingNeutral()
@@ -432,11 +434,6 @@ messages:
       return piMaxLearnPoints;
    }
 
-   GetGroupTougherSetting()
-   {
-      return pbGroupToughers;
-   }
-
    GetDefaultGroupTime()
    {
       return piDefaultGroupTime;
@@ -445,6 +442,11 @@ messages:
    GetMaxSuicideHP()
    {
       return piMaxSuicideHP;
+   }
+
+   NewbiesDropLoot()
+   {
+      return pbNewbiesDropLoot;
    }
 
    %
@@ -474,6 +476,16 @@ messages:
    DisplaySpellData()
    {
       return pbDisplaySpellData;
+   }
+
+   CanFrozRechargeOnKill()
+   {
+      return pbFrozRechargeOnKill;
+   }
+
+   GetItemManaCostPct()
+   {
+      return piItemManaCostPct;
    }
 
    %
@@ -509,9 +521,75 @@ messages:
       return piMovementBucketMax;
    }
 
+   //
+   // Penalties
+   //
+
+   // This returns whether players go to a room's blink spot or their last
+   // safe place when they pen
+   ReturnToSafetyPenaltiesEnabled()
+   {
+      return pbReturnToSafetyPenaltiesEnable;
+   }
+
+   // This returns whether angeled players go to a room's blink spot or
+   // their last safe place when they pen.
+   AngelReturnToSafetyPenaltiesEnabled()
+   {
+      return pbAngelReturnToSafetyPenaltiesEnable;
+   }
+
+   // Returns if a player should recive a 'penalty' for logging off
+   // in a safe zone
+   LogSafePenaltyEnable()
+   {
+      return pbLogSafePenaltyEnable;
+   }
+
+   GetFlatPenaltiesEnable(flag = 0)
+   {
+      if (flag)
+      {
+         return pbFlatPenaltiesRed;
+      }
+
+      return pbFlatPenaltiesWhite;
+   }
+
+   LoseXPOnPenalty()
+   {
+      return pbLoseXPOnPenalty;
+   }
+
+   GetLogPenGhostTime()
+   {
+      return piLogPenGhostTime;
+   }
+
+   GetOutlawMurdererLogPenGhostTime()
+   {
+      return piOutlawMurdererLogPenGhostTime;
+   }
+
+   GetRecentPvpTime()
+   {
+      return piRecentPvPTimeSec;
+   }
+
+   GetFreeNoPvPPenActive(flag = 0)
+   {
+      if (flag)
+      {
+         return pbFreeNoPvPPenActiveRed;
+      }
+
+      return pbFreeNoPvPPenActiveWhite;
+   }
+
    %
    % Miscellaneous
    %
+
    GetRiijaSwordDropOnDeath()
    {
       return pbRiijaSwordDropOnDeath;
@@ -542,34 +620,11 @@ messages:
       return piNameChangeCost;
    }
 
-   % This returns whether players go to a room's blink spot or their last safe place when they pen
-   ReturnToSafetyPenaltiesEnabled()
-   {
-      return pbReturnToSafetyPenaltiesEnable;
-   }
-
-   % This returns whether angeled players go to a room's blink spot or their last safe place when they pen
-   AngelReturnToSafetyPenaltiesEnabled()
-   {
-      return pbAngelReturnToSafetyPenaltiesEnable;
-   }
-   
-   % Returns if a player should recive a 'penalty' for logging of in a safe zone
-   LogSafePenaltyEnable()
-   {
-      return pbLogSafePenaltyEnable;
-   }
-
    DamageCapProtectionMurderersEnabled()
    {
       return pbDamageCapProtectionMurderersEnable;
    }
 
-   GetLogoffPenaltyGhostTime()
-   {
-      return piLogoffPenaltyGhostTime;
-   }
-   
    GetPlayerReflectionLimit()
    {
       return piPlayerReflectionLimit;
@@ -590,11 +645,6 @@ messages:
       return piWeaponcraftImprovementMinimumSwings;
    }
 
-   GetFlatPenaltiesEnable()
-   {
-      return pbFlatPenalties;
-   }
-
    GetLogonDelay()
    {
       return piLogonDelay;
@@ -605,11 +655,6 @@ messages:
       return piTempSafeMinutes;
    }
 
-   GetOutlawMurdererLogoffPenaltyGhostTime()
-   {
-      return piOutlawMurdererLogoffPenaltyGhostTime;
-   }
-
    GetResistRingLoseDurability()
    {
       return piResistRingLoseDurability;
@@ -618,11 +663,6 @@ messages:
    GetRevenantSpeed()
    {
       return piRevSpeed;
-   }
-
-   GetPardonIndulgenceCost()
-   {
-      return piPardonIndulgenceCost;
    }
 
    GetSkillSoftcapPenalty()
@@ -655,24 +695,39 @@ messages:
       return piBroadcastManaPercent;
    }
 
-   JasperVaultOpen()
-   {
-      return pbJasperVault;
-   }
-
    GetStormChance()
    {
       return piStormChance;
-   }
-   
-   GetAlwaysApplySoldierBonus()
-   {
-      return pbAlwaysApplySoldierBonus;
    }
 
    CanUsersRemoveOwnPosts()
    {
       return pbCanUserRemoveOwnPosts;
+   }
+
+   GetMaxNumRods()
+   {
+      return piRodMax;
+   }
+
+   CanInnsRechargeRods()
+   {
+      return pbInnsRechargeRods;
+   }
+
+   FactionLossEnabled()
+   {
+      return pbFactionLoss;
+   }
+
+   MessageAllForNewUser()
+   {
+      return pbMsgAllForNewUser;
+   }
+
+   TroopsAttackNonShielded()
+   {
+      return pbTroopsAttackNonShielded;
    }
 
 end

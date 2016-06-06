@@ -106,7 +106,7 @@
 #define IDS_AHEADER1                    95
 #define IDS_MENU_GROUP                  96
 #define IDS_MENU_ALIAS                  97
-#define IDS_TOUGHER                     98
+#define IDS_XP                          98
 #define IDS_TT_QUEST                    99
 #define IDS_LANGUAGE_MENU               100
 #define IDD_ALIAS                       102
@@ -244,6 +244,26 @@
 #define IDS_MENU_WRY                    243
 #define IDB_SBUTTON5_LEFT               244
 #define IDS_DOCAST                      245
+#define IDS_ALIAS_HELP                  246
+#define IDS_ALIAS_REST                  247
+#define IDS_ALIAS_STAND                 248
+#define IDS_ALIAS_NEUTRAL               249
+#define IDS_ALIAS_HAPPY                 250
+#define IDS_ALIAS_SAD                   251
+#define IDS_ALIAS_WRY                   252
+#define IDS_ALIAS_WAVE                  253
+#define IDS_ALIAS_POINT                 254
+#define IDS_ALIAS_ADDGRP                255
+#define IDS_ALIAS_MAIL                  256
+#define IDS_ALIAS_QUIT                  257
+#define IDS_VERB_ALIAS                  258
+#define IDS_CHAT_SAY                    259
+#define IDS_CHAT_YELL                   260
+#define IDS_CHAT_WHO                    261
+#define IDS_CHAT_EMOTE                  262
+#define IDS_CHAT_TELL                   263
+#define IDS_CHAT_BROADCAST              264
+#define IDS_CHAT_HELP                   265
 #define IDC_ALIASF1                     1000
 #define IDC_ALIASF2                     1001
 #define IDC_DEFINE                      1001
@@ -373,7 +393,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        246
+#define _APS_NEXT_RESOURCE_VALUE        266
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1267
 #define _APS_NEXT_SYMED_VALUE           112

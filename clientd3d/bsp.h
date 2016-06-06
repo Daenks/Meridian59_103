@@ -23,7 +23,7 @@
 #define WF_BELOW_TOPDOWN  0x00000080      // Draw lower texture top-down
 #define WF_NORMAL_TOPDOWN 0x00000100      // Draw normal texture top-down
 #define WF_NO_VTILE       0x00000200      // Don't tile texture vertically (must be transparent)
-#define	WF_HAS_ANIMATED	  0x00000400      // has animated once and hence is dynamic geometry, required for new client
+#define   WF_HAS_ANIMATED     0x00000400      // has animated once and hence is dynamic geometry, required for new client
 
 // Texture scrolling constants
 #define SCROLL_NONE    0x00000000      // No texture scrolling   
@@ -58,7 +58,7 @@
 #define SF_FLICKER        0x00000200      // Flicker light in sector
 #define SF_SLOPED_FLOOR   0x00000400      // Sector has sloped floor
 #define SF_SLOPED_CEILING 0x00000800      // Sector has sloped ceiling
-#define	SF_HAS_ANIMATED	  0x00001000      // has animated once and hence is dynamic geometry, required for new client
+#define   SF_HAS_ANIMATED     0x00001000      // has animated once and hence is dynamic geometry, required for new client
 
 /* Bit flags for sloped surface characteristics */
 #define SLF_DIRECTIONAL   0x0001
@@ -81,22 +81,22 @@
 #define SGN(x) ((x) == 0 ? 0 : ((x) > 0 ? 1 : -1))
 #define SGNDOUBLE(x) (((x) <= 0.001 && (x) >= -0.001) ? 0 : ((x) > 0.001 ? 1 : -1))
 
-#pragma warning( disable : 4201 )		// nonstandard extension used : nameless struct/union (a union in this case )
+#pragma warning( disable : 4201 )      // nonstandard extension used : nameless struct/union (a union in this case )
 
 // D3D types
 typedef struct custom_xyz
 {
-   float	x, y, z;
+   float   x, y, z;
 } custom_xyz;
 
 typedef struct custom_st
 {
-   float	s, t;
+   float   s, t;
 } custom_st;
 
 typedef struct custom_bgra
 {
-   unsigned char	b, g, r, a;
+   unsigned char   b, g, r, a;
 } custom_bgra;
 
 /* plane defined by ax + by + c = 0. (x and y are in fineness units.) */
@@ -139,18 +139,18 @@ typedef struct ObjectData
 } ObjectData, *ObjectList;
 
 typedef struct {
-    Plane3D	plane;         /* plane equation of slope */
-    Pnt3D	p0;	       /* texture origin */
-    Pnt3D	p1;	       /* u axis end point */
-    Pnt3D	p2;            /* v axis end point */
-    Pnt3D	h;	       /* h, v, o : values for texturing surface from current viewpoint */
-    Pnt3D	v;
-    Pnt3D	o;
-    FixedPoint  z0;	       /* distances for viewer light calculation */
+    Plane3D   plane;         /* plane equation of slope */
+    Pnt3D   p0;          /* texture origin */
+    Pnt3D   p1;          /* u axis end point */
+    Pnt3D   p2;            /* v axis end point */
+    Pnt3D   h;          /* h, v, o : values for texturing surface from current viewpoint */
+    Pnt3D   v;
+    Pnt3D   o;
+    FixedPoint  z0;          /* distances for viewer light calculation */
     FixedPoint  z_du;
     FixedPoint  z_dv;
-	long	texRot;			// new client needs the raw rotation angle
-    short	flags;	       /* flags about properties of this surface */
+   long   texRot;         // new client needs the raw rotation angle
+    short   flags;          /* flags about properties of this surface */
     short       lightscale;    /* scaling factor for directional lighting */
 } SlopeData;
 
@@ -375,6 +375,6 @@ typedef struct BSPnode
 
 } BSPnode, *BSPTree;
 
-#pragma warning( default : 4201 )		// nonstandard extension used : nameless struct/union (a union in this case )
+#pragma warning( default : 4201 )      // nonstandard extension used : nameless struct/union (a union in this case )
 
 #endif  /* #ifndef _BSP_H */

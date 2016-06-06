@@ -31,25 +31,40 @@ properties:
    vrDesc = $
    vrIcon = $
    piAmount_left = -1
+   piMaxAmount = 20
+   ptFillDispenser = $
    poTemplate = $
 
 messages:
 
    Constructor(classtype=$,amount=-1)
    {
-      if classtype = $ 
-         {
-            DEBUG("Dispenser created without a classtype declared!");
-            post(self,@delete);
-            propagate;
-         }
+      if classtype = $
+      {
+         Debug("Dispenser created without a classtype declared!");
+         Post(self,@Delete);
 
-      poTemplate=create(Classtype);
-      vrName = send(poTemplate,@getDispenserName);
-      vrDesc = send(poTemplate,@getDispenserDesc);
-      vrIcon = send(poTemplate,@getDispensericon);
+         propagate;
+      }
 
-      piAmount_left = amount;            
+      poTemplate = Create(Classtype);
+      vrName = Send(poTemplate,@GetDispenserName);
+      vrDesc = Send(poTemplate,@GetDispenserDesc);
+      vrIcon = Send(poTemplate,@GetDispenserIcon);
+
+      // If we're trying to create an infinite dispenser on an item that
+      // has value, set it to have a finite amount instead.
+      if (amount < 0
+         AND Send(poTemplate,@GetValue) > 0)
+      {
+         piAmount_left = piMaxAmount;
+      }
+      else
+      {
+         piAmount_left = amount;
+         piMaxAmount = amount;
+      }
+
       propagate;
    }
 
@@ -58,48 +73,76 @@ messages:
    {
       local oItem;
 
-      if isClass(who,&User) and poOwner = send(who,@getowner)
+      if IsClass(who,&User)
+         AND poOwner = Send(who,@GetOwner)
       {
-        oItem = create(GetClass(poTemplate));
-        if piAmount_left = 0
-          {
-             send(who,@msgsenduser,#message_rsc=FoodDispenser_none_left,
-                #parm1=send(oItem,@getindef),#parm2=send(oItem,@getname));
-             return TRUE;
-          }
+         oItem = Create(GetClass(poTemplate));
+         if piAmount_left = 0
+         {
+            Send(who,@MsgSendUser,#message_rsc=FoodDispenser_none_left,
+                  #parm1=Send(oItem,@GetIndef),#parm2=Send(oItem,@GetName));
 
-        if send(who,@reqnewhold,#what=oItem) 
-          {
-             send(oItem,@newholdmessage,#who=who,#disp=self);
-             send(who,@newhold,#what=oItem);
-             if piAmount_left > 0
+            return TRUE;
+         }
+
+         if Send(who,@ReqNewHold,#what=oItem)
+         {
+            Send(oItem,@NewHoldMessage,#who=who,#disp=self);
+            Send(who,@NewHold,#what=oItem);
+            if piAmount_left > 0
+            {
+               piAmount_left = piAmount_left - 1;
+               if (ptFillDispenser = $)
                {
-                  piAmount_left = piAmount_left - 1;
+                  ptFillDispenser = CreateTimer(self,@FillDispenser,600000);
                }
-          }
-        else
-          {
-             send(who,@msgsenduser,#message_rsc=FoodDispenser_no_can_hold);
-             return TRUE;
-          }
+            }
+         }
+         else
+         {
+            Send(who,@MsgSendUser,#message_rsc=FoodDispenser_no_can_hold);
+
+            return TRUE;
+         }
       }
+
       return TRUE;
    }
 
    ReqNewOwner(what = $)
    {
-      return False;
+      return FALSE;
+   }
+
+   FillDispenser()
+   {
+      ptFillDispenser = $;
+
+      if (piAmount_left >= 0
+         AND piAmount_left < piMaxAmount)
+      {
+         ++piAmount_left;
+         ptFillDispenser = CreateTimer(self,@FillDispenser,600000);
+      }
+
+      return;
    }
 
    Delete()
    {
       if poTemplate <> $
-        {
-           send(poTemplate,@delete);
-        }
+      {
+         Send(poTemplate,@Delete);
+      }
+
+      if ptFillDispenser <> $
+      {
+         DeleteTimer(ptFillDispenser);
+         ptFillDispenser = $;
+      }
+
       propagate;
    }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-

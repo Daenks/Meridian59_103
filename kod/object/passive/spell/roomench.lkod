@@ -1,3 +1,7 @@
 RoomEnchantment_name_rsc = de "Raumzauber"
 RoomEnchantment_desc_rsc = de "Ein Zauber der an einen Raum gebunden ist."
-room_blank_template = de "%q"
+RoomEnchantment_kill_rsc = de "Der Raumzauber tötet dich."
+RoomEnchantment_killer_rsc = de "Du hast %s%s mit deinem Raumzauber getötet."
+RoomEnchantment_hit_rsc = de "Der Raumzauber verwundet dich."
+RoomEnchantment_not_guilded = de \
+   "Du musst einer Gilde angehören, um diesen Zauber auszusprechen."

@@ -37,18 +37,14 @@ resources:
 classvars:
 
    vrName = hellportal_name_rsc
-
    viMoveOn_type = MOVEON_TELEPORTER
-
    viAnimationSpeed = 400
 
 properties:
-   
+
    vrIcon = hellportal_icon_rsc
    vrDesc = hellportal_desc_rsc
-
    piDest_room = RID_TOS_INN
-
    plPossibleLocations = $
    ptLocations = $
    piDrawFx = DRAWFX_TRANSLUCENT_75
@@ -152,7 +148,7 @@ messages:
    "Called when something walks on top of us."
    {
       local oRoom;
-      
+
       % Check for Death Rifters.
       if poOwner <> $
          AND IsClass(poOwner,&Underworld)

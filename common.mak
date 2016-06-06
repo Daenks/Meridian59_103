@@ -29,6 +29,7 @@ WAVEMIXDIR    = $(TOPDIR)\wavemix
 LIBPNGDIR     = $(TOPDIR)\libpng
 LIBARCHIVEDIR = $(TOPDIR)\libarchive
 ZLIBDIR       = $(TOPDIR)\libzlib
+JANSSONDIR    = $(TOPDIR)\libjansson
 
 # Other directories
 BLAKBINDIR     = $(TOPDIR)\bin
@@ -44,6 +45,7 @@ LIBPNGINCLUDEDIR     = $(TOPDIR)\include\libpng
 LIBARCHIVEINCLUDEDIR = $(TOPDIR)\include\libarchive
 ZLIBINCLUDEDIR       = $(TOPDIR)\include\zlib
 IRRKLANGINCLUDEDIR   = $(TOPDIR)\include\irrklang
+JANSSONINCLUDEDIR    = $(TOPDIR)\libjansson
 
 # KOD and KOD include directories
 KODDIR        = $(TOPDIR)\kod
@@ -63,7 +65,7 @@ PALETTEFILE = $(TOPDIR)\blakston.pal
 #                         /fp:fast causes issues with BSP tree calcs
 # /DBLAK_PLATFORM_WINDOWS Build blakserv for Windows
 # /DLIBARCHIVE_STATIC     For static libarchive build
-# /DHAVE_CONFIG_H         For libarchive build
+# /DHAVE_CONFIG_H         For libarchive and jansson builds
 # /WX                     Treat warnings as errors
 # /W3                     Warnings level
 # /wdXXXX                 Disable specific warnings
@@ -147,4 +149,4 @@ MAKEBGF   = $(BLAKBINDIR)\makebgf
 # -----------------------------------------------------------------
 # LIB and INCLUDE directories for compiler and linker
 LIB     = $(LIB);$(BLAKLIBDIR)
-INCLUDE = $(INCLUDE);$(BLAKINCLUDEDIR);$(MYSQLINCLUDEDIR);$(DX9INCLUDEDIR);$(LIBPNGINCLUDEDIR);$(ZLIBINCLUDEDIR);$(LIBARCHIVEINCLUDEDIR);$(IRRKLANGINCLUDEDIR)
+INCLUDE = $(INCLUDE);$(BLAKINCLUDEDIR);$(MYSQLINCLUDEDIR);$(DX9INCLUDEDIR);$(LIBPNGINCLUDEDIR);$(ZLIBINCLUDEDIR);$(LIBARCHIVEINCLUDEDIR);$(IRRKLANGINCLUDEDIR);$(JANSSONINCLUDEDIR)

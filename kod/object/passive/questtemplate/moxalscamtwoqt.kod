@@ -214,7 +214,7 @@ messages:
       % QNT_ID_MOXAL_SCAMTWO_FIVE
       if Send(oQE,@AddQuestNodeTemplate,#questnode_type=QN_TYPE_MESSAGE,
                #NPC_modifier=QN_NPCMOD_PREVIOUS,#cargolist=[moxalscam2_trigger_3],
-               #prizelist=[ [ QN_PRIZETYPE_EXPERIENCE_POINTS, 10 ] ],
+               #prizelist=[ [ QN_PRIZETYPE_EXPERIENCE_POINTS, 400 ] ],
                #timelimit=4 * 3600,#quest_node_index=QNT_ID_MOXAL_SCAMTWO_FIVE)
       {
          Send(oQE,@SetQuestNodeAssignHint,#index=QNT_ID_MOXAL_SCAMTWO_FIVE,

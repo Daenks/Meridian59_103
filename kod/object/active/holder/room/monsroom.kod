@@ -141,7 +141,7 @@ messages:
 
       return;
    }
-   
+
    CanMonsterGenerate()
    {
       return pbGenerateMonsters;
@@ -156,13 +156,13 @@ messages:
       if NOT Send(self,@IsMonsterCountBelowMax)
          OR NOT pbGenerateMonsters
       {
-         return;
+         return FALSE;
       }
 
       iRoll = Random(1,100);
       if (iRoll > piGen_percent) AND (initroom=FALSE)
       {
-         return;
+         return FALSE;
       }
 
       if NOT loadfirst
@@ -192,14 +192,14 @@ messages:
 
             if NOT Send(self,@GenerateMonster,#oMonster=oMonster)
             {
-               return 0;
+               return FALSE;
             }
 
             break;
          }
       }
 
-      return 1;
+      return TRUE;
    }
 
    IsMonsterCountBelowMax()
@@ -285,7 +285,7 @@ messages:
       {
          Send(self,@TryCreateMonster,#initroom=TRUE,
                #loadfirst=pbLoad_First_Monster_Only);
-         iHowMany = iHowMany - 1;
+         --iHowMany;
       }
 
       ptGen = CreateTimer(self,@MonsterGenTimer,Send(self,@GetMonsterGenTime));
@@ -436,6 +436,26 @@ messages:
    SetGenPercent(percent = DEFAULT_GEN_PERCENT)
    {
       piGen_Percent = percent;
+
+      return;
+   }
+
+   PrintMobGenerators()
+   "Prints out monster spawn % and class name."
+   {
+      local i;
+
+      if (plMonsters = $)
+      {
+         return;
+      }
+
+      GodLog(Send(self,@GetName),":");
+
+      foreach i in plMonsters
+      {
+         GodLog(First(i),", ",Nth(i,2),"\%");
+      }
 
       return;
    }

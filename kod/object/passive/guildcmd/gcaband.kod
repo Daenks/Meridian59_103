@@ -13,7 +13,6 @@ GuildAbandon is GuildCommand
 constants:
 
    include blakston.khd
-   include protocol.khd
 
 resources:
 
@@ -21,11 +20,15 @@ resources:
 
    guildabandon_name_rsc = "abandon guild hall"
    guildabandon_icon_rsc = light.bgf
-   guildabandon_desc_text_rsc = "Use this command to quit your guild.  You never liked them anyway.  Guildmasters must transfer their title before using this command."
-
-   guildabandon_necro_nak = "~BYou have sworn a blood oath to your dark Queen.  You may not simply abandon "
-      "her fortress."
-   guildabandon_not_while_under_attack = "You can't abandon your guild hall while it is under attack.  Go and defend it!"
+   guildabandon_desc_text_rsc = \
+      "Use this command to quit your guild.  You never liked them anyway.  "
+      "Guildmasters must transfer their title before using this command."
+   guildabandon_necro_nak = \
+      "~BYou have sworn a blood oath to your dark Queen.  You may not "
+      "simply abandon her fortress."
+   guildabandon_not_while_under_attack = \
+      "You can't abandon your guild hall while it is under attack.  "
+      "Go and defend it!"
 
 classvars:
 
@@ -48,13 +51,15 @@ messages:
    ResetCommand(who=$, rank = 0)
    {
       local oGuild;
-      
-      oGuild = send(who,@getguild);
-      if send(oGuild,@getguildhall) = $
+
+      oGuild = Send(who,@GetGuild);
+      if Send(oGuild,@GetGuildhall) = $
       {
-         send(who,@removeguildcommand,#command_num=viGuildCommand_num);
+         Send(who,@RemoveGuildCommand,#command_num=viGuildCommand_num);
+
          return;
       }
+
       propagate;
    }
 
@@ -62,19 +67,21 @@ messages:
    "Give up guild hall."
    {
       local oGuild, oHall, lMembers, i;
-     
-      oGuild = Send(who, @getguild);
+
+      oGuild = Send(who,@GetGuild);
 
       if oGuild = $
       {
          Debug("someone who belongs to no guild is using the Abandon command!");
+
          return FALSE;
       }
-      
+
       % Can't abandon the necromancer's guild hall.
-      if IsClass(oGuild,&NecromancerGuild) 
+      if IsClass(oGuild,&NecromancerGuild)
       {
          Send(who,@MsgSendUser,#message_rsc=guildabandon_necro_nak);
+
          return FALSE;
       }
 
@@ -82,17 +89,17 @@ messages:
       % (players were abusing this to avoid being conquered).
       oHall = Send(oGuild, @GetGuildHall);
       if oHall <> $
+         AND Send(oHall,@AreDefensesDown)
       {
-         if Send(oHall, @AreDefensesDown)
-         {
-            Send(who,@MsgSendUser,#message_rsc=guildabandon_not_while_under_attack);
-            return FALSE;
-         }
+         Send(who,@MsgSendUser,#message_rsc=guildabandon_not_while_under_attack);
+
+         return FALSE;
       }
 
       Send(oGuild,@AbandonGuildHall,#who=who);
+
       propagate;
    }
-  
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

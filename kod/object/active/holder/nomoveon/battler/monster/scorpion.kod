@@ -31,10 +31,10 @@ resources:
    scorpion_dead_icon_rsc = scorpX.bgf
    scorpion_dead_name_rsc = "dead scorpion"
 
-   scorpion_sound_hit = scp_atkh.wav
-   scorpion_sound_miss = scp_atkm.wav
-   scorpion_sound_death = scp_dth.wav
-   scorpion_sound_aware = scp_awr.wav
+   scorpion_sound_hit = scp_atkh.ogg
+   scorpion_sound_miss = scp_atkm.ogg
+   scorpion_sound_death = scp_dth.ogg
+   scorpion_sound_aware = scp_awr.ogg
 
 classvars:
 

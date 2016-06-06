@@ -34,18 +34,34 @@ resources:
    parl_strength_strong = "strong"
    parl_strength_dedicated = "dedicated"
 
-   scandal_occurrence = "~IUnder suspicion of accepting favors in exchange for votes, Councilman %s%s undertakes a pilgrimage to Shal'ille's temple for purification of his thoughts."
-
-   parl_liege_token_secret = "I'm sorry, but I'll only tell members of my faction information on the rumored whereabouts of tokens."
-   parl_liege_token_location = "Our spy network reports %s%s was last seen near %s. See if thou canst bring it to me, or return it."
-   parl_liege_token_none = "Our spy network indicates that all the tokens are safely in the presence of their Councilor."
-
-   parl_token_location = "I heard a rumor that %s%s had teleported away from its Councilor again, and was seen near %s. Hopefully someone is even now on their way to return it, but maybe some fiendish monster has picked it up!"
-   imposter_token = "Now why are you carrying around imitation council tokens? You should complain about having gotten one of those."
+   scandal_occurrence = \
+      "~IUnder suspicion of accepting favors in exchange for votes, "
+      "Councilman %s%s undertakes a pilgrimage to Shal'ille's temple for "
+      "purification of his thoughts."
+   parl_liege_token_secret = \
+      "I'm sorry, but I'll only tell members of my faction information on "
+      "the rumored whereabouts of tokens."
+   parl_liege_token_location = \
+      "Our spy network reports %s%s was last seen near %s. See if thou "
+      "canst bring it to me, or return it."
+   parl_liege_token_none = \
+      "Our spy network indicates that all the tokens are safely "
+      "in the presence of their Councilor."
+   parl_token_location = \
+      "I heard a rumor that %s%s had teleported away from its Councilor "
+      "again, and was seen near %s. Hopefully someone is even now on their "
+      "way to return it, but maybe some fiendish monster has picked it up!"
+   imposter_token = \
+      "Now why are you carrying around imitation council tokens?  You "
+      "should complain about having gotten one of those."
 
 classvars:
 
 properties:
+
+   // Set piScandalFactor higher to lower the chance of a scandal.
+   // 100 means the roll for scandal is 1 to 100 (base chance)
+   piScandalFactor = 100
 
    piScandalChance = 1
 
@@ -109,7 +125,7 @@ messages:
          while i > 0
          {
             plSenate=Cons([i,$,0,$,0,0],plSenate);
-            i = i-1;
+            --i;
          }
       }
 
@@ -177,7 +193,7 @@ messages:
       local i;
 
       if plSenate <> $
-      { 
+      {
          foreach i in plSenate
          {
             if Nth(i,2) <> $
@@ -207,10 +223,10 @@ messages:
 
    RecreateTokenRooms()
    {
-      plTokenRooms=[ RID_ICE_CAVE1, RID_CASTLE1, RID_NEST1, RID_BAR_SEWER,
-                     RID_F2, RID_BADLAND1, RID_H5, RID_E2, RID_G8, RID_C7,
-                     RID_I9, RID_F7, RID_VALE, RID_MAR_CRYPT1
-                   ];
+      plTokenRooms = [ RID_ICE_CAVE1, RID_CASTLE1, RID_NEST1, RID_BAR_SEWER,
+                       RID_F2, RID_BADLAND1, RID_H5, RID_E2, RID_G8, RID_C7,
+                       RID_I9, RID_F7, RID_VALE, RID_MAR_CRYPT1
+                     ];
       return;
    }
 
@@ -221,7 +237,7 @@ messages:
          return Nth(plTokenRooms,Random(1,Length(plTokenRooms)));
       }
 
-      debug("DEBUG: chose a null token room for realization... bad bad bad.");
+      Debug("DEBUG: chose a null token room for realization... bad bad bad.");
 
       return $;
    }
@@ -231,7 +247,7 @@ messages:
       local returntok, i, iCount;
 
       iCount = 0;
-      returntok = $;
+
       if plSenate = $ OR location = $
       {
          return $;
@@ -246,10 +262,10 @@ messages:
                returntok = Nth(i,4);
             }
 
-            iCount = iCount + 1;
+            ++iCount;
          }
       }
-      
+
       return returntok;
    }
 
@@ -264,12 +280,12 @@ messages:
 
       foreach i in plSenate
       {
-        if Nth(i,4) = mytoken
-        {
-           SetNth(i,6,Send(self,@ChooseTokenRoom));
+         if Nth(i,4) = mytoken
+         {
+            SetNth(i,6,Send(self,@ChooseTokenRoom));
 
-           break;
-        }
+            break;
+         }
       }
 
       return;
@@ -321,15 +337,15 @@ messages:
          if Nth(i,2) = mycouncilor
          {
             bump = Send(mycouncilor,@GetStateBump);
-            state = Nth(i,3) mod 100;
-            fact = Nth(i,3)/100;
+            state = Nth(i,3) MOD 100;
+            fact = Nth(i,3) / 100;
 
             if NOT scandal
             {
                if fact = myfaction
                {
                   % I returned a token to someone already dedicated to my faction
-                  state = bound(state+bump,1,3);
+                  state = Bound(state + bump,1,3);
                }
                else
                {
@@ -353,7 +369,7 @@ messages:
                state = 1;
             }
 
-            SetNth(i,3,100*fact+state);
+            SetNth(i,3,100 * fact + state);
             Send(Send(SYS,@GetParliament),@RedoPower);
 
             break;
@@ -385,7 +401,7 @@ messages:
 
    GetInitialTimeval(token_num=0)
    {
-      if plSenate=$
+      if plSenate = $
       {
          return 99999999;
       }
@@ -406,11 +422,36 @@ messages:
       {
          if Nth(i,4) = mytoken
          {
-            return Nth(i,5)+Random(0,Nth(i,5)/4);
+            return Nth(i,5) + Random(0,Nth(i,5)/4);
          }
       }
 
       return 99999999;
+   }
+
+   SetTokenSpawnHours(iHours=2)
+   "Sets a minimum time for token spawn, in hours.  Actual time is slightly "
+   "higher than this, and is randomized so tokens aren't all coming out "
+   "at the same time. Minimum 2 hours, maximum 16 (current max)."
+   {
+      local i, oToken, iMilli, iExtra, iAdd;
+
+      iHours = Bound(iHours,2,16);
+
+      // Convert hours to milliseconds.
+      iMilli = iHours * 3600000;
+
+      // Have to add random time to space them out
+      iExtra = iMilli / 5;
+      iAdd = 0;
+
+      foreach i in plSenate
+      {
+         SetNth(i,5,iMilli + iAdd);
+         iAdd = iAdd + iExtra;
+      }
+
+      return;
    }
 
    TokenClass(num=0)
@@ -490,37 +531,38 @@ messages:
 
       return;
    }
-   
+
    ScandalCheck()
    {
-      local i,temp;
-      
+      local i, temp;
+
       temp = FALSE;
 
       % Don't do a scandal during a frenzy!
       if plSenate = $
-         OR send(SYS,@GetChaosNight)
+         OR Send(SYS,@GetChaosNight)
       {
-         return;
+         return FALSE;
       }
-      
-      foreach i in plSenate 
+
+      foreach i in plSenate
       {
          if Nth(i,3) <= 100
          {
             continue;
          }
 
-         if Random(1,100) <= ((piScandalChance*(Nth(i,3)) mod 100))
+         if Random(1,Bound(piScandalFactor,100,500))
+               <= ((piScandalChance * (Nth(i,3)) MOD 100))
          {
             temp = TRUE;
-            Send(Self,@DoScandal,#mob=Nth(i,2));
+            Send(self,@DoScandal,#mob=Nth(i,2));
 
             break;
          }
       }
 
-      if Temp
+      if temp
       {
          piScandalChance = 1;
 
@@ -532,20 +574,20 @@ messages:
 
    DeliveryEffects(mob=$,who=$,mytoken=$)
    {
-      local i,fact,long,short;
+      local i, fact, long, short;
 
       long = FALSE;
       short = FALSE;
 
-      if isClass(mob,&Council)
+      if IsClass(mob,&Council)
       {
          Send(self,@SetState,#mycouncilor=mob,#myfaction=Send(who,@GetFaction));
       }
-      else 
+      else
       {
-         fact=Send(who,@GetFaction);
+         fact = Send(who,@GetFaction);
 
-         if isClass(mob,&ShalillePriestess)
+         if IsClass(mob,&ShalillePriestess)
          {
             short = TRUE;
             if fact = FACTION_NEUTRAL
@@ -553,68 +595,57 @@ messages:
                long = TRUE;
             }
          }
-
-         if isClass(mob,&PrincessLiege)
+         else if IsClass(mob,&PrincessLiege)
          {
             if fact = FACTION_NEUTRAL
             {
                long = TRUE;
             }
-            
-            if fact = FACTION_PRINCESS
+            else if fact = FACTION_PRINCESS
             {
                short = TRUE;
                long = TRUE;
             }
-            
-            if fact = FACTION_DUKE
-               OR fact = FACTION_REBEL
+            else if (fact = FACTION_DUKE OR fact = FACTION_REBEL)
             {
                short = TRUE;
             }
          }
-
-         if isClass(mob,&DukeLiege)
+         else if IsClass(mob,&DukeLiege)
          {
             if fact = FACTION_NEUTRAL
             {
                long = TRUE;
             }
-            
-            if fact = FACTION_DUKE
+            else if fact = FACTION_DUKE
             {
                short = TRUE;
                long = TRUE;
             }
-            
-            if fact = FACTION_PRINCESS
-               OR fact = FACTION_REBEL
+            else if (fact = FACTION_PRINCESS OR fact = FACTION_REBEL)
             {
                short = TRUE;
             }
          }
-
-         if isClass(mob,&RebelLiege)
+         else if IsClass(mob,&RebelLiege)
          {
             if fact = FACTION_NEUTRAL
             {
                long = TRUE;
             }
-            
-            if fact = FACTION_REBEL
+            else if fact = FACTION_REBEL
             {
                short = TRUE;
                long = TRUE;
             }
-            
-            if fact = FACTION_PRINCESS
-               OR fact = FACTION_DUKE
+            else if (fact = FACTION_PRINCESS OR fact = FACTION_DUKE)
             {
                short = TRUE;
             }
          }
 
-         Send(self,@AdjustTimevals,#basefaction=Send(mob,@GetFaction),#long=long,#short=short);
+         Send(self,@AdjustTimevals,#basefaction=Send(mob,@GetFaction),
+               #long=long,#short=short);
       }
 
       return;
@@ -632,7 +663,7 @@ messages:
       foreach i in plSenate
       {
          iFactor = 0;
-         
+
          if ((Nth(i,3)/100) = basefaction) AND long
          {
             iFactor = 3;
@@ -646,7 +677,7 @@ messages:
          if iFactor <> 0
          {
             iValue = (4*(Nth(i,5)/1000)/iFactor)*1000;
-            SetNth(i,5,bound(iValue,MIN_TOKEN_TIMEVAL,MAX_TOKEN_TIMEVAL));
+            SetNth(i,5,Bound(iValue,MIN_TOKEN_TIMEVAL,MAX_TOKEN_TIMEVAL));
          }
       }
 
@@ -675,15 +706,15 @@ messages:
          {
             if NOT pbDeleting
             {
-               debug("Councilor was deleted unintentionally. Replacement Created");
-               SetNth(i,2,Create(Send(Self,@CouncilorClass,#num=First(i)))); 
+               Debug("Councilor was deleted unintentionally. Replacement Created");
+               SetNth(i,2,Create(Send(Self,@CouncilorClass,#num=First(i))));
                Send(Nth(i,2),@GotoHomeroom);
             }
             else
             {
                SetNth(i,2,$);
             }
-         } 
+         }
       }
 
       return;
@@ -705,6 +736,7 @@ messages:
             Send(what,@TokenDelivered,#who=who,#mob=mob);
             Send(who,@LeaveHold,#what=what);
             Send(what,@NilOwner);
+
             return;
          }
       }
@@ -712,7 +744,7 @@ messages:
       Send(who,@MsgSendUser,#message_rsc=imposter_token);
       Send(what,@Delete);
 
-      return; 
+      return;
    }
 
    IsTokenReal(obj=$)
@@ -720,7 +752,7 @@ messages:
       local i;
 
       if obj <> $
-         AND isClass(obj,&Token)
+         AND IsClass(obj,&Token)
          AND plSenate <> $
       {
          foreach i in plSenate
@@ -731,7 +763,7 @@ messages:
             }
          }
       }
-      
+
       return FALSE;
    }
 
@@ -748,16 +780,16 @@ messages:
       {
          if Nth(i,4) = what
          {
-            if (not pbDeleting)
+            if (NOT pbDeleting)
             {
-               debug("Token was deleted unintentionally. Replacement Created");
-               SetNth(i,4,Create(Send(Self,@TokenClass,#num=First(i)))); 
+               Debug("Token was deleted unintentionally. Replacement Created");
+               SetNth(i,4,Create(Send(Self,@TokenClass,#num=First(i))));
             }
             else
             {
                SetNth(i,4,$);
             }
-         } 
+         }
       }
 
       return;
@@ -765,10 +797,8 @@ messages:
 
    TokenLocRumor(mob=$,who=$)
    {
-      local i,mytok, loc,iCount,finalloc,finaltok;
+      local i, mytok, loc, iCount, finalloc, finaltok;
 
-      loc = $;
-      finalloc = $;
       iCount = 0;
 
       if plSenate = $
@@ -793,7 +823,7 @@ messages:
          }
 
          %token in world or still on timer.
-         if (NOT Nth(i,6)) 
+         if (NOT Nth(i,6))
          {
             loc = Send(mytok,@GetOwner);
             if loc = $
@@ -810,7 +840,7 @@ messages:
             loc = Send(SYS,@FindRoomByNum,#num=Nth(i,6));
          }
 
-         If loc=$
+         if loc = $
          {
             continue;
          }
@@ -822,7 +852,7 @@ messages:
             finalloc = loc;
          }
 
-         iCount = iCount + 1;
+         ++iCount;
       }
 
       % Now send out the rumor if we found one a viable token....
@@ -830,10 +860,10 @@ messages:
       {
          if Random(1,100) <= TOKEN_LOCATION_WRONG_CHANCE
          {
-            finalloc = send(SYS,@findroombynum,#num=Send(self,@ChooseTokenRoom));
+            finalloc = Send(SYS,@FindRoomByNum,#num=Send(self,@ChooseTokenRoom));
          }
-         if isClass(mob,&Factions) or isClass(mob,&ShalillePriestess)
-         { 
+         if IsClass(mob,&Factions) OR IsClass(mob,&ShalillePriestess)
+         {
             if Send(mob,@GetFaction)=Send(who,@GetFaction)
             {
                Post(Send(mob,@GetOwner),@SomeoneSaid,#what=mob,#type=SAY_RESOURCE,
@@ -845,7 +875,7 @@ messages:
             {
                Post(Send(mob,@GetOwner),@SomeoneSaid,#what=mob,#type=SAY_RESOURCE,
                     #string=parl_liege_token_secret);
-            } 
+            }
 
             return;
          }
@@ -857,8 +887,8 @@ messages:
       }
       else
       {
-         if isClass(mob,&Factions) or isClass(mob,&ShalillePriestess)
-         { 
+         if IsClass(mob,&Factions) OR IsClass(mob,&ShalillePriestess)
+         {
             if Send(mob,@GetFaction)=Send(who,@GetFaction)
             {
                Post(Send(mob,@GetOwner),@SomeoneSaid,#what=mob,#type=SAY_RESOURCE,
@@ -868,7 +898,7 @@ messages:
             {
                Post(Send(mob,@GetOwner),@SomeoneSaid,#what=mob,#type=SAY_RESOURCE,
                     #string=parl_liege_token_secret);
-            } 
+            }
          }
       }
     
@@ -877,7 +907,7 @@ messages:
 
    CouncilorReport(mob=$,who=$,num=$)
    {
-      local i,con,faction,power,fact_part,strength_part;
+      local i, con, faction, power, fact_part, strength_part;
 
       if plSenate = $
       {
@@ -887,54 +917,51 @@ messages:
       i = Nth(plSenate,num);
       con = Nth(i,2);
       faction = Nth(i,3) / 100;
-      power = Nth(i,3) mod 100;
+      power = Nth(i,3) MOD 100;
 
       % We want to eventually have the mob say something about the councilor
       if faction = FACTION_NEUTRAL
       {
          if faction = Send(mob,@GetFaction)
          {
-            fact_part=parl_factioned_Nself;
+            fact_part = parl_factioned_Nself;
          }
          else
          {
-            fact_part=parl_factioned_neutral;
+            fact_part = parl_factioned_neutral;
          }
       }
-
-      if faction = FACTION_DUKE
+      else if faction = FACTION_DUKE
       {
          if faction = Send(mob,@GetFaction)
          {
-            fact_part=parl_factioned_Dself;
+            fact_part = parl_factioned_Dself;
          }
          else
          {
-            fact_part=parl_factioned_duke;
+            fact_part = parl_factioned_duke;
          }
       }
-
-      if faction = FACTION_PRINCESS
-      { 
-         if faction = Send(mob,@GetFaction)
-         {
-            fact_part=parl_factioned_Pself;
-         }
-         else
-         {
-            fact_part=parl_factioned_princess;
-         }
-      }
-
-      if faction = FACTION_REBEL
+      else if faction = FACTION_PRINCESS
       {
          if faction = Send(mob,@GetFaction)
          {
-            fact_part=parl_factioned_Rself;
+            fact_part = parl_factioned_Pself;
          }
          else
          {
-            fact_part=parl_factioned_rebel;
+            fact_part = parl_factioned_princess;
+         }
+      }
+      else if faction = FACTION_REBEL
+      {
+         if faction = Send(mob,@GetFaction)
+         {
+            fact_part = parl_factioned_Rself;
+         }
+         else
+         {
+            fact_part = parl_factioned_rebel;
          }
       }
 
@@ -942,20 +969,18 @@ messages:
       {
          strength_part = parl_strength_weak;
       }
-
-      if power = 2
+      else if power = 2
       {
          strength_part = parl_strength_strong;
       }
-
-      if power = 3
+      else if power = 3
       {
          strength_part = parl_strength_dedicated;
       }
 
       Post(Send(mob,@GetOwner),@SomeoneSaid,#what=mob,#type=SAY_RESOURCE,
-           #string=parl_councilor_report,#parm1=Send(con,@GetDef),
-           #parm2=Send(con,@GetName), #parm3=strength_part, #parm4=fact_part);
+            #string=parl_councilor_report,#parm1=Send(con,@GetDef),
+            #parm2=Send(con,@GetName), #parm3=strength_part, #parm4=fact_part);
 
       return;
    }
@@ -978,11 +1003,11 @@ messages:
       {
          if Nth(lCounsel,3)/100 = faction
          {
-            iPoints = iPoints + 1;
+            ++iPoints;
          }
       }
 
-      return ((iPoints * piTotalPoints) / length(plSenate));
+      return ((iPoints * piTotalPoints) / Length(plSenate));
    }
 
    % Creates all NPCs specific to and needed for the game, that is, the councilors.
@@ -995,7 +1020,7 @@ messages:
 
       return;
    }
-      
+
    Delete()
    {
       pbDeleting = TRUE;
@@ -1004,10 +1029,10 @@ messages:
       plTokenRooms = $;
       plSenate = $;
       pbDeleting = FALSE;
-      
+
       return;
    }
-   
+
    GetSenate()
    {
       return plSenate;
@@ -1026,7 +1051,7 @@ messages:
          {
             foreach i in lSenate
             {
-               if Nth(lCouncilor,1) = Nth(i,1)
+               if First(lCouncilor) = First(i)
                {
                   SetNth(lCouncilor,3,Nth(i,3));
                }

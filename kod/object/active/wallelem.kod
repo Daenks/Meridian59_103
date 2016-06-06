@@ -52,6 +52,7 @@ classvars:
 
    % Does the element affect the caster?
    vbCanAffectCaster = FALSE
+   vbIsAreaEffect = TRUE
 
 properties:
 
@@ -175,7 +176,7 @@ messages:
       if vbIsHarmful
          AND IsClass(poCaster,&Player)
          AND NOT Send(poCaster,@AllowPlayerAttack,#victim=what,
-                        #report=FALSE)
+                        #report=FALSE,#stroke_obj=self)
       {
          % We've been "affected" for this cycle.  This prevents super-spam.
          plAffected = Cons(what,plAffected);
@@ -349,6 +350,11 @@ messages:
    GetCaster()
    {
       return poCaster;
+   }
+
+   IsAreaEffect()
+   {
+      return vbIsAreaEffect;
    }
 
 end

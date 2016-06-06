@@ -36,13 +36,10 @@ classvars:
    viSpell_level = 50
    viSpellExertion = 0
    viSchool = SS_DM_COMMAND
-
-   viPersonal_ench = False
-
+   viPersonal_ench = FALSE
    viFlash = FLASH_GOOD
 
 properties:
-
 
 messages:
 
@@ -61,16 +58,17 @@ messages:
 
       if NOT (IsClass(who,&DM) OR IsClass(who,&Monster))
       {
-         debug("Mortal has Boon Spells!");
+         Debug("Mortal has Boon Spells!");
 
          return FALSE;
       }
 
       oTarget = First(lTargets);
-      if NOT IsClass(otarget, &User)
+      if NOT IsClass(oTarget,&User)
       {
-         Send(who,@MsgSendUser,#message_rsc=spell_bad_target, 
-              #parm1=vrName,#parm2=Send(otarget,@GetDef),#parm3=Send(otarget,@GetName));
+         Send(who,@MsgSendUser,#message_rsc=spell_bad_target,
+               #parm1=vrName,#parm2=Send(oTarget,@GetDef),
+               #parm3=Send(oTarget,@GetName));
 
          return FALSE;
       }
@@ -80,44 +78,42 @@ messages:
 
    CastSpell(who = $, lTargets = $, iSpellPower = 0)
    {
-      local iAmount, iNumEnchantHours, iState, oRoom;
+      local iAmount, iNumEnchantHours, iState, oTarget;
 
-      iNumEnchantHours = send(self,@DecodeDuration,#Compound=iSpellPower);
-      iAmount = send(self,@DecodeAmount,#Compound=iSpellPower);
+      iNumEnchantHours = Send(self,@DecodeDuration,#Compound=iSpellPower);
+      iAmount = Send(self,@DecodeAmount,#Compound=iSpellPower);
+
+      oTarget = First(lTargets);
 
       if who <> $
       {
-         if isclass(who,&DM) = 1
+         if IsClass(who,&DM)
          {
-             iNumEnchantHours = HOURS_LOGGED_ON_PER_DAY * BOON_DEFAULT_LENGTH * 7;
-             iAmount = BOON_DEFAULT_AMOUNT;
+            iNumEnchantHours = HOURS_LOGGED_ON_PER_DAY * BOON_DEFAULT_LENGTH * 7;
+            iAmount = BOON_DEFAULT_AMOUNT;
          }
       }
 
-      iState = (iNumEnchantHours * 100) + abs(iAmount);
+      iState = (iNumEnchantHours * 100) + Abs(iAmount);
       if iAmount < 0
       {
          iState = -iState;
       }
 
-      send(self,@DoSpellEffect,#who=first(lTargets),#amount=iAmount);      
+      Send(self,@DoSpellEffect,#who=oTarget,#amount=iAmount);
 
-      send(first(lTargets),@StartEnchantment,#what=self,
-               #time=BOON_HOUR,#state=iState);
+      Send(oTarget,@StartEnchantment,#what=self,#time=BOON_HOUR,#state=iState);
       if who <> $
       {
-          if IsClass(who,&DM)
-          {
-             Send(who,@MsgSendUser,#message_rsc=boon_caster_msg,
-                  #parm1=Send(self,@GetName),
-                  #parm2=Send(First(lTargets),@GetDef),
-                  #parm3=Send(First(lTargets),@GetName));
-          }
+         if IsClass(who,&DM)
+         {
+            Send(who,@MsgSendUser,#message_rsc=boon_caster_msg,
+                  #parm1=Send(self,@GetName),#parm2=Send(oTarget,@GetDef),
+                  #parm3=Send(oTarget,@GetName));
+         }
       }
 
-      oRoom = Send(first(lTargets),@GetOwner);
-
-      Send(self,@PlaySpellSound,#room_obj=oRoom,#what=first(lTargets));
+      Send(self,@PlaySpellSound,#room_obj=Send(oTarget,@GetOwner),#what=oTarget);
 
       return;
    }
@@ -131,7 +127,7 @@ messages:
    {
       return 1;
    }
-      
+
    DoSpellEffect(who = $, amount = $)
    {
       return;
@@ -144,22 +140,18 @@ messages:
 
    DecodeDuration(Compound = $)
    {
-      local Duration;
+      local iDuration;
 
-      Duration = Compound mod 10;
-      Duration = Duration * HOURS_LOGGED_ON_PER_DAY;
-      Duration = abs(Duration);  % We accept negative effects, but not durations
+      iDuration = Compound MOD 10;
+      iDuration = iDuration * HOURS_LOGGED_ON_PER_DAY;
+      iDuration = Abs(iDuration);  % We accept negative effects, but not durations
 
-      return Duration;
+      return iDuration;
    }
 
    DecodeAmount(Compound = $)
    {
-      local Amount;
-
-      Amount = Compound / 10;
-
-      return Amount;
+      return Compound / 10;
    }
 
    AddBoon(target = $, days = $, amount = $)
@@ -167,31 +159,31 @@ messages:
       local iSpellPower;
 
       iSpellPower = days;
-      iSpellPower = iSpellPower + abs(amount * 10);
+      iSpellPower = iSpellPower + Abs(amount * 10);
       if amount < 0
       {
          iSpellPower = -iSpellPower;
       }
 
-      send(self,@CastSpell,#lTargets=[target],#iSpellPower=iSpellPower);
+      Send(self,@CastSpell,#lTargets=[target],#iSpellPower=iSpellPower);
 
       return;
    }
 
-   RemoveEnchantmentEffects( who = $, state = $, report = TRUE )
+   RemoveEnchantmentEffects(who = $, state = $, report = TRUE)
    {
-      local istate;
+      local iState;
 
       if state < 0
       {
-         istate = -(state mod 100);
+         iState = -(state MOD 100);
       }
       else
       {
-         istate = state mod 100;
+         iState = state MOD 100;
       }
-     
-      Send(self,@EndEnchantment,#who=who,#state=istate,#report=report);
+
+      Send(self,@EndEnchantment,#who=who,#state=iState,#report=report);
 
       return;
    }
@@ -201,13 +193,13 @@ messages:
    {
       return TRUE;
    }
-    
+
    CanForget()
    {
       return FALSE;
    }
 
-   EndEnchantment( who = $, state = 0, report = TRUE )
+   EndEnchantment(who = $, state = 0, report = TRUE)
    {
       if (state / 100 = 0)
       {
@@ -225,8 +217,9 @@ messages:
             state = state + 100;
          }
 
-         send(who,@StartEnchantment,#what=self,#time=BOON_HOUR,#state=state);
+         Send(who,@StartEnchantment,#what=self,#time=BOON_HOUR,#state=state);
       }
+
       return;
    }
 
@@ -257,7 +250,7 @@ messages:
 
    SendTimeDesc(who=$)
    {
-      local i, iHours, iDuration, iNewDuration, oList;
+      local i, iHours, iDuration, iNewDuration, iTime, oList;
 
       oList = Send(who,@GetEnchantmentList);
 
@@ -268,14 +261,15 @@ messages:
       {
          if Nth(i,2) = self
          {
-            if IsTimer(Nth(i,1))
+            iTime = First(i);
+            if IsTimer(iTime)
             {
-               iNewDuration = GetTimeRemaining(Nth(i,1));
+               iNewDuration = GetTimeRemaining(iTime);
             }
             else
             {
                % Should be an integer
-               iNewDuration = Nth(i,1);
+               iNewDuration = iTime;
             }
             iHours = Abs(Nth(i,3)) / 100;
             iNewDuration = iNewDuration / 1000 + iHours * 3600;

@@ -60,6 +60,7 @@ extern "C" {
 #define GCS_SLIDER   0x0002L    /* Include to display slider */
 #define GCS_LIMITBAR 0x0004L    /* Include to display limit bar */
 #define GCS_NUMBER   0x0008L    /* Include to display numeric value of bar graph */
+#define GCS_XP       0x0010L    /* Include to display custom number on graph */
 
 /* Control-specific messages */
 #define GRPH_COLORSET (WM_USER + 1000)

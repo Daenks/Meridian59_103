@@ -1,0 +1,40 @@
+#
+# overall makefile
+#
+
+TOPDIR=.
+include common.mak.linux
+
+# make ignores targets if they match directory names
+all: Bserver Bkod Butil
+	
+
+Bserver: 
+	@echo Making $(COMMAND) in $(BLAKSERVDIR); \
+	cd $(BLAKSERVDIR); \
+	$(MAKE) -f makefile.linux $(COMMAND); \
+	cd ..
+
+Bcompiler:
+	@echo Making $(COMMAND) in $(BLAKCOMPDIR); \
+	cd $(BLAKCOMPDIR); \
+	$(MAKE) -f makefile.linux $(COMMAND); \
+	cd ..
+
+Bkod: Bcompiler Butil
+	@echo Making $(COMMAND) in $(KODDIR); \
+	cd $(KODDIR); \
+	$(MAKE) -sf makefile.linux $(COMMAND); \
+	cd ..
+
+Butil:
+	@echo Making $(COMMAND) in $(UTILDIR); \
+	cd $(UTILDIR); \
+	$(MAKE) -f makefile.linux $(COMMAND); \
+	cd ..
+
+
+clean:
+	env COMMAND='clean' $(MAKE) -sf makefile.linux
+	$(RM) $(TOPDIR)/postbuild.log 2>&1
+	$(RM) $(BLAKSERVDIR)/channel/*.txt 

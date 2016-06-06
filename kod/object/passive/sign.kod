@@ -26,6 +26,8 @@ resources:
 
 classvars:
 
+   viObject_flags = OF_SIGN | OF_DISPLAY_NAME
+
 properties:
 
    vrName = sign_name_rsc
@@ -33,32 +35,43 @@ properties:
    vrDesc = sign_desc_rsc
    vrInsc = sign_insc_rsc
 
+   piNameColor = NC_DM
+
 messages:
 
    Constructor(name = $,icon = $,desc = $,insc = $,newbie = FALSE)
    {
       if name <> $
-      {  vrName = name; }
+      {
+         vrName = name;
+      }
 
-	  if icon <> $
-      {  vrIcon = icon; }
+      if icon <> $
+      {
+         vrIcon = icon;
+      }
 
       if newbie = TRUE
-	  {  vrIcon = sign_icon_newbie_rsc; }
+      {
+         vrIcon = sign_icon_newbie_rsc;
+      }
 
       if desc <> $
-      {  vrDesc = desc; }
+      {
+         vrDesc = desc;
+      }
 
       if insc <> $
-      {  vrInsc = insc; }
+      {
+         vrInsc = insc;
+      }
 
       propagate;
    }
 
    HasInscription()
    {
-      if vrInsc <> sign_insc_rsc { return TRUE; }
-	  return FALSE;
+      return (vrInsc <> sign_insc_rsc);
    }
 
    GetInscription()
@@ -69,12 +82,22 @@ messages:
    ShowInscription()
    {
       AddPacket(4, vrInsc);
+
       return;
    }
 
    ReqNewOwner(what = $)
    {
-      return False;
+      return FALSE;
+   }
+
+   SendLightingInformation()
+   {
+      AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC | LIGHT_FLAG_HIGHLIGHT));
+      AddPacket(1,255);
+      AddPacket(2,LIGHT_BWHITE);
+
+      return;
    }
 
 end

@@ -7,7 +7,7 @@
 DEPEND = ..\trestype.bof
 BOFS = wimptres.bof notres.bof spquent.bof med-tght.bof wmp-medt.bof \
    tought.bof mediumt.bof ghostt.bof verytght.bof orctres.bof \
-   fairytrs.bof entt.bof mummytrs.bof \
+   fairytrs.bof entt.bof mummytrs.bof emptytres.bof \
    lowhumt.bof medhumt.bof highhumt.bof rattres.bof zombiet.bof \
    caveorct.bof orcwizt.bof orcpitt.bof avart.bof avarsht.bof \
    avarcht.bof lupkingt.bof dflyt.bof licht.bof \

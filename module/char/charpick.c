@@ -117,6 +117,13 @@ BOOL CALLBACK PickCharDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lPar
 
    switch (message)
    {
+   case WM_ACTIVATE:
+      CenterWindow(hDlg, GetParent(hDlg));
+      break;
+   case WM_SETFOCUS:
+   case WM_WINDOWPOSCHANGING:
+      SetFocus(hDlg);
+      break;
    case WM_INITDIALOG:
 	  {
 		  CenterWindow(hDlg, GetParent(hDlg));

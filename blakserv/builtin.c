@@ -20,13 +20,14 @@ typedef struct
 {
 	char *name;
 	char *password;
+	char *email;
 	int type;
 	char *game_name;
 } bi_account;
 
 bi_account bi_accounts[] =
 {
-	{ "Daenks",  "somethingnew",  ACCOUNT_ADMIN, "Daenks" },
+	{ "Daenks",  "somethingnew", "None", ACCOUNT_ADMIN, "Daenks"},
 };
 
 enum
@@ -36,7 +37,7 @@ enum
 
 void CreateBuiltInAccounts(void)
 {
-	int i,account_id,object_id;
+	int i, account_id, object_id = INVALID_OBJECT;
 	val_type name_val,system_id_val;
 	parm_node p[2];
 	
@@ -49,7 +50,7 @@ void CreateBuiltInAccounts(void)
 			account_id = a->account_id;
 		else
 			account_id = CreateAccountSecurePassword(bi_accounts[i].name,bi_accounts[i].password,
-			bi_accounts[i].type);
+			bi_accounts[i].email,bi_accounts[i].type);
 		
 		if (bi_accounts[i].game_name != NULL)
 		{
@@ -88,11 +89,12 @@ void CreateBuiltInAccounts(void)
 #endif
 					object_id = CreateObject(ADMIN_CLASS,2,p);
 				break;
-			} 
+			}
 			
-			if (AssociateUser(account_id,object_id) == False)
+			if (object_id == INVALID_OBJECT
+				|| AssociateUser(account_id,object_id) == false)
 				eprintf("CreateBuiltInAccounts had AssociateUser fail, on account %i object %i\n",
-				account_id,object_id);
+					account_id, object_id);
 		}
 	}
 }

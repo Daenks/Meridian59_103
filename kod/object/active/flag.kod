@@ -833,7 +833,7 @@ messages:
 
    GenerateTroops()
    {
-      local iGenRow, iGenCol, oTroop;
+      local each_obj, i, iCount, iGenRow, iGenCol, oTroop;
 
       ptGenerateTroops = $;
 
@@ -881,10 +881,20 @@ messages:
          return;
       }
 
-      if Send(poOwner,@CountHoldingHowMany,#class=oTroop) >= piTroopCap
-      {
-         Send(self,@CleanupExtraTroops);
+      iCount = 0;
 
+      foreach i in Send(poOwner,@GetHolderActive)
+      {
+         each_obj = First(i);
+         if (IsClass(each_obj,&FactionTroop)
+            AND Send(each_obj,@GetFaction) = piFaction)
+         {
+            ++iCount;
+         }
+      }
+
+      if iCount >= piTroopCap
+      {
          return;
       }
 

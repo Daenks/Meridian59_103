@@ -249,6 +249,9 @@ enum
 #define MIN_KOD_INT (1<<27)      // 28th bit is sign. 0x08000000 == kod -134217728
 #define KODFINENESS 64           // how many fine rows give a full row
 
+#define KOD_FALSE (1 << 28)
+#define KOD_TRUE ((1 << 28)+1)
+
 typedef struct
 {
    int data:28;

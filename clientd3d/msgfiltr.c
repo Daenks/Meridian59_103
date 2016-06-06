@@ -220,20 +220,26 @@ BOOL CALLBACK WhoDialogProc(HWND hDlg, UINT message, UINT wParam, LONG lParam)
 void MessageSaid(ID sender_id, ID sender_name, BYTE say_type, char *message)
 {
    // Always let non-player says through; check others for blocking
-  if (say_type != SAY_RESOURCE && sender_id != player.id && 
-      (config.ignore_all || IsUserInIgnoreList(sender_name) ||
-       (say_type == SAY_EVERYONE && config.no_broadcast)))
-  {
-    // If we blocked a "send" to us, tell server so
-    if (say_type == SAY_GROUP && 
-        (IsUserInIgnoreList(sender_name) || config.ignore_all))
+   if (say_type != SAY_RESOURCE && sender_id != player.id
+      && (config.ignore_all || IsUserInIgnoreList(sender_name)
+      || (say_type == SAY_EVERYONE && config.no_broadcast)))
+   {
+      // If we blocked a "send" to us, tell server so
+      if (say_type == SAY_GROUP && 
+         (IsUserInIgnoreList(sender_name) || config.ignore_all))
       SendSayBlocked(sender_id);
-    return;
-  }
+
+      return;
+   }
+
    if (say_type == SAY_RESOURCE)
       DisplayServerMessage(message, GetColor(COLOR_BGD), 0);
    else
       DisplayServerMessage(message, GetColor(COLOR_MAINEDITFGD), 0);
+
+   // Play a ding sound for tells/sends.
+   if (say_type == SAY_GROUP && sender_id != player.id)
+      SoundPlayFile("imp.ogg", 0, 0, 0);
 }
 /*****************************************************************************/
 /*

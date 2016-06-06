@@ -92,7 +92,10 @@ typedef enum {
    SS_RIIJA = 5,
    SS_JALA = 6,
    SS_DM_COMMAND = 7,
-} SpellSchool;
+   SKS_FENCING = 10,
+   SKS_BRAWLING = 11,
+   SKS_THIEVERY = 12,
+} School;
 
 // Info on each available spell
 typedef struct {
@@ -101,7 +104,8 @@ typedef struct {
    ID   desc_res;       // Resource ID of spell description string
    int  cost;           // Cost of choosing spell
    Bool chosen;         // True when user has chosen spell
-   BYTE school;         // School of spell
+   School spell_school; // School of spell
+   char *list_str;      // School + level + name in list
 } Spell;
 
 // Info on each available skill
@@ -111,6 +115,7 @@ typedef struct {
    ID   desc_res;       // Resource ID of skill description string
    int  cost;           // Cost of choosing skill
    Bool chosen;         // True when user has chosen skill
+   char *list_str;      // School + level + name in list
 } Skill;
 
 void MakeChar(CharAppearance *ap_init, list_type spells_init, list_type skills_init);
@@ -136,7 +141,7 @@ int  CharStatsGetPoints(void);
 BOOL CALLBACK CharSpellsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 BOOL CALLBACK CharSkillsDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-
+char *GetSchoolString(School school_id);
 extern int spell_points;                // Number of spells/skills points left
 
 // Sending messages to server

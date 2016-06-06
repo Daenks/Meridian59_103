@@ -32,7 +32,7 @@ resources:
       "have little time to contemplate these rumors in the presence of "
       "such destructive power!"
 
-   XeoUnholy_sound_aware = xeo2awr.wav
+   XeoUnholy_sound_aware = xeo2awr.ogg
 
  classvars:
 
@@ -68,7 +68,7 @@ messages:
       piColor_Translation = Send(SYS,@EncodeTwoColorXLAT,#color1=PT_REDTODKBLACK1);
 
       plSpellBook = [ [SID_HOLD,5,10], [SID_ENFEEBLE,10,40],
-                      [SID_BLIND,2,80], [SID_SUMMON_POISON_FOG,10,100] ];
+                      [SID_BLIND,2,80], [SID_POISON_FOG,10,100] ];
 
       propagate;
    }

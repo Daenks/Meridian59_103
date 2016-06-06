@@ -5,11 +5,6 @@
 !include $(TOPDIR)\common.mak
 
 DEPEND = ..\radiusench.bof
-BOFS = antimag.bof \
-       jala.bof \
-       sandstor.bof \
-       truce.bof \
-       umbrella.bof \
-       winds.bof
+BOFS = jala.bof umbrella.bof
 
 !include $(KODDIR)\kod.mak

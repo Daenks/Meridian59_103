@@ -83,6 +83,8 @@
       <RandomizedBaseAddress />
       <DataExecutionPrevention />
       <ProfileGuidedDatabase />
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)$(TargetName).exe" "$(SolutionDir)run\localclient"
@@ -138,6 +140,8 @@ $(SolutionDir)postbuild.bat
       <ImageHasSafeExceptionHandlers />
       <RandomizedBaseAddress />
       <DataExecutionPrevention />
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Command>copy /y "$(OutDir)$(TargetName).exe" "$(SolutionDir)run\localclient"
@@ -170,6 +174,7 @@ $(SolutionDir)postbuild.bat
     <ClInclude Include="cursor.h" />
     <ClInclude Include="d3dcache.h" />
     <ClInclude Include="d3ddriver.h" />
+    <ClInclude Include="d3dlighting.h" />
     <ClInclude Include="d3dparticle.h" />
     <ClInclude Include="d3drender.h" />
     <ClInclude Include="d3dtypes.h" />
@@ -249,7 +254,6 @@ $(SolutionDir)postbuild.bat
     <ClInclude Include="winmenu.h" />
     <ClInclude Include="winmsg.h" />
     <ClInclude Include="winxblak.h" />
-    <ClInclude Include="xform.h" />
     <ClInclude Include="xlat.h" />
   </ItemGroup>
   <ItemGroup>
@@ -272,6 +276,7 @@ $(SolutionDir)postbuild.bat
     <ClCompile Include="cursor.c" />
     <ClCompile Include="d3dcache.c" />
     <ClCompile Include="d3ddriver.c" />
+    <ClCompile Include="d3dlighting.c" />
     <ClCompile Include="d3dparticle.c" />
     <ClCompile Include="d3drender.c" />
     <ClCompile Include="dialog.c" />
@@ -348,7 +353,6 @@ $(SolutionDir)postbuild.bat
     <ClCompile Include="web.c" />
     <ClCompile Include="winmenu.c" />
     <ClCompile Include="winmsg.c" />
-    <ClCompile Include="xform.c" />
     <ClCompile Include="xlat.c" />
   </ItemGroup>
   <ItemGroup>

@@ -28,10 +28,10 @@ resources:
    OrcPitBossBody_dead_icon_rsc = OrcPitbX.bgf
    OrcPitBossBody_dead_name_rsc = "headless orc pit boss body"
 
-   OrcPitBossBody_sound_hit = tr_atkh.wav
-   OrcPitBossBody_sound_miss = tr_atkm.wav
-   OrcPitBossBody_sound_death = tr_dth.wav
-   OrcPitBossBody_sound_aware = tr_awr.wav
+   OrcPitBossBody_sound_hit = tr_atkh.ogg
+   OrcPitBossBody_sound_miss = tr_atkm.ogg
+   OrcPitBossBody_sound_death = tr_dth.ogg
+   OrcPitBossBody_sound_aware = tr_awr.ogg
 
    OrcPitBossBody_monster_healing = \
       "The body of the orc pit boss twitches slightly, its nearly-severed "

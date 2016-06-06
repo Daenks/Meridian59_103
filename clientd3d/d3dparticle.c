@@ -298,7 +298,7 @@ void D3DParticleSystemUpdateBurst(particle_system *pParticleSystem, d3d_render_p
                && pParticle->energy == pEmitter->energy - 1
                && rand() % 2)
             {
-               SoundPlayFile("firework.wav", 0, pParticle->pos.x, pParticle->pos.y);
+               SoundPlayFile("firework.ogg", 0, pParticle->pos.x, pParticle->pos.y);
                playedSound = true;
             }
 

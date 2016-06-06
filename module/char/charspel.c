@@ -62,8 +62,7 @@ void CharSpellsInit(HWND hDlg)
    for (l = spells; l != NULL; l = l->next)
    {
       Spell *s = (Spell *) (l->data);
-      
-      index = ListBox_AddString(hList1, LookupNameRsc(s->name_res));
+      index = ListBox_AddString(hList1, s->list_str);
       ListBox_SetItemData(hList1, index, s);
    }
 
@@ -96,8 +95,8 @@ void CharSpellsCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
          break;
       spell_points -= s->cost;
       SendMessage(hPoints, GRPH_POSSET, 0, spell_points);
-      
-      index2 = ListBox_AddString(hList2, LookupNameRsc(s->name_res));
+
+      index2 = ListBox_AddString(hList2, s->list_str);
       ListBox_SetItemData(hList2, index2, s);
       s->chosen = True;
       ListBox_DeleteString(hList1, index1);
@@ -115,8 +114,7 @@ void CharSpellsCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
       spell_points += s->cost;
       SendMessage(hPoints, GRPH_POSSET, 0, spell_points);
-
-      index1 = ListBox_AddString(hList1, LookupNameRsc(s->name_res));
+      index1 = ListBox_AddString(hList1, s->list_str);
       ListBox_SetItemData(hList1, index1, s);
       s->chosen = False;
       ListBox_DeleteString(hList2, index2);
@@ -181,15 +179,15 @@ void MaybeEnableAddButton(HWND hDlg)
       for (i = 0; i < ListBox_GetCount(hList2); ++i)
       {
          s = (Spell *) ListBox_GetItemData(hList2, i);
-         if (s->school == SS_QOR || s->school == SS_SHALILLE)
-            school = s->school;
+         if (s->spell_school == SS_QOR || s->spell_school == SS_SHALILLE)
+            school = s->spell_school;
       }
       
       // If school of selected spell conflicts, disable button
       s = (Spell *) ListBox_GetItemData(hList1, index);
       
-      if (school == SS_QOR && s->school == SS_SHALILLE ||
-          school == SS_SHALILLE && s->school == SS_QOR)
+      if (school == SS_QOR && s->spell_school == SS_SHALILLE ||
+         school == SS_SHALILLE && s->spell_school == SS_QOR)
          enable = FALSE;
    }
 

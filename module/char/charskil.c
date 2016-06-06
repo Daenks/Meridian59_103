@@ -58,8 +58,8 @@ void CharSkillsInit(HWND hDlg)
    for (l = skills; l != NULL; l = l->next)
    {
       Skill *s = (Skill *) (l->data);
-      
-      index = ListBox_AddString(hList1, LookupNameRsc(s->name_res));
+
+      index = ListBox_AddString(hList1, s->list_str);
       ListBox_SetItemData(hList1, index, s);
    }
 
@@ -93,7 +93,7 @@ void CharSkillsCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
       spell_points -= s->cost;
       SendMessage(hPoints, GRPH_POSSET, 0, spell_points);
 
-      index2 = ListBox_AddString(hList2, LookupNameRsc(s->name_res));
+      index2 = ListBox_AddString(hList2, s->list_str);
       ListBox_SetItemData(hList2, index2, s);
       s->chosen = True;
       ListBox_DeleteString(hList1, index1);
@@ -112,7 +112,7 @@ void CharSkillsCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
       spell_points += s->cost;
       SendMessage(hPoints, GRPH_POSSET, 0, spell_points);
 
-      index1 = ListBox_AddString(hList1, LookupNameRsc(s->name_res));
+      index1 = ListBox_AddString(hList1, s->list_str);
       ListBox_SetItemData(hList1, index1, s);
       s->chosen = False;
       ListBox_DeleteString(hList2, index2);

@@ -51,7 +51,7 @@ classvars:
    viKarma = 0
    viAttributes = \
       MOB_NOFIGHT | MOB_LISTEN | MOB_RANDOM | MOB_RECEIVE \
-      | MOB_NOMOVE | MOB_PERM_QUESTER | MOB_TEACHER
+      | MOB_NOMOVE | MOB_TEACHER
    viOccupation = MOB_ROLE_ROYALTY
 
    viHomeroom = RID_CASTLE2C

@@ -77,6 +77,7 @@ messages:
          howmuch = -Random((iHP_loss/40),iHP_loss/20);
          howmuch = Bound(howmuch,$,-1);
          Send(poApply_target,@GainBaseMaxHealth,#amount=howmuch);
+         Send(poApply_target,@ResetXPToLevel);
 
          if Send(poApply_target,@CheckLog)
          {

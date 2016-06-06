@@ -34,7 +34,7 @@ resources:
       "links."
    Nodeburst_not_today = "You may only cast Nodeburst once per day."
    
-   Nodeburst_sound = qor.wav
+   Nodeburst_sound = qor.ogg
 
 classvars:
 
@@ -139,7 +139,7 @@ messages:
       return;
    }
 
-   NewDay()
+   NewGameDay()
    {
       plRecentCasters = $;
 

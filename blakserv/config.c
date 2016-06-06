@@ -90,9 +90,13 @@ config_table_type config_table[] =
 { GUEST_TOO_MANY,         F, "TooMany",       CONFIG_STR,   
      "Too many guests are logged on right now; please try again later." },
 
+{ ACCOUNT_GROUP,          T, "[Account]",     CONFIG_GROUP, "" },
+{ ACCOUNT_NUM_SLOTS,      T, "NumSlots",      CONFIG_INT,   "3" },
+
 { LOGIN_GROUP,            F, "[Login]",       CONFIG_GROUP, "" },
 { LOGIN_MAX_ATTEMPTS,     F, "MaxAttempts",   CONFIG_INT,   "3" },
-{ LOGIN_MIN_VERSION,      T, "MinVersion",    CONFIG_INT,   "0" },
+{ LOGIN_CLASSIC_MIN_VERSION, T, "MinClassicVersion", CONFIG_INT,   "0" },
+{ LOGIN_OGRE_MIN_VERSION,    T, "MinOgreVersion",    CONFIG_INT,   "0" },
 { LOGIN_OLD_VERSION_STR,  F, "OldVersionStr", CONFIG_STR,   
      "The game software has been upgraded while you have been online. Logoff and "
      "then login again to automatically upgrade your software." },
@@ -135,7 +139,7 @@ config_table_type config_table[] =
      "The game is temporarily closed for maintenance." },
 
 { RESOURCE_GROUP,         F, "[Resource]",    CONFIG_GROUP, "" },
-{ RESOURCE_RSC_SPEC,      F, "RscSpec",       CONFIG_STR,   "*.rsc" },
+{ RESOURCE_RSC_SPEC,      F, "RscSpec",       CONFIG_STR,   "*.rsb" },
 { RESOURCE_LANGUAGE,      T, "Language",      CONFIG_INT,   "0" },
 
 { MEMORY_GROUP,           F, "[Memory]",      CONFIG_GROUP, "" },
@@ -146,8 +150,6 @@ config_table_type config_table[] =
 { MEMORY_SIZE_PROPERTIES_NAME_HASH,F,"SizePropertiesNameHash", CONFIG_INT,   "499" },
 
 { AUTO_GROUP,             F, "[Auto]",        CONFIG_GROUP, "" },
-{ AUTO_GARBAGE_TIME,      F, "GarbageTime",   CONFIG_INT,   "90", }, /* minutes */
-{ AUTO_GARBAGE_PERIOD,    F, "GarbagePeriod", CONFIG_INT,   "180", }, /* minutes */
 { AUTO_SAVE_TIME,         F, "SaveTime",      CONFIG_INT,   "0", }, /* minutes */
 { AUTO_SAVE_PERIOD,       F, "SavePeriod",    CONFIG_INT,   "180", }, /* minutes */
 { AUTO_KOD_TIME,          F, "KodTime",       CONFIG_INT,   "0", },
@@ -158,33 +160,37 @@ config_table_type config_table[] =
 { AUTO_RESET_POOL_TIME,   F, "ResetPoolTime", CONFIG_INT,   "0", },
 { AUTO_RESET_POOL_PERIOD, F, "ResetPoolPeriod",CONFIG_INT,  "60", },
 
-{ EMAIL_GROUP,            F, "[Email]",       CONFIG_GROUP, "" },
-{ EMAIL_LISTEN,           F, "Listen",        CONFIG_BOOL,  "No" },
-{ EMAIL_PORT,             F, "Port",          CONFIG_INT,   "25" },
-{ EMAIL_ACCOUNT_CREATE_NAME, F, "AccountCreateName", CONFIG_STR, "account-create" },
-{ EMAIL_ACCOUNT_DELETE_NAME, F, "AccountDeleteName", CONFIG_STR, "account-delete" },
-{ EMAIL_LOCAL_MACHINE_NAME, T, "LocalMachineName", CONFIG_STR, "unknown" },
-{ EMAIL_HOST,			  F, "MailServer",    CONFIG_STR,	   "ms-camaro" },
-{ EMAIL_NAME,			  F, "PageAddress",    CONFIG_STR,	   "nobody@dev.null" },
-   
 { UPDATE_GROUP,           F, "[Update]",      CONFIG_GROUP, "" },
-{ UPDATE_CLIENT_MACHINE,  T, "ClientMachine", CONFIG_STR,   "unknown" },
-{ UPDATE_CLIENT_FILE,     T, "ClientFilename",CONFIG_STR,   "unknown" },
-{ UPDATE_PACKAGE_MACHINE, T, "PackageMachine",CONFIG_STR,   "unknown" },
-{ UPDATE_PACKAGE_PATH,    T, "PackagePath",   CONFIG_STR,   "unknown" },
+{ UPDATE_CLIENT_MACHINE,  T, "ClientMachine", CONFIG_STR,   "" },
+{ UPDATE_CLIENT_FILE,     T, "ClientFilename",CONFIG_STR,   "" },
+{ UPDATE_PACKAGE_MACHINE, T, "PackageMachine",CONFIG_STR,   "" },
+{ UPDATE_PACKAGE_PATH,    T, "PackagePath",   CONFIG_STR,   "" },
 { UPDATE_DOWNLOAD_REASON, T, "DownloadReason",CONFIG_STR,
      "An update of Meridian files is available and required." },
-{ UPDATE_DEMO_BUTTON,	  T, "DemoButton"    ,CONFIG_STR,   "http://meridian59.neardeathstudios.com/M59-Download-01.shtml" },
+{ UPDATE_DEMO_BUTTON,	  T, "DemoButton"    ,CONFIG_STR,   "" },
+
+{ UPDATE_CLASSIC_PATCH_ROOT, T, "ClassicPatchHost" ,CONFIG_STR, "" },
+{ UPDATE_CLASSIC_PATCH_PATH, T, "ClassicPatchPath" ,CONFIG_STR, "" },
+{ UPDATE_CLASSIC_PATCH_CACHE_PATH,T, "ClassicPatchCachePath", CONFIG_STR, "" },
+{ UPDATE_CLASSIC_PATCH_TXT, T, "ClassicPatchTxt" ,CONFIG_STR, "" },
+{ UPDATE_CLASSIC_CLUB_EXE, T,  "ClassicClubExe"  ,CONFIG_STR, "" },
+
+{ UPDATE_OGRE_PATCH_ROOT, T, "OgrePatchHost" ,CONFIG_STR, "" },
+{ UPDATE_OGRE_PATCH_PATH, T, "OgrePatchPath" ,CONFIG_STR, "" },
+{ UPDATE_OGRE_PATCH_CACHE_PATH,T, "OgrePatchCachePath", CONFIG_STR, "" },
+{ UPDATE_OGRE_PATCH_TXT, T, "OgrePatchTxt" ,CONFIG_STR, "" },
+{ UPDATE_OGRE_CLUB_EXE, T,  "OgreClubExe"  ,CONFIG_STR, "" },
 
 { CONSOLE_GROUP,          F, "[Console]",     CONFIG_GROUP, "" },
 { CONSOLE_ADMINISTRATOR,  F, "Administrator", CONFIG_STR,   "Administrator" },
 { CONSOLE_CAPTION,        F, "Caption",       CONFIG_STR,   "BlakSton Server" },
+{ CONSOLE_LOCAL_MACHINE_NAME, T, "LocalMachineName", CONFIG_STR, "unknown" },
 
 { RIGHTS_GROUP,           F, "[Rights]",      CONFIG_GROUP, "" },
 { RIGHTS_GOROOM,          T, "GoRoom",        CONFIG_INT,   "2" },
 { RIGHTS_GOROOMBYNUM,     T, "GoRoomByNum",   CONFIG_INT,   "2" },
-{ RIGHTS_GOPLAYER,        T, "GoPlayer",      CONFIG_INT,   "1" },
-{ RIGHTS_GETPLAYER,       T, "GetPlayer",     CONFIG_INT,   "1" },
+{ RIGHTS_GOPLAYER,        T, "GoPlayer",      CONFIG_INT,   "2" },
+{ RIGHTS_GETPLAYER,       T, "GetPlayer",     CONFIG_INT,   "2" },
 
 { CONSTANTS_GROUP,        F, "[Constants]",   CONFIG_GROUP, "" },
 { CONSTANTS_ENABLED,      F, "Enabled",       CONFIG_BOOL,  "No" },
@@ -192,9 +198,9 @@ config_table_type config_table[] =
    
 { ADVERTISE_GROUP,        F, "[Advertise]",   CONFIG_GROUP, "" },
 { ADVERTISE_FILE1,        T, "File1",         CONFIG_STR,   "ad1.avi" },
-{ ADVERTISE_URL1,         T, "Url1",          CONFIG_STR,   "http://openmeridian.org" },
+{ ADVERTISE_URL1,         T, "Url1",          CONFIG_STR,   "https://www.Meridian59.de/" },
 { ADVERTISE_FILE2,        T, "File2",         CONFIG_STR,   "ad2.avi" },
-{ ADVERTISE_URL2,         T, "Url2",          CONFIG_STR,   "http://openmeridian.org/forums" },
+{ ADVERTISE_URL2,         T, "Url2",          CONFIG_STR,   "http://www.wiki.Meridian59.de" },
 
 { DEBUG_GROUP,            F, "[Debug]",       CONFIG_GROUP, "" },
 { DEBUG_CANMOVEINROOM,    T, "CanMoveInRoom", CONFIG_BOOL,  "No" },
@@ -286,6 +292,7 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
    case CONFIG_GROUP :
       break;
 
+#ifdef BLAK_PLATFORM_WINDOWS
    case CONFIG_PATH :
       len = strlen(s);
       
@@ -300,6 +307,22 @@ const char * AddConfig(int config_id,const char *config_data,int config_type,int
       c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
       strcpy(c->config_str_value,s);
       break;
+#else
+    case CONFIG_PATH :
+        len = strlen(s);
+
+        if (s[len-1] == '/')
+            s[len-1] = 0;
+
+        if (stat(s,&file_stat) != 0 || !(file_stat.st_mode & S_IFDIR))
+            return "invalid path--not found";
+
+        if (s[len-1] != ':')
+            strcat(s,"/");
+            c->config_str_value = (char *)AllocateMemory(MALLOC_ID_CONFIG,strlen(s)+1);
+            strcpy(c->config_str_value,s);
+            break;
+#endif
 
    case CONFIG_INT :
       if (sscanf(s,"%i",&num) != 1)
@@ -730,7 +753,7 @@ int LoadConfigLine(char *line,int lineno,const char *filename,int current_group)
       }
    }
    
-   if (i == LEN_CONFIG_TABLE || config_table[i].config_type == CONFIG_GROUP)
+   if (i >= LEN_CONFIG_TABLE || config_table[i].config_type == CONFIG_GROUP)
       StartupPrintf("LoadConfig can't match value %s (%i)\n",filename,lineno);
 
    return current_group;

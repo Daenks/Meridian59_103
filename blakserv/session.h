@@ -108,19 +108,21 @@ typedef struct
 
    int last_download_time; /* as reported by the client.  Needed to communicate from
 			      synched mode to upload mode */
+   // RSB file hash sent by client for comparison with live RSB.
+   char rsb_hash[ENCRYPT_LEN + 1];
 
    unsigned int seeds[SEED_COUNT]; /* for security in game mode */
    Bool seeds_hacked;
    unsigned int secure_token;
    char* sliding_token;
 
-   HANDLE muxReceive;
+   Mutex muxReceive;
    /* this protects the list of received data: receive_list, and receive_index */
    buffer_node *receive_list;
    int receive_index; /* index into first buffer of receive_list, of where we are */
 
 
-   HANDLE muxSend;
+   Mutex muxSend;
    /* this protects the list of buffers to be sent: send_list */
    buffer_node *send_list;
 

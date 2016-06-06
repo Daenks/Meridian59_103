@@ -84,6 +84,7 @@ resources:
    item_stats_proc_purge = "15%% chance to cast Purge on hit\n"
    item_stats_proc_twister = "8%% chance to disorient victim on hit\n"
    item_stats_proc_vamp = "10%% chance to gain up to 8 health on hit\n"
+   item_stats_bonus_xp = "%i bonus XP per kill\n"
 
 classvars:
 
@@ -136,9 +137,8 @@ properties:
    viObject_flags = OF_GETTABLE
    piHits_init = 0
    piHits = 0
-      
-   plItem_attributes = $
 
+   plItem_attributes = $
    piItem_flags = 0
 
    % List of enchantments applied by radius spells.
@@ -148,7 +148,7 @@ properties:
 
 messages:
 
-   Constructor(corpse=$)
+   Constructor(corpse=$, oDMCreator=$)
    {
       local iHits_average, oItemAtt;
 
@@ -160,15 +160,25 @@ messages:
          if Send(oItemAtt,@ReqAddToItem,#oItem=self)
          {
             Send(oItemAtt,@AddToItem,#oItem=self,#state1=corpse);
-         }            
+         }
       }
-      
+
       if viUnrevealedColor <> 0
          AND Send(self,@GetPaletteTranslation) = 0
       {
          Send(self,@SetPaletteTranslation,#translation=viUnrevealedColor);
       }
-      
+
+      if (oDMCreator <> $
+         AND NOT IsClass(self,&NumberItem))
+      {
+         oItemAtt = Send(SYS,@FindItemAttByNum,#num=IA_DM_CREATED);
+         if Send(oItemAtt,@ReqAddToItem,#oItem=self)
+         {
+            Send(oItemAtt,@AddToItem,#oItem=self,#state1=oDMCreator);
+         }
+      }
+
       propagate;
    }
 
@@ -183,7 +193,7 @@ messages:
    {
       local i, bFoundProperties, iHigh_level, n, iFarenPower, iRiijaPower,
             iKraananPower, iJalaPower, iShalPower, iQorPower, iInstrumentPower,
-            iNum, bID, iMinDamage, iMinDamageOwner, iAttackType;
+            iNum, bID, iMinDamage, iMinDamageOwner, iAttackType, oItemAtt;
 
       % This message 'telescopes' resources into the 5th %r of
       % item_desc_template. There are 16 different stats we can add;
@@ -682,6 +692,19 @@ messages:
                   }
                   AddPacket(4,item_stats_proc_vamp);
                }
+               else if iNum = IA_XP_KILL_BONUS
+               {
+                  if NOT bFoundProperties
+                  {
+                     AddPacket(4,system_rsc_template_2,
+                               4,special_properties_header);
+                     bFoundProperties = TRUE;
+                  }
+                  oItemAtt = Send(SYS,@FindItemAttByNum,#num=IA_XP_KILL_BONUS);
+                  AddPacket(4,item_stats_bonus_xp,
+                            4,Send(oItemAtt,@GetXPBonusFromCompound,
+                                    #iCompound=First(i)));
+               }
                else
                {
                   AddPacket(4,system_blank_resource);
@@ -800,7 +823,7 @@ messages:
       return;
    }
 
-   ShowDesc(bShowAll = FALSE)
+   ShowDesc(who=$,bShowAll = FALSE)
    {
       local bAlreadyBlind, bIdentified, oItemAtt, i, iNum;
 
@@ -847,7 +870,7 @@ messages:
             }
             else
             {
-               Send(oItemAtt,@AppendDesc,#oItem=self,#lData=i);
+               Send(oItemAtt,@AppendDesc,#oItem=self,#lData=i,#who=who);
             }
          }
       }
@@ -1306,17 +1329,17 @@ messages:
    ModifyDefensePower(defense_power = 0)
    "Gives the defensive bonus"
    {
-      return defense_power;            
+      return defense_power;
    }
 
    DefendingHit(who = $,what = $)
    {
       % Set to 75% currently
-      if random(1,100) < ARMOR_TAKE_DAMAGE_PCT   
+      if Random(1,100) < ARMOR_TAKE_DAMAGE_PCT
       {
-         piHits = piHits - 1;
+         --piHits;
       }
-      
+
       if piHits <= 0
       {
          Send(self,@ItemBrokenInBattle);
@@ -1661,13 +1684,13 @@ messages:
          return FALSE;
       }
       
-      if isClass(oRoom,&Player)
+      if IsClass(oRoom,&Player)
       {
          oSource = poOwner;
          oRoom = Send(oRoom, @GetOwner);
       }
       
-      if oRoom = $ OR NOT isClass(oRoom,&Room)
+      if oRoom = $ OR NOT IsClass(oRoom,&Room)
       {
          return FALSE;
       }
@@ -1932,15 +1955,15 @@ messages:
       % First kill the timer if it has one
       if Send(oItemAtt,@HasTimer,#lData=lData)
       {
-            if Nth(lData,2) <> $
-      	    {
-	             DeleteTimer(Nth(lData,2));
-		     SetNth(lData,2,$);
-	    }
+         if Nth(lData,2) <> $
+         {
+            DeleteTimer(Nth(lData,2));
+            SetNth(lData,2,$);
+         }
       }
       % now free the nodes
       plItem_Attributes = DelListElem(plItem_Attributes,lData);
-      
+
       return;
    }
 
@@ -1967,14 +1990,14 @@ messages:
             return;
          }
       }
-      
+
       Debug("AttributeTimer didn't find enchantment to get rid of!");
-      
+
       return;
    }
 
    ClearAllItemAttributes()
-   "Most likely called if the Item is deleted."   
+   "Most likely called if the Item is deleted."
    {
       local i, oItemAtt, iNum;
 
@@ -1985,32 +2008,32 @@ messages:
          if oItemAtt = $
          {
             Debug("Illegal ItemAtt in list!");
-            
+
             continue;
          }
-         
+
          Send(oItemAtt,@RemoveFromItem,#oItem=self);
       }
-          
+
       % All items should have cleared fine.  If not, something went wrong.
       if plItem_Attributes <> $
       {
          Debug("Clearing all Item Attributes failed!");
          plItem_Attributes = $;
       }
-          
+
       return;
    }
 
    BuildDescName()
    {
       local i, iHigh_index, oHigh_obj, oItemAtt, iPriority, iNum;
-      
+
       if plItem_Attributes = $
       {
          propagate;
       }
-      
+
       iHigh_index = 0;  oHigh_obj = $;
       foreach i in plItem_Attributes
       {
@@ -2018,14 +2041,13 @@ messages:
          {
             % If not identified, keep on marching.
             continue;
-         }   
+         }
 
          iNum = Send(self,@GetNumFromCompound,#compound=First(i));
          oItemAtt = Send(SYS,@FindItemAttByNum,#num=iNum);
-         
+
          iPriority = Send(oItemAtt,@GetNamePriority);
          if iPriority > iHigh_index
-         
          {
             iHigh_index = iPriority;
             oHigh_obj = oItemAtt;
@@ -2037,7 +2059,7 @@ messages:
          propagate;
       }
 
-      Send(oHigh_obj,@ItemBuildDescName,#oItem=self);      
+      Send(oHigh_obj,@ItemBuildDescName,#oItem=self);
 
       return;
    }
@@ -2045,7 +2067,7 @@ messages:
    SetTimer(timer_duration=$)
    {
       local tTimer;
-      
+
       if timer_duration = $
       {
          return $;
@@ -2063,12 +2085,11 @@ messages:
       return viSpell_modifier;
    }
 
-   GetSpellModifier(oSpell=$,lTargets=$)
+   GetSpellModifier(oSpell=$)
    {
       local oItemAtt, iModifier, i, iNum, oObjectAttribute;
 
-      iModifier = Send(self,@GetBaseSpellModifier,#oSpell=oSpell,
-                        #lTargets=lTargets);
+      iModifier = Send(self,@GetBaseSpellModifier,#oSpell=oSpell);
       foreach i in plItem_Attributes
       {
          iNum = Send(self,@GetNumFromCompound,#compound=First(i));
@@ -2087,6 +2108,26 @@ messages:
       return iModifier;
    }
 
+   GetItemXPBonus()
+   {
+      local oItemAtt, iXP, i, iNum, oObjectAttribute;
+
+      iXP = 0;
+
+      foreach i in plItem_Attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         if (iNum = IA_XP_KILL_BONUS)
+         {
+            oItemAtt = Send(SYS,@FindItemAttByNum,#num=iNum);
+            iXP = iXP + Send(oItemAtt,@GetXPBonusFromCompound,
+                              #iCompound=First(i));
+         }
+      }
+
+      return iXP;
+   }
+
    GetHeatDamage()
    "Only things worn at the armor position will be asked this, but "
    "just in case, default is 0."
@@ -2100,7 +2141,7 @@ messages:
       {
          return vrIcon_male;
       }
-      
+
       return vrIcon_female;
    }
 
@@ -2118,12 +2159,12 @@ messages:
             }
          }
       }
-      
+
       if Send(who,@GetGender) = GENDER_MALE
       {
          return vrLeftarm_male;
       }
-      
+
       return vrLeftarm_female;
    }
 
@@ -2131,17 +2172,17 @@ messages:
    {
       return FALSE;
    }
-   
+
    OverrideArms()
    {
       return FALSE;
    }
-   
+
    GetOverrideRightArm()
    {
       return $;
    }
-   
+
    GetOverrideLeftArm()
    {
       return $;
@@ -2166,9 +2207,9 @@ messages:
       {
          return vrRightarm_male;
       }
-      
+
       return vrRightarm_female;
-   }   
+   }
 
    GetNakedLeftArm(who=$)
    {
@@ -2208,7 +2249,7 @@ messages:
       }
 
       return NakedRightarm_female;
-   }   
+   }
 
    GetLegs(who=$)
    {
@@ -2216,9 +2257,9 @@ messages:
       {
          return vrLegs_male;
       }
-      
+
       return vrLegs_female;
-   }   
+   }
 
    HasSkinTones()
    {
@@ -2233,8 +2274,8 @@ messages:
    ResetSkinColor()
    {
       local iSkin_color, iColor, iXlat;
-      
-      if not Send(self,@HasSkinTones)
+
+      if NOT Send(self,@HasSkinTones)
       {
          return;
       }
@@ -2248,7 +2289,7 @@ messages:
                             #skin_color=iSkin_color);
          iColor = Send(SYS,@DecodePrimaryColor,
                        #xlat=Send(self,@GetPaletteTranslation));
-      
+
          iXlat = Send(SYS,@EncodeTwoColorXLAT,#color1=iColor,
                       #Color2=iSkin_color);
          Send(self,@SetPaletteTranslation,#translation=iXlat);
@@ -2260,15 +2301,18 @@ messages:
    ResetXLATsToShirt()
    {
       local iSkin_color, iColor, iXlat, iShirt_XLAT;
-      
-      if not Send(self,@ShowShirt)  { return; }
+
+      if NOT Send(self,@ShowShirt)
+      {
+         return;
+      }
       iShirt_XLAT = Send(poOwner,@GetCurrentShirtColor);
 
       if (iShirt_XLAT <> Send(self,@GetPaletteTranslation))
       {
          Send(self,@SetPaletteTranslation,#translation=iShirt_Xlat);
       }
-      
+
       return;
    }
 
@@ -2282,26 +2326,26 @@ messages:
          {
             Send(poOwner,@ResetPlayerIcon,#alldone=FALSE);
          }
-         
+
          if vrLeftArm_male <> $
          {
             Send(poOwner,@ResetPlayerArms,#alldone=FALSE);
          }
-         
-         if  vrLegs_male <> $
+
+         if vrLegs_male <> $
          {
             Send(poOwner,@ResetPlayerLegs,#alldone=FALSE);
          }
-         
+
          Post(poOwner,@RefreshPlayerVisualGear);
-         
+
          oRoom = Send(poOwner,@GetOwner);
          if oRoom <> $
-         {         
+         {
             Post(oRoom,@SomethingChanged,#what=poOwner);
          }
       }
-      
+
       return;
    }
 
@@ -2309,8 +2353,8 @@ messages:
    {
       local oRoom;
 
-      % make the player's hands match his sleeves.            
-      Send(self,@ResetSkinColor);   
+      % make the player's hands match his sleeves.
+      Send(self,@ResetSkinColor);
 
       if Send(self,@ShowShirt)
       {
@@ -2327,72 +2371,67 @@ messages:
          Send(self,@SetIcon,#alldone=FALSE);
       }
 
-      if  vrLegs_male <> $
+      if vrLegs_male <> $
       {
          Send(self,@SetLegs,#alldone=FALSE);
       }
-      
+
       oRoom = Send(poOwner,@GetOwner);
       if oRoom <> $
-      {         
+      {
          Send(oRoom,@SomethingChanged,#what=poOwner);
       }
-      
+
       return;
    }
-   
+
    ItemChangesArms()
    {
-      if vrLeftArm_male <> $
-      {
-         return TRUE;
-      }
-       
-      return FALSE;
+      return vrLeftArm_male <> $;
    }
 
    SetNakedArms()
    {
       local iSkin_xlat;
-      
-      iSkin_Xlat = Send(poOwner,@GetSkinColor);      
+
+      iSkin_Xlat = Send(poOwner,@GetSkinColor);
       iSkin_Xlat = Send(poOwner,@ConvertSkinColorToXLAT,
                         #skin_color=iSkin_Xlat);
       iSkin_Xlat = Send(SYS,@EncodeTwoColorXLAT,#color1=iSkin_XLAT,
-                        #color2=iSkin_XLAT);      
+                        #color2=iSkin_XLAT);
       Send(poOwner,@SetPlayerArms,#what=self,
-           #new_left_arm=Send(self,@GetNakedLeftArm,#who=poOwner),
-           #new_right_arm=Send(self,@GetNakedRightArm,#who=poOwner),
-           #translation=iSkin_Xlat,#alldone=FALSE);
-           
+            #new_left_arm=Send(self,@GetNakedLeftArm,#who=poOwner),
+            #new_right_arm=Send(self,@GetNakedRightArm,#who=poOwner),
+            #translation=iSkin_Xlat,#alldone=FALSE);
+
       return;
    }
 
    SetArms()
    {
       Send(poOwner,@SetPlayerArms,#what=self,
-           #new_left_arm=Send(self,@GetLeftArm,#who=poOwner),
-           #new_right_arm=Send(self,@GetRightArm,#who=poOwner),
-           #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
-           
+            #new_left_arm=Send(self,@GetLeftArm,#who=poOwner),
+            #new_right_arm=Send(self,@GetRightArm,#who=poOwner),
+            #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
+
       return;
    }
 
    SetIcon()
    {
       Send(poOwner,@SetPlayerIcon,#what=self,
-           #new_icon=Send(self,@GetShirtIcon,#who=poOwner),
-           #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
-           
+            #new_icon=Send(self,@GetShirtIcon,#who=poOwner),
+            #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
+
       return;
    }
 
    SetLegs()
    {
       Send(poOwner,@SetPlayerLegs,#what=self,
-           #new_legs=Send(self,@GetLegs,#who=poOwner),
-           #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
-           
+            #new_legs=Send(self,@GetLegs,#who=poOwner),
+            #translation=Send(self,@GetPaletteTranslation),#alldone=FALSE);
+
       return;
    }
 
@@ -2406,13 +2445,13 @@ messages:
    {
       return viUnrevealedColor;
    }
-   
+
    GetRevealedColor()
    "Returns the item's mystery revealed color."
    {
       return viRevealedColor;
    }
-   
+
    RevealHiddenColor()
    "Shows the item's true color."
    {
@@ -2421,46 +2460,50 @@ messages:
          AND Send(self,@GetPaletteTranslation) = (viUnrevealedColor & ITEM_PALETTE_MASK)
       {
          Send(self,@SetPaletteTranslation,#translation=viRevealedColor);
+
          return TRUE;
       }
+
       return FALSE;
    }
-  
+
    GetCurrentResistances()
    {
-      local lCurrentResistances, oObjectAttribute;
-      
+      local lCurrentResistances, oObj;
+
       lCurrentResistances = Send(self,@GetResistanceModifiers);
-      
-      foreach oObjectAttribute in plObject_attributes
+
+      foreach oObj in plObject_attributes
       {
-         lCurrentResistances = Send(oObjectAttribute,@ModifyResistance,#resistance_list=lCurrentResistances);
+         lCurrentResistances = Send(oObj,@ModifyResistance,
+                                    #resistance_list=lCurrentResistances);
       }
-      
+
       return lCurrentResistances;
    }
 
    ModifyResistance(resistance_list=$)
    {
-      local oResist, lCurrentResistances;
-      
+      local i, lCurrentResistances;
+
       lCurrentResistances = Send(self,@GetCurrentResistances);
-      
-      foreach oResist in lCurrentResistances
+
+      foreach i in lCurrentResistances
       {
-         resistance_list = Send(SYS,@AddResistance,#what=Nth(oResist,1),#value=Nth(oResist,2),#resistance_list=resistance_list);
+         resistance_list = Send(SYS,@AddResistance,#what=First(i),#value=Nth(i,2),
+                                 #resistance_list=resistance_list);
       }
-      
+
       return resistance_list;
    }
 
    AddRadiusEnchantment(what=$,iPower=0,source=$)
    {
       local i;
-      
+
       foreach i in plRadiusEnchantments
       {
-         if Nth(i,1) = what
+         if First(i) = what
             AND Nth(i,2) = iPower
             AND Nth(i,3) = source
          {
@@ -2469,17 +2512,17 @@ messages:
       }
 
       plRadiusEnchantments = Cons([what,iPower,source],plRadiusEnchantments);
-      
-      If IsClass(self,&User)
+
+      if IsClass(self,&User)
       {
          Send(self,@ShowAddEnchantment,#what=what,#type=2);
-         
-         If source = self
+
+         if source = self
          {
             Send(self,@ShowAddEnchantment,#what=what,#type=1);
          }
       }
-      
+
       return;
    }
 
@@ -2487,23 +2530,24 @@ messages:
    {
       local i, bFound;
 
-      bFound = FALSE ;
+      bFound = FALSE;
+
       foreach i in plRadiusEnchantments
       {
-         if Nth(i,1) = what
+         if First(i) = what
             AND Nth(i,2) = iPower
             AND Nth(i,3) = source
          {
-            If IsClass(self,&User)
+            if IsClass(self,&User)
             {
-               Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=2);
+               Send(self,@ShowRemoveEnchantment,#what=First(i),#type=2);
 
-               If source = self
+               if source = self
                {
-                  Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),#type=1);
+                  Send(self,@ShowRemoveEnchantment,#what=First(i),#type=1);
                }
             }
-         
+
             plRadiusEnchantments = DelListElem(plRadiusEnchantments,i);
             bFound = TRUE;
          }
@@ -2517,12 +2561,12 @@ messages:
 
       return;
    }
-   
+
    IsAffectedByRadiusEnchantment(what=$,caster=$,byClass=&RadiusEnchantment)
    "Returns whether or not currently enchanted by <what> radius enchantment."
    {
       local i;
-      
+
       if plRadiusEnchantments = $
       {
          return FALSE;
@@ -2532,19 +2576,10 @@ messages:
       {
          foreach i in plRadiusEnchantments
          {
-            if IsClass(Nth(i,1),byClass)
+            if IsClass(First(i),byClass)
+               AND (caster = $ OR Nth(i,3) = caster)
             {
-               if caster = $
-               {
-                  return TRUE;
-               }
-               else
-               {
-                  if Nth(i,3) = caster
-                  {
-                     return TRUE;
-                  }
-               }
+               return TRUE;
             }
          }
       }
@@ -2552,57 +2587,43 @@ messages:
       {
          foreach i in plRadiusEnchantments
          {
-            if Nth(i,1) = what
+            if First(i) = what
+               AND (caster = $ OR Nth(i,3) = caster)
             {
-               if caster = $
-               {
-                  return TRUE;
-               }
-               else
-               {
-                  if Nth(i,3) = caster
-                  {
-                     return TRUE;
-                  }
-               }
-            }
-         }      
-      }
-      
-      return FALSE;
-   }
-   
-   GetMostPowerfulRadiusEnchantmentState(byClass=&RadiusEnchantment)
-   {
-      local i, oHighest;
-   
-      oHighest = $;
-   
-      foreach i in plRadiusEnchantments
-      {
-         if IsClass(Nth(i,1), byClass)
-         {
-            if oHighest = $
-            {
-               oHighest = i;
-            }
-            else
-            {
-               if Nth(i,2) > Nth(oHighest,2)
-               {
-                  oHighest = i;
-               }
+               return TRUE;
             }
          }
       }
+
+      return FALSE;
+   }
+
+   GetMostPowerfulRadiusEnchantmentState(byClass=&RadiusEnchantment)
+   {
+      local i, oHighest;
+
+      oHighest = $;
+
+      foreach i in plRadiusEnchantments
+      {
+         if IsClass(First(i),byClass)
+         {
+            if (oHighest = $
+               OR Nth(i,2) > Nth(oHighest,2))
+            {
+               oHighest = i;
+            }
+         }
+      }
+
       return oHighest;
    }
-   
+
    GetRadiusEnchantments()
    {
       return plRadiusEnchantments;
    }
-   
+
    IsInSameRoom(what = $)
    {
       if Send(self,@GetOwner) <> $
@@ -2611,18 +2632,18 @@ messages:
          AND IsClass(Send(what,@GetOwner),&Room)
          AND Send(self,@GetOwner) = Send(what,@GetOwner)
       {
-         return 1;
+         return TRUE;
       }
-         
-      return 0;
+
+      return FALSE;
    }
 
    SquaredDistanceTo(what = $)
    "Computes squared distance to <what>. Returns $ for any object that is not within a room."
    {
       local iRow, iCol;
-      
-      If NOT Send(self,@IsInSameRoom,#what=what)
+
+      if NOT Send(self,@IsInSameRoom,#what=what)
       {
          return $;
       }
@@ -2636,7 +2657,7 @@ messages:
          return $;
       }
 
-      return send(self,@SquaredDistanceToLocation,#row=iRow,#col=iCol);
+      return Send(self,@SquaredDistanceToLocation,#row=iRow,#col=iCol);
    }
 
    SquaredDistanceToLocation(row = $, col = $)
@@ -2658,7 +2679,7 @@ messages:
       }
 
       if poOwner <> $
-         AND IsClass(poOwner,&Player)
+         AND IsClass(poOwner,&User)
       {
          Send(poOwner,@SomethingChanged,#what=self);
       }
@@ -2669,7 +2690,7 @@ messages:
    RemoveMagicFlag()
    {
       local i, iNum, oItemAtt;
-      
+
       foreach i in plItem_attributes
       {
          iNum = Send(self,@GetNumFromCompound,#compound=First(i));
@@ -2678,9 +2699,9 @@ messages:
          if Send(oItemAtt,@IsMagicalEffect)
          {
             viObject_flags = viObject_flags | OF_ITEM_MAGIC;
-            
+
             if poOwner <> $
-               AND IsClass(poOwner,&Player)
+               AND IsClass(poOwner,&User)
             {
                Send(poOwner,@SomethingChanged,#what=self);
             }
@@ -2692,9 +2713,57 @@ messages:
       viObject_flags = viObject_flags & ~OF_ITEM_MAGIC;
 
       if poOwner <> $
-         AND IsClass(poOwner,&Player)
+         AND IsClass(poOwner,&User)
       {
          Send(poOwner,@SomethingChanged,#what=self);
+      }
+
+      return;
+   }
+
+   ReportDMCreated()
+   {
+      local i, iNum;
+
+      foreach i in plItem_attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         if (iNum = IA_DM_CREATED)
+         {
+            if (poOwner = $)
+            {
+               Debug("Found item ",self,Send(self,@GetTrueName)," created by ",
+                     Send(Nth(i,3),@GetTrueName)," $ owner.");
+            }
+            else
+            {
+               Debug("Found item ",self,Send(self,@GetTrueName)," created by ",
+                     Send(Nth(i,3),@GetTrueName)," owned by ",
+                     Send(poOwner,@GetTrueName));
+            }
+
+            return;
+         }
+      }
+
+      return;
+   }
+
+   RemoveDMCreated()
+   {
+      local i, iNum;
+
+      foreach i in plItem_attributes
+      {
+         iNum = Send(self,@GetNumFromCompound,#compound=First(i));
+         if (iNum = IA_DM_CREATED)
+         {
+            GodLog("Removing DM created itematt from ",self,", ",
+                  Send(self,@GetTrueName));
+            Send(self,@RemoveItemAttIfPresent,#iNum=IA_DM_CREATED);
+
+            return;
+         }
       }
 
       return;
@@ -2703,6 +2772,13 @@ messages:
    CanSweep()
    {
       return TRUE;
+   }
+
+   PrintWeight()
+   {
+      GodLog(Send(self,@GetTrueName)," weight: ",viWeight," bulk: ",viBulk);
+
+      return;
    }
 
 end

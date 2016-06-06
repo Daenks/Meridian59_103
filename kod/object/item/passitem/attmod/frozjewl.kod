@@ -27,18 +27,16 @@ resources:
       "known only to him. Rumor has it that it is a conduit for mystical "
       "aggression, using raw mana to boost elemental touch spells. "
       "Your hand tingles when you hold it."
-
    jof_condition_exc = " is in immaculate condition."
    jof_condition_good = " is lightly scratched."
    jof_condition_med = \
       " is moderately scratched, and appears slightly opaque."
    jof_condition_poor = \
       " is heavily scratched and seems to be losing its glow."
-
    frozjewel_desc_broken_rsc = "The jewel seems ordinary and dull."
-
    frozjewel_broken = "The Jewel of Froz now seems quite ordinary."
-
+   frozjewel_recharge_rsc = \
+      "Your Jewel of Froz gains strength from the life force of your slain foe."
 classvars:
 
    vrName = frozjewel_name_rsc
@@ -66,6 +64,9 @@ classvars:
    vbDoubleManaCost = FALSE
    viAttack_bonus = 200
    vbScaleHitrollBonus = TRUE
+
+    // Jof recharges victim level/viRechargeFactor hits on kills.
+   viRechargeFactor = 15
 
 properties:
 
@@ -172,7 +173,7 @@ messages:
    {
       local i, iMana;
 
-      piHits = piHits - 1;
+      --piHits;
 
       if piHits <= 0
       {
@@ -248,16 +249,13 @@ messages:
          {
             iMinDamage = 1;
          }
+         else if iPlayerHp < 125
+         {
+            iMinDamage = 2;
+         }
          else
          {
-            if iPlayerHp < 125
-            {
-               iMinDamage = 2;
-            }
-            else
-            {
-               iMinDamage = 3;
-            }
+            iMinDamage = 3;
          }
       }
 
@@ -278,23 +276,17 @@ messages:
          {
             iMaxDamage = 1;
          }
+         else if iPlayerHp < 75
+         {
+            iMaxDamage = 2;
+         }
+         else if iPlayerHp < 125
+         {
+            iMaxDamage = 3;
+         }
          else
          {
-            if iPlayerHp < 75
-            {
-               iMaxDamage = 2;
-            }
-            else
-            {
-               if iPlayerHp < 125
-               {
-                  iMaxDamage = 3;
-               }
-               else
-               {
-                  iMaxDamage = 5;
-               }
-            }
+            iMaxDamage = 5;
          }
       }
 
@@ -367,6 +359,26 @@ messages:
       else
       {
          AddPacket(1,ANIMATE_NONE,2,1);
+      }
+
+      return;
+   }
+
+   KilledSomething(what=$)
+   "Called when our owner killed something. Recharges hits on the JOF."
+   {
+      if (what = $
+         OR NOT Send(SETTINGS_OBJECT,@CanFrozRechargeOnKill)
+         OR (IsClass(what,&Monster) AND Send(what,@IsIllusion)))
+      {
+         return;
+      }
+
+      piHits = Bound(piHits + (Send(what,@GetLevel) / viRechargeFactor),
+                     1, Send(self,@GetMaxHits));
+      if (poOwner <> $)
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=frozjewel_recharge_rsc);
       }
 
       return;

@@ -21,8 +21,6 @@ resources:
    creator_armor = "You are now armor."
    creator_icon_armor = aarmor.bgf
 
-   creator_blank_string = ""
-
    creator_spider = "You are now a spider."
    creator_troll = "You are now a troll."
    creator_ant = "You are now an ant."
@@ -77,7 +75,7 @@ messages:
          piAttack_delay = 200;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_armor);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -94,7 +92,7 @@ messages:
          piAttack_delay = 200;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_spider);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -111,7 +109,7 @@ messages:
          piAttack_delay = 200;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_troll);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -128,7 +126,7 @@ messages:
          piAttack_delay = 150;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_ant);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -145,7 +143,7 @@ messages:
          piAttack_delay = 150;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_red_ant);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -162,7 +160,7 @@ messages:
          piAttack_delay = 800;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_priestess);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -179,7 +177,7 @@ messages:
          piAttack_delay = 200;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_ghost);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -196,7 +194,7 @@ messages:
          piAttack_delay = 200;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_cow);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -213,7 +211,7 @@ messages:
          piAttack_delay = 500;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_shrub);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -230,7 +228,7 @@ messages:
          piAttack_delay = 500;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_stool);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }
@@ -247,16 +245,7 @@ messages:
          piAttack_delay = 500000;
          Send(poOwner,@SomethingChanged,#what=self);
          Send(self,@MsgSendUser,#message_rsc=creator_tree);
-         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
-
-         return;
-      }
-
-      if StringEqual(string,"shadow")
-      {
-         Send(self,@MsgSendUser,#message_rsc=admin_black);
-         Send(self,@SetPlayerDrawfx,#drawfx=DRAWFX_BLACK);
-         Send(poOwner,@SomethingChanged,#what=self);
+         Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=FALSE);
 
          return;
       }

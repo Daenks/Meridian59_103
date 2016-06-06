@@ -1,20 +1,20 @@
-guildInvite_name_rsc = de "Einladen"
+guildInvite_name_rsc = de "Einladung"
 guildinvite_desc_text_rsc = de \
-   "Wird verwendet, um potentielle Mitglieder der Gilde einzuladen. Eingeladene "
-   "Person hat 1 Minute um die Einladung anzunehmen."
+   "So kannst Du potentielle Mitglieder in die Gilde einladen. Die eingeladene Person "
+   "hat eine Minute Zeit, um die Einladung anzunehmen."
 guildinvite_already_your_guild = de \
-   "Diese Person gehört bereits zu deiner Gilde."
+   "Diese Person gehört bereits zu Deiner Gilde."
 invite_cant_invite_self = de \
-   "Du kannst dich nicht selber zu deiner eigenen Gilde einladen!"
-invite_non_user = de "%s%s lehnt respektvoll dein verlockendes Angebot ab."
+   "Du kannst Dich nicht selbst in Deine eigene Gilde einladen!"
+invite_non_user = de "%s%s lehnt Dein Angebot respektvoll ab."
 guildinvitation_to_inductor = de \
-   "~BDu verlängerst die %s%q die Möglichkeit %s%q beizutreten."
+   "~BDu bietest %s%q die Möglichkeit, sich %s%q anzuschließen."
 guildinvitation_to_inductee = de \
-   "~B%s%s verlängert die Möglichkeit der Gilde %s%q beizutreten!"
+   "~B%s%s bietet Dir eine Einladung an, Dich %s%q anzuschließen!"
 guildinvitation_guild_full = de \
-   "%s%q's Ränge sind voll und werden keine weiteren Mitglieder aufnehmen."
+   "Alle Ränge der Gilde %s%q sind besetzt, und sie nehmen keine neue Mitglieder mehr auf."
 guildinvitation_cannot_rejoin = de \
-   "~BDieser Spieler kann derzeit der Gilde nicht wieder beitreten.."
+   "~BDieser Spieler kann zur Zeit nicht wieder in Deine Gilde eintreten."
 guildinvitation_necro_no_amulet = de \
-   "~BNur ein Nekromant kann dieser Gilde beitreten!  Dieser Spieler ist "
-   "nur für den Verbrauch gut."
+   "~BNur ein Nekromant kann dem Orden beitreten. Dieser Spieler eignet sich "
+   "nur zum Verzehr."

@@ -31,7 +31,7 @@ Goad_already_combatant = de "Sehr großzügig . . . aber Du gehörst mir bereits."
 Goad_already_champion = de "Sehr großzügig . . . aber Du gehörst mir bereits."
 Goad_already_have_champion = de \
    "Du willst Champion sein? Nichts leichter als das! Vernichte %s%s! Bist "
-   "Du mutig genug für die Herausforderung?"
+   "Du mutig genug für die Herausforderung?%s$0"
 Goad_challenge_offered = de \
    "%s%s hat Dich herausgefordert.  Willst Du Deinen Gegner wie einen Wurm "
    "zerquetschen?%s$0%s$0"
@@ -49,11 +49,11 @@ Goad_new_champion = de \
 Goad_killed_champion = de \
    "%s%s hat den Champion %s%s besiegt!  . . . frisches Blut!"
 Goad_retain_title = de \
-   "%s%s bleibt Champion! Wer wagt es, den Champion herauszufordern?"
+   "%s%s bleibt Champion! Wer wagt es, den Champion herauszufordern?%s$0"
 Goad_champion_killed = de "Der Champion hat %s%s getötet!"
 Goad_someone_killed = de "%s%s hat %s%s besiegt."
 Goad_champ_reneges = de \
-   "%s%s, der Champion von Kraanan, hat den Titel abgegeben."
+   "%s%s, der Champion von Kraanan, hat den Titel abgegeben.%s$0"
 Goad_ready_to_fight = de "%s%s gegen %s%s. Seid bereit zu sterben. . ."
 Goad_combatant_reneges = de \
    "%s%s hat sich entschlossen, nicht weiter zu kämpfen."
@@ -91,7 +91,7 @@ Goad_welcome = de "~wGoad teilt Dir mit, \"Willkommen in meiner Hölle, Wurm!\""
 Goad_worship_admin = de "Oh wie dramatisch. . . es ist %s, %s ist sooo wichtig."
 Goad_worship_dm = de \
    "Erwartet nicht, dass ich vor Euch am Boden krieche, mich beeindruckt "
-   "Ihr nicht!"
+   "Ihr nicht!%s$0%s$0"
 Goad_welcome_champion = de "Beachtet %s%s, den blutigen Metzler."
 Goad_welcome_champion_guild = de \
    "Bug. Diese Nachricht sollte niemals auftreten!"

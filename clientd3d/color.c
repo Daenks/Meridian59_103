@@ -144,7 +144,7 @@ void ColorsDestroy(void)
 /************************************************************************/
 COLORREF GetColor(WORD color)
 {
-	if (color > MAXCOLORS)
+	if (color >= MAXCOLORS)
 	{
 		debug(("Illegal color #%u in GetColor\n", color));
 		return DefaultColor;
@@ -155,7 +155,7 @@ COLORREF GetColor(WORD color)
 /************************************************************************/
 HBRUSH GetBrush(WORD color)
 {
-	if (color > MAXCOLORS)
+	if (color >= MAXCOLORS)
 	{
 		debug(("Illegal color #%u in GetBrush\n", color));
 		return hDefaultBrush;
@@ -176,7 +176,7 @@ HBRUSH GetBrush(WORD color)
 */
 Bool SetColor(WORD color, COLORREF cr)
 {
-	if (color > MAXCOLORS)
+	if (color >= MAXCOLORS)
 	{
 		debug(("Illegal color #%u\n", color));
 		return False;

@@ -14,7 +14,7 @@ CFLAGS = $(CFLAGS) /arch:SSE /TP
 # /SUBSYSTEM:CONSOLE",5.01" NO-UI Windows XP (5.01)
 LINKFLAGS = $(LINKFLAGS) /SUBSYSTEM:CONSOLE",5.01"
 
-OBJS3     = $(OUTDIR)\scrshot.obj $(OUTDIR)\dibutil.obj $(OUTDIR)\copy.obj $(OUTDIR)\file.obj
+OBJS3     = $(OUTDIR)\scrshot.obj $(OUTDIR)\dibutil.obj $(OUTDIR)\copy.obj $(OUTDIR)\file.obj $(OUTDIR)\md5.obj
 SOURCEDIR = $(TOPDIR)\util
 NTLIBS    = user32.lib gdi32.lib
 
@@ -26,7 +26,9 @@ all: \
     $(OUTDIR)\rscmerge.exe \
     $(OUTDIR)\paldump.exe \
     $(OUTDIR)\palcomp.exe \
-    $(OUTDIR)\porttest.exe 
+    $(OUTDIR)\porttest.exe \
+    $(OUTDIR)\md5.obj \
+    $(OUTDIR)\clientpatch.exe 
 
 $(OUTDIR)\remot.exe: $(OUTDIR)\remot.obj
 	$(LINK) $(LINKFLAGS) $** $(NTLIBS) -out:$@
@@ -79,6 +81,13 @@ $(OUTDIR)\palcomp.exe: $(OUTDIR)\palcomp.obj $(OUTDIR)\memmap.obj
 
 $(OUTDIR)\porttest.exe: $(OUTDIR)\porttest.obj
 	$(LINK) $(LINKFLAGS) $** $(NTLIBS) wsock32.lib -out:$@
+	$(CP) $@ $(BLAKBINDIR)
+
+$(OUTDIR)\md5.obj : $(SOURCEDIR)\md5.c
+    $(CC) -Fo$(OUTDIR)/ $(CFLAGS) /Fd$(OUTDIR)\ /Fpmd5pch -c $**
+
+$(OUTDIR)\clientpatch.exe: $(OUTDIR)\clientpatch.obj
+	$(LINK) $(LINKFLAGS) $** $(NTLIBS) $(BLAKLIBDIR)\jansson.lib $(OUTDIR)\md5.obj -out:$@
 	$(CP) $@ $(BLAKBINDIR)
 
 !include $(TOPDIR)\rules.mak

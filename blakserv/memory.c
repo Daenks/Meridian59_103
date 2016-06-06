@@ -436,3 +436,49 @@ void * ResizeMemory(int malloc_id,void *ptr,int old_size,int new_size)
 
 	return new_mem;
 }
+
+void * AllocateMemorySIMD(int malloc_id, int size)
+{
+#if defined(SSE2) || defined(SSE4)
+   void *ptr;
+
+   if (size == 0)
+      eprintf("AllocateMemorySIMD zero byte memory block from %s at %d\n", __FILE__, __LINE__);
+
+   if (malloc_id < 0 || malloc_id >= MALLOC_ID_NUM)
+      eprintf("AllocateMemorySIMD allocating memory of unknown type %i\n", malloc_id);
+   
+   else
+      memory_stat.allocated[malloc_id] += size;
+
+   ptr = _aligned_malloc(size, 16);
+
+   if (ptr == NULL)
+   {
+      /* assume channels started up if allocation error, which might not be true,
+      but if so, then there are more serious problems! */
+      eprintf("AllocateMemorySIMD couldn't allocate %i bytes (id %i)\n", size, malloc_id);
+      FatalError("Memory allocation failure");
+   }
+
+   return ptr;
+#else
+   // use default if SSE is disabled
+   return AllocateMemory(malloc_id, size);
+#endif
+}
+
+void FreeMemorySIMD(int malloc_id, void *ptr, int size)
+{
+#if defined(SSE2) || defined(SSE4)
+   if (malloc_id < 0 || malloc_id >= MALLOC_ID_NUM)
+      eprintf("FreeMemorySIMD freeing memory of unknown type %i\n", malloc_id);
+   else
+      memory_stat.allocated[malloc_id] -= size;
+
+   _aligned_free(ptr);
+#else
+   // use default if SSE is disabled
+   FreeMemory(malloc_id, ptr, size);
+#endif
+}

@@ -97,8 +97,8 @@ void AnimationTimerProc(HWND hwnd, UINT timer)
 
    if (last_animate_time == 0)
    {
-	   last_animate_time = timeGetTime();
-	   return;
+      last_animate_time = timeGetTime();
+      return;
    }
 
    config.quickstart = FALSE;
@@ -132,7 +132,7 @@ void AnimationTimerProc(HWND hwnd, UINT timer)
 
       need_redraw |= AnimateEffects(dt);
       if (need_redraw)
-	 RedrawAll();
+    RedrawAll();
    }
 
    if (GetGameDataValid())
@@ -162,8 +162,8 @@ Bool AnimateObjects(int dt)
       
       if (r->obj.animate->animation == ANIMATE_NONE && old_animate != ANIMATE_NONE && r->moving)
       {
-	 RoomObjectSetAnimation(r, True);
-	 r->motion.move_animating = True;
+    RoomObjectSetAnimation(r, True);
+    r->motion.move_animating = True;
       }
    }
    return need_redraw;
@@ -201,7 +201,7 @@ Bool AnimateObject(object_node *obj, int dt)
       object_bitmap_type obj_bmap;
       obj_bmap = FindObjectBitmap(obj->icon_res);
       if (obj_bmap != NULL)
-	 need_redraw |= AnimateSingle(obj->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
+    need_redraw |= AnimateSingle(obj->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
    }
    
    if (OF_PHASING == (OF_PHASING & obj->flags))
@@ -220,13 +220,13 @@ Bool AnimateObject(object_node *obj, int dt)
       object_bitmap_type obj_bmap;
       Overlay *overlay = (Overlay *) (over_list->data);
       if (overlay->animate.animation == ANIMATE_NONE)
-	 continue;
+    continue;
 
       obj_bmap = FindObjectBitmap(overlay->icon_res);
       if (obj_bmap != NULL)
       {
-	 need_redraw |= AnimateSingle(&overlay->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
-      }	   
+    need_redraw |= AnimateSingle(&overlay->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
+      }      
    }
    return need_redraw;
 }
@@ -247,13 +247,13 @@ Bool AnimateProjectiles(int dt)
       p = (Projectile *) (l->data);
 
       if (p->animate.animation == ANIMATE_NONE)
-	 continue;
+    continue;
 
       obj = FindObjectBitmap(p->icon_res);
       if (obj != NULL)
       {
-	 retval = AnimateSingle(&p->animate, BitmapsNumGroups(obj->bmaps), dt);
-	 need_redraw = need_redraw || retval;
+    retval = AnimateSingle(&p->animate, BitmapsNumGroups(obj->bmaps), dt);
+    need_redraw = need_redraw || retval;
       }
    }
    return need_redraw;
@@ -275,13 +275,13 @@ Bool AnimateBackgroundOverlays(int dt)
       overlay = (Overlay *) (l->data);
 
       if (overlay->animate.animation == ANIMATE_NONE)
-	 continue;
+    continue;
 
       obj_bmap = FindObjectBitmap(overlay->icon_res);
       if (obj_bmap != NULL)
       {
-	 retval = AnimateSingle(&overlay->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
-	 need_redraw = need_redraw || retval;
+    retval = AnimateSingle(&overlay->animate, BitmapsNumGroups(obj_bmap->bmaps), dt);
+    need_redraw = need_redraw || retval;
       }
    }
    return need_redraw;
@@ -301,14 +301,14 @@ Bool AnimatePlayerOverlays(int dt)
       PlayerOverlay *poverlay = &player.poverlays[i];
 
       if (poverlay->obj == NULL || poverlay->hotspot == 0)
-	 continue;
+    continue;
       
       retval = AnimateObject(poverlay->obj, dt);
       need_redraw = need_redraw || retval;
 
       // If animation is over, group becomes -1 => we should remove overlay
       if (poverlay->obj->animate->group == (WORD) -1)
-	 poverlay->hotspot = 0;
+    poverlay->hotspot = 0;
    }
    return need_redraw;
 }
@@ -332,15 +332,15 @@ Bool AnimateSingle(Animate *a, int num_groups, int dt)
       // See if it's time to change bitmap
       a->tick = a->tick - dt;
       if (a->tick > 0)
-	 break;
+    break;
       
       // Look for special case of cycling through ALL bitmaps
       if (a->group_low == a->group_high)
-	 if (num_groups == 0)
-	    a->group++;
-	 else a->group = (a->group + 1) % num_groups;
+    if (num_groups == 0)
+       a->group++;
+    else a->group = (a->group + 1) % num_groups;
       else a->group = a->group_low + 
-	 (a->group - a->group_low + 1) % (a->group_high - a->group_low + 1);
+    (a->group - a->group_low + 1) % (a->group_high - a->group_low + 1);
       
       // Reset object timer
       a->tick = a->period;
@@ -351,12 +351,12 @@ Bool AnimateSingle(Animate *a, int num_groups, int dt)
       // See if it's time to change bitmap
       a->tick = a->tick - dt;
       if (a->tick > 0)
-	 break;
+    break;
 
       if (a->group == a->group_high)
       {
-	 a->animation = ANIMATE_NONE;
-	 a->group     = a->group_final;
+    a->animation = ANIMATE_NONE;
+    a->group     = a->group_final;
       }
       else a->group++;
 

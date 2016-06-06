@@ -25,14 +25,14 @@ resources:
    RoomEnchantment_kill_rsc = "The room enchantment kills you."
    RoomEnchantment_killer_rsc = "You killed %s%s with your room enchantment."
    RoomEnchantment_hit_rsc = "The room enchantment damages you."
-   room_blank_template = "%q"
+   RoomEnchantment_not_guilded = "You must be guilded to cast that spell here."
 
 classvars:
 
    vrName = RoomEnchantment_name_rsc
    vrIcon = RoomEnchantment_icon_rsc
    vrDesc = RoomEnchantment_desc_rsc
-
+   vrNotGuilded = RoomEnchantment_not_guilded
    vrAlreadyEnchanted = spell_already_in_effect % From spell.kod
    vrRoomEnchKilled = RoomEnchantment_kill_rsc
    vrRoomEnchKiller = RoomEnchantment_killer_rsc
@@ -42,6 +42,8 @@ classvars:
 
    viAttack_type = 0
    viAttack_spell = ATCK_SPELL_ALL
+
+   vbIsAreaEffect = TRUE
 
 properties:
 
@@ -67,6 +69,17 @@ messages:
       if Send(oRoom,@IsEnchanted,#what=self)
       {
          Send(who,@MsgSendUser,#message_rsc=vrAlreadyEnchanted);
+
+         return FALSE;
+      }
+
+      if (viHarmful
+         AND NOT Send(oRoom,@AllowGuildAttack,#what=who))
+         AND Send(SYS,@IsPKAllowed)
+         AND NOT IsClass(who,&DM)
+      {
+         % Tried to cast unguilded in town with no monsters.  Denied!
+         Send(who,@MsgSendUser,#message_rsc=vrNotGuilded);
 
          return FALSE;
       }
@@ -125,7 +138,13 @@ messages:
          return;
       }
 
-      iSpellPower = First(state);
+      if (IsClass(oTarget,&User)
+         AND Send(oTarget,@IsInCannotInteractMode))
+      {
+         return;
+      }
+
+      iSpellPower = Send(self,@GetSpellPowerFromState,#state=state);
 
       % oCaster is original caster of the spell.
       oCaster = Nth(state,2);
@@ -190,6 +209,11 @@ messages:
       }
 
       return;
+   }
+
+   GetSpellPowerFromState(state=$)
+   {
+      return First(state);
    }
 
    GetAttackSpell()

@@ -73,7 +73,7 @@ resources:
       "%q has won the challenge of the dark blades.\n\n"
       "-- Roq, the Dark Blade"
    
-   Assgame_go_wav = assassin.wav
+   Assgame_go_wav = assassin.ogg
    AssGame_roq = "Roq, the Dark Blade"
 
 classvars:
@@ -961,13 +961,12 @@ messages:
          return $;
       }
 
-      count = FindListElem(plCombatants,who);
-
-      % This only happens if plCombatants is nil.
-      if count = $
+      if (plCombatants = $)
       {
          return $;
       }
+
+      count = FindListElem(plCombatants,who);
 
       if count = 0
       {
@@ -976,7 +975,7 @@ messages:
          return $;
       }
 
-      count = count + 1;
+      ++count;
       if count > Length(plCombatants)
       {
          count = 1;
@@ -999,20 +998,19 @@ messages:
    {
       local count, oOpponent;
 
-      if who=$
+      if who = $
       {
          Debug("Reached GetSecondaryOpponent with who equal NIL!");
 
          return $;
       }
-
-      count = FindListElem(plCombatants,who);
-
-      % This only happens if plCombatants is nil.
-      if count = $
+   
+      if (plCombatants = $)
       {
          return $;
       }
+
+      count = FindListElem(plCombatants,who);
 
       if count = 0
       {
@@ -1021,7 +1019,7 @@ messages:
          return $;
       }
 
-      count = count - 1;
+      --count;
       if count < 1
       {
          count = Length(plCombatants);
