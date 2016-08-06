@@ -31,6 +31,12 @@ resources:
    chalice_empty = "You sip the last bit of water from the Chalice of Rain."
    chalice_combine = "You pour the water from one Chalice into the other."
    chalice_cant_use_pkill = "Only innocents may partake of the chalice."
+   chalice_cant_use_hits = "No water remains in the chalice."
+   
+   chalice_chargeslefta_rsc = "This chalice has enough liquid remaining for "
+   chalice_chargesleftb_rsc = " sips."
+   
+   chalice_refilled = "The Chalice of the Rain seems to draw liquid out of the air, refilling itself."
 
 classvars:
 
@@ -43,8 +49,8 @@ classvars:
    viBulk = 20
    viWeight = 20
 
-   viHits_init_min = 3
-   viHits_init_max = 5
+   viHits_init_min = 6
+   viHits_init_max = 10
 
    viValue_average = 500
 
@@ -68,7 +74,7 @@ messages:
 
    NewOwner(what = $)
    {
-      local oOtherChalice;
+      local oOtherChalice, i, each_obj;
 
       if what = $
       {
@@ -78,8 +84,18 @@ messages:
       % If we drop it in a room with a high Shal'ille bonus, refill the chalice
       if IsClass(what,&Room)
          AND send(what,@GetShalilleBonus) > 20
+         AND piHits <> piHits_init
       {
          piHits = piHits_init;
+         
+         for i in Send(what,@GetHolderActive)
+         {
+            each_obj = Send(what,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&Player)
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=chalice_refilled);
+            }
+         }
       }
 
       % If a user already has a chalice, then "combine" them.
@@ -114,6 +130,12 @@ messages:
 
    ReqNewApply(what = $, apply_on = $)
    {
+      if piHits < 1
+      {
+         Send(what,@MsgSendUser,#message_rsc=chalice_cant_use_hits);
+         return FALSE;
+      }
+
       if (IsClass(what,&Player))
       {
          % Prevent use if you're red.  This is because player killers
@@ -148,8 +170,6 @@ messages:
       else
       {
          Send(poOwner,@MsgSendUser,#message_rsc=chalice_empty);
-
-         Post(self,@Delete);
       }
 
       % Cast Rescue at really low power.
@@ -179,6 +199,16 @@ messages:
    CanBeStoredInVault()   
    {
       return FALSE;
+   }
+
+   AppendDesc()
+   {
+      AppendTempString("\n\n");   
+      AppendTempString(chalice_chargeslefta_rsc);      
+      Send(SYS,@AppendCardinalToTempString,#number=piHits);
+      AppendTempString(chalice_chargesleftb_rsc);
+      
+      propagate;
    }
 
 end
