@@ -47,6 +47,8 @@ resources:
    SoldierShield_lost_status = "Your liege revokes your status as a soldier!"
    SoldierShield_lost_status_nonfaction = \
       "You are not worthy to hold a soldier shield!"
+   SoldierShield_lost_status_murderer = \
+      "As a murderer, you are not worthy to hold a soldier shield!"
    SoldierShield_booted_mail = "Subject: Your soldier status is revoked.\n"
       "I have removed you from my army of soldiers.  I have no use for one so "
       "cowardly as yourself."
@@ -271,6 +273,12 @@ messages:
          Send(self,@ModifyFactionRank,#amount=-1);
          Send(self,@ResetRankLossCount);
       }
+      
+      if Send(poOwner,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=SoldierShield_lost_status_murderer);
+         Post(self,@Delete);
+      }
 
       return;
    }
@@ -379,6 +387,12 @@ messages:
       else
       {
          % Otherwise, the owner shouldn't have the shield.
+         Post(self,@Delete);
+      }
+      
+      if Send(poOwner,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
+      {
+         Send(poOwner,@MsgSendUser,#message_rsc=SoldierShield_lost_status_murderer);
          Post(self,@Delete);
       }
 
