@@ -68,7 +68,7 @@ classvars:
    % Attack range of 192, or 3 row/col.
    viAttackRange = 192
    viAttributes = 0
-   viKarma = -75
+   viKarma = 0
    vbIsUndead = TRUE
    viDefault_behavior = AI_FIGHT_AGGRESSIVE | AI_FIGHT_HYPERAGGRESSIVE \
                         | AI_FIGHT_LASHOUT | AI_MOVE_FLEE_FRIGHTENERS
