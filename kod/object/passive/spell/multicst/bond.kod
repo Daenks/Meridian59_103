@@ -22,16 +22,16 @@ resources:
    Bond_name_rsc = "bond"
    Bond_icon_rsc = ibond.bgf
    Bond_desc_rsc = \
-      "Infuses an item with a soft white light.  However, the "
-      "bond requires terrific amounts of energy to form.  A heartstone and "
+      "Repairs an item by creating a multitude of small internal magical bonds.  The "
+      "bonding requires terrific amounts of energy to perform.  A heartstone and "
       "dozens of polished serphym and diamonds must be crushed to amplify "
       "the caster's mystical energy, which must then be focused through a "
       "prism.  The item to be bonded must be targetted.  Once the casting "
-      "is complete the item will follow its owner to hell itself."
+      "is complete, the item will be whole once more, and even slightly stronger than before."
    
    Bond_sound = sbond.wav
 
-   bond_bad_target = "You may only bond items to a player."
+   bond_bad_target = "You may only bond items."
    bond_no_prism = "The magic energies of the prism do not allow it to be bonded."
    bond_failed = \
       "You feel the magical bond begin to reach out in vain for one of its targets, "
@@ -39,7 +39,7 @@ resources:
    bond_already_bonded = "This item is already bonded."
 
    bond_successful_casters = "You feel a magical bond form between %s%s and %s."
-   bond_successful_bondee = "You feel a magical bond form between you and your %s."
+   bond_successful_bondee = "You feel magical bonds strengthen the integrity of your %s."
 
    bond_report_room = "Somehow, you sense that your %s is in %s."
    bond_report_user = "Somehow, you sense that your %s is in %q's possession."
@@ -122,29 +122,15 @@ messages:
          return FALSE;
       }
 
-      if Send(oTarget,@HasAttribute,#ItemAtt=IA_TRANSCENDANT)
-      {
-         Send(who,@MsgSendUser,#message_rsc=bond_already_bonded);
-
-         return FALSE;
-      }
-
       propagate;
    }
 
    PrismCast(spellpower = 0, lCasters=$, lTargets=$) 
    {
-      local oOwner, oCaster;
-      oOwner = Send(First(lTargets),@GetOwner);
+      local oCaster;
 
-      % The Bond infrastructure was left in, in case we want to use it for
-      % something else.  This is the trigger call.
-      %Send(oOwner,@BondItem,#what=First(lTargets));
-
-      % So instead of bonding, we are going to make the item transcendent.
-
-      Send(Send(SYS,@FindItemAttByNum,#Num=IA_TRANSCENDANT),@AddToItem,
-           #oItem=First(lTargets));
+      Send(First(lTargets),@SetMaxHits,#number=Send(First(lTargets),@GetMaxHits)+1);
+      Send(First(lTargets),@SetHits,#number=Send(First(lTargets),@GetMaxHits));
 
       foreach oCaster in lCasters
       {
