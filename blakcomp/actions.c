@@ -747,6 +747,21 @@ expr_type make_bin_op(expr_type expr1, int op, expr_type expr2)
    return e;
 }
 /************************************************************************/
+expr_type make_ter_op(expr_type expr1, expr_type expr2, expr_type expr3)
+{
+   expr_type e = (expr_type) SafeMalloc(sizeof(expr_struct));
+
+   e->type = E_TERNARY_OP;
+   e->value.ternary_opval.eval_exp = expr1;
+   e->value.ternary_opval.left_exp = expr2;
+   e->value.ternary_opval.right_exp = expr3;
+   e->value.ternary_opval.op = 1;
+   e->lineno = lineno;
+
+   SimplifyExpression(e);
+   return e;
+}
+/************************************************************************/
 expr_type make_un_op(int op, expr_type expr1)
 {
    expr_type e = (expr_type) SafeMalloc(sizeof(expr_struct));

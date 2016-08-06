@@ -299,6 +299,66 @@ int codegen_return(expr_type expr, int maxlocal)
 }
 /************************************************************************/
 /*
+* codegen_conditional_op: Generate code for a conditional operator.
+*   our_maxlocal gives highest #ed temporary needed to evaluate the
+*   entire expression.
+*/
+int codegen_conditional_op(expr_type e, id_type destvar, int maxlocal)
+{
+   opcode_type opcode;
+   int our_maxlocal = maxlocal, numtemps, sourceval;
+   long falsepos, endpos;
+
+   // First generate code for condition.
+   our_maxlocal = simplify_expr(e->value.ternary_opval.eval_exp, our_maxlocal);
+
+   // Jump over then clause if condition is false.
+   memset(&opcode, 0, sizeof(opcode));  // Set opcode to all zeros.
+   opcode.command = GOTO;
+   opcode.dest = GOTO_IF_FALSE;
+   sourceval = set_source_id(&opcode, SOURCE1, e->value.ternary_opval.eval_exp);
+   OutputOpcode(outfile, opcode);
+
+   // Leave space for destination address.
+   falsepos = FileCurPos(outfile);
+   OutputInt(outfile, 0);
+
+   OutputInt(outfile, sourceval);
+
+   // Evaluate and assign true condition. If left_exp is NULL,
+   // assign the condition instead.
+   if (!e->value.ternary_opval.left_exp)
+      numtemps = flatten_expr(e->value.ternary_opval.eval_exp, destvar, our_maxlocal);
+   else
+      numtemps = flatten_expr(e->value.ternary_opval.left_exp, destvar, our_maxlocal);
+   if (numtemps > our_maxlocal)
+      our_maxlocal = numtemps;
+
+   // Jump past false condition.
+   opcode.source1 = 0;
+   opcode.source2 = GOTO_UNCONDITIONAL;
+   opcode.dest = 0;
+   OutputOpcode(outfile, opcode);
+
+   // Leave space for destination address
+   endpos = FileCurPos(outfile);
+   OutputInt(outfile, 0);
+
+   // Go back and fill in destination address for conditional goto.
+   BackpatchGoto(outfile, falsepos, FileCurPos(outfile));
+
+   // Evaluate and assign false condition.
+   numtemps = flatten_expr(e->value.ternary_opval.right_exp, destvar, our_maxlocal);
+   if (numtemps > our_maxlocal)
+      our_maxlocal = numtemps;
+
+   // Go back and fill in destination address for end of true condition.
+   BackpatchGoto(outfile, endpos, FileCurPos(outfile));
+
+   return our_maxlocal;
+}
+/************************************************************************/
+/*
  * codegen_if: Generate code for an if-then-else statement.
  *    numlocals should be # of local variables for message excluding temps.
  *   Returns highest # local variable used in code for statement.

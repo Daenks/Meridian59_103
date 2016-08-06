@@ -65,5 +65,6 @@ void codegen_property(property_type p);
 void codegen_message(message_handler_type m);
 void codegen_class(class_type c);
 int codegen_call(call_stmt_type c, id_type destvar, int maxlocal);
+int codegen_conditional_op(expr_type e, id_type destvar, int maxlocal);
 
 #endif /* #ifndef _CODEGEN_H */

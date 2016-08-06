@@ -394,16 +394,16 @@ int flatten_expr(expr_type e, id_type destvar, int maxlocal)
       templocals = maxlocal;  /* Holds max # used in one subexpression (left or right) */
 
       if (is_base_level(tempexpr))
-	 sourceval1 = set_source_id(&opcode, SOURCE1, tempexpr);
+         sourceval1 = set_source_id(&opcode, SOURCE1, tempexpr);
       else
       {
-	 opcode.source1 = LOCAL_VAR;
+         opcode.source1 = LOCAL_VAR;
 
-	 /* Evaluate rhs, store in temporary, and assign it to destvar */
-	 our_maxlocal++;
-	 templocals++;  /* Lhs must be stored in temp; rhs must not use this temp */
-	 sourceval1 = our_maxlocal;
-	 our_maxlocal = flatten_expr(tempexpr, make_temp_var(our_maxlocal), our_maxlocal);
+         /* Evaluate rhs, store in temporary, and assign it to destvar */
+         our_maxlocal++;
+         templocals++;  /* Lhs must be stored in temp; rhs must not use this temp */
+         sourceval1 = our_maxlocal;
+         our_maxlocal = flatten_expr(tempexpr, make_temp_var(our_maxlocal), our_maxlocal);
       }
 
       exitpos = 0;
@@ -492,6 +492,9 @@ int flatten_expr(expr_type e, id_type destvar, int maxlocal)
 				  destvar, our_maxlocal);
       break;
       
+   case E_TERNARY_OP:
+      our_maxlocal = codegen_conditional_op(e, destvar, our_maxlocal);
+      break;
    default:
       codegen_error("Unknown expression type (%d) encountered", e->type);
    }

@@ -186,7 +186,7 @@ default { return DEFAULT; }
 "++"	{ yylval.int_val = INC_OP; return INC_OP; }
 
 
-[-+*/,:#&@()={}\$\[\]\|~]	{ return yytext[0]; }	/* return character itself */
+[-+*/,?:#&@()={}\$\[\]\|~]	{ return yytext[0]; }	/* return character itself */
 \;                              { return SEP; }  /* Separator */
 
 	/* names */

@@ -66,6 +66,7 @@
 %token END EOL SEP INCLUDE FOREACH DEFAULT
 
 /* precedence of operators, lowest precedence first */
+%right '?' ':'
 %left OR
 %left AND
 %left '|'
@@ -373,6 +374,8 @@ expression:
 	|	INC_OP id			{ $$ = make_un_op(PRE_INC_OP, make_expr_from_id($2)); }
 	|	id DEC_OP			{ $$ = make_un_op(POST_DEC_OP, make_expr_from_id($1)); }
 	|	DEC_OP id			{ $$ = make_un_op(PRE_DEC_OP, make_expr_from_id($2)); }
+	|	expression '?' expression ':' expression	{ $$ = make_ter_op($1, $3, $5); }
+	|	expression '?' ':' expression	{ $$ = make_ter_op($1, NULL, $4); }
 	|	constant			{ $$ = make_expr_from_constant($1); }
 	|	literal				{ $$ = make_expr_from_constant($1); }
 	|	call				{ $$ = make_expr_from_call($1); }
