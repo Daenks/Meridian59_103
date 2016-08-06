@@ -138,6 +138,7 @@ messages:
       local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment, oSpell, bRemovedSomething;
 
       if oRoom = $
+         OR Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
       {
          return FALSE;
       }
