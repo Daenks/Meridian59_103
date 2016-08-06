@@ -772,23 +772,23 @@ int GetLightPaletteIndex(int distance, BYTE sector_light, long scale, int lightO
       return 0;
 
    if (distance == 0)
-	   distance = 1;
+      distance = 1;
 
    // See if sector is affected by ambient light
    if (sector_light > 127)
    {
       row = ((FINENESS/2) << LOG_VIEWER_DISTANCE) / distance;
       if (row < 1)
-	 row = 1;
+         row = 1;
       if (row > MAXY / 2)
-	 row = MAXY / 2;
+         row = MAXY / 2;
 
       index = ((int) light_rows[row] + (int) sector_light - LIGHT_NEUTRAL) * 
-	 LIGHT_LEVELS / MAX_LIGHT;  // Scale from 0-255 to # of palettes
-
+         LIGHT_LEVELS / MAX_LIGHT;  // Scale from 0-255 to # of palettes
    }
-   else index = LIGHT_INDEX(distance, (int) p->viewer_light, 0) * LIGHT_LEVELS / MAX_LIGHT
-      + (int) sector_light / 2;
+   else
+      index = LIGHT_INDEX(distance, (int) p->viewer_light, 0) * LIGHT_LEVELS / MAX_LIGHT
+         + (int) sector_light / 2;
 
    if ((scale != FINENESS) && (sector_light > 127))
        index = (scale * index)>>LOG_FINENESS;

@@ -20,5 +20,7 @@ void	MatrixTranspose(D3DMATRIX *result, D3DMATRIX *matrix);
 void	MatrixMultiply(D3DMATRIX *result, D3DMATRIX *matrixA, D3DMATRIX *matrixB);
 void	MatrixMultiplyVector(struct custom_xyzw *pResult, D3DMATRIX *pMatrix,
 							 struct custom_xyzw *pVector);
+void XformMatrixPerspective(D3DMATRIX *matrix, float fovHor, float fovVert,
+                            float nearZ, float farZ);
 
 #endif
