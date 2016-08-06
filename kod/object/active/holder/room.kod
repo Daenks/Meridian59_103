@@ -4577,6 +4577,11 @@ messages:
       {
          return FALSE;
       }
+      
+      if NOT Send(self,@CanHavePlayerPortal)
+      {
+         return FALSE;
+      }
 
       return TRUE;
    }
