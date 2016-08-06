@@ -104,6 +104,11 @@ properties:
    plPrerequisites = $
    plReagents = $
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 15
+
 messages:
 
    ImproveStroke(who=$,target=$)
