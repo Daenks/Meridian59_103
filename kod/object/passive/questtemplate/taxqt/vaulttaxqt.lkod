@@ -1,10 +1,10 @@
 % Quest description.
-vaulttaxqt_name_rsc = de "vault tax quest"
+vaulttaxqt_name_rsc = de "Lager Steuern Quest"
 vaulttaxqt_desc_rsc = de \
-   "Courier some shillings for an NPC."
+   "Bringe ein paar Shillinge zu einem NPC."
 
 vaulttaxqt_completed_rsc = de \
-   "You have completed the vault tax quest."
+   "Du hast das Lager Steuern Quest abgeschlossen."
 
 % Quest resources.
 vaulttax_assign_2 = de \
@@ -18,7 +18,7 @@ vaulttax_assign_2 = de \
 
 vaulttax_success_2 = de \
    "Ah, ich sehe %SOURCE_NPC ist pünktlich diese Woche.  Danke für Deine "
-   "Schnelligkeit und Ehrlichkeit.   %SOURCE_NPC, ich könnte Dich eventuell "
+   "Schnelligkeit und Ehrlichkeit. %SOURCE_NPC oder ich könnten Dich eventuell "
    "öfter gebrauchen."
 vaulttax_failure_2 = de \
    "Betreff: Dieb!\nDein Diebstahl von %CARGO hat Dich zu einem Gesetzeslosen "
