@@ -715,6 +715,103 @@ messages:
       return;
    }
 
+   SimulateAttack(what=$,numAttacks=1,iOffense=$,iDefense=$)
+   "Simulate 'numAttacks' attacks from 'self' against 'what'. Can pass offense "
+   "and defense as iOffense and iDefense."
+   {
+      local iMiss, iHit, iHitDmg, iMin, iMax, use_weapon, stroke_id,
+            iChanceToHit, iDamage,iScalefactor, stroke_obj, iFracDmg;
+
+      iMiss = 0;
+      iHit = 0;
+      iHitDmg = 0;
+      iMin = 100;
+      iMax = 0;
+
+      % Get use_weapon
+      use_weapon = Send(self,@GetWeapon);
+
+      if (use_weapon = $) OR IsClass(use_weapon,&Spell)
+      {
+         stroke_id = SKID_PUNCH;
+      }
+      else
+      {
+         stroke_id = Send(use_weapon,@GetDefaultStrokeNumber);
+      }
+
+      if use_weapon = $ OR NOT IsClass(use_weapon,&Spell)
+      {
+         stroke_obj = Send(SYS,@FindSkillByNum,#num=stroke_id);
+      }
+      else
+      {
+         % Use the "weapon" (spell) as the stroke object.
+         stroke_obj = use_weapon;
+      }
+
+      % This is the generic checks and the calculation of chance
+      % to hit and damage.
+      if iDefense = $
+      {
+         iDefense = Send(what,@GetDefense,#what=self,#stroke_obj=stroke_obj);
+      }
+      if iOffense = $
+      {
+         iOffense = Send(self,@GetOffense,#what=what,#stroke_obj=stroke_obj);
+      }
+
+      iChanceToHit = (iOffense* EQUAL_CHANCE_HIT) / iDefense;
+      iChanceToHit = Bound(iChanceToHit,125,2000);
+
+      while numAttacks > 0
+      {
+         if iChanceToHit >= Random(1,1000)
+         {
+            % We hit!
+            iDamage = Send(self,@GetDamage,#what=what,#stroke_obj=stroke_obj);
+            iScalefactor = 1000;
+
+            % Scale damage with chance to hit beyond 100 percent.
+            if iChanceToHit > 1000 AND Send(Send(SYS,@GetSettings),
+                                             @GetDamageScaling)
+            {
+               iScalefactor = iChanceToHit;
+            }
+
+            iDamage = Send(what,@SimulateDamage,#what=self,#damage=iDamage,
+                           #atype=Send(self,@GetDamageType),
+                           #aspell=Send(self,@GetSpellType),
+                           #scalefactor=iScalefactor);
+            iHitDmg = iHitDmg + iDamage;
+            iHit = iHit + 1;
+            if iDamage > iMax
+            {
+               iMax = iDamage;
+            }
+            if iDamage < iMin
+            {
+               iMin = iDamage;
+            }
+         }
+         else
+         {
+            % Miss. Log it.
+            iMiss = iMiss + 1;
+         }
+         numAttacks = numAttacks - 1;
+      }
+
+      iFracDmg = (iHitDmg * 10 * (iHit)) MOD 10;
+      GodLog("Number of attacks is ",iHit+iMiss," and average damage per swing is ",
+            iHitDmg/(iHit+iMiss),".",iFracDmg,". Max damage was ",iMax," and min damage ",
+            iMin,". ",Send(what,@GetTrueName)," had ",iDefense," defense and ",
+            Send(self,@GetTrueName)," had ",iOffense," offense. Hit percentage",
+            " was ",(iHit*100)/(iHit+iMiss)," percent.");
+
+      return;
+   }
+
    %%% Combat functionality.
 
    % All conditions have been checked at this point and the battler is eligible
