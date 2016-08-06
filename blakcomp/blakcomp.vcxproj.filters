@@ -39,6 +39,9 @@
     <ClInclude Include="blakcomp.tab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="blakcomp.l">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="actions.c">
@@ -77,5 +80,10 @@
     <ClCompile Include="lexyy.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="blakcomp.y">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

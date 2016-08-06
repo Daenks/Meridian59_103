@@ -94,6 +94,7 @@ typedef struct {
    const char *name;
    int type;
    int idnum;
+   int used;
    int ownernum; /* Id # of thing that contains this identifier in its scope.  e.g. if
 		    this id is of type message, then this is the class # */
    int source;   /* Whether this id came from the database file (source = DBASE)
@@ -157,7 +158,8 @@ typedef struct {
 } *param_type, param_struct;
 
 enum {S_IF = 1, S_ASSIGN, S_CALL, S_FOREACH, S_WHILE, S_PROP, S_RETURN,
-      S_BREAK, S_CONTINUE, S_FOR, S_DOWHILE, S_CASE, S_DEFAULTCASE, S_SWITCH };
+      S_BREAK, S_CONTINUE, S_FOR, S_DOWHILE, S_CASE, S_DEFAULTCASE, S_SWITCH,
+      S_NOOP};
 
 typedef struct {
    int function;    /* Opcode of function to call */
@@ -359,6 +361,8 @@ void leave_loop(void);
 void action_error(const char *fmt, ...);
 void simple_error(const char *fmt, ...);
 void simple_warning(const char *fmt, ...);
+void inform_user(const char *fmt, ...);
+void write_optimize_log(int line, const char *fmt, ...);
 void initialize_parser(void);
 
 int id_hash(const void *info, int table_size);

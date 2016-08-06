@@ -227,11 +227,11 @@ int load_add_class(char *class_name, int class_id, int superclass_id, char *supe
    // delete kodbase.txt if this check fails.
 
    extern id_struct BuiltinIds[];
-   if ((strcmp(BuiltinIds[SETTINGS_CLASS].name, class_name) == 0
+   if ((stricmp(BuiltinIds[SETTINGS_CLASS].name, class_name) == 0
          && class_id != SETTINGS_CLASS)
-      || (strcmp(BuiltinIds[REALTIME_CLASS].name, class_name) == 0
+      || (stricmp(BuiltinIds[REALTIME_CLASS].name, class_name) == 0
          && class_id != REALTIME_CLASS)
-      || (strcmp(BuiltinIds[EVENTENGINE_CLASS].name, class_name) == 0
+      || (stricmp(BuiltinIds[EVENTENGINE_CLASS].name, class_name) == 0
          && class_id != EVENTENGINE_CLASS))
    {
       database_error("Incompatible kodbase.txt. Delete the file and recompile.");
