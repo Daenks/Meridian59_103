@@ -42,6 +42,16 @@ properties:
    piDamage_reduce = 0              %% piDamage_reduce is the maximum amount of damage that will be reduced.
 
 messages:
+   
+   Constructed()
+   {
+      if Random(1,100) > 50
+      {
+         Create(&DefModSpellProc,#host_object=self);
+      }
+
+      propagate;
+   }
 
    ReqUseSomething(what = $)
    {
