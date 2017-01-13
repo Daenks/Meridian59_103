@@ -4758,12 +4758,12 @@ isofile_gen_utility_names(struct archive_write *a, struct isofile *file)
 		 * Remove trailing '/'.
 		 */
 		while (u16len >= 2) {
+			int test_path_separator = (u16[u16len-2] == 0 && u16[u16len-1] == '/');
 #if defined(_WIN32) || defined(__CYGWIN__)
-			if (u16[u16len-2] == 0 &&
-			    (u16[u16len-1] == '/' || u16[u16len-1] == '\\'))
-#else
-			if (u16[u16len-2] == 0 && u16[u16len-1] == '/')
+			test_path_separator = test_path_separator ||
+			    (u16[u16len-2] == 0 && u16[u16len-1] == '\\');
 #endif
+			if (test_path_separator)
 			{
 				u16len -= 2;
 			} else
@@ -4777,11 +4777,12 @@ isofile_gen_utility_names(struct archive_write *a, struct isofile *file)
 		u16len >>= 1;
 		ulen_last = u16len;
 		while (u16len > 0) {
+			int test_basename = (u16[0] == 0 && u16[1] == '/');
 #if defined(_WIN32) || defined(__CYGWIN__)
-			if (u16[0] == 0 && (u16[1] == '/' || u16[1] == '\\'))
-#else
-			if (u16[0] == 0 && u16[1] == '/')
+			test_basename = test_basename ||
+			    (u16[0] == 0 && u16[1] == '\\');
 #endif
+			if (test_basename)
 			{
 				ulast = u16 + 2;
 				ulen_last = u16len -1;
