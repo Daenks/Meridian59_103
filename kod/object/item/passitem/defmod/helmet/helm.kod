@@ -92,6 +92,11 @@ messages:
       return helm_icon_male_rsc; 
    }
 
+   GetMinimapDotFlags()
+   {
+      % Special item, add minimap dot.
+      return MM_RARE_ITEM;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

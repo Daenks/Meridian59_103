@@ -158,6 +158,7 @@ classvars:
 
    viSpell_Num = $
    viSchool = $
+   viSubSchool = $
    viSpell_level = 1
 
    viMana = 1
@@ -205,6 +206,8 @@ classvars:
    viFlash = FLASH_NONE
 
    vbCastable_in_HappyLand = TRUE
+
+   vbFree_Castable = TRUE
 
    vrEnchantment_type = spell_Enchantment_type_default_rsc
 
@@ -329,6 +332,7 @@ messages:
 
          Send(self,@SendStatsDesc,#who=who);
          Send(self,@SendTimeDesc,#who=who);
+         Send(self,@SendReservationDesc,#who=who);
 
          if piMeditate_ratio = 0
          {
@@ -351,6 +355,11 @@ messages:
       Send(self,@SendTimeRemaining,#iTime=0,#parm1=self);
 
       return;
+   }
+
+   SendReservationDesc()
+   {
+      return spell_nothing;
    }
 
    GetExtraDesc()
@@ -623,11 +632,16 @@ messages:
       return TRUE;
    }
 
-   CanPayManaVigor(who=$,lTargets=$,iSpellPower=0)
+   CanPayManaVigor(who=$,lTargets=$,iSpellPower=0,bFreeCast=FALSE)
    {
       local iCrystalizeManaAbility, oCrystalizeMana;
 
       if Send(who,@PlayerIsImmortal)
+      {
+         return TRUE;
+      }
+
+      if bFreeCast
       {
          return TRUE;
       }
@@ -662,6 +676,19 @@ messages:
             }
          }
 
+         % We've failed. Try will surge.
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_WILL_SURGE) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_WILL_SURGE),
+                            @AttemptVigorSacrifice,
+                            #who=who,
+                            #oSpell=self,
+                            #iSpellPower=iSpellPower)
+            {
+               return TRUE;
+            }
+         }
+
          Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
          Send(who,@MsgSendUser,#message_rsc=spell_insufficient_magic,
                #parm1=vrName);
@@ -672,7 +699,7 @@ messages:
       return TRUE;
    }
 
-   CanPayReagents(who=$,lTargets=$,iSpellPower=0)
+   CanPayReagents(who=$,lTargets=$,iSpellPower=0,bFreeCast=FALSE)
    {
       local lReagent, cReagentClass, iNumNeeded, bFound, lItems, lLists,
             oUserObject, iNum, oOwner, oSpell, oRing, oRoom;
@@ -681,6 +708,11 @@ messages:
       if Send(who,@PlayerIsImmortal)
          OR Send(oRoom,@NoReagents)
          OR IsClass(who,&EscapedConvict)
+      {
+         return TRUE;
+      }
+
+      if bFreeCast
       {
          return TRUE;
       }
@@ -744,6 +776,19 @@ messages:
             {
                return TRUE;
             }
+            
+            % We've failed. Let's try blood magic.
+            if Send(who,@GetSkillAbility,#Skill_num=SKID_BLOOD_MAGIC) > 0
+            {
+               if Send(Send(SYS,@FindSkillByNum,#num=SKID_BLOOD_MAGIC),
+                               @AttemptBloodSacrifice,
+                               #who=who,
+                               #oSpell=self,
+                               #iSpellPower=iSpellPower)
+               {
+                  return TRUE;
+               }
+            }
 
             Send(who,@WaveSendUser,#wave_rsc=spell_fail_wav);
             Send(who,@MsgSendUser,#message_rsc=spell_insufficient_reagent,
@@ -756,7 +801,7 @@ messages:
       return TRUE;
    }
 
-   CanPayCosts(who=$,lTargets=$,iSpellPower=0,bItemCast=FALSE)
+   CanPayCosts(who=$,lTargets=$,iSpellPower=0,bItemCast=FALSE,bFreeCast=FALSE)
    {
       local i, each_obj, oRoom, iRand, oSpell, oTarget;
 
@@ -864,13 +909,7 @@ messages:
 
          % Not prepared?
          if NOT Send(self,@CanPayManaVigor,#who=who,#lTargets=lTargets,
-                     #iSpellPower=iSpellPower)
-         {
-            return FALSE;
-         }
-
-         if NOT Send(self,@CanPayReagents,#who=who,#lTargets=lTargets,
-                     #iSpellPower=iSpellPower)
+                     #iSpellPower=iSpellPower,#bFreeCast=bFreeCast)
          {
             return FALSE;
          }
@@ -973,6 +1012,15 @@ messages:
          }
       }
 
+      if NOT bItemCast
+      {
+         if NOT Send(self,@CanPayReagents,#who=who,#lTargets=lTargets,
+                     #iSpellPower=iSpellPower,#bFreeCast=bFreeCast)
+         {
+            return FALSE;
+         }
+      }
+
       % Does the target resist?
       if lTargets <> $
          AND IsClass(First(lTargets),&Battler)
@@ -985,7 +1033,7 @@ messages:
          if NOT bItemCast
          {
             Send(self,@PayCosts,#who=who,#iSpellpower=iSpellpower,
-                  #lTargets=lTargets);
+                  #lTargets=lTargets,#bFreeCast=bFreeCast);
             Send(who,@MsgSendUser,#message_rsc=spell_resisted,
                   #parm1=Send(i,@GetCapDef),#parm2=Send(i,@GetName));
          }
@@ -1101,7 +1149,7 @@ messages:
             if lFinalTargets = $
                OR Length(lFinalTargets) = 0
             {
-               if Send(self,@GetNumSpellTargets) <> 1
+               if Send(self,@GetNumSpellTargets,#who=who) <> 1
                {
                   Send(who,@MsgSendUser,#message_rsc=spell_no_targets,
                         #parm1=Send(self,@GetName));
@@ -1199,7 +1247,7 @@ messages:
          % - Target not in same room
          % - Target is in an Arena and not a valid target
          % - The attacker can't attack the target
-         if (i = who AND Send(self,@GetNumSpellTargets) <> 1)
+         if (i = who AND Send(self,@GetNumSpellTargets,#who=who) <> 1)
             OR NOT IsClass(i,&Battler)
             OR (IsClass(i,&Monster)
                 AND NOT Send(i,@CanMonsterFight,#who=who,#oStroke=self))
@@ -1297,7 +1345,7 @@ messages:
       num = bound(num,5,99);
 
       if lTargets <> $
-         AND Send(self,@GetNumSpellTargets) = 1
+         AND Send(self,@GetNumSpellTargets,#who=who) = 1
          AND IsClass(first(lTargets),&Battler)
          AND NOT Send(Send(who,@GetOwner),@LineOfSight,#obj1=who,
                       #obj2=first(lTargets))
@@ -1337,18 +1385,37 @@ messages:
          return FALSE;
       }
 
+      % We've failed. Let's try force spike.
+      if Send(who,@GetSkillAbility,#Skill_num=SKID_FORCE_SPIKE) > 0
+      {
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_FORCE_SPIKE),
+                         @AttemptManaSacrifice,
+                         #who=who,
+                         #oSpell=self,
+                         #iSpellPower=iSpellPower)
+         {
+            return TRUE;
+         }
+      }
+
       return TRUE;
    }
 
-   PayCosts(who=$,iSpellpower=0,lTargets=$)
+   PayCosts(who=$,iSpellpower=0,lTargets=$,bFreeCast=FALSE)
    "Check for failed spell here.  A failed spell costs half the mana cost, "
    "half the exertion, and no reagents."
    {
       local num, iAbility, lReagent, cReagentClass, iLists, lItems,
-            iNumNeeded, oUserObject, oRoom;
+            iNumNeeded, oUserObject, oRoom, iVigorReduction, iExertion;
       
       oRoom = Send(who,@GetOwner);	  
       if NOT IsClass(who,&Player)
+      {
+         return TRUE;
+      }
+
+      % Free casts always succeed and... are free.
+      if bFreeCast
       {
          return TRUE;
       }
@@ -1367,8 +1434,20 @@ messages:
          Send(who,@LoseMana,#amount=Send(self,@GetManaCost,#who=who,
               #iSpellPower=iSpellpower));
 
+         iVigorReduction = 0;
+         if Send(who,@GetSkillAbility,#Skill_num=SKID_EFFICIENCY) > 0
+         {
+            iVigorReduction =
+                Send(Send(SYS,@FindSkillByNum,#num=SKID_EFFICIENCY),
+                              @GetVigorReduction,
+                              #who=who,
+                              #oSpell=self);
+         }
+         
+         iExertion = Bound(viSpellExertion-iVigorReduction,0,$);
+
          % Spell casting requires exertion (which is in 10^-4 units)
-         Send(who,@AddExertion,#amount=10000*viSpellExertion);
+         Send(who,@AddExertion,#amount=10000*iExertion);
 
          % Escaped Convict loses mana and vigor, but reagents are not required
          if (IsClass(who,&EscapedConvict))
@@ -1523,15 +1602,6 @@ messages:
       if lTargets <> $
       {
          oTarget = First(lTargets);
-
-         % If the spell was cast on a monster, let the monster keep track of that for loot.
-         if IsClass(oTarget,&Monster)
-            AND NOT bItemCast
-            AND who <> $
-            AND IsClass(who,&Player)
-         {
-            Send(oTarget,@AddToSpellList,#spellNum=viSpell_num);
-         }
       }
       else
       {
@@ -2093,7 +2163,7 @@ messages:
          return;
       }
         
-      if Send(self,@GetNumSpellTargets) <> 1
+      if Send(self,@GetNumSpellTargets,#who=caster) <> 1
       {
          Send(hearer,@MsgSendUser,#message_rsc=spell_gesture_third,
               #parm1=Send(caster,@GetCapDef),
@@ -2128,9 +2198,9 @@ messages:
 
    % Called when enchantment did not go full term
    % Important for trance implementation  Xian 4/13/96
-   RemoveEnchantmentEffects( who = $, state = $, report = TRUE )
+   RemoveEnchantmentEffects( who = $, state = $, report = TRUE, remain = FALSE )
    {
-      Send(self,@EndEnchantment,#who=who,#state=state,#report=report);
+      Send(self,@EndEnchantment,#who=who,#state=state,#report=report,#remain=remain);
       
       return;
    }
@@ -2599,6 +2669,23 @@ messages:
    {
       % Spells can overwrite this to change resistances temporarily.
       return resistance_list;
+   }
+
+   GetSubSchool()
+   {
+      % Some schools have subschools.
+      return viSubSchool;
+   }
+
+   IsFreeCastable()
+   {
+      return vbFree_Castable;
+   }
+
+   DirectDMAccess()
+   {
+      % When a DM does 'dm get spell', does he get this spell?
+      return TRUE;
    }
 
 end

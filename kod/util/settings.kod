@@ -63,7 +63,7 @@ properties:
 
    % Stat reset token has a 1 in (piStatResetTokenDropFactor / monster_level)
    % chance to drop, with monster_level bound between 50 and 150.
-   piStatResetTokenDropFactor = 500000
+   piStatResetTokenDropFactor = 250000
 
    % Lore book drop facter, 1 in piLoreBookDropFactor per loot roll
    piLoreBookDropFactor = 2000
@@ -84,6 +84,22 @@ properties:
    % Multiplier for the amount of %s each mob you kill adds to your levelup chance.
    piHPGainMultiplier = 1
    
+   % The maximum amount of unbound energy we can absorb
+   piUnboundMax = 500
+
+   % The maximum percentage of XP we can absorb as unbound energy.
+   piUnboundAbsorption = 100
+
+   % The permillage of unbound energy that is lost every second. 50 means 5 percent.
+   piUnboundDecay = 50
+
+   % Delay between receiving unbound energy and decay setting in in ms.
+   piUnboundDelay = 30000
+
+   % Players can't absorb unbound energy from monsters while engaged in PvP or
+   % a short while thereafter. Default of 4 minutes.
+   piUnboundEnergyAttackDelaySec = 240
+
    % How far up the food chain can basic players learn?  See player for more
    %  specific information on what this number means.
    piMaxLearnPoints = 16
@@ -117,7 +133,7 @@ properties:
    piTeleportAttackDelaySec = 240
 
    % Rescue always takes at least this long to cast
-   piRescueBaseDelaySec = 15
+   piRescueBaseDelaySec = 7
 
    % Time in milliseconds that ghosts will last before taking a penalty
    piLogoffPenaltyGhostTime = 480 * 1000
@@ -242,6 +258,26 @@ properties:
    % serves as a baseline for calculation.
    piBaseRating = 0
 
+   % Do we do elemental status effects at all?
+   piEnableElementalStatusEffects = TRUE
+
+   % Status effect multiples
+   % Shocked temporarily reduces defense by a multiple of damage taken (X*m defense)
+   % Chilled temporarily slows attack and cast timers (X*m ms)
+   % Burning temporarily deals burning damage over time by a divisor (X/m damage)
+   % Corrode temporarily lowers armor (X/m armor)
+   % Humbled temporarily lowers resistances (X/m resist)
+   % Mantled temporarily lowers the effect of healing on the victim (X/m healing)
+   piShockedMultiple = 4
+   piChilledMultiple = 30
+   piBurningDivisor = 3
+   piCorrodeDivisor = 6
+   piHumbledDivisor = 3
+   piMantledDivisor = 6
+   
+   piStatusEffectReductionTime = 3000
+   piStatusEffectReductionAmount = 10
+
    % Percent of mana required/used for broadcasting. Default 0 (no cost).
    piBroadcastManaPercent = 0
 
@@ -259,6 +295,35 @@ properties:
 
    % Setting to allow users to remove their own posts.
    pbCanUserRemoveOwnPosts = TRUE
+
+   % Magical modifications system
+   pbShardsEnabled = FALSE
+   % Probability for this shard is 1 out of X
+   piMinorOutOf = 100
+   piAugmeOutOf = 200
+   piMajorOutOf = 1000
+   piDrainOutOf = 1000
+   piEmpowOutOf = 10000
+
+   % Can players Reincarnate at the Hall of Genealogy?   
+   piReincarnationEnabled = FALSE
+
+   % What type of experience system do we use?
+   % WARNING: Classic experience system will require client modifications!
+   piExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+   % Do we cap modern experience at player's own max health to tightly emulate old system?
+   piCapModernExperience = TRUE
+
+   % Champion Mob Spawns
+   pbChampionSpawnsEnabled = TRUE
+
+   % Expansion modules
+   bSorcerySchoolExpansion = TRUE
+   % Are Sorcery's reserved buffs purgeable?
+   bReservedSpellsPurgeable = FALSE
+
+   % Can people opt out of PvP?
+   pbAllowOptOutPvP = FALSE
 
 messages:
 
@@ -461,6 +526,11 @@ messages:
       return pbCanRecastJalaWithNecklace;
    }
 
+   UnboundEnergyAttackDelaySec()
+   {
+      return piUnboundEnergyAttackDelaySec;
+   }
+
    TeleportAttackDelaySec()
    {
       return piTeleportAttackDelaySec;
@@ -650,9 +720,58 @@ messages:
       return piBaseRating;
    }
 
+   GetElementalMultiple(type=STATUS_SHOCKED)
+   {
+      if type = STATUS_SHOCKED
+      {
+         return piShockedMultiple;
+      }
+      if type = STATUS_CHILLED
+      {
+         return piChilledMultiple;
+      }
+      if type = STATUS_BURNING
+      {
+         return bound(piBurningDivisor,2,100);
+      }
+      if type = STATUS_CORRODE
+      {
+         return bound(piCorrodeDivisor,1,100);
+      }
+      if type = STATUS_HUMBLED
+      {
+         return bound(piHumbledDivisor,1,100);
+      }
+      if type = STATUS_MANTLED
+      {
+         return bound(piMantledDivisor,1,100);
+      }
+      return 0;
+   }
+   
+   GetStatusEffectReductionTime()
+   {
+      return piStatusEffectReductionTime;
+   }
+   
+   GetStatusEffectReductionAmount()
+   {
+      return piStatusEffectReductionAmount;
+   }
+
    GetBroadcastManaCost()
    {
       return piBroadcastManaPercent;
+   }
+
+   GetExperienceSystem()
+   {
+      return piExperienceSystem;
+   }
+   
+   GetCapModernExperience()
+   {
+      return piCapModernExperience;
    }
 
    JasperVaultOpen()
@@ -673,6 +792,86 @@ messages:
    CanUsersRemoveOwnPosts()
    {
       return pbCanUserRemoveOwnPosts;
+   }
+
+   GetShardsEnabled()
+   {
+      return pbShardsEnabled;
+   }
+
+   GetMinorShardProbability()
+   {
+      return piMinorOutOf;
+   }
+
+   GetAugmentShardProbability()
+   {
+      return piAugmeOutOf;
+   }
+
+   GetMajorShardProbability()
+   {
+      return piMajorOutOf;
+   }
+
+   GetDrainShardProbability()
+   {
+      return piDrainOutOf;
+   }
+
+   GetEmpowerShardProbability()
+   {
+      return piEmpowOutOf;
+   }
+
+   GetReincarnationEnabled()
+   {
+      return piReincarnationEnabled;
+   }
+
+   GetUnboundMax()
+   {
+      return piUnboundMax;
+   }
+
+   GetUnboundAbsorption()
+   {
+      return piUnboundAbsorption;
+   }
+
+   GetUnboundDecay()
+   {
+      return piUnboundDecay;
+   }
+
+   GetUnboundDelay()
+   {
+      return piUnboundDelay;
+   }
+
+   GetEnableElementalStatusEffects()
+   {
+      return piEnableElementalStatusEffects;
+   }
+   
+   GetChampionSpawnsEnabled()
+   {
+      return pbChampionSpawnsEnabled;
+   }
+
+   GetSorcerySchoolExpansion()
+   {
+      return bSorcerySchoolExpansion;
+   }
+   
+   GetReservedSpellsPurgeable()
+   {
+      return bReservedSpellsPurgeable;
+   }
+
+   GetAllowOptOutPvP()
+   {
+      return pbAllowOptOutPvP;
    }
 
 end

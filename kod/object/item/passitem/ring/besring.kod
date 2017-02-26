@@ -67,7 +67,6 @@ messages:
       
       Send(poOwner,@MsgSendUser,#message_rsc=berserkerring_use_rsc);
 
-      Send(what,@AddAttackModifier,#what=self);
             
       propagate;
    }
@@ -76,13 +75,24 @@ messages:
    {
       Send(poOwner,@MsgSendUser,#message_rsc=berserkerring_unuse_rsc);
 
-      Send(what,@RemoveAttackModifier,#what=self);
       
       propagate;
    }
 
    ModifyHitRoll(who = $, what = $, hit_roll = $)
    {
+      local i, oWeapon, oOffenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            oOffenseMod = Send(SYS,@GetMagicMod,#class=&OffenseMod);
+            hit_roll = Send(oOffenseMod,@ModifyHitRoll,#who=who,#what=what,
+                        #hit_roll=hit_roll,#iState=Nth(i,2));
+         }
+      }
+
       piHits = piHits - 1;
       if piHits <= 0
       {
@@ -93,12 +103,22 @@ messages:
          return hit_roll;
       }
       
-      return hit_roll - (Random(15,25) * 10);
+      return hit_roll;
    }
 
    ModifyDamage(who = $, what = $, damage = $)
    {
-      local oWeapon;
+      local oWeapon, i, oWeaponDamageMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            damage = Send(oWeaponDamageMod,@ModifyDamage,#who=who,#what=what,
+                        #damage=damage,#iState=Nth(i,2));
+         }
+      }
 
       oWeapon = send(who,@GetWeapon);
 
@@ -110,11 +130,53 @@ messages:
       return damage;
    }
 
+   GetHitBonus()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
+   }
+
+   GetMeleeDamageBonus()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
+   }
+
    WeaponHitTarget()
    {
       return;
    }
 
+   GetPrefixes()
+   {
+      return [[&OffenseMod,100],
+              [&WeaponDamageMod,100]];
+   }
+   
+   GetSuffixes()
+   {
+      return $;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

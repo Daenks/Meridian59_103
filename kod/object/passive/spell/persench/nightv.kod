@@ -52,7 +52,11 @@ classvars:
 
    viFlash = FLASH_GOOD_SELF
 
+   viPercentManaReserved = 5
+
 properties:
+
+   viPurgeFactor = 10
 
 messages:
 

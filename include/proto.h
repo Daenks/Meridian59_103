@@ -365,6 +365,7 @@ enum {
 
 
 /* Object flag values and masks */
+#define OF_DISPLAY_NAME  0x00000001    // Set if object should have name displayed
 #define OF_PLAYER        0x00000004    // Set if object is a player
 #define OF_ATTACKABLE    0x00000008    // Set if object is legal target for an attack
 #define OF_GETTABLE      0x00000010    // Set if player can try to pick up object
@@ -415,6 +416,7 @@ enum {
 #define MM_TEMPSAFE      0x00000200    // Set if player has a temporary angel.
 #define MM_MINIBOSS      0x00000400    // Set if mob is a miniboss (survival arena).
 #define MM_BOSS          0x00000800    // Set if mob is a boss (survival arena).
+#define MM_RARE_ITEM     0x00001000    // Set if item is rare.
 
 /* Player name color sent as hex RGB value. Define constants
    for ease of use as needed. Requires OF_PLAYER boolean flag

@@ -1,0 +1,126 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertAfterlifeDunes is DesertAfterlife
+
+% This room is free of monsters.
+% Players may walk east (brighter) toward the Prism of Life.
+% They may also walk west (darker) toward the Prism of Death.
+% The souls of centuries of dead nomads who could not afford a deal with
+%  Xaerdun wander here. They can be found all over the other afterlife rooms.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_desertALdunes = desertaldunes.roo
+   room_name_desertALdunes = "Eternal Wastes"
+   
+   brighter_going_east_msg = \
+      "It seems slightly brighter in this direction somehow."
+   darker_going_west_msg = \
+      "It seems slightly darker in this direction somehow."
+
+classvars:
+
+   vrName = room_name_desertALdunes
+
+   viTeleport_row = 37
+   viTeleport_col = 140
+
+properties:
+
+   piBaseLight = LIGHT_DARK
+   piOutside_factor = OUTDOORS_5 
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   prRoom = room_desertALdunes
+   piRoom_num = RID_DESERTALDUNES
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+
+messages:
+
+   CreateStandardObjects()
+   {
+      Send(self,@NewHold,#what=Create(&XaerdunAfterlife),
+            #new_row=56,#new_col=105,#fine_row=22, #fine_col=55,
+            #new_angle=ANGLE_WEST);
+      return;
+   }
+
+   SomethingMoved(what = $,new_row = $, new_col = $)
+   {
+      if new_col > (Send(self,@GetRoomCols)-2)
+      {
+         if IsClass(what,&User)
+         {
+            Send(what,@MsgSendUser,#message_rsc=brighter_going_east_msg);
+         }
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES2E),
+              #new_row=Send(what,@GetRow),
+              #new_col=3,
+              #fine_row=Send(what,@GetFineRow),
+              #fine_col=0,
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_col < 2
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
+              #new_row=Send(what,@GetRow),
+              #new_col=Send(self,@GetRoomCols)-3,
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_row < 2
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
+              #new_row=Send(self,@GetRoomRows)-3,
+              #new_col=Send(what,@GetCol),
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      if new_row > (Send(self,@GetRoomRows)-2)
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+              #where=Send(SYS,@FindRoomByNum,#num=RID_DESERTALDUNES),
+              #new_row=3,
+              #new_col=Send(what,@GetCol),
+              #fine_row=0,
+              #fine_col=Send(what,@GetFineCol),
+              #new_angle=Send(what,@GetAngle));
+         return;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -872,7 +872,7 @@ void DrawObjectDecorations(DrawnObject *object)
    if (r == NULL)
       return;
 
-   if (!(r->obj.flags & OF_PLAYER) || (r->obj.drawingtype == DRAWFX_INVISIBLE))
+   if (!(r->obj.flags & OF_DISPLAY_NAME) || (r->obj.drawingtype == DRAWFX_INVISIBLE))
       return;
 
    // Draw player name

@@ -163,7 +163,7 @@ int StatsIntellectNeeded()
    
 }
 /********************************************************************/
-void initStatsFromServer(int *stats_in, int *levels_in)
+void initStatsFromServer(int *stats_in, int *levels_in, int *maxstats_in)
 {
    int i;
    int sum = 0;
@@ -171,9 +171,10 @@ void initStatsFromServer(int *stats_in, int *levels_in)
    for (i=0; i < NUM_CHAR_STATS; i++)
    {
       stats[i].val = stats_in[i];
+      stats[i].max = maxstats_in[i];
       sum = sum + stats_in[i];
    }
-   stat_points = 200 - sum;
+   stat_points = maxstats_in[6] - sum;
    
    for (i = 0; i < NUM_CHAR_SCHOOLS; i++)
    {

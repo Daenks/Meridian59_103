@@ -31,6 +31,28 @@ constants:
    % Number of ms to lose one boosted health or mana point.
    BOOST_DECAY_TIME = 30000 
 
+   % Champion mob types
+   NORMAL_MOB = 0
+   CHAMPION_TOUGH = 1
+   CHAMPION_SWIFT = 2
+   CHAMPION_DEADLY = 3
+   CHAMPION_INDOMITABLE = 4
+   CHAMPION_LEGENDARY = 5
+   
+   TIER_ONE_CHAMPION_REWARD_MULTIPLIER = 3
+   TIER_TWO_CHAMPION_REWARD_MULTIPLIER = 10
+   TIER_THREE_CHAMPION_REWARD_MULTIPLIER = 100
+   
+   % Champion abilities 
+   % Stored in the form [type, value] in plChampionAbilities
+   CHAMPION_ABIL_MAGIC_RESISTANCE = 1
+   CHAMPION_ABIL_WEAPON_RESISTANCE = 2
+   CHAMPION_ABIL_EAGLE_EYES = 3
+   CHAMPION_ABIL_FREE_ACTION = 4
+   CHAMPION_ABIL_ELEMENTAL_DAMAGE_TYPE = 5
+   CHAMPION_ABIL_PURGE = 6
+   CHAMPION_ABIL_DISARM = 7
+
 resources:
 
    include monster.lkod
@@ -136,15 +158,28 @@ resources:
    Lm_monster_healing = \
       "%s%s falls back to recover for a moment, then returns to the fight."
    
+   champion_tough_desc = \
+      "\n\nThis %s looks rather tough."
+   champion_swift_desc = \
+      "\n\nThis %s seems to move rather swiftly."
+   champion_deadly_desc = \
+      "\n\nThis %s appears exceptionally deadly."
+   champion_indomitable_desc = \
+      "\n\nThis %s clearly possesses an indomitable strength."
+   champion_legendary_desc = \
+      "\n\nThis is a legendary %s, a renowned terror upon the land!"
+   champion_nothing = \
+      ""
+   
    monster_desc_level = "This monster will take you to %i hitpoints."
-   Lm_condition_healthy = "%s\n\n%r"
+   Lm_condition_healthy = "%s\n\n%r%r"
    Lm_condition_good = \
-      "%s\n\n%r\n\n%s%s is injured, but is still relatively strong."
+      "%s\n\n%r\n\n%s%s is injured, but is still relatively strong.%r"
    Lm_condition_fair = \
-      "%s\n\n%r\n\n%s%s is wounded, but is still relatively strong."
-   Lm_condition_poor = "%s\n\n%r\n\n%s%s is suffering from deep wounds."
+      "%s\n\n%r\n\n%s%s is wounded, but is still relatively strong.%r"
+   Lm_condition_poor = "%s\n\n%r\n\n%s%s is suffering from deep wounds.%r"
    Lm_condition_bad = \
-      "%s\n\n%r\n\n%s%s is weak and seems unlikely to survive much longer."
+      "%s\n\n%r\n\n%s%s is weak and seems unlikely to survive much longer.%r"
 
    Lm_cant_remove_item = "You can't give %s%s away right now."
    Lm_mrcnt_not_selling = "You tried to buy something that is not being sold."
@@ -263,6 +298,22 @@ resources:
    monster_faction_heretic = "Cult of the Three"
    monster_faction_undead = "Minions of Death"
 
+   champion_none = ""
+   champion_tough_prefix = "tough "
+   champion_speed_prefix = "swift "
+   champion_damage_prefix = "deadly "
+   champion_all_prefix = "indomitable "
+   champion_super_prefix = "legendary "
+   
+   legendary_name_none = "Allan please add legendary name"
+   legendary_name_default = "Ror'thark the Merciless"
+   
+   champion_purge_msg = "The attack tears at the magics surrounding you!"
+   champion_disarm_msg = "The skilled strike knocks you off balance!"
+   
+   indomitable_arrived = "An indomitable %s steps forward, ready for combat!"
+   legendary_arrived = "~BA legendary %s appears, intent on destroying you!"
+
 classvars:
 
    vrKocName = monster_koc_name
@@ -367,6 +418,9 @@ classvars:
 
    viFaction = FACTION_NEUTRAL
 
+   viCanSpawnAsChampion = TRUE
+   viHasLegendaryNames = FALSE
+
 properties:
 
    piVisionDistance
@@ -431,6 +485,12 @@ properties:
    piAgility = 25
    piAim = 25
 
+   % Emulates tumbling skill, 0 is no evasion, 100 is total evasion
+   piTumbling = 0
+
+   % Supports enchantments with monsters as targets
+   plEnchantments = $
+
    piEnch_flags = 0
 
    piDrawfx = 0
@@ -455,9 +515,6 @@ properties:
    piColor_Translation = 0
 
    piSweepCounter = 0
-
-   % Passive reagent return spell list.
-   plSpellList = $
 
    % List of spells this monster can cast. Has the format:
    % [ Spell num, mana cost, number req. from Random(1,100) to cast ]
@@ -486,6 +543,13 @@ properties:
    piLastTimeAttacked = 0
    poLastAttacker = $
 
+   % Keeps track of a mob's randomly generated extra strengths
+   piChampionStatus = 0
+   plChampionAbilities = $
+   
+   % Usually taken from monster's viSpeed
+   piSpeed = 0
+
    % some monsters are created on the fly (ex: avar) we may need to set this at
    % runtime
    piReputationGroup = REP_NEUTRAL
@@ -509,6 +573,7 @@ messages:
       piSpellChance = viSpellChance;
       piVisionDistance = viVisionDistance + piSurvivalLevel;
       piBoostedLevel = piSurvivalLevel;
+      piSpeed = viSpeed;
 
       if Send(self,@MobIsSeller)
       {
@@ -708,9 +773,6 @@ messages:
       {
          Send(poMaster,@RemoveControlledMinion,#what=self);
       }
-
-      % Clear reagent return list.
-      plSpellList = $;
 
       % If this monster is an Apparition, tell the original it was deleted.
       if poApparitionOriginal <> $
@@ -1042,9 +1104,16 @@ messages:
    "Monster just entered this room. Right now, thats only possible on a"
    "creation. So, lets pause for a few beats if we got users."
    {
+      local iRand;
+
       if what = $
       {
          Send(self,@ClearBasicTimers);
+
+         if piChampionStatus <> 0
+         {
+            Send(self,@LoseChampionStatus);
+         }
 
          propagate;
       }
@@ -1064,6 +1133,40 @@ messages:
       }
 
       Send(poBrain,@NewOwner,#mob=self,#state=piState,#what=what);
+      
+      if NOT ((piBehavior & AI_NOFIGHT) OR (piBehavior & AI_NPC))
+         AND viCanSpawnAsChampion
+         AND IsClass(what,&Room)
+         AND Send(what,@GetCanSpawnChampions)
+         AND Send(SETTINGS_OBJECT,@GetChampionSpawnsEnabled)
+      {
+         iRand = Random(0,9999);
+         
+         if iRand > 450 AND iRand <= 650
+         {
+            Post(self,@GainChampionStatus,#iType=CHAMPION_TOUGH);
+         }
+         
+         if iRand > 250 AND iRand <= 450
+         {
+            Post(self,@GainChampionStatus,#iType=CHAMPION_SWIFT);
+         }
+         
+         if iRand > 50 AND iRand <= 250
+         {
+            Post(self,@GainChampionStatus,#iType=CHAMPION_DEADLY);
+         }
+         
+         if iRand > 0 AND iRand <= 50
+         {
+            Post(self,@GainChampionStatus,#iType=CHAMPION_INDOMITABLE);
+         }
+         
+         if iRand = 0
+         {
+            Post(self,@GainChampionStatus,#iType=CHAMPION_LEGENDARY);
+         }
+      }
 
       propagate;
    }
@@ -1834,7 +1937,7 @@ messages:
                Send(poOwner,@SomethingMoved,#what=self,
                      #new_row=iNew_row,#new_col=iNew_col,
                      #fine_row=iNew_finerow,#fine_col=iNew_finecol,
-                     #speed=(0x80|viSpeed),#non_monsters_only=TRUE);
+                     #speed=(0x80|piSpeed),#non_monsters_only=TRUE);
             }
          }
       }
@@ -2037,6 +2140,17 @@ messages:
          iAttack = piOffense;
       }
 
+      if piChampionStatus = CHAMPION_DEADLY
+         OR piChampionStatus = CHAMPION_INDOMITABLE
+      {
+         iAttack = (iAttack * 4) / 3;
+      }
+      
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         iAttack = (iAttack * 3) / 2;
+      }
+
       if piEnch_flags & ENCH_PALSY
       {
          iAttack = iAttack * 3 / 4;
@@ -2049,7 +2163,7 @@ messages:
    "This returns the battler's ability to avoid being hit.  Ranges from "
    "1 to 2000."
    {
-      local iDefense;
+      local iDefense, iShocked;
 
       if piDefense = $
       {
@@ -2058,6 +2172,26 @@ messages:
       else
       {
          iDefense = piDefense;
+      }
+
+      if piChampionStatus = CHAMPION_TOUGH
+         OR piChampionStatus = CHAMPION_INDOMITABLE
+      {
+         iDefense = (iDefense * 4) / 3;
+      }
+      
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         iDefense = (iDefense * 3) / 2;
+      }
+
+      % Check for Shocked status effect, which lowers defense.
+      iShocked = Send(self,@GetStatusEffect,#type=STATUS_SHOCKED);
+      if iShocked > 0
+      {
+         iDefense = iDefense - (iShocked * Send(SETTINGS_OBJECT,
+                                                @GetElementalMultiple,
+                                                #type=STATUS_SHOCKED));
       }
 
       return Bound(iDefense,1,2000);
@@ -2080,7 +2214,9 @@ messages:
    % This returns the damage done to target "what"
    GetDamage(what = $, stroke_obj=$)
    {
-      local iDamage;
+      local iDamage, iMultiplier;
+
+      iMultiplier = 1;
 
       if piMinDamage = $ and piMaxDamage = $
       {
@@ -2103,8 +2239,19 @@ messages:
       {
          iDamage = iDamage * 3 / 4 ;
       }
+
+      if piChampionStatus = CHAMPION_DEADLY
+         OR piChampionStatus = CHAMPION_INDOMITABLE
+      {
+         iMultiplier = 2;
+      }
       
-      return Bound(iDamage,0,$);
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         iMultiplier = 3;
+      }
+      
+      return Bound(iDamage,0,$) * iMultiplier;
    }
 
    % This is the type of damage done.
@@ -2116,6 +2263,16 @@ messages:
    % This is the magical type of damage done.
    GetSpellType(what = $)
    {
+      local i;
+      
+      foreach i in plChampionAbilities
+      {
+         if First(i) = CHAMPION_ABIL_ELEMENTAL_DAMAGE_TYPE
+         {
+            return Nth(i,2);
+         }
+      }
+
       return viAttack_spell;
    }
 
@@ -2137,7 +2294,8 @@ messages:
    AssessDamage(what=$,damage=$,atype=0,aspell=0,bonus=0,scalefactor=1000,
       absolute=FALSE,precision=FALSE)
    {
-      local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered;
+      local iDamage, iResist, iPercentClass, i, each_obj, bAttackerEmpowered,
+            iCorrode, iCorrodeMultiple, iCorrodeReduction;
 
       if NOT precision
       {
@@ -2153,6 +2311,40 @@ messages:
 
       % Attacks against a minion master will cause minions to defend the master
       Send(self,@CommandMinionAttack,#oMaster=self,#oTarget=what);
+
+      if IsClass(what,&Player)
+      {
+         if (aspell & ATCK_SPELL_HOLY
+            OR aspell & ATCK_SPELL_UNHOLY)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_DEVOTION) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_DEVOTION),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+         if (aspell & ATCK_SPELL_COLD
+            OR aspell & ATCK_SPELL_ACID)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENTROPY) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENTROPY),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+         if (aspell & ATCK_SPELL_FIRE
+            OR aspell & ATCK_SPELL_SHOCK)
+            AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENERGY) > 0
+         {
+            bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENERGY),
+                                  @AddDamage,
+                                  #who=what,
+                                  #damage=bonus,
+                                  #aspell=aspell);
+         }
+      }
 
       % Increase initial damage by 35 percent if attacker damage rod is active
       bAttackerEmpowered = FALSE;
@@ -2180,6 +2372,17 @@ messages:
       {
          iDamage = Send(self,@ArmorCheck,#what=what,#bonus=bonus,#atype=atype,
             #aspell=aspell,#damage=damage);
+
+         iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+         if iCorrode > 0
+         {
+            iCorrodeMultiple = Send(SETTINGS_OBJECT,
+                               @GetElementalMultiple,#type=STATUS_CORRODE);
+         
+            iCorrodeReduction = (iCorrode/iCorrodeMultiple);
+            iDamage = bound(iDamage + iCorrodeReduction*100,1,damage);
+         }
+
          iResist = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
          iDamage = Send(self,@GetDamageFromResistance,#what=iDamage,#value=iResist);
          iDamage = iDamage + bonus;
@@ -2188,6 +2391,27 @@ messages:
       else
       {
          iDamage = damage;
+      }
+      
+      foreach i in plChampionAbilities
+      {
+         if First(i) = CHAMPION_ABIL_MAGIC_RESISTANCE
+            AND aspell <> 0
+         {
+            iDamage = (iDamage * (100-Nth(i,2)) / 100);
+         }
+         if First(i) = CHAMPION_ABIL_WEAPON_RESISTANCE
+            AND atype <> 0
+         {
+            iDamage = (iDamage * (100-Nth(i,2)) / 100);
+         }
+      }
+
+      if IsClass(what,&Player)
+         AND Send(what,@GetStance) <> $
+      {
+         iDamage = Send(Send(what,@GetStance),@LastPriorityModifyDamage,
+                         #who=what,#what=self,#damage=iDamage);
       }
 
       % Set a predamage mark... we'll compare to it to see if threshold crossed.
@@ -2243,6 +2467,25 @@ messages:
       }
       
       Send(self,@AddHurtMeRecently,#who=what,#amount=iDamage);
+
+      % Apply possible elemental status effects
+      if atype = 0
+      {
+         if aspell <> 0
+         {
+            Send(self,@ApplyElementalStatusEffects,#damage=damage/100,
+                      #aspell=aspell,#what=what);
+         }
+      }
+      else
+      {
+         % Apply only half the effects from partially magical attacks
+         if aspell <> 0
+         {
+            Send(self,@ApplyElementalStatusEffects,#damage=(damage/100/2),
+                      #aspell=aspell,#what=what);
+         }
+      }
 
       return iDamage;
    }
@@ -3550,6 +3793,38 @@ messages:
    HitSideEffect(what=$)
    "Called after every non-fatal monster hit"
    {
+      local i, oPurge, oDisarm;
+
+      foreach i in plChampionAbilities
+      {
+         if First(i) = CHAMPION_ABIL_PURGE
+         {
+            if Random(1,100) < Nth(i,2)
+            {
+               oPurge = Send(SYS,@FindSpellByNum,#num=SID_PURGE);
+               if oPurge <> $
+                  AND Send(what,@IsEnchanted)
+               {
+                  if IsClass(what,&Player)
+                  {
+                     Send(what,@MsgSendUser,#message_rsc=champion_purge_msg);
+                  }
+                  % Chances equal to a purge weapon
+                  Send(oPurge,@DoPurge,#who=what,#iSpellPower=Random(25,75));
+               }
+            }
+         }
+         
+         if First(i) = CHAMPION_ABIL_DISARM
+         {
+            if Random(1,100) < Nth(i,2)
+            {
+               oDisarm = Send(SYS,@FindSkillByNum,#num=SKID_DISARM);
+               Send(oDisarm,@DoSkill,#who=self,#oTarget=what);
+            }
+         }
+      }
+
       return;
    }
 
@@ -3656,6 +3931,8 @@ messages:
          what = self;
       }
 
+      Send(self,@ClearAllStatusEffects);
+
       if (viDefault_behavior & AI_NPC)
       {
          return;
@@ -3731,10 +4008,10 @@ messages:
                      AddTableEntry(hReputation,piReputationGroup,-1);
                   }
 
-                  Send(what,@MsgSendUser,
-                     #message_rsc=monster_faction_negative_msg,
-                     #parm1=Send(self,@GetMonsterFactionRSC,
-                              #faction=piReputationGroup));
+                  %Send(what,@MsgSendUser,
+                  %   #message_rsc=monster_faction_negative_msg,
+                  %   #parm1=Send(self,@GetMonsterFactionRSC,
+                  %            #faction=piReputationGroup));
 
                   % Adjust reputation with enemies of this monster
                   foreach i in plReputationEnemies
@@ -3754,9 +4031,9 @@ messages:
                         AddTableEntry(hReputation,i,1);
                      }
 
-                     Send(what,@MsgSendUser,
-                     #message_rsc=monster_faction_positive_msg,
-                     #parm1=Send(self,@GetMonsterFactionRSC,#faction=i));
+                     %Send(what,@MsgSendUser,
+                     %#message_rsc=monster_faction_positive_msg,
+                     %#parm1=Send(self,@GetMonsterFactionRSC,#faction=i));
                   }
                }
             }
@@ -4743,8 +5020,10 @@ messages:
    }
 
    GainHealthNormal(amount = $, precision = FALSE)
-   "for when holy touch is cast on a good monster"
+   "For when monsters heal themselves or each other."
    {
+      local iMantled, iMantledDivisor;
+
       if amount = $
       {
          return;
@@ -4753,6 +5032,14 @@ messages:
       if NOT precision
       {
          amount = amount * 100;
+      }
+
+      iMantled = Send(self,@GetStatusEffect,#type=STATUS_MANTLED);
+      if iMantled > 0
+      {
+         iMantledDivisor = Send(SETTINGS_OBJECT,
+                            @GetElementalMultiple,#type=STATUS_MANTLED);
+         amount = amount - (iMantled/iMantledDivisor)*100;
       }
 
       piHit_points = Bound(piHit_points+amount,1,piMax_hit_points*100);
@@ -5018,7 +5305,7 @@ messages:
    ShowDesc(iHitPoint_Percent = $)
    "Adds max HP that can be gained from monster, followed by its condition."
    {
-      local iHit_Percent, rMonster_condition;
+      local iHit_Percent, rMonster_condition, rChampionStatus;
 
       if iHitPoint_Percent = $
       {
@@ -5029,16 +5316,52 @@ messages:
          iHit_Percent = iHitPoint_Percent;
       }
 
+      if piChampionStatus <> 0
+      {
+         if piChampionStatus = CHAMPION_TOUGH
+         {
+            rChampionStatus = champion_tough_desc;
+         }
+         if piChampionStatus = CHAMPION_SWIFT
+         {
+            rChampionStatus = champion_swift_desc;
+         }
+         if piChampionStatus = CHAMPION_DEADLY
+         {
+            rChampionStatus = champion_deadly_desc;
+         }
+         if piChampionStatus = CHAMPION_INDOMITABLE
+         {
+            rChampionStatus = champion_indomitable_desc;
+         }
+         if piChampionStatus = CHAMPION_LEGENDARY
+         {
+            rChampionStatus = champion_legendary_desc;
+         }
+      }
+      else
+      {
+         rChampionStatus = champion_nothing;
+      }
+
       if iHit_Percent > 80
       {
          if piBehavior & AI_NPC
          {
-            AddPacket(4,vrCondition_healthy, 4,vrDesc, 4,monster_nothing);
+            AddPacket(4,vrCondition_healthy, 4,vrDesc, 4,monster_nothing, 4,rChampionStatus);
          }
          else
          {
-            AddPacket(4,vrCondition_healthy, 4,vrDesc, 4,monster_desc_level,
-                      4,Bound(viLevel,20,150));
+            if piChampionStatus = 0
+            {
+               AddPacket(4,vrCondition_healthy, 4,vrDesc, 4,monster_desc_level,
+                         4,Bound(viLevel,20,150), 4,rChampionStatus);
+            }
+            else
+            {
+               AddPacket(4,vrCondition_healthy, 4,vrDesc, 4,monster_desc_level,
+                         4,Bound(viLevel,20,150), 4,rChampionStatus, 4, Send(self,@GetName));
+            }
          }
 
          return;
@@ -5063,13 +5386,22 @@ messages:
       if piBehavior & AI_NPC
       {
          AddPacket(4,rMonster_Condition, 4,vrDesc, 4,monster_nothing,
-                   4,Send(self,@GetCapDef), 4,Send(self,@GetName));
+                   4,Send(self,@GetCapDef), 4,Send(self,@GetName), 4,rChampionStatus);
       }
       else
       {
-         AddPacket(4,rMonster_Condition, 4,vrDesc, 4,monster_desc_level,
-                   4,Bound(viLevel,20,150), 4,Send(self,@GetCapDef),
-                   4,Send(self,@GetName));
+         if piChampionStatus = 0
+         {
+            AddPacket(4,rMonster_Condition, 4,vrDesc, 4,monster_desc_level,
+                      4,Bound(viLevel,20,150), 4,Send(self,@GetCapDef),
+                      4,Send(self,@GetName), 4,rChampionStatus);
+         }
+         else
+         {
+            AddPacket(4,rMonster_Condition, 4,vrDesc, 4,monster_desc_level,
+                      4,Bound(viLevel,20,150), 4,Send(self,@GetCapDef),
+                      4,Send(self,@GetName), 4,rChampionStatus, 4,Send(Self,@GetName));
+         }
       }
 
       return;
@@ -5080,12 +5412,26 @@ messages:
    "construction, and to heal the monster, as well as for indicating "
    "its current damage."
    {
-      if viLevel < 40
+      local iMultiplier;
+
+      iMultiplier = 1;
+      if piChampionStatus = CHAMPION_TOUGH
+         OR piChampionStatus = CHAMPION_INDOMITABLE
       {
-         return viLevel;
+         iMultiplier = 3;
+      }
+      
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         iMultiplier = 10;
       }
 
-      return ((120 * viLevel) / 100);
+      if viLevel < 40
+      {
+         return viLevel * iMultiplier;
+      }
+
+      return ((120 * viLevel) / 100) * iMultiplier;
    }
    
    ReturnMaxHitPoints()
@@ -5324,8 +5670,19 @@ messages:
 
    GetAttackTime()
    {
-      return Send(self,@Fuzzy,#num=MOB_ATTACK_TIMER_WAIT)
-             + 3500-70*(3*viDifficulty+viSpeed);
+      local iChilled, iChilledTotal, iChilledMultiple;
+
+      iChilledTotal = 0;
+      iChilled = Send(self,@GetStatusEffect,#type=STATUS_CHILLED);
+      if iChilled > 0
+      {
+         iChilledMultiple = Send(SETTINGS_OBJECT,
+                             @GetElementalMultiple,#type=STATUS_CHILLED);
+         iChilledTotal = iChilled * iChilledMultiple;
+      }
+
+      return Bound(Send(self,@Fuzzy,#num=MOB_ATTACK_TIMER_WAIT)
+             + 3500-70*(3*viDifficulty+piSpeed),250,$) + iChilledTotal;
    }
 
    GetMoveTime()
@@ -5349,10 +5706,10 @@ messages:
       % avoid division by zero, if objects teleport
       % objects with viSpeed = 0 don't need seamless movements in the client
       % so we just assume it is enough to teleport them once a second
-      if viSpeed > 0
+      if piSpeed > 0
       {
          % see formula above  
-         iTime = 10000 / (viSpeed * 4);
+         iTime = 10000 / (piSpeed * 4);
 
          % finally we reduce the timer a bit (right now it's exact at ms)
          % why? the client should get a new position before the last destination
@@ -5605,6 +5962,7 @@ messages:
       {
          Send(poOwner,@SomeoneSaid,#type=SAY_RESOURCE,#what=self,
               #string=monster_teach_impossible);
+         Send(who,@SetLearnCapped,#value=TRUE);
 
          return FALSE;
       }
@@ -6022,7 +6380,7 @@ messages:
       local i, j, oReagent, iNumberItems, oTreasure, oTreasure_type,
             lTreasureItems, iNumberOfItemsDropped, iNumberOfItemsLooted,
             iRandomCashAmount, oMoney, iGetResult, bCapacityFailure,
-            bRangeFailure, iSurvivalLoot;
+            bRangeFailure, iSurvivalLoot, iNumShards, oShard, iRand;
 
       % Apparitions, etc, provide no treasure
       if pbIllusion
@@ -6071,21 +6429,68 @@ messages:
             corpse = $;
          }
 
-         oMoney = Create(&Money,#corpse=corpse,#number=iRandomCashAmount + (piBoostedLevel
-                     * Send(Send(SYS,@GetSurvivalRoomMaintenance),@GetSurvivalCash)));
+         oMoney = Create(&Money,#corpse=corpse,#number=(iRandomCashAmount + (piBoostedLevel
+                     * Send(Send(SYS,@GetSurvivalRoomMaintenance),@GetSurvivalCash)))
+                     * Send(self,@GetChampionRewardMultiplier));
 
          Send(Send(SYS,@GetStatistics),@MoneyCreated,#amount=Send(oMoney,@GetNumber));
          lTreasureItems = Cons(oMoney,lTreasureItems);
       }
 
-      % Add one set of spell reagents to the treasure for each type of spell 
-      % that was cast on the monster.
-      foreach i in plSpellList
+      % Add shards to champion treasure
+      if Send(self,@GetChampStatus) > 0
       {
-         foreach j in Send(Send(SYS,@FindSpellByNum,#num=i),@GetReagents)
+         iNumShards = Send(self,@GetChampionRewardMultiplier);
+         if Send(self,@GetLevel) < 50
          {
-            oReagent = Create(First(j),#corpse=corpse,#number=Nth(j,2));
-            lTreasureItems = Cons(oReagent,lTreasureItems);
+            --iNumShards;
+         }
+         if Send(self,@GetLevel) < 100
+         {
+            --iNumShards;
+         }
+         if Send(self,@GetLevel) < 150
+         {
+            --iNumShards;
+         }
+         while iNumShards > 0
+         {
+            iRand = Random(1,Send(SETTINGS_OBJECT,@GetEmpowerShardProbability)/100);
+            if iRand = 1
+            {
+               oShard = Create(&ShardEmpowerment);
+            }
+            else
+            {
+               iRand = Random(1,Send(SETTINGS_OBJECT,@GetMajorShardProbability)/100);
+               if iRand = 1
+               {
+                  oShard = Create(&ShardImbueMajor);
+               }
+               else
+               {
+                  iRand = Random(1,Send(SETTINGS_OBJECT,@GetDrainShardProbability)/100);
+                  if iRand = 1
+                  {
+                     oShard = Create(&ShardRemove);
+                  }
+                  else
+                  {
+                     iRand = Random(1,Send(SETTINGS_OBJECT,@GetAugmentShardProbability)/100);
+                     if iRand = 1
+                     {
+                        oShard = Create(&ShardAugment);
+                     }
+                     else
+                     {
+                        oShard = Create(&ShardImbueMinor);
+                     }
+                  }
+               }
+            }
+            
+            lTreasureItems = Cons(oShard,lTreasureItems);
+            --iNumShards;
          }
       }
 
@@ -7080,23 +7485,6 @@ messages:
       return;
    }
 
-   AddToSpellList(spellNum=$)
-   {
-      local i;
-
-      foreach i in plSpellList
-      {
-         if i = spellNum
-         {
-            return;
-         }
-      }
-
-      plSpellList = Cons(spellNum,plSpellList);
-
-      return;
-   }
-
    % Gets the projectile icon of the monster.  If monster doesn't use
    %  projectiles, return nil
    GetProjectileIcon()
@@ -7123,6 +7511,300 @@ messages:
    LoseLight()
    {
       return 0;
+   }
+
+   GetChampString()
+   {
+      if piChampionStatus = CHAMPION_TOUGH
+      {
+         return champion_tough_prefix;
+      }
+      
+      if piChampionStatus = CHAMPION_SWIFT
+      {
+         return champion_speed_prefix;
+      }
+      
+      if piChampionStatus = CHAMPION_DEADLY
+      {
+         return champion_damage_prefix;
+      }
+      
+      if piChampionStatus = CHAMPION_INDOMITABLE
+      {
+         return champion_all_prefix;
+      }
+      
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         return champion_super_prefix;
+      }
+      
+      return champion_none;
+   }
+   
+   GetChampStatus()
+   {
+      return piChampionStatus;
+   }
+   
+   GainChampionStatus(iType=0)
+   {
+      local i, each_obj;
+
+      if poOwner = $
+      {
+         return;
+      }
+
+      piChampionStatus = iType;
+
+      piMax_Hit_points = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints))
+                         + piBoostedLevel*viDifficulty;
+      piHit_points = piMax_hit_points*100;
+      
+      if iType = CHAMPION_SWIFT
+         OR iType = CHAMPION_INDOMITABLE
+      {
+         piSpeed = viSpeed * 2;
+      }
+      
+      if iType = CHAMPION_TOUGH
+         OR iType = CHAMPION_SWIFT
+         OR iType = CHAMPION_DEADLY
+      {
+         Send(self,@AddRandomChampionAbility);
+      }
+      
+      if iType = CHAMPION_INDOMITABLE
+      {
+         Send(self,@AddRandomChampionAbility);
+         Send(self,@AddRandomChampionAbility);
+
+         foreach i in Send(poOwner,@GetHolderActive)
+         {
+            each_obj = Send(poOwner,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&Player)
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=indomitable_arrived,
+                                          #parm1=Send(self,@GetName));
+            }
+         }
+      }
+      
+      if iType = CHAMPION_LEGENDARY
+      {
+         piSpeed = viSpeed * 3;
+         
+         Send(self,@AddRandomChampionAbility);
+         Send(self,@AddRandomChampionAbility);
+         Send(self,@AddRandomChampionAbility);
+
+         foreach i in Send(poOwner,@GetHolderActive)
+         {
+            each_obj = Send(poOwner,@HolderExtractObject,#data=i);
+            if IsClass(each_obj,&Player)
+            {
+               Send(each_obj,@MsgSendUser,#message_rsc=legendary_arrived,
+                                          #parm1=Send(self,@GetName));
+            }
+         }
+      }
+
+      Send(poOwner,@SomethingChanged,#what=self);
+
+      return;
+   }
+   
+   AddRandomChampionAbility()
+   {
+      local lAbilities, iRandomAbility, iValue, lElements, i;
+      
+      lAbilities = [CHAMPION_ABIL_MAGIC_RESISTANCE,
+                    CHAMPION_ABIL_WEAPON_RESISTANCE,
+                    CHAMPION_ABIL_EAGLE_EYES,
+                    CHAMPION_ABIL_FREE_ACTION,
+                    CHAMPION_ABIL_ELEMENTAL_DAMAGE_TYPE,
+                    CHAMPION_ABIL_PURGE,
+                    CHAMPION_ABIL_DISARM];
+                    
+      iRandomAbility = Nth(lAbilities,Random(1,Length(lAbilities)));
+      iValue = 0;
+      
+      if iRandomAbility = CHAMPION_ABIL_MAGIC_RESISTANCE
+         OR iRandomAbility = CHAMPION_ABIL_WEAPON_RESISTANCE
+         OR iRandomAbility = CHAMPION_ABIL_EAGLE_EYES
+         OR iRandomAbility = CHAMPION_ABIL_FREE_ACTION
+      {
+         iValue = Random(20,50);
+      }
+      
+      if iRandomAbility = CHAMPION_ABIL_ELEMENTAL_DAMAGE_TYPE
+      {
+         lElements = [ATCK_SPELL_FIRE,
+                      ATCK_SPELL_COLD,
+                      ATCK_SPELL_SHOCK,
+                      ATCK_SPELL_ACID,
+                      ATCK_SPELL_HOLY,
+                      ATCK_SPELL_UNHOLY];
+         iValue = Nth(lElements,Random(1,Length(lElements)));
+      }
+      
+      if iRandomAbility = CHAMPION_ABIL_PURGE
+      {
+         iValue = Random(5,15);
+      }
+      
+      if iRandomAbility = CHAMPION_ABIL_DISARM
+      {
+         iValue = Random(5,10);
+      }
+
+      foreach i in plChampionAbilities
+      {
+         if First(i) = iRandomAbility
+         {
+            SetNth(i,2,Nth(i,2) + iValue);
+            return;
+         }
+      }
+
+      plChampionAbilities = Cons([iRandomAbility,iValue],
+                                  plChampionAbilities);
+
+      return;
+   }
+   
+   LoseChampionStatus()
+   {
+      piChampionStatus = 0;
+      plChampionAbilities = $;
+
+      piMax_Hit_points = Send(Self,@Fuzzy,#num=Send(self,@GetMaxHitPoints))
+                         + piBoostedLevel*viDifficulty;
+      piHit_points = piMax_hit_points*100;
+      
+      piSpeed = viSpeed;
+      
+      if poOwner <> $
+      {
+         Send(poOwner,@SomethingChanged,#what=self);
+      }
+      
+      return;
+   }
+
+   SendLightingInformation()
+   {
+      if piChampionStatus = 1
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
+         % 125 out of 255 intensity of light
+         AddPacket(1,125);
+         % Blue 'shield' glow.
+         AddPacket(2,LIGHT_BBLUE);
+         return;
+      }
+      if piChampionStatus = 2
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
+         % 255 out of 255 intensity of light
+         AddPacket(1,255);
+         % Orange 'speedy' glow.
+         AddPacket(2,LIGHT_BORANGE);
+         return;
+      }
+      if piChampionStatus = 3
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
+         % 255 out of 255 intensity of light
+         AddPacket(1,255);
+         % Red 'danger' glow.
+         AddPacket(2,LIGHT_BRED);
+         return;
+      }
+      if piChampionStatus = 4
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
+         % 255 out of 255 intensity of light
+         AddPacket(1,255);
+         % Green 'everything' glow.
+         AddPacket(2,LIGHT_BGREEN);
+         return;
+      }
+      if piChampionStatus = 5
+      {
+         AddPacket(2,(LIGHT_FLAG_ON | LIGHT_FLAG_DYNAMIC));
+         % 255 out of 255 intensity of light
+         AddPacket(1,255);
+         % Gold 'we're all gonna die' glow.
+         AddPacket(2,LIGHT_BYELLOW);
+         return;
+      }
+
+      propagate;
+   }
+   
+   GetLegendaryName()
+   {
+      return legendary_name_none;
+   }
+   
+   GetBlindResistance()
+   {
+      local i;
+      
+      foreach i in plChampionAbilities
+      {
+         if First(i) = CHAMPION_ABIL_EAGLE_EYES
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetHoldResistance()
+   {
+      local i;
+      
+      foreach i in plChampionAbilities
+      {
+         if First(i) = CHAMPION_ABIL_FREE_ACTION
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetChampionRewardMultiplier()
+   {
+      if piChampionStatus = CHAMPION_TOUGH
+         OR piChampionStatus = CHAMPION_SWIFT
+         OR piChampionStatus = CHAMPION_DEADLY
+      {
+         return TIER_ONE_CHAMPION_REWARD_MULTIPLIER;
+      }
+
+      if piChampionStatus = CHAMPION_INDOMITABLE
+      {
+         return TIER_TWO_CHAMPION_REWARD_MULTIPLIER;
+      }
+
+      if piChampionStatus = CHAMPION_LEGENDARY
+      {
+         return TIER_THREE_CHAMPION_REWARD_MULTIPLIER;
+      }
+
+      propagate;
+   }
+
+   GetTumbling()
+   {
+      return piTumbling;
    }
 
 end

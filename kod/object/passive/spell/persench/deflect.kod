@@ -79,7 +79,11 @@ classvars:
 
    vrSucceed_wav = Deflect_sound
 
+   viPercentManaReserved = 30
+
 properties:
+
+   viPurgeFactor = 40
 
 messages:
 

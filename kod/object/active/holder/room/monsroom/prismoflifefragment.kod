@@ -1,0 +1,101 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PrismOfLifeFragment is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   prismlifefrag_name = "Fragment of the Prism of Life"
+   room_prismlifefrag = prismlifefrag.roo
+   prismlifefrag_music = temple.mp3
+   
+   fail_death_rift = \
+      "Waves of force begin to radiate toward you, and you abort the spell "
+      "before you are destroyed by elemental holy energies. It seems "
+      "only phasing out from here will allow you to escape."
+
+   prism_escape = \
+      "You phase out of the elemental plane of holy energies."
+
+classvars:
+
+   vrName = prismlifefrag_name
+
+   viTeleport_row = 8
+   viTeleport_col = 8
+
+   viTerrain_type = TERRAIN_TEMPLE
+
+properties:
+
+   prRoom = room_prismlifefrag
+   prMusic = prismlifefrag_music
+   piRoom_num = RID_PRISMLIFEFRAG
+
+   piDirectional_percent = DIRECTIONAL_PERCENT_OUTDOORS
+
+   pbSnowGroundTexture = TRUE
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&Mimic, 100] ];
+
+      plGenerators = [ [2, 8] ];
+
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      propagate;
+   }
+
+   CreateStandardExits()
+   {
+      plEdge_Exits = $;
+
+      return;
+   }         
+
+   ReqSpellCast(who = $, oSpell = $, lItems = $)
+   {
+      local oRoom;
+
+      if IsClass(oSpell,&Phase)
+      {
+         oRoom = send(SYS,@FindRoomByNum,#num=RID_MARION);
+         if oRoom <> $
+         {
+            Send(who,@MsgSendUser,#message_rsc=prism_escape);
+            Post(who,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,
+                  #duration=1250);
+            Post(oRoom,@Teleport,#what=who);
+
+            return FALSE;
+         }
+      }
+
+      if isClass(oSpell,&DeathRift)
+      {
+         Send(who,@MsgSendUser,#message_rsc=fail_death_rift);
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

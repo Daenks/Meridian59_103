@@ -355,25 +355,12 @@ messages:
          AND ((new_col = 30) OR (new_col = 31))
          AND NOT (IsClass(what,&DM) AND Send(what,@PlayerIsImmortal))
       {
-         %% on the bridge.  Do they have a sword of riija?
          if isClass(what,&Monster)  
          {
             Send(what,@Killed);
             
             return;
          }
-                  
-         foreach i in Send(what,@GetPlayerUsing)
-         {
-            %% checking item to see if it's a riija sword.
-            if isClass(i,&RiijaSword) AND (Send(i,@GetQuester) = what)
-            {
-               propagate;
-            }
-         } 
-
-         % No sword.  Kill 'em
-         Send(self,@PlayerHurledSelfOffCliffs,#what=what);   
       }
       
       propagate;

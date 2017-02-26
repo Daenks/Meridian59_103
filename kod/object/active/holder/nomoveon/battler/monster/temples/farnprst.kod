@@ -49,6 +49,11 @@ classvars:
 
 messages:
 
+   HasDoneLearnQuest(who=$)
+   {
+      return TRUE;
+   }
+
    InitCondSale()
    {
       local oObj;

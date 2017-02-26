@@ -128,7 +128,7 @@ messages:
          }
       }
 
-      return;
+      propagate;
    }
 
 end

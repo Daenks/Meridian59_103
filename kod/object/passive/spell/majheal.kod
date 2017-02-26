@@ -45,7 +45,8 @@ classvars:
    viMana = 20
    viSchool = SS_SHALILLE
    viSpell_level = 5
-   viMeditate_ratio = 50
+   viMeditate_ratio = 75
+   viChance_To_Increase = 15
 
    viFlash = FLASH_GOOD
 
@@ -118,11 +119,6 @@ messages:
          Send(oTarget,@MsgSendUser,#message_rsc=majorheal_cast_rsc,
                #parm1=Send(who,@GetCapDef),#parm2=Send(who,@GetName),
                #parm3=iHeal/100);
-         
-         % Nudge the karma of the caster towards that of the healed.
-         Send(who,@AddKarma,#amount=Send(who,@CalculateKarmaChangeFromAct,
-               #karma_doer=Send(who,@GetKarma),#karma_act=Send(oTarget,@GetKarma),
-               #Swing_factor=2));
       }
       else
       {

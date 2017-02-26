@@ -1,0 +1,64 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DamageMastery is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSchool = SKS_SORCERY
+   
+   viDamageTypeOne = ATCK_SPELL_HOLY
+   viDamageTypeTwo = ATCK_SPELL_UNHOLY
+   
+   viDamageBonusMax = 2
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMysticism);
+   }
+   
+   AddDamage(who=$,damage=0,aspell=0)
+   {
+      local iAbility;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      
+      if (aspell & viDamageTypeOne
+         OR aspell & viDamageTypeTwo)
+         AND Random(1,100) <= iAbility
+      {
+         Send(self,@DoSkill,#who=who);
+         return damage +
+                      ((viDamageBonusMax*100)*(iAbility+1))/100;
+      }
+      
+      return damage;
+   }
+
+   DoSkill(who=$)
+   {
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

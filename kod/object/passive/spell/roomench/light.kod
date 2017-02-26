@@ -63,7 +63,6 @@ messages:
    ResetReagents()
    {
       plReagents = $;
-      plReagents = Cons([&ElderBerry,1],plReagents);
 
       return;
    }

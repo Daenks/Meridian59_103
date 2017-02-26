@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShardEmpowerment is Shard
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   empowerment_shard_name_rsc = "shard of empowerment"
+   empowerment_shard_name_plural = "shards of empowerment"
+   empowerment_shard_icon_rsc = beigeshard.bgf
+   empowerment_shard_desc = \
+      "This mysterious shard of some unknown crystal will add a "
+      "magical modification to a piece of equipment that is already "
+      "powerfully enhanced."
+
+   empowerment_shard_req = \
+      "This shard can only add modifications to a powerful magic item "
+      "that has room for further improvement."
+
+   empowerment_shard_applied = \
+      "The %s takes on a stronger aura of magic."
+
+classvars:
+
+   vrName = empowerment_shard_name_rsc
+   vrIcon = empowerment_shard_icon_rsc
+   vrDesc = empowerment_shard_desc
+   
+   vrName_plural = empowerment_shard_name_plural
+
+   vrApplied = empowerment_shard_applied
+
+properties:
+
+messages:
+
+   ReqNewApply(what = $,apply_on = $)
+   {
+      local i;
+      
+      if what = $
+         OR NOT IsClass(what,&Player)
+      {
+         return;
+      }
+
+      foreach i in Send(what,@GetPlayerUsing)
+      {
+         if i = apply_on
+         {
+            Send(what,@MsgSendUser,#message_rsc=vrMust_unequip);
+            return FALSE;
+         }
+      }
+
+      if apply_on <> $
+         AND (IsClass(apply_on,&Weapon)
+            OR IsClass(apply_on,&DefenseModifier)
+            OR IsClass(apply_on,&Ring)
+            OR IsClass(apply_on,&Gauntlet))
+      {
+         % This shard only applies to powerful gear
+         if Send(apply_on,@GetMagicModsNumber) > 2
+            AND Send(apply_on,@GetMagicModsNumber) < 6
+         {
+            return TRUE;
+         }
+         else
+         {
+            Send(what,@MsgSendUser,#message_rsc=empowerment_shard_req);
+         }
+      }
+
+      return FALSE;
+   }
+
+   NewApplied(what = $,apply_on = $)
+   {
+      Send(apply_on,@AddMagicMods,#min_num_mods=1,#max_num_mods=1);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -38,6 +38,8 @@ resources:
    
    KocatanTailor_new_look = "new look"
    KocatanTailor_new_look_r = "I think you'll be pleased with my selection."
+   KocatanTailor_nonhuman = \
+      "I'm sorry, I'm not sure what would look good with your skin tone."
    KocatanTailor_kriipa = "kriipa"
    KocatanTailor_kriipa_r = \
       "The scales of the kriipa are rare, but I have a few here for you."
@@ -198,6 +200,11 @@ messages:
 
          if StringContain(string,KocatanTailor_new_look)
          {
+            if Send(what,@GetPlayerRace) <> RACE_HUMAN
+            {
+               Send(self,@Say,#message_rsc=KocatanTailor_nonhuman);
+               propagate;
+            }
             Send(what,@SetDefaultClothes,#rand=TRUE);
             Send(self,@Say,#message_rsc=KocatanTailor_new_look_r);
 

@@ -1328,5 +1328,10 @@ messages:
       propagate;
    }
 
+   FoyerDissipatesWallElements()
+   {
+      return TRUE;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

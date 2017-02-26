@@ -102,6 +102,11 @@ messages:
       propagate;
    }
 
+   HasDoneLearnQuest(who=$)
+   {
+      return TRUE;
+   }
+
    InitCondSale()
    {
       local oObj;

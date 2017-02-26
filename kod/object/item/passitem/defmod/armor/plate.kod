@@ -60,16 +60,29 @@ messages:
 
    GetResistanceModifiers()
    {
-      return [ [-ATCK_SPELL_FIRE,-10],
+      return [ [ATCK_WEAP_THRUST,15],
+               [ATCK_WEAP_SLASH,10],
+               [-ATCK_SPELL_FIRE,-10],
                [-ATCK_SPELL_SHOCK,-15]
              ];
    }
 
    GetHeatDamage()
    {
-      return 4;
+      return 5;
    }
 
+   GetSuffixes()
+   {
+      % Plate armor has trouble rolling elemental resistances.
+      return [[&FireResistanceMod,25],
+              [&ColdResistanceMod,25],
+              [&ShockResistanceMod,25],
+              [&AcidResistanceMod,25],
+              [&PierceResistanceMod,100],
+              [&SlashResistanceMod,100],
+              [&BludgeonResistanceMod,100]];
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

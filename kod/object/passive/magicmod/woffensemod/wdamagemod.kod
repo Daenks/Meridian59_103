@@ -1,0 +1,55 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+WeaponDamageMod is WeaponOffenseMod
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+classvars:
+
+   viModType = MOD_PREFIX
+   viModGroup = GROUP_DAMAGE
+
+   viModRangeMin = 1
+   viModRangeMax = 3
+   
+   viPowerDivisor = 50
+
+properties:
+
+
+messages:
+
+   ModifyDamage(who = $,what = $, damage = $,iState=0)
+   {
+      local oWeapon;
+      
+      if who = $
+      {
+         % No conditions, so just return the bonus
+         return damage + iState;
+      }
+
+      oWeapon = Send(who,@GetWeapon);
+      if (oWeapon = $)
+         or (not IsClass(oWeapon,&RangedWeapon))
+      {
+         return damage + iState;
+      }
+
+      return damage;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

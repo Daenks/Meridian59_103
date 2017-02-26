@@ -119,6 +119,7 @@ messages:
       {
          if iSpellPower = $
             OR Random(1,100) < iSpellPower
+            AND Send(Nth(i,1),@GetDiscordable)
          {
             Send(Nth(i,1),@CancelRadiusEnchantment,#source=Nth(i,3),#event=EVENT_STEER);
          }
@@ -138,6 +139,7 @@ messages:
       local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment, oSpell, bRemovedSomething;
 
       if oRoom = $
+         OR Send(oRoom,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
       {
          return FALSE;
       }
@@ -163,6 +165,12 @@ messages:
          Send(oRoom,@RemoveEnchantment,#what=Nth(oEnchantment,2));
          bRemovedSomething = TRUE;
 
+         if Send(Nth(oEnchantment,2),@GetDiscordable)
+         {
+            Send(oRoom,@RemoveEnchantment,#what=Nth(oEnchantment,2));
+            bRemovedSomething = TRUE;
+         }
+
          % Re-get the information
          lEnchantments = send(oRoom,@GetEnchantmentList);
          iNumEnchantments = length(lEnchantments);
@@ -177,7 +185,12 @@ messages:
             % Only half chance to discord a Jala song
             iModifiedChance = (iModifiedChance * JALA_PERCENT) / 100;
          }
-         
+
+         if NOT Send(oSpell,@GetDiscordable)
+         {
+            iModifiedChance = 0;
+         }
+
          if iChance = $ OR iModifiedChance > random(1,100)
          {
             Send(oRoom,@RemoveEnchantment,#what=oSpell);

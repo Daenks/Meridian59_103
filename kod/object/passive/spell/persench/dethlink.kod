@@ -63,7 +63,11 @@ classvars:
 
    vbCanCastOnOthers = FALSE
 
+   viPercentManaReserved = 15
+
 properties:
+
+   viPurgeFactor = 40
 
 messages:
 
@@ -71,7 +75,7 @@ messages:
    {
       plReagents = $;
       plReagents = Cons([&ShamanBlood,1],plReagents);
-      plReagents = Cons([&PolishedSeraphym,1],plReagents);
+      plReagents = Cons([&DarkAngelFeather,1],plReagents);
 
       return;
    }

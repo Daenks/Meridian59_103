@@ -16,14 +16,6 @@ constants:
 
    include blakston.khd
 
-   % At least how many enchantments should there be on a player to check
-   % for auto-remove?
-   MIN_ENCHANTMENTS_FOR_AUTOREMOVE = 2
-
-   % What's the minimum chance to remove spells we want before checking
-   % for auto-remove?
-   MIN_CHANCE_FOR_AUTOREMOVE = 60
-
 resources:
 
    include purge.lkod
@@ -31,9 +23,12 @@ resources:
    Purge_name_rsc = "purge"
    Purge_icon_rsc = ipurge.bgf
    Purge_desc_rsc = \
-      "Strips helpful personal enchantments off of the target. "
+      "Reduces the effectiveness of the target's helpful personal enchantments.  "
+      "With enough power, it can even remove the enchantment completely.  "
+      "Against monsters, purge will apply the holy status effect, Humbling, "
+      "which can lower the target's resistances to a minimum of zero.  "
       "Requires five emeralds and two purple mushrooms to cast."
-   
+
    Purge_on = \
       "A bright, holy light is trying to burn away your beneficial "
       "enchantments."
@@ -41,9 +36,11 @@ resources:
       "energies."
    Purge_spell_intro = \
       "Shal'ille Lv. 5: Removes helpful personal enchantments on the target."
-   
-   purge_break_rod_active = \
-      "Interlocking energies dissipate your spell before you even begin!"
+
+   Purge_full_removal = \
+      "~BYou fully remove %s!"
+   Purge_monster = \
+      "You burn %s%s with a bright and humbling light!"
 
 classvars:
 
@@ -66,13 +63,16 @@ classvars:
 
 properties:
 
+   pbPurgeNoRemove = FALSE
+   pbRemoveWithPercentChance = FALSE
+
 messages:
 
    ResetReagents()
    {
       plReagents = $;
-      plReagents = Cons([&Emerald,5],plReagents);
-      plReagents = Cons([&PurpleMushroom,2],plReagents);
+      plReagents = Cons([&Emerald,2],plReagents);
+      plReagents = Cons([&PurpleMushroom,1],plReagents);
 
       return;
    }
@@ -93,16 +93,14 @@ messages:
       }
 
       target = First(lTargets);
-
-      if NOT IsClass(target,&User)
+      
+      if IsClass(target,&Monster)
       {
-         if not bItemCast
-         {
-            Send(who,@MsgSendUser,#message_rsc=spell_bad_target,
-                 #parm1=vrName,#parm2=Send(target,@GetDef),
-                 #parm3=Send(target,@GetName));
-         }
-
+         propagate;
+      }
+      
+      if NOT IsClass(target,&Player)
+      {
          return FALSE;
       }
 
@@ -127,37 +125,21 @@ messages:
       }
 
       if NOT bHasEnchantment
+         AND Send(SETTINGS_OBJECT,@GetReservedSpellsPurgeable)
+      {
+         lEnchantment = Send(target,@GetReservedSpells);
+         if lEnchantment <> $
+         {
+            bHasEnchantment = TRUE;
+         }
+      }
+
+      if NOT bHasEnchantment
       {
          Send(who,@MsgSendUser,#message_rsc=Purge_not_enchanted, 
                #parm1=Send(target,@GetDef),#parm2=Send(target,@GetName));
 
          return FALSE;
-      }
-      
-      if IsClass(target,&Player)
-      {
-         foreach i in Send(target,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodPurge)
-               AND Send(i,@IsActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=purge_break_rod_active);
-               return FALSE;
-            }
-         }
-      }
-      
-      if IsClass(who,&Player)
-      {
-         foreach i in Send(who,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodPurge)
-               AND Send(i,@IsSecondaryActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=purge_break_rod_active);
-               return FALSE;
-            }
-         }
       }
 
       propagate;
@@ -168,6 +150,13 @@ messages:
       local oTarget, lInfo, oSpell, lList, lEnchantmentList;
 
       oTarget = First(lTargets);
+
+      if IsClass(oTarget,&Monster)
+      {
+         Send(self,@DoHumble,#who=who,#oTarget=oTarget,#iSpellPower=iSpellPower);
+         propagate;
+      }
+      
       if oTarget <> who
       {
          Send(who,@MsgSendUser,#message_rsc=spell_cast_on_target,
@@ -177,23 +166,14 @@ messages:
 
       Send(oTarget,@MsgSendUser,#message_rsc=Purge_on);
 
-      % Keep tabs on guides/bards, but not admins.
-      if IsClass(who, &DM)
+      if IsClass(who,&DM)
+         AND Send(who,@PlayerIsImmortal)
       {
-         if GetClass(who) = &DM
-            AND who <> oTarget
-         {
-            Debug(Send(who,@GetTrueName)," cast Purge on ",Send(oTarget,@GetName));
-         }
-
-         if Send(who,@PlayerIsImmortal)
-         {
-            % If they're immortal, let them clear everything.
-            iSpellPower = $;
-         }
+         % If they're immortal, let them clear everything.
+         iSpellPower = $;
       }
 
-      Send(self,@DoPurge,#who=oTarget,#iChance=iSpellPower);
+      Send(self,@DoPurge,#who=oTarget,#iSpellPower=iSpellPower,#caster=who);
 
       propagate;
    }
@@ -213,21 +193,22 @@ messages:
       propagate;
    }
 
-   DoPurge(who=$,iChance=$)
-   "Remove positive enchantments on who with a given chance to remove each one."
+   DoPurge(who=$,iSpellPower=$,caster=$)
+   "Recasts the target's PEs at the new spellpower, or removes them "
+   "at/below 0 spellpower. Returns TRUE if any buffs were lost."
    {
-      local iNumEnchantments, lEnchantments, iModifiedChance, oEnchantment,
-            oSpell, lList, bRemovedSomething;
+      local i, lEnchantments, iTime, oSpell, iCastPower, iNewPower,
+            bRemovedSomething, iRemove, tTimer, lReservedEnchantments, iPercentManaReserved;
 
       % Can't do this to nobody or to non-players.
       if who = $
-         OR NOT IsClass(who,&Player)
+         OR NOT IsClass(who,&User)
       {
          return FALSE;
       }
 
-      % Chance of $ means that we want to remove it all.
-      if iChance = $
+      % A spellpower of $ means that we want to remove it all.
+      if iSpellPower = $
       {
          Send(who,@RemoveAllPersonalEnchantments);
 
@@ -235,48 +216,197 @@ messages:
       }
 
       bRemovedSomething = FALSE;
-      lEnchantments = $;
-      lList = Send(who,@GetEnchantmentList);
 
-      foreach oEnchantment in lList
+      % User's enchantment list might change, so get it now.
+      lEnchantments = Send(who,@GetEnchantmentList);
+
+      foreach i in lEnchantments
       {
-         oSpell = Nth(oEnchantment,2);
+         oSpell = Nth(i,2);
 
-         if Send(oSpell,@IsPersonalEnchantment)
-            AND Send(oSpell,@CanBeRemovedByPlayer)
-            AND NOT Send(oSpell,@IsHarmful)
+         if NOT IsClass(oSpell,&PersonalEnchantment)
+            OR NOT Send(oSpell,@CanBeRemovedByPlayer)
+            OR Send(oSpell,@IsHarmful)
          {
-            lEnchantments = cons(oSpell,lEnchantments);
+            continue;
+         }
+
+         tTimer = First(i);
+
+         % We either have a timer or $ for the timer. If we have something
+         % else, log it and skip the spell (i.e. don't try to start a new
+         % enchantment with a timer if we didn't have one or $ already).
+         if (tTimer = $)
+         {
+            iTime = tTimer;
+         }
+         else if (IsTimer(tTimer))
+         {
+            iTime = GetTimeRemaining(tTimer);
+         }
+         else
+         {
+            Debug("Purge tried to modify spell",Send(oSpell,@GetName)," with ",
+                  tTimer," for timer! Skipping this spell.");
+
+            continue;
+         }
+
+         % Get the cast power from the target, as it checks the right
+         % location in the list.
+         iCastPower = Send(who,@GetCastPower,#what=oSpell);
+
+         % Calculate the amount to remove.
+         iRemove = (iSpellPower * Send(oSpell,@GetPurgeFactor)) / 100;
+
+         % Skip this spell if we aren't removing any spellpower.
+         if (iRemove <= 0
+            AND NOT pbRemoveWithPercentChance)
+         {
+            continue;
+         }
+
+         % Calculate the new spellpower and time of the enchantment.
+         iNewPower = iCastPower - iRemove;
+
+         % If purge removing buffs is turned off, bind the new spellpower at 1
+         if pbPurgeNoRemove
+            OR pbRemoveWithPercentChance
+         {
+            iNewPower = Bound(iNewPower,1,99);
+         }
+         else
+         {
+            iNewPower = Bound(iNewPower,$,99);
+         }
+
+         % Start the new enchantment with the time left and the new state,
+         % but only if iNewPower is greater than 0.
+         if iNewPower > 0
+         {
+            % If we have percent chance removal instead, we either remove
+            % the buff or we don't.
+            if pbRemoveWithPercentChance
+            {
+               if ((iSpellPower * Send(oSpell,@GetPurgeFactor))/100) > Random(1,100)
+               {
+                  Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
+                  bRemovedSomething = TRUE;
+               }
+
+               continue;
+            }
+
+            % Remove the current enchantment, but don't report.
+            Send(who,@RemoveEnchantment,#what=oSpell,#report=FALSE,#remain=TRUE);
+
+            % Restart the enchantment with the same time, but new spellpower.
+            Send(who,@StartEnchantment,#what=oSpell,#iSpellPower=iNewPower,
+                  #state=(Send(oSpell,@GetStateValue,#who=who,
+                              #iSpellPower=iNewPower,#target=who)),
+                  #time=iTime,#lastcall=Send(oSpell,@GetLastCall),
+                  #addIcon=Send(oSpell,@GetAddIcon));
+
+            % We had an effect, so we still report TRUE.
+            bRemovedSomething = TRUE;
+         }
+         else
+         {
+            % Remove the current enchantment and report.
+            Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
+            
+            if caster <> $
+               AND IsClass(caster,&User)
+            {
+               Send(caster,@MsgSendUser,#message_rsc=Purge_full_removal,#parm1=Send(oSpell,@GetName));
+            }
+
+            bRemovedSomething = TRUE;
          }
       }
 
-      iNumEnchantments = length(lEnchantments);
-
-      % Anti-clumpy code: If there is at least two enchantments on a player
-      % and the chance to dispell is greater than 60%, then auto-remove one
-      % enchantment.
-      if iNumEnchantments >= MIN_ENCHANTMENTS_FOR_AUTOREMOVE
-         AND iChance >= MIN_CHANCE_FOR_AUTOREMOVE
+      foreach i in lReservedEnchantments
       {
-         oEnchantment = Nth(lEnchantments,random(1,iNumEnchantments));
-         Send(who,@RemoveEnchantment,#what=oEnchantment);
-         lEnchantments = DelListElem(lEnchantments,oEnchantment);
-         iNumEnchantments = iNumEnchantments - 1;
-         bRemovedSomething = TRUE;
-      }
+         oSpell = Nth(i,1);
 
-      iModifiedChance = iChance;
-
-      foreach oEnchantment in lEnchantments
-      {
-         if iChance = $ OR iModifiedChance > random(1,100)
+         if NOT IsClass(oSpell,&PersonalEnchantment)
+            OR NOT Send(oSpell,@CanBeRemovedByPlayer)
+            OR Send(oSpell,@IsHarmful)
          {
-            Send(who,@RemoveEnchantment,#what=oEnchantment);
+            continue;
+         }
+         iPercentManaReserved = Nth(i,2);
+         iCastPower = Nth(i,4);
+
+         % Calculate the amount to remove.
+         iRemove = (iSpellPower * Send(oSpell,@GetPurgeFactor)) / 100;
+
+         % Skip this spell if we aren't removing any spellpower.
+         if (iRemove <= 0
+            AND NOT pbRemoveWithPercentChance)
+         {
+            continue;
+         }
+
+         % Calculate the new spellpower and time of the enchantment.
+         iNewPower = iCastPower - iRemove;
+
+         % If purge removing buffs is turned off, bind the new spellpower at 1
+         if pbPurgeNoRemove
+            OR pbRemoveWithPercentChance
+         {
+            iNewPower = Bound(iNewPower,1,99);
+         }
+         else
+         {
+            iNewPower = Bound(iNewPower,$,99);
+         }
+
+         % Start the new enchantment with the time left and the new state,
+         % but only if iNewPower is greater than 0.
+         if iNewPower > 0
+         {
+            % If we have percent chance removal instead, we either remove
+            % the buff or we don't.
+            if pbRemoveWithPercentChance
+            {
+               if ((iSpellPower * Send(oSpell,@GetPurgeFactor))/100) > Random(1,100)
+               {
+                  Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
+                  bRemovedSomething = TRUE;
+               }
+
+               continue;
+            }
+
+            % Remove the current enchantment, but don't report.
+            Send(who,@RemoveEnchantment,#what=oSpell,#report=FALSE,#remain=TRUE);
+
+            % Restart the enchantment with the same reservation but new spellpower.
+            
+            Send(who,@ReserveSpell,#oSpell=oSpell,#iPercentManaReserved=iPercentManaReserved,#iSpellPower=iSpellPower);
+
+            % We had an effect, so we still report TRUE.
+            bRemovedSomething = TRUE;
+         }
+         else
+         {
+            % Remove the current enchantment and report.
+            Send(who,@RemoveEnchantment,#what=oSpell,#report=TRUE);
             bRemovedSomething = TRUE;
          }
       }
 
       return bRemovedSomething;
+   }
+
+   DoHumble(who=$,oTarget=$,iSpellPower=0)
+   {
+      Send(who,@MsgSendUser,#message_rsc=Purge_monster,#parm1=Send(oTarget,@GetDef),#parm2=Send(oTarget,@GetName));
+
+      Send(oTarget,@ApplyElementalStatusEffects,#what=who,#damage=iSpellPower,#aspell=ATCK_SPELL_HOLY);
+      
+      return;
    }
 
 end

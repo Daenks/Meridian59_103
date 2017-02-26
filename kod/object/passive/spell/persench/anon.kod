@@ -58,7 +58,11 @@ classvars:
 
    vbCanCastOnOthers = FALSE
 
+   viPercentManaReserved = 5
+
 properties:
+
+   viPurgeFactor = 80
 
 messages:
 

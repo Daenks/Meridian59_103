@@ -41,6 +41,29 @@ properties:
 
 messages:
 
+   NewUsed(what=$)
+   {
+      if IsClass(what,&User)
+      {
+         Send(what,@AddDefenseModifier,#what=self);
+         Send(what,@AddAttackModifier,#what=self);
+      }
+
+      propagate;
+   }
+
+   NewUnused(what = $)
+   {
+      if IsClass(what,&User)
+      {
+         Send(what,@RemoveDefenseModifier,#what=self);
+         Send(what,@RemoveAttackModifier,#what=self);
+      }
+
+      propagate;
+   }
+
+
    ReqUseSomething(what = $)
    {
       if IsClass(what, &Ring)
@@ -80,6 +103,179 @@ messages:
       return vrRealName;
    }
 
+   ModifyHitRoll(who = $,what = $,hit_roll = $)
+   {
+      local i, oWeapon, oOffenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            oOffenseMod = Send(SYS,@GetMagicMod,#class=&OffenseMod);
+            hit_roll = Send(oOffenseMod,@ModifyHitRoll,#who=who,#what=what,
+                        #hit_roll=hit_roll,#iState=Nth(i,2));
+         }
+      }
+
+      return hit_roll;
+   }
+
+   ModifyDamage(who = $,what = $,damage = $)
+   {
+      local oWeapon, i, oWeaponDamageMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            damage = Send(oWeaponDamageMod,@ModifyDamage,#who=who,#what=what,
+                        #damage=damage,#iState=Nth(i,2));
+         }
+      }
+
+      return damage;
+   }
+
+   ModifyDefensePower(defense_power=$)
+   {
+      local i, oDefenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            oDefenseMod = Send(SYS,@GetMagicMod,#class=&DefenseMod);
+            defense_power = Send(oDefenseMod,@ModifyDefensePower,
+                        #defense_power=defense_power,#iState=Nth(i,2));
+         }
+      }
+
+      return defense_power;
+   }
+
+   ModifyDefenseDamage(who=$,what=$,damage=$,atype=0,aspell=0)
+   {
+      local i, sum, oArmorMod;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            oArmorMod = Send(SYS,@GetMagicMod,#class=&ArmorMod);
+            damage = Send(oArmorMod,@ModifyDefenseDamage,#who=who,#what=what,
+                        #damage=damage,#atype=atype,#aspell=aspell,
+                        #iState=Nth(i,2));
+         }
+      }
+
+      return damage;
+   }
+
+   GetDefenseBonus()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+      
+      return sum;
+   }
+
+   GetDamageReduction()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
+   }
+
+   GetHitBonus()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
+   }
+
+   GetMeleeDamageBonus()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
+   }
+
+   % No alterations when we hit the target....
+   WeaponHitTarget()
+   {
+      return;
+   }
+
+   GetPrefixes()
+   {
+      return [[&ArmorMod,100],
+              [&DefenseMod,100],
+              [&OffenseMod,100],
+              [&WeaponDamageMod,100]];
+   }
+   
+   GetSuffixes()
+   {
+      return [[&FireResistanceMod,100],
+              [&ColdResistanceMod,100],
+              [&ShockResistanceMod,100],
+              [&AcidResistanceMod,100],
+              [&PierceResistanceMod,100],
+              [&SlashResistanceMod,100],
+              [&BludgeonResistanceMod,100]];
+   }
+
+   DefendingHit()
+   {
+      % Return here so we don't damage the ring!
+      return;
+   }
+
+   VerifyHits()
+   {
+      if piHits <= 0
+      {
+         Send(self,@Delete);
+      }
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -144,6 +144,22 @@ messages:
    }
 
 
+   GetPrefixes()
+   {
+      return [[&DefenseMod,100]];
+   }
+
+   GetSuffixes()
+   {
+      return [[&FireResistanceMod,100],
+              [&ColdResistanceMod,100],
+              [&ShockResistanceMod,100],
+              [&AcidResistanceMod,100],
+              [&PierceResistanceMod,100],
+              [&SlashResistanceMod,100],
+              [&BludgeonResistanceMod,100]];
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

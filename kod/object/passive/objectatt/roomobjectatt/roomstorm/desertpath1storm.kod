@@ -1,0 +1,224 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DesertPath1Storm is RoomStorm 
+
+% Custom raging down the harrowing cleft.
+
+constants:
+
+   include blakston.khd
+
+   % In ms, how often we intensify lights and apply effects
+   INTENSIFY_TIME = 250
+
+resources:
+
+   desertpath1_storm_name_rsc = "raging elemental energies"
+   desertpath1_storm_icon_rsc = iwalllit.bgf
+   desertpath1_storm_desc_rsc = \
+      "Run for your life!"
+
+   desertpath1_storm_begin_msg = \
+      "Raging energies roar through the area!"
+   desertpath1_storm_end_msg = \
+      "The raging energies depart the area."
+
+   energies_cold_damage = \
+      "Freezing winds chill you for ~B~b%i~n damage!"
+   energies_fire_damage = \
+      "Roaring flames scorch you for ~B~r%i~n damage!"
+   energies_shock_damage = \
+      "Coursing energies electrocute you for ~B~c%i~n damage!"
+   energies_acid_damage = \
+      "Blasting acid sears you for ~B~l%i~n damage!"
+
+classvars:
+
+   vrName = desertpath1_storm_name_rsc
+   vrIcon = desertpath1_storm_icon_rsc
+   vrDesc = desertpath1_storm_desc_rsc
+
+   viStormBeginMsg = desertpath1_storm_begin_msg
+   viStormEndMsg = desertpath1_storm_end_msg
+
+properties:
+
+   % What buff does the storm apply? What spellpower?
+   % $ for none
+   piSpellID = $
+   piSpellPower = 50
+   
+   % How long does the storm last? (ms)
+   % Send iDuration to constructor to change
+   % $ means indefinite
+   piStormTime = 3 * 60 * 1000
+   ptStormTimer = $
+
+   % How many magical bubbles do we have max at one time?
+   piBubblesMax = 8
+   % How long does each bubble last? (ms) (coordinate with any sounds used)
+   piBubblesDuration = 2000
+   % How big are the bubbles?
+   piBubblesRadiusFine = 3 * 64
+   % How often do we spawn bubbles?
+   piBubblesTime = 250
+   ptBubblesTimer = $
+   
+   % What is the start and end brightness of our bubbles?
+   piIntensityMin = 0
+   piIntensityMax = 255
+   % What color are our bubbles?
+   piColor = LIGHT_BWHITE
+
+   pbPlayBubbleSound = TRUE
+   pbPlayBubbleExpireSound = TRUE
+
+   % This storm moves along a path of danger points
+   plDangerPoints = $
+   piCurrentDangerPoint = 1
+
+messages:
+
+   Constructor(iDuration=$,iPower=$,report=TRUE,host_object=$)
+   {
+      plDangerPoints = Send(host_object,@GetDangerPoints);
+      piCurrentDangerPoint = 1;
+      propagate;
+   }
+
+   CreateBubble(timer=$)
+   {
+      local i, oLight, iIncrement, lDangerCoords;
+      
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            piColor = LIGHT_BWHITE;
+            break;
+         case DAY_PHASE_DAY:
+            piColor = LIGHT_BRED;
+            break;
+         case DAY_PHASE_DUSK:
+            piColor = LIGHT_BGREEN;
+            break;
+         case DAY_PHASE_NIGHT:
+            piColor = LIGHT_BBLUE;
+            break;
+      }
+
+      ptBubblesTimer = $;
+      if Length(plBubbles) < piBubblesMax
+      {
+         oLight = Create(&DynamicLight,#iIntensity=piIntensityMin,
+                        #iColor=piColor);
+         iIncrement = Bound((piIntensityMax - piIntensityMin),0,255) /
+                      Bound((piBubblesDuration / INTENSIFY_TIME),1,$);
+
+         lDangerCoords = Nth(plDangerPoints,piCurrentDangerPoint);
+
+         % Cold phase goes the other direction because Prism of Ice is to the west
+         if piColor = LIGHT_BBLUE
+         {
+            --piCurrentDangerPoint;
+            if piCurrentDangerPoint <= 0
+            {
+               piCurrentDangerPoint = Length(plDangerPoints);
+            }
+         }
+         else
+         {
+            ++piCurrentDangerPoint;
+            if piCurrentDangerPoint > Length(plDangerPoints)
+            {
+               piCurrentDangerPoint = 1;
+            }
+         }
+         
+         Send(poHostObject,@NewHold,#what=oLight,
+               #new_row=Nth(lDangerCoords,1),
+               #new_col=Nth(lDangerCoords,2),
+               #fine_row=Nth(lDangerCoords,3),
+               #fine_col=Nth(lDangerCoords,4));
+
+         if pbPlayBubbleSound
+         {
+            foreach i in Send(poHostObject,@GetHolderActive)
+            {
+               if IsClass(First(i),&User)
+               {
+                  Send(First(i),@WaveSendUser,#wave_rsc=vBubbleSound,
+                        #source_obj=oLight);
+               }
+            }
+         }
+
+         plBubbles = Cons([oLight,
+                           CreateTimer(self,@BrightenBubble,INTENSIFY_TIME),
+                           iIncrement,
+                           CreateTimer(self,@EndBubble,piBubblesDuration)],
+                           plBubbles);
+      }
+      ptBubblesTimer = CreateTimer(self,@CreateBubble,piBubblesTime);
+      return;
+   }
+
+   ApplyDirectEffect(who=$)
+   {
+      local iDamageType, iDamage;
+
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            iDamageType = ATCK_SPELL_SHOCK;
+            break;
+         case DAY_PHASE_DAY:
+            iDamageType = ATCK_SPELL_FIRE;
+            break;
+         case DAY_PHASE_DUSK:
+            iDamageType = ATCK_SPELL_ACID;
+            break;
+         case DAY_PHASE_NIGHT:
+            iDamageType = ATCK_SPELL_COLD;
+            break;
+      }
+
+      iDamage = Random(1,10);
+
+      if Send(who,@AssessDamage,#what=self,
+                                 #damage=iDamage,
+                                 #aspell=iDamageType,
+                                 #report=FALSE) = $
+      {
+         Post(who,@Killed,#what=self);
+      }
+      
+      if iDamageType = ATCK_SPELL_COLD
+      {
+         Send(who,@MsgSendUser,#message_rsc=energies_cold_damage,#parm1=iDamage);
+      }
+      if iDamageType = ATCK_SPELL_FIRE
+      {
+         Send(who,@MsgSendUser,#message_rsc=energies_fire_damage,#parm1=iDamage);
+      }
+      if iDamageType = ATCK_SPELL_SHOCK
+      {
+         Send(who,@MsgSendUser,#message_rsc=energies_shock_damage,#parm1=iDamage);
+      }
+      if iDamageType = ATCK_SPELL_ACID
+      {
+         Send(who,@MsgSendUser,#message_rsc=energies_acid_damage,#parm1=iDamage);
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

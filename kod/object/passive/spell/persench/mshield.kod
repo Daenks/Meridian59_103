@@ -57,7 +57,11 @@ classvars:
 
    viDefensive = TRUE
 
+   viPercentManaReserved = 10
+
 properties:
+
+   viPurgeFactor = 15
 
 messages:
 

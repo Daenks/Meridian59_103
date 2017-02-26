@@ -170,6 +170,12 @@ messages:
                % Resisted completely
                return FALSE;
             }
+      
+            if IsClass(oTarget,&Monster)
+               AND Send(oTarget,@GetHoldResistance) <> 0
+            {
+               iDuration = (iDuration * (100-Send(oTarget,@GetHoldResistance)))/100;
+            }
 
             iDuration = Bound(iDuration,500,10000);
          }

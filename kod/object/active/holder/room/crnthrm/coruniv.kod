@@ -383,6 +383,316 @@ resources:
    coruniv_chose_barloque = "Be true to thy noble blood."
    coruniv_chose_cornoth = "Be sure to annotate your degrees of study on your description."
 
+   genealogy_human_name = "The Legacy of Civilization"
+   genealogy_demon_name = "Power for a Price"
+   genealogy_orc_name = "Clan Konima"
+   genealogy_elf_name = "Arts Above All"
+
+   genealogy_choose_human_trigger = "I wish to reincarnate as human."
+   genealogy_choose_demon_trigger = "I wish to reincarnate as half-demon."
+   genealogy_choose_orc_trigger = "I wish to reincarnate as half-orc."
+   genealogy_choose_elf_trigger = "I wish to reincarnate as half-elf."
+   
+   not_ready_reincarnate = \
+      "You cannot reincarnate until you have achieved your maximum potential "
+      "in this life."
+
+   genealogy_human = \
+      "Written by Alzahakar, Councilor of Meridian\n"
+      "\n"
+      "ON HUMANITY\n\n"
+      "As times change and the progeny of our fellow races multiply, it is "
+      "important to remember the achievements of our forebears, as well as "
+      "the struggles we still face today. The other races have their own "
+      "conflicts and interests, but we humans are still under vicious assault "
+      "by the forces of evil. Our great cities and our centuries of "
+      "civilization are ours to defend against threats political and "
+      "supernatural alike. Should you choose to bear proudly your fully "
+      "human ancestry, never forget that your greatest strength is your "
+      "fellow man."
+      "\n\n"
+      "Human beings are the most diverse race in Meridian. They are "
+      "not as smart as half-demons, not as strong as half-orcs, and "
+      "not as agile as half-elves, but they have above-average potential "
+      "in all areas."
+      "\n"
+      "¶"
+      "HUMAN TRAITS"
+      "\n\n"
+      "Fully human adventurers have no base resistances or weaknesses, "
+      "mainly because we defined the scales in the first place."
+      "\n"
+      "\nRacial Stat Maximums:"
+      "\n50 Might"
+      "\n50 Intellect"
+      "\n50 Stamina"
+      "\n50 Agility"
+      "\n50 Mysticism"
+      "\n50 Aim"
+      "\n\n"
+      "As diversity is the greatest asset of our race, human beings "
+      "are extraordinarily flexible. While humans have no innate strengths "
+      "or weaknesses, they get two stat points per reincarnation. These "
+      "points adjust with your number of reincarnations, and are not "
+      "retained or lost when switching ancestries, therefore you do not "
+      "have to reincarnate in a certain order."
+      "¶"
+      "REINCARNATION"
+      "\n\n"
+      "For each reincarnation you have achieved, you will have two additional "
+      "stat points to distribute. When you reincarnate, you have a chance to "
+      "choose your stats anew. Should you fail to choose at the time of "
+      "reincarnation, you will retain one free stat reset that you can use by "
+      "going to an Elder and saying 'change stats'."
+      "\n\n"
+      "Your guardian angel will never return once you reincarnate."
+      "¶"
+      "REINCARNATING AS HUMAN"
+      "\n\n"
+      "To reincarnate as fully human, state thus:"
+      "\n\n"
+      "'I wish to reincarnate as human.'"
+      "\n\nIf you have reached the proper state of enlightenment, "
+      "you will undergo the process of reincarnation into a human. "
+      "This process will destroy all of your worn and held items, "
+      "and you will forget everything you have learned in this life. "
+      "You will be as a newborn, save a little wiser for your experiences. "
+
+   genealogy_demon = \
+      "Written by Xaerdun, Demon of Greed"
+      "\n\n"
+      "ON DEMONS"
+      "\n\n"
+      "I'm only writing this because your precious Meridian Council paid me "
+      "for the service, but I do believe that such an action is a prime "
+      "example of what we demons live for. We are new to your lands, but "
+      "our dealings with humans on this plane go back centuries. "
+      "Aside from the continents we often trade with, we did meet followers "
+      "of your 'Jala' long ago as they fled from persecution. They were a "
+      "solemn folk full of dreary songs, and I detested them, but we also "
+      "learned a great deal from one another."
+      "\n\n"
+      "And that is what I intend to emphasize: demons are not evil. We "
+      "merely have... interests. I, for one, like to accrue money and "
+      "possessions. If you'd like to make a deal, we'll talk. Come see me "
+      "on my favored continent."
+      "\n\n"
+      "Demons themselves are far cleverer and in tune with the mystic arts "
+      "than humans. We tend to avoid direct physical combat, since we'd "
+      "much rather curse you and watch you suffer."
+      "\n\n"
+      "As for humans with partial demon ancestry, those details are private, "
+      "though I'm sure you know how that kind of thing happens..."
+      "¶"
+      "HALF-DEMON TRAITS"
+      "\n\n"
+      "Racial Resistances:"
+      "\n"
+      "20% fire resistance\n"
+      "10% acid resistance\n"
+      "10% nerudite resistance\n"
+      "30% cold vulnerability\n"
+      "\n"
+      "\nRacial Stat Maximums:"
+      "\n30 Might"
+      "\n60 Intellect"
+      "\n30 Stamina"
+      "\n50 Agility"
+      "\n60 Mysticism"
+      "\n50 Aim"
+      "\n\n"
+      "Half-demons eat very little compared to humans. Their resting max "
+      "vigor is also somewhat restricted as a result."
+      "¶"
+      "REINCARNATION"
+      "\n\n"
+      "For each reincarnation you have achieved, you will have one additional "
+      "stat point to distribute. When you reincarnate, you have a chance to "
+      "choose your stats anew. Should you fail to choose at the time of "
+      "reincarnation, you will retain one free stat reset that you can use by "
+      "going to an Elder and saying 'change stats'."
+      "\n\n"
+      "Your guardian angel will never return once you reincarnate."
+      "\n\n"
+      "Half-demons carry some of the extraplanar abilities of their parents, "
+      "including heightened capacity for intelligence and mysticism. "
+      "This greater intellectual awareness comes at the cost of their "
+      "physical bodies, which for full Demons were simply manifestations "
+      "they made at will during the... act of parenting."
+      "\n\n"
+      "Half-demons make ideal mages, but it should be noted that their "
+      "greater brainpower helps compensate in the areas of finesse "
+      "and skill. They may be physically weaker, but they can still "
+      "dodge and aim as well as any full human. In addition, "
+      "their partial extraplanar connection makes them mysteriously "
+      "and naturally resistant to weapons made of nerudite."
+      "¶"
+      "REINCARNATING AS HALF-DEMON"
+      "\n\n"
+      "To reincarnate as half-demon, state thus:"
+      "\n\n"
+      "'I wish to reincarnate as half-demon.'"
+      "\n\nIf you have reached the proper state of enlightenment, "
+      "you will undergo the process of reincarnation into a half-demon. "
+      "This process will destroy all of your worn and held items, "
+      "and you will forget everything you have learned in this life. "
+      "You will be as a newborn, save a little wiser for your experiences. "
+
+   genealogy_orc = \
+      "Written by Grot, Servant to Pit Boss' Second Wizard"
+      "\n\n"
+      "ON ORCS"
+      "\n\n"
+      "We're not dumb. That's a false stereotype. I remind you that in times "
+      "of internal peace we built great aqueducts and mechanisms to rival "
+      "any surface city."
+      "\n\n"
+      "It's just that orcs don't really have much to say. Politics bore us."
+      "\n\n"
+      "We express ourselves through rowdy combat. Up close and personal. "
+      "If you didn't get a tooth knocked out, you didn't have a good day."
+      "\n\n"
+      "Don't worry. They grow back."
+      "\n\n"
+      "The Boss says this is important for relations with surface "
+      "dwellers, and I'm the only one here who knows how to read and write "
+      "your language, so... we are what we are."
+      "\n\n"
+      "Wanna fight about it?"
+      "¶"
+      "HALF-ORC TRAITS"
+      "\n\n"
+      "Racial Resistances:"
+      "\n"
+      "20% unholy resistance\n"
+      "10% pierce resistance\n"
+      "10% slash resistance\n"
+      "30% holy vulnerability\n"
+      "\n"
+      "\nRacial Stat Maximums:"
+      "\n60 Might"
+      "\n50 Intellect"
+      "\n60 Stamina"
+      "\n30 Agility"
+      "\n50 Mysticism"
+      "\n30 Aim"
+      "\n\n"
+      "Half-orcs have very large appetites, and can eat a great deal "
+      "of food in one sitting. Their resting max vigor is also very high."
+      "¶"
+      "REINCARNATION"
+      "\n\n"
+      "For each reincarnation you have achieved, you will have one additional "
+      "stat point to distribute. When you reincarnate, you have a chance to "
+      "choose your stats anew. Should you fail to choose at the time of "
+      "reincarnation, you will retain one free stat reset that you can use by "
+      "going to an Elder and saying 'change stats'."
+      "\n\n"
+      "Your guardian angel will never return once you reincarnate."
+      "\n\n"
+      "Half-orcs are built with the toughness of the caves. Resisting damage "
+      "from scimitars and arrows alike, they prefer their battles up "
+      "close and personal."
+      "\n\n"
+      "Half-orcs make ideal melee brawlers, but it should be noted that they "
+      "have similar capacity to humans for knowledge and spirituality. "
+      "Some scholars have pointed out that we should have noticed this long "
+      "ago. After all, a decent percentage of their population become "
+      "wizards by trade."
+      "¶"
+      "REINCARNATING AS HALF-ORC"
+      "\n\n"
+      "To reincarnate as half-orc, state thus:"
+      "\n\n"
+      "'I wish to reincarnate as half-orc.'"
+      "\n\nIf you have reached the proper state of enlightenment, "
+      "you will undergo the process of reincarnation into a half-orc. "
+      "This process will destroy all of your worn and held items, "
+      "and you will forget everything you have learned in this life. "
+      "You will be as a newborn, save a little wiser for your experiences. "
+
+   genealogy_elf = \
+      "Written by Ela'teh, Ambassador of the Woods"
+      "\n\n"
+      "SYLVAN ANCESTRY"
+      "\n\n"
+      "There are a great many races in the Sylvan tree of families. "
+      "The tribe your people may be most familiar with are the Fey Elhai. "
+      "Their eternal war against the corrupted Fey Dirhai is a sad thing "
+      "to behold, but thus is nature. Life and death are locked in a "
+      "cycle from which none can escape. It is for this reason that we "
+      "have stayed out of the affairs of most races."
+      "\n\n"
+      "It is only now that we come to the peoples of Meridian, and even then "
+      "with hesitance, and still only at the behest of our half-human "
+      "children. This generation came about because of the numerous lost "
+      "adventurers who never found their way out of our Twisted Woods; "
+      "this generation has pushed for change, and who are we to resist "
+      "our own internal call?"
+      "\n\n"
+      "I can only say that the fairy and elven races tend to find beauty "
+      "in art and finesse. To practice the same sword-stroke ten thousand "
+      "times is more admirable than mastering a wide range of abilities. "
+      "In addition, spiritual self-sufficiency is our way of life. You will "
+      "find few mages or mystics among us. Nature, after all, is a wild and "
+      "unpredictable master, and we abhor unpredictability. Magic is a thing "
+      "to be employed sparsely, or perhaps even shunned."
+      "¶"
+      "HALF-ELF TRAITS"
+      "\n\n"
+      "Racial Resistances:"
+      "\n"
+      "20% holy resistance\n"
+      "10% general magic resistance\n"
+      "10% magical weapon resistance*\n"
+      "30% unholy vulnerability\n"
+      "\n"
+      "\nRacial Stat Maximums:"
+      "\n50 Might"
+      "\n30 Intellect"
+      "\n50 Stamina"
+      "\n60 Agility"
+      "\n30 Mysticism"
+      "\n60 Aim"
+      "\n\n*-Mystic Swords and weapons dedicated to Kraanan."
+      "\n\n"
+      "In the interests of self-sufficiency, half-elves have purposely "
+      "trained themselves to require less food than humans. Their resting "
+      "max vigor is also somewhat higher."
+      "¶"
+      "REINCARNATION"
+      "\n\n"
+      "For each reincarnation you have achieved, you will have one additional "
+      "stat point to distribute. When you reincarnate, you have a chance to "
+      "choose your stats anew. Should you fail to choose at the time of "
+      "reincarnation, you will retain one free stat reset that you can use by "
+      "going to an Elder and saying 'change stats'."
+      "\n\n"
+      "Your guardian angel will never return once you reincarnate."
+      "\n\n"
+      "Half-elves are gifted with greater potential for agility and aim. "
+      "At the same time, they tend to avoid vast amounts of knowledge, "
+      "preferring instead absolute mastery of a few key talents. "
+      "Half-elves' ancestral history of shunning magic has led them to "
+      "develop a variety of resistances to it in general, as well as "
+      "a reduced capacity for mystical connection."
+      "\n\n"
+      "Half-elves make ideal dexterous rangers, but scholars have also "
+      "debated whether half-elven inclinations lend themselves to "
+      "fighting in the thick of things. After all, half-elves have lost "
+      "none of the strength or durability of their human ancestors."
+      "¶"
+      "REINCARNATING AS HALF-ELF"
+      "\n\n"
+      "To reincarnate as half-elf, state thus:"
+      "\n\n"
+      "'I wish to reincarnate as half-elf.'"
+      "\n\nIf you have reached the proper state of enlightenment, "
+      "you will undergo the process of reincarnation into a half-elf. "
+      "This process will destroy all of your worn and held items, "
+      "and you will forget everything you have learned in this life. "
+      "You will be as a newborn, save a little wiser for your experiences. "
+
 classvars:
 
    vrName = room_name_coruniv
@@ -413,12 +723,44 @@ messages:
 
   %% TO TOWN
       plExits = Cons([ 11, 25, RID_CORNOTH, 12, 33, ROTATE_NONE ],plExits);
+      
+      % in between areas of the Hall
+      plExits = Cons([ 26, 37, RID_COR_UNIV, 3, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 26, 38, RID_COR_UNIV, 3, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 27, 37, RID_COR_UNIV, 3, 12, ROTATE_NONE ],plExits);
+      plExits = Cons([ 27, 38, RID_COR_UNIV, 3, 12, ROTATE_NONE ],plExits);
+      
+      plExits = Cons([ 2, 17, RID_COR_UNIV, 24, 38, ROTATE_NONE ],plExits);
    
       propagate;
    }
    CreateStandardObjects()
    {
       local oBook;
+
+      oBook = Create(&BookPedestal,#Name=genealogy_human_name,
+                     #Text=genealogy_human);
+      Send(self,@NewHold,#what=oBook,
+           #new_row=21,#new_col=47,#fine_col=4,#fine_row=5,
+           #new_angle=ANGLE_SOUTH);
+
+      oBook = Create(&BookPedestal,#Name=genealogy_demon_name,
+                     #Text=genealogy_demon);
+      Send(self,@NewHold,#what=oBook,
+           #new_row=25,#new_col=49,#fine_col=17,#fine_row=29,
+           #new_angle=ANGLE_WEST);
+
+      oBook = Create(&BookPedestal,#Name=genealogy_orc_name,
+                     #Text=genealogy_orc);
+      Send(self,@NewHold,#what=oBook,
+           #new_row=22,#new_col=49,#fine_col=17,#fine_row=44,
+           #new_angle=ANGLE_WEST);
+
+      oBook = Create(&BookPedestal,#Name=genealogy_elf_name,
+                     #Text=genealogy_elf);
+      Send(self,@NewHold,#what=oBook,
+           #new_row=26,#new_col=47,#fine_col=4,#fine_row=63,
+           #new_angle=ANGLE_NORTH);
 
       oBook = Create(&BookPedestal,#Name=genealogy_tos_name,#Text=genealogy_tos);
       Send(self,@NewHold,#what=oBook,
@@ -453,41 +795,78 @@ messages:
 
    SomeoneSaid(what=$,string=$)
    {
-      local iHomeRoom;
+      local iHomeRoom, bTryReincarnate, iReincarnateAsRace;
       iHomeRoom = 0;
       if StringEqual(string,coruniv_choose_tos_trigger) 
       {
-	 iHomeRoom = RID_TOS_INN;
+         iHomeRoom = RID_TOS_INN;
       }
       if StringEqual(string,coruniv_choose_barloque_trigger)
       {
-	 iHomeRoom = RID_BAR_INN;
+         iHomeRoom = RID_BAR_INN;
       }
       if StringEqual(string,coruniv_choose_cornoth_trigger)
       {
-	 iHomeRoom = RID_COR_INN;
+         iHomeRoom = RID_COR_INN;
       }
       if StringEqual(string,coruniv_choose_jasper_trigger)
       {
-	 iHomeRoom = RID_JAS_INN;
+         iHomeRoom = RID_JAS_INN;
       }
       if StringEqual(string,coruniv_choose_marion_trigger)
       {
-	 iHomeRoom = RID_MAR_INN;
+         iHomeRoom = RID_MAR_INN;
       }
       if iHomeRoom <> 0  
       { 
-	 if not send(what,@CanChangeHomeroom)
-	 {
-	    post(what,@msgsenduser,#message_rsc = coruniv_no_change);	 
-	 }
-	 else
-	 {
-	    send(what,@SetHomeRoom,#RID=iHomeRoom,#lock=TRUE);  
-	    send(self,@roomchangemessage,#iHomeRoom=iHomeRoom,#who=what);	    	 
-	 }
+         if not send(what,@CanChangeHomeroom)
+         {
+            post(what,@msgsenduser,#message_rsc = coruniv_no_change);	 
+         }
+         else
+         {
+            send(what,@SetHomeRoom,#RID=iHomeRoom,#lock=TRUE);  
+            send(self,@roomchangemessage,#iHomeRoom=iHomeRoom,#who=what);	    	 
+         }
+      }
+
+      bTryReincarnate = FALSE;
+      iReincarnateAsRace = 0;
+      if StringEqual(string,genealogy_choose_human_trigger)
+      {
+         bTryReincarnate = TRUE;
+         iReincarnateAsRace = RACE_HUMAN;
+      }
+      if StringEqual(string,genealogy_choose_orc_trigger)
+      {
+         bTryReincarnate = TRUE;
+         iReincarnateAsRace = RACE_HALF_ORC;
+      }
+      if StringEqual(string,genealogy_choose_demon_trigger)
+      {
+         bTryReincarnate = TRUE;
+         iReincarnateAsRace = RACE_HALF_DEMON;
+      }
+      if StringEqual(string,genealogy_choose_elf_trigger)
+      {
+         bTryReincarnate = TRUE;
+         iReincarnateAsRace = RACE_HALF_ELF;
       }
       
+      if bTryReincarnate
+         AND Send(what,@GetCol) > 35
+         AND Send(SETTINGS_OBJECT,@GetReincarnationEnabled)
+      {
+         if Send(what,@CanReincarnate)
+         {
+            Send(what,@Reincarnate,#race=iReincarnateAsRace);
+         }
+         else
+         {
+            Send(what,@MsgSendUser,#message_rsc=not_ready_reincarnate);
+         }
+      }
+
       propagate;
    }
 

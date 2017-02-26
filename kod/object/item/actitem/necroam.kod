@@ -1128,6 +1128,8 @@ messages:
       if pbIn_Use
          AND poOwner <> $
          AND IsClass(poOwner,&User)
+         AND Send(poOwner,@GetGuild) <> $
+         AND IsClass(Send(poOwner,@GetGuild),&NecromancerGuild)
       {
          oNecro = poOwner;
          oNecBal = Send(SYS,@GetNecromancerBalance);
@@ -1362,6 +1364,12 @@ messages:
       }
 
       return TRUE;
+   }
+
+   GetMinimapDotFlags()
+   {
+      % Special item, add minimap dot.
+      return MM_RARE_ITEM;
    }
 
 end

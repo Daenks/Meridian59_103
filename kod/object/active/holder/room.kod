@@ -79,6 +79,7 @@ resources:
    creaky_door_sound = doropen1.wav
 
    water_wading_sound = splash.wav
+   snow_walk_sound = snowstep.wav
 
    room_jungle_sound1 = jungle01.wav
    room_jungle_sound2 = jungle02.wav
@@ -193,6 +194,8 @@ classvars:
 
    viFlag_row = $
    viFlag_col = $
+
+   viCanSpawnChampions = TRUE
 
    viWeatherZone = WEATHER_ZONE_DEFAULT
    viWeatherMask = WEATHER_MASK_DEFAULT
@@ -1494,7 +1497,7 @@ messages:
 
    ReqSpellCast(who = $, oSpell = $, lItems = $)
    {
-      local oTarget;
+      local oTarget, i;
 
       if (piRoom_flags & ROOM_NO_MAGIC)
       {
@@ -1516,6 +1519,14 @@ messages:
          Send(who,@MsgSendUser,#message_rsc=room_no_attack);
 
          return FALSE;
+      }
+
+      foreach i in plObject_attributes
+      {
+         if NOT Send(i,@ReqSpellCast,#who=who,#oSpell=oSpell,#lItems=lItems)
+         {
+            return FALSE;
+         }
       }
 
       % Must have Line of Sight if spell is single target
@@ -2081,6 +2092,8 @@ messages:
          %  immediately afterwards.
          iTimeLeft = GetTimeRemaining(ptDispose);
          if iTimeLeft < 60000
+            AND Send(self,@GetHolderPassive) <> $
+            AND Length(Send(self,@GetHolderPassive)) < 50
          {
             DeleteTimer(ptDispose);
             ptDispose = CreateTimer(self,@DisposeTimer,60000);
@@ -2164,6 +2177,12 @@ messages:
 
       % first send room icons
       Send(self,@SendRoomIcons,#what=what);
+      
+      % next send special room events
+      foreach i in plObject_attributes
+      {
+         Send(what,@ShowAddEnchantment,#what=i,#type=ENCHANTMENT_ROOM);
+      }
 
       foreach i in plEnchantments
       {
@@ -4111,9 +4130,13 @@ messages:
 
       oSpell = Send(SYS,@FindSpellByNum,#num=SID_SILENCE);
 
-      if Send(self,@IsEnchanted,#what=oSpell) AND (NOT IsClass(who,&DM))
+      if Send(self,@IsEnchanted,#what=oSpell)
       {
-         Send(who,@MsgSendUser,#message_rsc=room_silenced_rsc);
+         if (NOT IsClass(who,&DM))
+            OR type = SAY_MANTRA
+         {
+            Send(who,@MsgSendUser,#message_rsc=room_silenced_rsc);
+         }
 
          return FALSE;
       }
@@ -5168,6 +5191,42 @@ messages:
       Send(self,@SetRoomFlagToDefault,#flag=ROOM_NO_PK);
 
       return;
+   }
+
+   OverridesPlayerMinimapDot()
+   {
+      return FALSE;
+   }
+
+   ChoosePlayerMinimapDot(who=$,what=$)
+   {
+      return MM_NONE;
+   }
+
+   CanShatterlockHere()
+   "Is there a dimensional secret that must be unlocked?"
+   {
+      return FALSE;
+   }
+   
+   Shatterlocked(oPrism=$)
+   {
+      return;
+   }
+   
+   GetCanSpawnChampions()
+   {
+      return viCanSpawnChampions;
+   }
+   
+   LightingColorOverride()
+   {
+      return FALSE;
+   }
+   
+   GetLightingColorOverride(what=$)
+   {
+      return LIGHT_WHITE;
    }
 
 end

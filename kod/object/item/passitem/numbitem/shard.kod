@@ -1,0 +1,57 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Shard is NumberItem
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   shard_name_rsc = "mystic shard"
+   shard_icon_rsc = emerald.bgf
+   shard_desc = \
+      "This shard holds coursing magical energies."
+   shard_applied = \
+      "The shard does something."
+
+   default_unequip = \
+      "It would be dangerous to apply the shard to something you're wearing."
+
+classvars:
+
+   vrName = shard_name_rsc
+   vrIcon = shard_icon_rsc
+   vrDesc = shard_desc
+   vrApplied = shard_applied
+   vrMust_unequip = default_unequip
+
+   viItem_type = ITEMTYPE_SHARD
+
+   viBulk = 1
+   viWeight = 1
+
+properties:
+
+   viObject_flags = OF_APPLYABLE | OF_GETTABLE
+
+messages:
+
+   NewApplied(what = $,apply_on = $)
+   {
+      Send(what,@MsgSendUser,#message_rsc=vrApplied,
+                             #parm1=Send(apply_on,@GetName));
+      Send(self,@SubtractNumber,#number=1);
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -48,6 +48,10 @@ resources:
       "The evil pact's magic fails. Something seems amiss."
    DeathRift_warning = \
       "~BYou sense a nearby connection forming between dimensions!"
+
+   DeathRift_shal_temple_catastrophe = \
+      "The opposing energies here collide explosively! After a flash "
+      "of light, you find yourself elsewhere..."
    
 classvars:
 
@@ -60,7 +64,7 @@ classvars:
    viSpell_level = 6
    viMana = 20
    viSpellExertion = 15
-   viCast_time = 60000
+   viCast_time = 15000
 
    viChance_To_Increase = 10
    viMeditate_ratio = 100
@@ -140,6 +144,22 @@ messages:
       if oOwner = $
       {
          return;
+      }
+
+      if Send(oOwner,@GetRoomNum) = RID_TEMPLE
+      {
+         % We are attempting to bind at the Temple of Shal'ille.
+         % Let's do something strange.
+         oTargetRoom = send(SYS,@FindRoomByNum,#num=RID_PRISMLIFEFRAG);
+         if oTargetRoom <> $
+         {
+            Send(who,@MsgSendUser,#message_rsc=
+                  DeathRift_shal_temple_catastrophe);
+            Post(who,@EffectSendUserDuration,#effect=EFFECT_WHITEOUT,
+                  #duration=1250);
+            Post(oTargetRoom,@Teleport,#what=who);
+         }            
+         propagate;
       }
 
       if Send(oOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)

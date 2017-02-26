@@ -64,6 +64,8 @@ classvars:
    viChance_To_Increase = 15
    viMeditate_ratio = 30
 
+   viPercentManaReserved = 15
+
 properties:
 
    % This controls how effective FA is at reducing CC duration.
@@ -74,6 +76,8 @@ properties:
    % What percent of spellpower should we take in order to
    % give the player a chance to completely resist hold?
    piResistPercent = 15
+
+   viPurgeFactor = 25
 
 messages:
 

@@ -1,0 +1,167 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GuildConveyance is UtilitySpell
+
+constants:
+   include blakston.khd
+
+resources:
+
+   GuildConveyance_name_rsc = "guild conveyance"
+   GuildConveyance_icon_rsc = iconveyance.bgf
+   GuildConveyance_desc_rsc = \
+      "Sends a stack of items to your guild hall storage."
+
+   GuildConveyance_cant = "You cannot cast guild conveyance on %s%s."
+   GuildConveyance_not_enough_cash = "You don't have enough shillings to guild convey %s%s."
+   GuildConveyance_not_enough_space = "Your guild hall storage does not have enough space!"
+   GuildConveyance_not_holding = "You cannot cast guild conveyance on an item you are not holding!"
+   GuildConveyance_no_guild = "You are not guilded, and therefore cannot cast guild conveyance."
+   GuildConveyance_no_hall = "Your guild does not own a hall!"
+
+   GuildConveyance_cast = "A small portal whips into existence, pulling %s%s to your guild hall storage."
+
+classvars:
+
+   vrName = GuildConveyance_name_rsc
+   vrIcon = GuildConveyance_icon_rsc
+   vrDesc = GuildConveyance_desc_rsc
+
+   viCast_time = 0
+
+   viSpell_num = SID_GUILD_CONVEYANCE
+   viSpell_level = 1
+   viSchool = SS_KRAANAN
+   viMana = 0
+   viSpellExertion = 0
+   viChance_To_Increase = 15
+
+properties:
+
+messages:
+
+   ResetReagents()
+   {
+      plReagents = $;
+
+      return;
+   }
+
+   GetNumSpellTargets()
+   {
+      return 1;
+   }
+
+   CastSpell(who = $, lTargets = $)
+   {
+      local oTarget, oGuild, oHall, i, each_obj, iFee, oMoney, iCash, bDeposited;
+      
+      oTarget = First(lTargets);
+      
+      oGuild = Send(who,@GetGuild);
+      if oGuild = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_no_guild);
+         return;
+      }
+      
+      oHall = Send(oGuild,@GetGuildHall);
+      if oHall = $
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_no_hall);
+         return;
+      }
+   
+      if NOT isClass(oTarget,&NumberItem)
+         OR NOT Send(oTarget,@CanBeStoredInVault)
+         OR isClass(oTarget,&Money)
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_cant,
+            #parm1=Send(oTarget,@GetDef),
+            #parm2=Send(oTarget,@GetName));
+
+         return;
+      }
+    
+      if NOT Send(who,@IsHolding,#what=oTarget)
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_not_holding);
+         return;
+      }
+
+      iFee = Send(oTarget,@GetBulk) * 2;
+
+      if iFee = $
+         OR iFee = 0
+         OR NOT Send(who,@ReqLeaveHold,#what=oTarget)
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_cant,
+            #parm1=Send(oTarget,@GetDef),
+            #parm2=Send(oTarget,@GetName));
+         return;
+      }
+      
+      oMoney = Send(who,@GetMoneyObject);
+      if oMoney = $
+      {
+         % No cash.
+         iCash = 0;
+      }
+      else
+      {
+         iCash = Send(oMoney,@GetValue);
+      }
+
+      if iCash < iFee
+         AND iFee <> 0
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_not_enough_cash,
+            #parm1=Send(oTarget,@GetDef),
+            #parm2=Send(oTarget,@GetName));
+
+         return;
+      }
+
+      foreach i in Send(oHall,@GetHolderActive)
+      {
+         each_obj = Send(oHall,@HolderExtractObject,#data=i);
+         if (IsClass(each_obj,&Chest)
+            OR IsClass(each_obj,&WoodenBox))
+         {
+            if Send(each_obj,@CanDepositItems,#lItems=lTargets)
+            {
+               Send(each_obj,@NewHold,#what=First(lTargets));
+               bDeposited = TRUE;
+               if iFee <> 0
+               {
+                  Send(oMoney,@SubtractNumber,#number=iFee);
+               }
+               break;
+            }
+         }
+      }
+
+      if NOT bDeposited
+      {
+         Send(who,@MsgSendUser,#message_rsc=GuildConveyance_not_enough_space);
+      }
+
+      propagate;
+   }
+
+   SuccessChance(who=$)
+   "Starter spell will always work."
+   {
+      return TRUE;
+   }
+ 
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -66,16 +66,20 @@ classvars:
    viChance_To_Increase = 20
    viMeditate_ratio = 30
 
+   viPercentManaReserved = 15
+
 properties:
 
    % This controls how effective EE is at reducing CC duration.
    % Higher value makes EE less effective.
    % 200 = 50% reduction, 300 = 33% reduction.
-   piReductionFactor = 200 % Recommended value 300.
+   piReductionFactor = 300 
 
    % What percent of spellpower should we take in order to
    % give the player a chance to completely resist a blinding spell?
    piResistPercent = 5
+
+   viPurgeFactor = 25
 
 messages:
 

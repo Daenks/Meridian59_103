@@ -26,7 +26,7 @@ resources:
 
    % item_desc_template is vrDesc, item attributes, object attributes,
    % variable item appends, item stats, item condition.
-   item_desc_template = "%r%r%r%r%r%r"
+   item_desc_template = "%r%r%r%r%r%r%r"
    resource_blank = ""
 
    item_try_use_cursed_rsc = \
@@ -84,6 +84,13 @@ resources:
    item_stats_proc_purge = "15%% chance to cast Purge on hit\n"
    item_stats_proc_twister = "8%% chance to disorient victim on hit\n"
    item_stats_proc_vamp = "10%% chance to gain up to 8 health on hit\n"
+
+   item_level_master = \
+      "\n\nIt has an item level of %i and has been imbued "
+      "with %i magical modifications."
+   item_level_gauntlets = \
+      "\n\nThey have an item level of %i and have been imbued "
+      "with %i magical modifications."
 
 classvars:
 
@@ -146,9 +153,16 @@ properties:
    % Support for players, monsters, and items
    plRadiusEnchantments = $
 
+   % Traditional magic mods
+   plEnchantmentMods = $
+   
+   % item level for magic mods and other effects
+   % depends on the mob that dropped it
+   piItemLevel = 20
+
 messages:
 
-   Constructor(corpse=$)
+   Constructor(corpse=$,level=20)
    {
       local iHits_average, oItemAtt;
 
@@ -168,7 +182,9 @@ messages:
       {
          Send(self,@SetPaletteTranslation,#translation=viUnrevealedColor);
       }
-      
+
+      piItemLevel = level;
+
       propagate;
    }
 
@@ -879,6 +895,7 @@ messages:
       Send(self,@AppendDesc);
       Send(self,@AppendStatsDesc);
       Send(self,@AppendItemCondition);
+      Send(self,@AppendItemLevel);
 
       return;
    }
@@ -931,6 +948,28 @@ messages:
 
          AddPacket(4,item_cond_master, 4,vrPoss_Article, 4,Send(self,@GetName),
                    4,rItem_condition,4,piHits,4,piHits_init);
+      }
+      else
+      {
+         AddPacket(4,system_blank_resource);
+      }
+
+      return;
+   }
+
+   AppendItemLevel()
+   {
+      if IsClass(self,&Weapon)
+         OR IsClass(self,&DefenseModifier)
+         OR IsClass(self,&Ring)
+      {
+         AddPacket(4,item_level_master, 4,piItemLevel,
+                   4,Send(self,@GetMagicModsNumber));
+      }
+      else if IsClass(self,&Gauntlet)
+      {
+         AddPacket(4,item_level_gauntlets, 4,piItemLevel,
+                   4,Send(self,@GetMagicModsNumber));
       }
       else
       {
@@ -1998,7 +2037,9 @@ messages:
          Debug("Clearing all Item Attributes failed!");
          plItem_Attributes = $;
       }
-          
+
+      plEnchantmentMods = $;
+
       return;
    }
 
@@ -2428,15 +2469,28 @@ messages:
   
    GetCurrentResistances()
    {
-      local lCurrentResistances, oObjectAttribute;
+      local lCurrentResistances, oObjectAttribute, lMagicMod, oMagicMod;
       
       lCurrentResistances = Send(self,@GetResistanceModifiers);
       
       foreach oObjectAttribute in plObject_attributes
       {
-         lCurrentResistances = Send(oObjectAttribute,@ModifyResistance,#resistance_list=lCurrentResistances);
+         lCurrentResistances = Send(oObjectAttribute,@ModifyResistance,
+                                  #resistance_list=lCurrentResistances);
       }
-      
+
+      foreach lMagicMod in plEnchantmentMods
+      {
+         if Send(SYS,@GetGroupOfClassMod,#class=Nth(lMagicMod,1))
+                        = GROUP_RESISTANCE
+         {
+            oMagicMod = Send(SYS,@GetMagicMod,#class=Nth(lMagicMod,1));
+            lCurrentResistances = Send(oMagicMod,@ModifyResistance,
+                                     #resistance_list=lCurrentResistances,
+                                     #iState=Nth(lMagicMod,2));
+         }
+      }
+
       return lCurrentResistances;
    }
 
@@ -2703,6 +2757,211 @@ messages:
    CanSweep()
    {
       return TRUE;
+   }
+
+   GetMagicModsNumber()
+   {
+      if plEnchantmentMods <> $
+      {
+         return Length(plEnchantmentMods);
+      }
+
+      return 0;
+   }
+
+   GetMagicModsNumberOfType(type=MOD_SUFFIX)
+   {
+      local i, sum, oMod;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         oMod = Send(SYS,@GetMagicMod,#class=Nth(i,1));
+         if oMod <> $
+            AND Send(oMod,@GetModType) = type
+         {
+            ++sum;
+         }
+      }
+
+      return sum;
+   }
+
+   HasMagicModOfClass(class=&ArmorMod)
+   {
+      local i;
+      
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = class
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+
+   AddMagicMods(min_num_mods=0, max_num_mods=0)
+   "General random decisions for adding one to multiple mods."
+   {
+      local iNumMods, iModType, bAdded, iChosenType;
+      bAdded = FALSE;
+
+      if NOT IsClass(self,&Gauntlet)
+         AND NOT IsClass(self,&DefenseModifier)
+         AND NOT IsClass(self,&Weapon)
+         AND NOT IsClass(self,&Ring)
+      {
+         return bAdded;
+      }
+
+      if max_num_mods < 0
+      {
+         max_num_mods = 0;
+      }
+
+      if max_num_mods > 6
+      {
+         max_num_mods = 6;
+      }
+
+      if min_num_mods > max_num_mods
+      {
+         min_num_mods = 0;
+         max_num_mods = 0;
+      }
+
+      iNumMods = Random(min_num_mods,max_num_mods);
+      
+      while iNumMods > 0
+      {
+         if plEnchantmentMods <> $
+            AND Length(plEnchantmentMods) = 6
+         {
+            break;
+         }
+
+         iChosenType = Random(MOD_PREFIX,MOD_SUFFIX);
+         
+         % check for prefix/suffix limit.
+         % since we checked for 6 mods total, we know the other is open
+         %   if the chosen type is full.
+         if Send(self,@GetMagicModsNumberOfType,#type=iChosenType) >= 3
+         {
+            if iChosenType = MOD_PREFIX
+            {
+               iChosenType = MOD_SUFFIX;
+            }
+            else
+            {
+               iChosenType = MOD_PREFIX;
+            }
+         }
+
+         bAdded = Send(self,@AddMagicMod,#type=iChosenType);
+         iNumMods = iNumMods - 1;
+      }
+      
+      return bAdded;
+   }
+
+   GetItemLevel()
+   {
+      return piItemLevel;
+   }
+
+   GetPrefixes()
+   {
+      return $;
+   }
+
+   GetSuffixes()
+   {
+      return $;
+   }
+
+   AddMagicMod(type=MOD_SUFFIX)
+   {
+      local i, lPrefixClasses, lSuffixClasses, iRoll, iChanceSum,
+            lClasses, cChosenMod, oChosenMod, iPowerValue;
+
+      % Lists are [mod type, chance to roll]
+      % random roll takes from a sum of all chances
+
+      if type = MOD_SUFFIX
+      {
+         lClasses = Send(self,@GetSuffixes);
+      }
+      if type = MOD_PREFIX
+      {
+         lClasses = Send(self,@GetPrefixes);
+      }
+
+      if lClasses = $
+      {
+         return FALSE;
+      }
+      
+      % Remove mods we already have from the possibilities.
+      if Send(self,@GetMagicModsNumber) <> 0
+      {
+         foreach i in lClasses
+         {
+            if Send(self,@HasMagicModOfClass,#class=Nth(i,1))
+            {
+               lClasses = DelListElem(lClasses,i);
+            }
+         }
+      }
+
+      iChanceSum = 0;
+      foreach i in lClasses
+      {
+         iChanceSum = iChanceSum + Nth(i,2);
+      }
+
+      if iChanceSum = 0
+      {
+         % Item has no more possible mods!
+         return FALSE;
+      }
+
+      iRoll = Random(1, iChanceSum);
+      foreach i in lClasses
+      {
+         iRoll = iRoll - Nth(i,2);
+         if iRoll <= 0
+         {
+            % we've found our chosen mod class
+            cChosenMod = Nth(i,1);
+            break;
+         }
+      }
+
+      iPowerValue = 0;
+      oChosenMod = Send(SYS,@GetMagicMod,#class=cChosenMod);
+      if oChosenMod <> $
+      {
+         iPowerValue = Send(oChosenMod,@RollPower,#what=self);
+      }
+
+      if iPowerValue <> 0
+      {
+         plEnchantmentMods = Cons([cChosenMod,iPowerValue],plEnchantmentMods);
+         Send(self,@AddMagicFlag);
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   ClearMagicMods()
+   {
+      plEnchantmentMods = $;
+      Send(self,@RemoveMagicFlag);
+
+      return;
    }
 
 end

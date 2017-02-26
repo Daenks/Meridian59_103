@@ -330,7 +330,7 @@ messages:
    DamageFactors(damage=0, who=$, weapon_used = $)
    "Different skills/strokes are affected by stats differently."
    {
-      local iDamage, stat, weapProf, profAbility, bonusPercentage;
+      local iDamage, iMight, iStat, weapProf, profAbility, bonusPercentage;
 
       iDamage = damage;
       if weapon_used <> $
@@ -350,11 +350,13 @@ messages:
       
       % Get the relevant amount of primary stat for our proficiency. This will 
       % be our base bonus percentage.
-      stat = send(weapProf,@GetRequisiteStat,#who=who) - 25;
+      iStat = send(weapProf,@GetRequisiteStat,#who=who) - 25;
+      iMight = Send(who,@GetMight) - 25;
+      iStat = (iStat + iMight) / 2;
       
       % Scale down the bonus damage percentage if the user is not fully 
       % proficient in the weapon.
-      bonusPercentage = 100 + bound(stat * profAbility / 100, 0, 40);
+      bonusPercentage = 100 + bound(iStat * profAbility / 100, 0, 40);
 
       iDamage = iDamage * bonusPercentage / 100;
       

@@ -364,9 +364,14 @@ messages:
    SetForSale()
    {
       plFor_sale = [
-         $,$,
          [ 
-            SID_EAVESDROP
+            Create(&Dagger)
+         ],
+         $,
+         [ 
+            SID_EAVESDROP,
+            SID_SET,
+            SID_LOADOUT
          ],
       $];
        

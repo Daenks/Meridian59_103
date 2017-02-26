@@ -1,0 +1,73 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ForgetPotionXaerdunWitchery is ForgetPotion
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   forgetpotionXaerdunWitchery_desc_rsc = \
+      "Quaffing this elixir will break your alliance with Xaerdun, "
+      "and erase any knowledge of his granted powers from your mind."
+
+classvars:
+
+   viForget_school = SS_WITCHERY
+   viForget_subschool = SSS_WITCHERY_XAERDUN
+   vrDesc = forgetpotionXaerdunWitchery_desc_rsc
+
+properties:
+
+messages:
+
+   QuaffTimer()
+   {
+      local i, lSpells, oSpell, iSpellnum;
+
+      ptQuaff = $;
+      lSpells = Send(poApply_target,@GetSpellList);
+      piCount = 0;
+      
+      foreach i in lSpells
+      {
+         iSpellNum = send(poApply_target,@DecodeSpellNum,#compound=i);
+         oSpell = send(SYS,@FindSpellByNum,#num=iSpellNum);
+
+         if Send(oSpell,@GetSchool) = viForget_school
+            AND Send(oSpell,@GetSubSchool) = viForget_subschool
+            AND Send(oSpell,@CanForget)
+         {
+            send(poApply_target,@RemoveSpell,#num=iSpellNum);
+            send(poApply_target,@MsgSendUser,#message_rsc=forgetpotion_forget_spell,
+                 #parm1=send(oSpell,@GetName));
+            piCount = piCount + 1;
+         }
+      }
+      
+      if piCount = 0
+      {
+         Send(poApply_target,@MsgSendUser,#message_rsc=forgetpotion_nothing_happens);
+      }
+      else
+      {
+         send(self,@DoSideEffects);
+         send(poApply_target,@ToCliStats,#group=3);
+      }
+      
+      Send(self,@Delete);
+      
+      return;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

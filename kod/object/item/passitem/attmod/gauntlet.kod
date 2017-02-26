@@ -274,7 +274,17 @@ messages:
 
    ModifyHitRoll(who = $,what = $,hit_roll = $)
    {
-      local oWeapon;
+      local i, oWeapon, oOffenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            oOffenseMod = Send(SYS,@GetMagicMod,#class=&OffenseMod);
+            hit_roll = Send(oOffenseMod,@ModifyHitRoll,#who=who,#what=what,
+                        #hit_roll=hit_roll,#iState=Nth(i,2));
+         }
+      }
 
       oWeapon = Send(who,@GetWeapon);
       if (oWeapon = $)
@@ -288,7 +298,17 @@ messages:
 
    ModifyDamage(who = $,what = $,damage = $)
    {
-      local oWeapon;
+      local oWeapon, i, oWeaponDamageMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            damage = Send(oWeaponDamageMod,@ModifyDamage,#who=who,#what=what,
+                        #damage=damage,#iState=Nth(i,2));
+         }
+      }
       
       % Add damage to non-ranged weapons (and punch)
       oWeapon = Send(who,@GetWeapon);
@@ -303,12 +323,54 @@ messages:
 
    ModifyDefensePower(defense_power=$)
    {
+      local i, oDefenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            oDefenseMod = Send(SYS,@GetMagicMod,#class=&DefenseMod);
+            defense_power = Send(oDefenseMod,@ModifyDefensePower,
+                        #defense_power=defense_power,#iState=Nth(i,2));
+         }
+      }
+
       return defense_power + piDefense_bonus;
    }
 
-   ModifyDefenseDamage(who = $,what = $,damage = $)
+   ModifyDefenseDamage(who=$,what=$,damage=$,atype=0,aspell=0)
    {
+      local i, sum, oArmorMod;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            oArmorMod = Send(SYS,@GetMagicMod,#class=&ArmorMod);
+            damage = Send(oArmorMod,@ModifyDefenseDamage,#who=who,#what=what,
+                        #damage=damage,#atype=atype,#aspell=aspell,
+                        #iState=Nth(i,2));
+         }
+      }
+
       return damage;
+   }
+
+   GetDamageReduction()
+   {
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return sum;
    }
 
    CanMend()
@@ -337,17 +399,69 @@ messages:
 
    GetHitBonus()
    {
-      return piAttack_bonus;
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return piAttack_bonus + sum;
    }
 
    GetDefenseBonus()
    {
-      return piDefense_bonus;
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+      
+      return piDefense_bonus + sum;
    }
 
    GetMeleeDamageBonus()
    {
-      return piDamage_bonus;
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return piDamage_bonus + sum;
+   }
+
+   GetPrefixes()
+   {
+      return [[&ArmorMod,100],
+              [&DefenseMod,100],
+              [&OffenseMod,100],
+              [&WeaponDamageMod,100]];
+   }
+   
+   GetSuffixes()
+   {
+      return [[&FireResistanceMod,100],
+              [&ColdResistanceMod,100],
+              [&ShockResistanceMod,100],
+              [&AcidResistanceMod,100],
+              [&PierceResistanceMod,100],
+              [&SlashResistanceMod,100],
+              [&BludgeonResistanceMod,100]];
    }
 
 end

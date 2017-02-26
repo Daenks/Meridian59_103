@@ -76,15 +76,11 @@ messages:
 
       Send(poOwner, @MsgSendUser, #message_rsc=vrUseMessage);
 
-      Send(what,@AddDefenseModifier,#what=self);
-
       propagate;
    }
 
    NewUnused(what = $)
    {
-      Send(what,@RemoveDefenseModifier,#what=self);
-
       propagate;
    }
 
@@ -96,11 +92,6 @@ messages:
    DefendingHit()
    {
       return;
-   }
-
-   ModifyDefensePower(who = $,what = $,defense_power = 0)
-   {
-      return defense_power;
    }
 
    ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0,
@@ -125,6 +116,7 @@ messages:
             Send(poOwner,@MsgSendUser,#message_rsc=resistring_working_rsc);
 
             if IsClass(what,&User)
+               AND what <> poOwner
             {
                Send(what,@MsgSendUser,#message_rsc=resistring_attacker_rsc,
                      #parm1=Send(who,@GetName));
@@ -138,7 +130,7 @@ messages:
          Post(self,@Delete);
       }
 
-      return damage;
+      propagate;
    }
 
    SetResistanceChange(amount = 20)

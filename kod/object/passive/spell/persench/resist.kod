@@ -32,7 +32,11 @@ classvars:
    vrEnchantment_Off = $
    vrSuccess = $
 
+   viPercentManaReserved = 10
+
 properties:
+
+   viPurgeFactor = 25
 
 messages:
 

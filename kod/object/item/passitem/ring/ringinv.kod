@@ -32,6 +32,8 @@ resources:
 
    ringinvisibility_already_invisible_rsc = \
    "You can't use the ring of invisibility because you are already invisible."
+   karma_too_good = \
+      "Your karma is not low enough. The ring of invisibility slips from your finger."
 
 classvars:
 
@@ -60,6 +62,12 @@ messages:
       {
 	      Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_already_invisible_rsc);
 	      return False;
+      }
+
+      if Send(what,@GetKarma) > -50
+      {
+	      Send(poOwner,@MsgSendUser,#message_rsc=karma_too_good);
+         return FALSE;
       }
 
       propagate;
@@ -92,25 +100,17 @@ messages:
    {
       if ptCharge = $
       {
-	 %debug("Ringinvisibility",self,"got unused when has no timer");
+         %debug("Ringinvisibility",self,"got unused when has no timer");
       }
       else
       {
-	 DeleteTimer(ptCharge);
-	 ptCharge = $;
+         DeleteTimer(ptCharge);
+         ptCharge = $;
       }
 
       pbIn_use = False;
 
       Send(poOwner,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=False);
-
-      piHits = piHits - 1;
-      if piHits = 0
-      {
-         Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_dead_rsc);
-         Send(self,@Delete);
-	 return;
-      }
 
       propagate;
    }
@@ -127,7 +127,7 @@ messages:
       ptCharge = $;
 
       piHits = piHits - 1;
-      if piHits = 0
+      if piHits <= 0
       {
          Send(poOwner,@MsgSendUser,#message_rsc=ringinvisibility_dead_rsc);
          Send(self,@Delete);

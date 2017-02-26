@@ -72,6 +72,11 @@ messages:
       return;
    }
 
+   HasDoneLearnQuest(who=$)
+   {
+      return TRUE;
+   }
+
    InitCondSale()
    {
       local oObj;

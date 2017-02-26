@@ -1,0 +1,201 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MarionStorage is MarionRoom
+
+constants:
+
+   include blakston.khd
+   
+   FALL_TIME = 2000
+
+resources:
+
+   room_name_marion_storage = "Storage Cellar"
+   room_marion_storage = marionstorage.roo
+   
+   marion_storage_fall_rsc = \
+      "The earth gives way, and you tumble down a sinkhole!"
+
+   mar_music_storage = nec01.mp3
+
+classvars:
+
+   vrName = room_name_marion_storage
+   viPermanent_flags = ROOM_NO_COMBAT
+
+   viTeleport_row = 5
+   viTeleport_col = 5
+
+   viTerrain_type = TERRAIN_CITY | TERRAIN_CAVES
+
+properties:
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prRoom = room_marion_storage
+   piRoom_num = RID_MAR_STORAGE
+
+   prMusic = mar_music_storage
+   
+   plFallTimers = $
+
+messages:
+
+   CreateStandardExits()
+   {
+      plExits = $;
+
+      propagate;
+   }
+
+   SomethingTryGo(what = $,row = $,col = $)
+   {
+      if row >= 4
+         AND row <= 6
+         AND col >= 9
+         AND col <= 10
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+               #where=Send(SYS,@FindRoomByNum,#num=RID_MARION),
+               #new_row=65,#new_col=27,#fine_row=54,#fine_col=55,
+               #new_angle=Send(what,@GetAngle));
+      }
+      propagate;
+   }
+
+   CreateStandardObjects()
+   {
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=6,#new_col=3,#fine_row=0,#fine_col=44,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=6,#new_col=4,#fine_row=62,#fine_col=40,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=7,#new_col=5,#fine_row=62,#fine_col=40,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=8,#new_col=6,#fine_row=62,#fine_col=40,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=8,#new_col=6,#fine_row=11,#fine_col=29,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=7,#new_col=5,#fine_row=11,#fine_col=29,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=6,#new_col=4,#fine_row=11,#fine_col=29,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BAG_OF_BEANS),
+           #new_row=2,#new_col=6,#fine_row=53,#fine_col=47,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=9,#new_col=8,#fine_row=7,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=8,#new_col=7,#fine_row=7,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=7,#new_col=6,#fine_row=7,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=7,#new_col=8,#fine_row=48,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=6,#new_col=7,#fine_row=48,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL),
+           #new_row=5,#new_col=6,#fine_row=48,#fine_col=25,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=3,#new_col=6,#fine_row=56,#fine_col=27,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=4,#new_col=7,#fine_row=56,#fine_col=27,
+           #new_angle=ANGLE_EAST);
+      Send(self,@NewHold,#what=Create(&OrnamentalObject,#type=OO_BARREL2),
+           #new_row=5,#new_col=8,#fine_row=56,#fine_col=27,
+           #new_angle=ANGLE_EAST);
+      propagate;
+   }
+   
+   SomethingMoved(what=$)
+   {
+      local i;
+
+      if IsClass(what,&Player)
+         AND Send(what,@GetHeightAtObject) < 90
+      {
+         % Make sure we're not already 'falling' a player
+         foreach i in plFallTimers
+         {
+            if First(i) = what
+            {
+               propagate;
+            }
+         }
+         
+         plFallTimers = Cons([what,CreateTimer(self,@FallPlayer,FALL_TIME)],
+                              plFallTimers);
+      }
+
+      propagate;
+   }
+   
+   FallPlayer(timer=$)
+   {
+      local i;
+      
+      foreach i in plFallTimers
+      {
+         if Nth(i,2) = timer
+         {
+            % Make sure they're falling and still here.
+            if Send(First(i),@GetHeightAtObject) < 50
+               AND Send(First(i),@GetOwner) = self
+            {
+               Send(SYS,@UtilGoNearSquare,#what=First(i),
+                     #where=Send(SYS,@FindRoomByNum,#num=RID_MAR_CRYPT1),
+                     #new_row=1,#new_col=28,#fine_row=57,#fine_col=9,
+                     #new_angle=Send(First(i),@GetAngle));
+               Send(First(i),@MsgSendUser,#message_rsc=marion_storage_fall_rsc);
+            }
+            SetNth(i,2,$);
+            SetNth(i,1,$);
+            plFallTimers = DelListElem(plFallTimers,i);
+         }
+      }
+
+      return;
+   }
+   
+   Delete()
+   {
+      local i;
+      
+      foreach i in plFallTimers
+      {
+         if IsTimer(Nth(i,2))
+         {
+            DeleteTimer(Nth(i,2));
+         }
+         SetNth(i,2,$);
+         SetNth(i,1,$);
+         plFallTimers = DelListElem(plFallTimers,i);
+      }
+
+      propagate;
+   }
+   
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

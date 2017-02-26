@@ -14,11 +14,22 @@ constants:
 
    include blakston.khd
 
+   DEEP_RIVER_AREAS = 30
+   SHALLOW_RIVER_AREAS = 31
+   SHORE_RIVER_AREAS = 32
+   ROCKS_IN_RIVER_AREAS = 33
+
+   RIVER_WATER_TEXTURE = 08912
+   MUD_TEXTURE = 09082
+   BRACKISH_WATER_TEXTURE = 01807
+
+   CLOCK_FACE = 90
+
 resources:
 
    include f4.lkod
 
-   room_OutdoorsF4 = F4.roo
+   room_OutdoorsF4 = f4.roo
    room_name_OutdoorsF4 ="East Merchant Way"
    OutdoorsF4_music = forest.mp3
 
@@ -62,10 +73,16 @@ messages:
 
       plGenerators = [ [5, 16], [9, 6], [13, 26], [10, 41], [19, 11],
 		      [22, 37], [37, 11], [42, 22], [35, 30], [33, 42] ];
+
+      Send(self,@SetSectorFlags,#sector=SHORE_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=ROCKS_IN_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+
       propagate;
    }
 
- CreateStandardExits()
+   CreateStandardExits()
    {
       plEdge_Exits = $;
       plEdge_Exits = Cons([LEAVE_NORTH, RID_F3, 32, 66, ROTATE_NONE], plEdge_exits);
@@ -75,6 +92,162 @@ messages:
       plEdge_Exits = Cons([LEAVE_EAST, RID_G4, 32, 2, ROTATE_NONE, ROW_IS_LESS_THAN,25], plEdge_exits);        
 
       propagate;
+   }
+
+   RecalcLightAndWeather()
+   {
+      local iHour,iGroup;
+
+      iHour = Send(SYS,@GetHour);
+
+      iGroup = 1 + (iHour mod 12);
+
+      Send(self,@AnimateWall,#wall=CLOCK_FACE,#animation=ANIMATE_NONE,#first_group=iGroup);
+      
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Add snow to shore / rocks areas.
+            Send(self,@ChangeTexture,#id=SHORE_RIVER_AREAS,#new_texture=61015,
+                  #flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=ROCKS_IN_RIVER_AREAS,
+                  #new_texture=61015,#flags=CTF_FLOOR);
+
+            % Turn special water to ice.
+            Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,#new_texture=61017,
+                  #flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+            Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+         }
+      }
+
+      propagate;
+   }
+   
+   EndSnow(override=FALSE)
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove snow/ice from special areas.
+         Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=SHORE_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=ROCKS_IN_RIVER_AREAS);
+
+         Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+      }
+
+      propagate;
+   }
+
+   StartDrought()
+   {
+      Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+            #new_texture=MUD_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,
+            #new_texture=BRACKISH_WATER_TEXTURE,#flags=CTF_FLOOR);
+
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=122,#speed=0);
+
+      Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_SLOW);
+      return;
+   }
+   
+   EndDrought()
+   {
+      Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=128,#speed=0);
+
+      Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+      return;
+   }
+
+   StartRain()
+   {
+      Send(self,@StartFlood);
+      propagate;
+   }
+
+   EndRain()
+   {
+      Send(self,@EndFlood);
+      propagate;
+   }
+
+   StartFlood()
+   {
+      Send(self,@SetSector,#sector=SHALLOW_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=142,#speed=0);
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=142,#speed=0);
+      Send(self,@SetSector,#sector=SHORE_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=142,#speed=0);
+      Send(self,@SetSector,#sector=ROCKS_IN_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=142,#speed=0);
+
+      Send(self,@ChangeTexture,#id=SHORE_RIVER_AREAS,
+            #new_texture=RIVER_WATER_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=ROCKS_IN_RIVER_AREAS,
+            #new_texture=RIVER_WATER_TEXTURE,#flags=CTF_FLOOR);
+
+      Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,#depth=SF_DEPTH2,
+            #scrollSpeed=SCROLL_FAST);
+      Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,#depth=SF_DEPTH2,
+            #scrollSpeed=SCROLL_FAST);
+      Send(self,@SetSectorFlags,#sector=SHORE_RIVER_AREAS,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_FAST);
+      Send(self,@SetSectorFlags,#sector=ROCKS_IN_RIVER_AREAS,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_FAST);
+      return;
+   }
+   
+   EndFlood()
+   {
+      Send(self,@SetSector,#sector=SHALLOW_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=128,#speed=0);
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=128,#speed=0);
+      Send(self,@SetSector,#sector=SHORE_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=132,#speed=0);
+      Send(self,@SetSector,#sector=ROCKS_IN_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=138,#speed=0);
+
+      Send(self,@RemoveTextureChange,#id=SHORE_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=ROCKS_IN_RIVER_AREAS);
+
+      Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+
+      Send(self,@SetSectorFlags,#sector=SHORE_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=ROCKS_IN_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      return;
    }
 
 end

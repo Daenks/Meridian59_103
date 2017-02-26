@@ -63,6 +63,7 @@ resources:
       "More than that, I would not have done."
 
    marion_gate_warning = "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   marion_barn_rsc = "The barn is locked."
 
 classvars:
 
@@ -76,8 +77,6 @@ classvars:
 
    viFlag_row = 36
    viFlag_col = 60
-
-   viWeatherMask = WEATHER_MASK_DEFAULT
 
 properties:
 
@@ -155,14 +154,6 @@ messages:
 
    SomethingMoved(what = $,new_row = $, new_col = $)
    {
-      if (new_row < 32) and (new_col > 66)
-      {
-         Send(SYS,@UtilGoNearSquare,#what=what,
-              #where=Send(SYS,@FindRoomByNum,#num=RID_C4),
-              #new_row=34,#new_col=5,#new_angle=ANGLE_NORTH_EAST);
-         return;
-      }
-
       if (new_row > 83) and (new_col > 48)
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
@@ -202,15 +193,6 @@ messages:
       send(self,@NewHold,#what=Create(&DynamicLight,#iColor=LIGHT_BWHITE,#iIntensity=5),
            #new_row=45,#new_col=7,#fine_row=32,#fine_col=32);
 
-      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Orange),
-           #new_row=52,#new_col=55,#fine_row=24,#fine_col=2);
-      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Orange),
-           #new_row=65,#new_col=58,#fine_row=51,#fine_col=25);
-      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Pear),
-           #new_row=48,#new_col=22,#fine_row=13,#fine_col=22);
-      Send(self,@NewHold,#what=Create(&FoodDispenser,#classtype=&Pear),
-           #new_row=52,#new_col=22,#fine_row=38,#fine_col=22);
-
       propagate;
    }
 
@@ -224,13 +206,24 @@ messages:
       plExits = Cons([ 62, 58, RID_MAR_INN, 12, 5, ROTATE_NONE ],plExits);
       plExits = Cons([ 50, 21, RID_MAR_HALL, 6, 20, ROTATE_NONE ],plExits);
       plExits = Cons([ 31, 43, RID_MAR_SMITHY, 11, 4, ROTATE_NONE ],plExits);
+      plExits = Cons([ 67, 27, RID_MAR_STORAGE, 5, 8, ROTATE_NONE ],plExits);
 
       plExits = Cons([ 70, 13, ROOM_LOCKED_DOOR, marion_gate_warning ],plExits);
       plExits = Cons([ 70, 14, ROOM_LOCKED_DOOR, marion_gate_warning ],plExits);
       plExits = Cons([ 71, 13, ROOM_LOCKED_DOOR, marion_gate_warning ],plExits);
       plExits = Cons([ 71, 14, ROOM_LOCKED_DOOR, marion_gate_warning ],plExits);
 
+      % Empty buildings
+      plExits = Cons([ 15, 22, ROOM_LOCKED_DOOR, marion_barn_rsc ],plExits);
+      plExits = Cons([ 15, 23, ROOM_LOCKED_DOOR, marion_barn_rsc ],plExits);
+      plExits = Cons([ 16, 22, ROOM_LOCKED_DOOR, marion_barn_rsc ],plExits);
+      plExits = Cons([ 16, 23, ROOM_LOCKED_DOOR, marion_barn_rsc ],plExits);
+
       plExits = Cons([ 80, 15, RID_MAR_CRYPT1, 11, 17, ROTATE_NONE ],plExits);
+
+      plEdge_Exits = $;
+      plEdge_Exits = Cons([LEAVE_NORTH, RID_TEMPLE, 26, 29, ROTATE_NONE], plEdge_exits);
+      plEdge_Exits = Cons([LEAVE_EAST, RID_C4, 34, 5, ROTATE_NONE], plEdge_exits);
 
       propagate;
    }
@@ -243,6 +236,20 @@ messages:
       propagate;
    }
 
+   SomethingTryGo(what = $,row = $,col = $)
+   {
+      if row >= 66
+         AND row <= 68
+         AND col >= 26
+         AND col <= 27
+      {
+         Send(SYS,@UtilGoNearSquare,#what=what,
+               #where=Send(SYS,@FindRoomByNum,#num=RID_MAR_STORAGE),
+               #new_row=5,#new_col=8,#fine_row=11,#fine_col=50,
+               #new_angle=Send(what,@GetAngle));
+      }
+      propagate;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

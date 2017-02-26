@@ -14,13 +14,20 @@ constants:
 
    include blakston.khd
 
-   CLOCK_FACE = 1
+   SHALLOW_RIVER_AREAS = 30
+   DEEP_RIVER_AREAS = 31
+
+   RIVER_WATER_TEXTURE = 08912
+   MUD_TEXTURE = 09082
+   BRACKISH_WATER_TEXTURE = 01807
+
+   CLOCK_FACE = 90
 
 resources:
 
    include cornoth.lkod
 
-   room_CorNoth = CorNoth.roo
+   room_CorNoth = cornoth.roo
    room_name_CorNoth ="Cor Noth"
 
    cor_music = city04.mp3
@@ -162,6 +169,92 @@ messages:
       pbPeriodic_sound_random_location = True;
 
       propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            % Turn special water to ice.
+            Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+
+            Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+         }
+      }
+
+      propagate;
+   }
+
+   EndSnow(override=FALSE)
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         % Remove snow/ice from special areas.
+         Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+
+         Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+      }
+
+      propagate;
+   }
+
+   StartDrought()
+   {
+      Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+            #new_texture=MUD_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,
+            #new_texture=BRACKISH_WATER_TEXTURE,#flags=CTF_FLOOR);
+
+      Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_FAST);
+
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=110,#speed=0);
+
+      return;
+   }
+
+   EndDrought()
+   {
+      Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+
+      Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=118,#speed=0);
+
+      return;
+   }
+
+   StartFlood()
+   {
+      % No flood configuration looks good.
+      return;
+   }
+
+   EndFlood()
+   {
+      return;
    }
 
 end

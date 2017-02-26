@@ -96,6 +96,8 @@ resources:
 
    user_said_str = "%s says, \"%q~n\""
    user_said_echo_str = "You say, \"%q~n\""
+   user_mantra_str = "~wAs %s shifts %s stance, %s intones, \"~I%q...~I\""
+   user_mantra_echo_str = "~wAs you shift your stance, you intone, \"~I%q...~I\""
    user_yelled_str = "%s yells, \"%q~n\""
    user_yelled_nearby_str = "You hear %s yelling, \"%q~n\""
    user_yelled_echo_str = "You yell, \"%q~n\""
@@ -151,6 +153,8 @@ resources:
    user_stat_defense = "Defense"
    user_stat_armor = "Armor"
    user_stat_training = "Training Pts"
+   user_stat_unbound_energy = "Unbound Energy"
+
    user_stat_hpgainchance = exp.bgf
    user_resist_magic = "Magic Resist"
    user_resist_fire = "Fire Resist"
@@ -462,6 +466,13 @@ resources:
 
    user_tell_wav = imp.wav
 
+   corpse_rummage = \
+      "You rummage through the valuables left on %s's dead body."
+   corpse_holds_nothing = \
+      "The corpse holds nothing of value."
+   corpse_too_far_away = \
+      "The corpse is too far away to search."
+
 classvars:
 
    viIndefinite = ARTICLE_NONE
@@ -518,6 +529,11 @@ properties:
    piMovementBucket = 0
 
    piCheaterLogs = 0
+
+   ptSneakTimer = $
+   piAccruedSneak = 0
+   ptHideTimer = $
+   piAccruedHide = 0
 
    ptLogonDelayTimer = $
 
@@ -2554,7 +2570,6 @@ messages:
       Send(self,@CancelIfOffer);
 
       Send(self,@SysMsgSendUser,#message_rsc=user_garbage_collecting);
-      Send(self,@WaveSendUser,#what=self,#wave_rsc=user_saving_wav_rsc);
 
       AddPacket(1,BP_WAIT);
       SendPacket(poSession);
@@ -2728,6 +2743,8 @@ messages:
          piSave_Angle = 3072;
       }
 
+      Send(self,@WipeUnboundEnergy);
+
       return Send(SYS,@GetSuccessRsc);
    }
 
@@ -2863,8 +2880,6 @@ messages:
          return MM_NONE;
       }
 
-      iFlags = MM_NONE;
-
       if IsClass(what,&Reflection)
          OR IsClass(what,&EvilTwin)
       {
@@ -2876,11 +2891,20 @@ messages:
          }
       }
 
-      if IsClass(what,&Player)
+      iFlags = MM_NONE;
+
+      if IsClass(what,&User)
       {
          if Send(what,@IsInCannotInteractMode)
+            OR Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=what)
          {
             return MM_NONE;
+         }
+         
+         if poOwner <> $
+            AND Send(poOwner,@OverridesPlayerMinimapDot)
+         {
+            return Send(poOwner,@ChoosePlayerMinimapDot,#who=self,#what=what);
          }
 
          oIllusion = Send(what,@GetIllusionForm);
@@ -2950,8 +2974,6 @@ messages:
       }
 
       if IsClass(what,&Monster)
-         AND NOT (IsClass(what,&Reflection)
-            OR IsClass(what,&EvilTwin))
       {
          if Send(what,@GetMaster) <> $
          {
@@ -2982,15 +3004,23 @@ messages:
             }
          }
 
+         if Send(what,@GetChampStatus) > 0
+         {
+            if Send(what,@GetChampStatus) < 5
+            {
+               return MM_MINIBOSS;
+            }
+            else
+            {
+               return MM_BOSS;
+            }
+         }
+
          return MM_MONSTER;
       }
 
-      % Give masks a black dot.
-      if IsClass(what,&FaceMask)
-         AND IsClass(poOwner,&SurvivalRoom)
-      {
-         return MM_NPC;
-      }
+      % Not a monster or a player. Ask the object what flags it has.
+      iFlags = iFlags | Send(what,@GetMinimapDotFlags);
 
       return iFlags;
    }
@@ -3135,6 +3165,13 @@ messages:
             continue;
          }
 
+         if IsClass(oThing,&User)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=oThing)
+            AND oThing <> self
+         {
+            continue;
+         }
+
          ++objs;
       }
 
@@ -3147,6 +3184,13 @@ messages:
          % Don't do stealthed DMs.
          if IsClass(oThing,&DM)
             AND Send(oThing,@IsDMStealthed)
+            AND oThing <> self
+         {
+            continue;
+         }
+
+         if IsClass(oThing,&User)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=oThing)
             AND oThing <> self
          {
             continue;
@@ -3242,7 +3286,7 @@ messages:
 
       if group = 2
       {
-         AddPacket(1,BP_STAT_GROUP, 1,group, 1,26);
+         AddPacket(1,BP_STAT_GROUP, 1,group, 1,27);
 
          Send(self,@SendStatMight);
          Send(self,@SendStatIntellect);
@@ -3267,6 +3311,8 @@ messages:
                   #lCurrentResistances=lCurrentResistances);
             ++i;
          }
+
+         Send(self,@SendStatUnboundEnergy);
 
          SendPacket(poSession);
 
@@ -3516,7 +3562,7 @@ messages:
             oSpell = Send(SYS,@FindSpellByNum,#num=Send(self,@DecodeSpellNum,
                                                         #compound=i));
             Send(self,@ToCliObject,#what=oSpell);
-            AddPacket(1,Send(oSpell,@GetNumSpellTargets));
+            AddPacket(1,Send(oSpell,@GetNumSpellTargets,#who=self));
             AddPacket(1,Send(oSpell,@GetSchool));
          }
 
@@ -3555,7 +3601,7 @@ messages:
          AddPacket(1, BP_SPELL_ADD);
          
          Send(self,@ToCliObject,#what=oSpell);
-         AddPacket(1,Send(oSpell,@GetNumSpellTargets));
+         AddPacket(1,Send(oSpell,@GetNumSpellTargets,#who=self));
          AddPacket(1,Send(oSpell,@GetSchool));
          SendPacket(poSession);
 
@@ -3583,6 +3629,11 @@ messages:
       if pbLogged_on
       {
          Send(self,@ToCliStats,#group=4);
+
+         if IsClass(oSkill,&SpiritLink)
+         {
+            Send(self,@ToCliSpells);
+         }
       }
 
       return;
@@ -3825,15 +3876,61 @@ messages:
          }
 
          % Break trance
-         if (piFlags & PFLAG_TRANCE)
+         Send(self,@BreakTrance,#event=EVENT_RUN);
+
+         If Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
          {
-            Send(self,@BreakTrance,#event=EVENT_RUN);
+            piAccruedSneak = 0;
+            if ptSneakTimer <> $
+            {
+               DeleteTimer(ptSneakTimer);
+               ptSneakTimer = $;
+            }
+         }
+
+         If Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+         {
+            piAccruedHide = 0;
+            if ptHideTimer <> $
+            {
+               DeleteTimer(ptHideTimer);
+               ptHideTimer = $;
+            }
          }
 
          % Stop dance
          if (piFlags2 & PFLAG2_DANCING)
          {
             Send(self,@StopDancing);
+         }
+      }
+      else
+      {
+         if ptSneakTimer = $
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
+            AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+         {
+            ptSneakTimer = CreateTimer(self,@AttemptSneak,1000);
+         }
+
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+            AND piAccruedSneak <> 0
+         {
+            piAccruedSneak = 0;
+         }
+         
+         if ptHideTimer = $
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+            AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+         {
+            ptHideTimer = CreateTimer(self,@AttemptHide,1000);
+         }
+
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+            AND piAccruedHide <> 0
+         {
+            piAccruedHide = 0;
          }
       }
 
@@ -3887,6 +3984,11 @@ messages:
             }
          }
 
+         if Send(self,@GetStance) <> $
+         {
+            iExertion = Send(Send(self,@GetStance),@ModifyExertion,#who=self,#exertion=iExertion);
+         }
+
          Send(self,@AddExertion,#amount=iExertion);
 
          % Save vigor drain tick
@@ -3920,6 +4022,38 @@ messages:
       return;
    }
 
+   AttemptSneak()
+   {
+      ptSneakTimer = $;
+      
+      piAccruedSneak = piAccruedSneak + 1000;
+
+      if Send(self,@GetSkillAbility,#skill_num=SKID_SNEAK) > 0
+         AND piAccruedSneak > 4000
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking)
+      {
+         piAccruedSneak = 0;
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@DoSkill,#who=self);
+      }
+      return;
+   }
+   
+   AttemptHide()
+   {
+      ptHideTimer = $;
+      
+      piAccruedHide = piAccruedHide + 1000;
+      
+      if Send(self,@GetSkillAbility,#skill_num=SKID_HIDE) > 0
+         AND piAccruedHide > 4000
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding)
+      {
+         piAccruedHide = 0;
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@DoSkill,#who=self);
+      }
+      return;
+   }
+ 
    NotifyMonstersOfPresence()
    % When a player first enters the room, the game will prevent AIs from
    %  attacking that player until that player takes an action.  This function
@@ -3932,6 +4066,7 @@ messages:
    {
       % Sanity check, or if we want to call the function externally.
       if NOT (piFlags & PFLAG_MOVED_SINCE_ENTRY)
+         AND NOT Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
       {
          Send(self,@SetPlayerFlag,#flag=PFLAG_MOVED_SINCE_ENTRY,#value=TRUE);  
          Send(poOwner,@FirstMove,#what=self,#new_row=piRow,#new_col=piCol);
@@ -4659,11 +4794,16 @@ messages:
       if Send(self,@IsInCannotInteractMode)
       {
          Send(self,@MsgSendUser,#message_rsc=phased_out_cant_drop);
-         return FALSE;
+         return;
       }
 
       if IsClass(what,&NumberItem)
       {
+         if number = $
+         {
+            return;
+         }
+
          if number <= 0
          {
             Send(self,@MsgSendUser,#message_rsc=user_cant_deal_number, 
@@ -4876,8 +5016,9 @@ messages:
    {
       local i, iObjs, oThing, lHolding1, lHolding2;
 
-      if (NOT IsClass(what,&Holder)
-         AND NOT IsClass(what,&ReagentBag))
+      if NOT IsClass(what,&Holder)
+         AND NOT IsClass(what,&ReagentBag)
+         AND NOT IsClass(what,&DeadBody)
          OR (IsClass(what,&User)
              AND NOT (what = self OR IsClass(self,&Admin)))
          OR IsClass(what,&Monster)
@@ -4917,6 +5058,16 @@ messages:
          lHolding1 = Send(what,@GetReagentBagContents);
          lHolding2 = $;
       }
+      else if IsClass(what,&DeadBody)
+      {
+         if Send(what,@GetDearlyDeparted) <> $
+         {
+            Send(self,@MsgSendUser,#message_rsc=corpse_rummage,
+                  #parm1=Send(Send(what,@GetDearlyDeparted),@GetName));
+         }
+         lHolding1 = Send(what,@GetCorpseContents);
+         lHolding2 = $;
+      }
       else
       {
          lHolding1 = Send(what,@GetHolderActive);
@@ -4946,7 +5097,7 @@ messages:
 
    UserSay(type=$,string=$)
    {
-      local i, oSpell, lEnchantData, bTranceBlocksSay;
+      local i, oSpell, lEnchantData, bTranceBlocksSay, oPrey;
 
       % A room can completely block a piece of communication if it chooses.
       % An excellent example is Out Of Grace, which blocks all tells to 
@@ -4961,6 +5112,43 @@ messages:
 
       if type = SAY_NORMAL
       {
+         if StringContain(String,"track ")
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_TRACK) > 0
+         {
+            StringSubstitute(String,"track ","");
+            oPrey = Send(SYS,@FindUserByString,#string=String);
+            
+            if oPrey <> $
+               AND IsClass(oPrey,&User)
+            {
+               Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@StartTracking,#who=self,#oTarget=oPrey);
+            }
+
+            return;
+         }
+
+         if (StringEqual(String,"Om")
+                OR StringEqual(String,"om"))
+            AND Send(self,@GetStance) <> $
+         {
+            Send(self,@ClearStance);
+            type = SAY_MANTRA;
+         }
+
+         foreach i in Send(SYS,@GetStanceMantras)
+         {
+            if StringEqual(string,Nth(i,1))
+               AND Send(self,@GetSkillAbility,#skill_num=Nth(i,2)) > 0
+               AND Send(self,@GetStance) <> Send(SYS,@FindSkillByNum,
+                                                  #num=Nth(i,2))
+            {
+               Send(Send(SYS,@FindSkillByNum,#num=Nth(i,2)),
+                     @BeginStance,#who=self);
+               type = SAY_MANTRA;
+               break;
+            }
+         }
+
          if StringContain(string,user_say_survival)
             AND Send(poOwner,@GetRoomNum) <> RID_OUTOFGRACE
          {
@@ -5102,6 +5290,15 @@ messages:
          {
             Send(SYS,@SystemBroadcast,#what=self,#type=type,#string=string);
          }
+
+         return;
+      }
+
+      if type = SAY_MANTRA
+      {
+         % This avoids squelches, since it's really an ability.
+         % Notably, Mantras can be suppressed by Silence.
+         Send(poOwner,@SomeoneSaidRoom,#what=self,#type=type,#string=string);
 
          return;
       }
@@ -5567,6 +5764,26 @@ messages:
             return;
          }
 
+         if IsClass(what,&DeadBody)
+         {
+            if Send(self,@SquaredDistanceTo,#what=what) <> $
+               AND Send(self,@SquaredDistanceTo,#what=what) <= 6
+            {
+               if Send(what,@GetCorpseContents) = $
+               {
+                  Send(self,@MsgSendUser,#message_rsc=corpse_holds_nothing);
+                  return;
+               }
+               else
+               {
+                  Send(self,@UserObjectContents,#what=what);
+                  return;
+               }
+            }
+
+            Send(self,@MsgSendUser,#message_rsc=corpse_too_far_away);
+         }
+
          AddPacket(1,BP_LOOK);
          Send(self,@ToCliObject,#what=what,#show_type=SHOW_LOOK,
               #bShow_All=bShow_All);
@@ -6014,10 +6231,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_USE);
-      }
+      Send(self,@BreakTrance,#event=EVENT_USE);
 
       if NOT IsClass(what,&Item)
       {
@@ -6069,10 +6283,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_ATTACK);
-      }
+      Send(self,@BreakTrance,#event=EVENT_ATTACK);
 
       if (piFlags & PFLAG_NO_FIGHT)
       {
@@ -6155,7 +6366,7 @@ messages:
 
    UserCast(oSpell=$,lTargets=$)
    {
-      local i, bFound, iSpell, iSpellNum, iSpellPower, lFinalTargets;
+      local i, bFound, iSpell, iSpellNum, iSpellPower, lFinalTargets, pbFree_cast, iCost;
 
       % Check for valid spell first. This is mainly an issue during
       % system saves where a user might cast something with the wrong
@@ -6180,10 +6391,7 @@ messages:
          Send(self,@NotifyMonstersOfPresence);
       }
 
-      if piFlags & PFLAG_TRANCE
-      {
-         Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
-      }
+      Send(self,@BreakTrance,#event=EVENT_CAST,#what=oSpell);
 
       if ((piFlags & PFLAG_NO_MAGIC)
          OR Send(self,@IsInCannotInteractMode))
@@ -6225,21 +6433,41 @@ messages:
          return;
       }
 
+      iCost = Send(oSpell,@GetMeditateRatio);
+
+      % Check if it's a free cast.
+      pbFree_cast = (iCost <= Send(self,@GetUnboundEnergy)
+                     AND iCost > 0
+                     AND send(oSpell,@IsFreeCastable));
+
       % Get the spell power
       iSpellPower = Send(oSpell,@GetSpellPower,#who=self,
                           #lTargets=lFinalTargets);
 
+
+      % Free casts get a bonus.
+      if pbFree_cast
+      {
+         iSpellPower = Bound(iSpellPower + 20,SPELLPOWER_MINIMUM,SPELLPOWER_MAXIMUM);
+      }
+
       % First make sure user has enough magic points, reagents, etc.
       if NOT Send(oSpell,@CanPayCosts,#who=self,#lTargets=lFinalTargets,
-                  #iSpellpower=iSpellpower)
+                  #iSpellpower=iSpellpower,#bFreeCast=pbFree_cast)
       {
          % Player failed some sort of internal check
          return;
       }
 
       if Send(oSpell,@PayCosts,#who=self,#iSpellPower=iSpellPower,
-              #lTargets=lFinalTargets)
+              #lTargets=lFinalTargets,#bFreeCast=pbFree_cast)
       {
+         % If we had a free cast, deduct points from our unbound energy.
+         if pbFree_cast
+         {
+            Send(self,@AddUnboundEnergy,#iAmount=-iCost);
+         }
+
          Send(oSpell,@BeginCastingTrance,#who=self,#lTargets=lFinalTargets,
               #iSpellPower=iSpellPower);
       }
@@ -7278,10 +7506,7 @@ messages:
 
    UserApply(what = $,apply_on = $)
    {
-      if (piFlags & PFLAG_TRANCE)
-      {
-         Send(self,@BreakTrance,#event=EVENT_USE);
-      }
+      Send(self,@BreakTrance,#event=EVENT_USE);
 
       if NOT IsClass(what,&Item) 
       {
@@ -7535,7 +7760,7 @@ messages:
    NewOwner(what = $)
    "A user has a new owner when they enter a new room."
    {
-      local i, oOldRoom;
+      local i, oOldRoom, oAwareness, oObject, oPlayer, oHide, oSpy;
 
       Send(self,@CancelIfOffer);
 
@@ -7591,6 +7816,16 @@ messages:
          {
             Send(self,@CheckLeavingNewbieOrGuest,#leaving=oOldRoom);
             Send(self,@CheckTokenInNewRoom,#what=oOldRoom);
+
+            foreach oObject in Send(oOldRoom,@GetHolderActive)
+            {
+               oPlayer = Send(oOldRoom,@HolderExtractObject,#data=oObject);
+               If IsClass(oPlayer,&User)
+                  AND Send(oPlayer,@GetSkillAbility,#skill_num=SKID_AWARENESS) > 0
+               {
+                  Send(Send(SYS,@FindSkillByNum,#num=SKID_AWARENESS),@DoSkill,#who=oPlayer,#oTarget=self);
+               }
+            }
          }
 
          % If room is no combat and safe logoff, record it as the
@@ -7627,6 +7862,32 @@ messages:
             Send(self,@ToCliPlayer);
             Send(self,@ToCliRoomContents);
          }
+
+         foreach oObject in Send(poOwner,@GetHolderActive)
+         {
+            oPlayer = Send(poOwner,@HolderExtractObject,#data=oObject);
+            If IsClass(oPlayer,&User)
+               AND Send(oPlayer,@GetSkillAbility,#skill_num=SKID_AWARENESS) > 0
+            {
+               Send(Send(SYS,@FindSkillByNum,#num=SKID_AWARENESS),@DoSkill,#who=oPlayer,#oTarget=self);
+            }
+         }
+         
+         if Send(self,@GetSkillAbility,#skill_num=SKID_TRACK) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@IsTracking,#who=self)
+         {
+            Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@DoSkill,#who=self,#oTarget=Send(Send(SYS,@FindSkillByNum,#num=SKID_TRACK),@GetTrackedTarget,#who=self));
+         }
+         
+         oHide = Send(SYS,@FindSkillByNum,#num=SKID_HIDE);
+         if Send(oHide,@IsHiding,#who=self)
+         {
+            oSpy = Send(SYS,@FindSkillByNum,#num=SKID_SPY);
+            if Send(self,@GetSkillAbility,#skill_num=SKID_SPY) > 0
+            {
+               Send(oSpy,@DoSkill,#who=self);
+            }
+         }
       }
 
       % This is intended to protect players from wall spells stacked on
@@ -7660,6 +7921,13 @@ messages:
 
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
+         AND what <> self
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
          AND what <> self
       {
          return;
@@ -7710,6 +7978,13 @@ messages:
          return;
       }
 
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
+         AND what <> self
+      {
+         return;
+      }
+
       if pbLogged_on
       {
          if what <> self OR cause <> CAUSE_USER_INPUT
@@ -7740,6 +8015,13 @@ messages:
    {
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
+         AND what <> self
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#Num=SKID_SPY),@IsSpying,#who=what)
          AND what <> self
       {
          return;
@@ -7972,6 +8254,24 @@ messages:
             propagate;
          }
 
+         if type = SAY_MANTRA
+         {
+            if what = self
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_mantra_echo_str,
+                     #parm1=string);
+            }
+            else
+            {
+               Send(self,@MsgSendUser,#message_rsc=user_mantra_str,
+                     #parm1=Send(what,@GetName),
+                     #parm2=Send(what,@GetHisHer),
+                     #parm3=Send(what,@GetHeShe),
+                     #parm4=string);
+            }
+            propagate;
+         }
+
          rSay_format = user_said_str;
          if what = self
          {
@@ -8103,6 +8403,13 @@ messages:
 
       if IsClass(what,&DM)
          AND Send(what,@IsDMStealthed)
+         AND what <> self
+      {
+         return;
+      }
+
+      if IsClass(what,&User)
+         AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=what)
          AND what <> self
       {
          return;
@@ -8258,7 +8565,8 @@ messages:
    SendStatMight()
    {
       AddPacket(1,1, 4,user_stat_might, 1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetMight), 4,0, 4,50, 4,Send(self,@GetMight));
+                4,Send(self,@GetMight), 4,0, 4,Send(self,@GetMaxMight),
+                4,Send(self,@GetMight));
 
       return;
    }
@@ -8278,7 +8586,7 @@ messages:
    SendStatIntellect()
    {
       AddPacket(1,2, 4,user_stat_intellect, 1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetIntellect), 4,0, 4,50,
+                4,Send(self,@GetIntellect), 4,0, 4,Send(self,@GetMaxIntellect),
                 4,Send(self,@GetIntellect));
 
       return;
@@ -8299,7 +8607,8 @@ messages:
    SendStatAgility()
    {
       AddPacket(1,4, 4,user_stat_Agility, 1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetAgility), 4,0, 4,50, 4,Send(self,@GetAgility));
+                4,Send(self,@GetAgility), 4,0, 4,Send(self,@GetMaxAgility),
+                4,Send(self,@GetAgility));
 
       return;
    }
@@ -8319,7 +8628,8 @@ messages:
    SendStatStamina()
    {
       AddPacket(1,3,4,user_stat_Stamina,1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetStamina), 4,0, 4,50, 4,Send(self,@GetStamina));
+                4,Send(self,@GetStamina), 4,0, 4,Send(self,@GetMaxStamina),
+                4,Send(self,@GetStamina));
 
       return;
    }
@@ -8339,7 +8649,7 @@ messages:
    SendStatMysticism()
    {
       AddPacket(1,5,4,user_stat_Mysticism,1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetMysticism), 4,0, 4,50,
+                4,Send(self,@GetMysticism), 4,0, 4,Send(self,@GetMaxMysticism),
                 4,Send(self,@GetMysticism));
 
       return;
@@ -8360,7 +8670,8 @@ messages:
    SendStatAim()
    {
       AddPacket(1,6, 4,user_stat_Aim, 1,STAT_VALUE, 1,STAT_INTEGER,
-                4,Send(self,@GetAim), 4,0, 4,50, 4,Send(self,@GetAim));
+                4,Send(self,@GetAim), 4,0, 4,Send(self,@GetMaxAim),
+                4,Send(self,@GetAim));
 
       return;
    }
@@ -8410,7 +8721,7 @@ messages:
       iTraining_send = Send(self,@GetTrainingPoints);
 
       AddPacket(1,8, 4,user_stat_training, 1,STAT_VALUE, 1,STAT_INTEGER,
-                4,iTraining_send, 4,0, 4,1000, 4,iTraining_send);
+                4,iTraining_send, 4,0, 4,3000, 4,iTraining_send);
 
       return;
    }
@@ -8800,7 +9111,17 @@ messages:
 
    SendStatHPChance()
    {
-      local iHPChance_Send, highmark;
+      local iHPChance_Send, highmark, iExperienceSystem, iExperienceNeeded;
+  
+      iExperienceSystem = Send(SETTINGS_OBJECT,@GetExperienceSystem);
+      
+      if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+      {
+         iExperienceNeeded = Send(self,@GetExperienceNeeded);
+         AddPacket(1,4, 4,user_stat_hpgainchance, 1,STAT_VALUE, 1,STAT_INTEGER,
+               4,piExperience, 4,0, 4,iExperienceNeeded, 4,iExperienceNeeded);
+         return;
+      }
 
       highmark = Send(self,@GetHighMark);
 
@@ -8831,6 +9152,30 @@ messages:
          Send(self,@SendStatHPChance);
          SendPacket(poSession);
       }
+
+      return;
+   }
+
+   DrawUnboundEnergy()
+   {
+      if pbLogged_on
+      {
+         AddPacket(1,BP_STAT,1,2);
+         Send(self,@SendStatUnboundEnergy);
+         SendPacket(poSession);
+      }
+
+      return;
+   }
+
+   SendStatUnboundEnergy()
+   {
+      local iPoints;
+
+      iPoints = Send(self,@GetUnboundEnergy);
+
+      AddPacket(1,27, 4,user_stat_unbound_energy, 1,STAT_VALUE, 1,STAT_INTEGER,
+                4,iPoints, 4,0, 4,Send(SETTINGS_OBJECT,@GetUnboundMax), 4,iPoints);
 
       return;
    }
@@ -9467,7 +9812,7 @@ messages:
    {
       local iFlags, oIllusion;
 
-      iFlags = OF_ATTACKABLE | OF_PLAYER | OF_OFFERABLE;
+      iFlags = OF_ATTACKABLE | OF_PLAYER | OF_OFFERABLE | OF_DISPLAY_NAME;
 
       oIllusion = Send(self,@GetIllusionForm);
 
@@ -9476,13 +9821,13 @@ messages:
          AND oIllusion <> $
          AND IsClass(oIllusion,&Monster)
       {
-         iFlags = (iFlags & ~OF_PLAYER & ~OF_OFFERABLE);
+         iFlags = (iFlags & ~OF_PLAYER & ~OF_OFFERABLE & ~OF_DISPLAY_NAME);
       }
       
       if Send(self,@IsInCannotInteractMode)
       {
          iFlags = iFlags | OF_NOEXAMINE;
-         iFlags = (iFlags & ~OF_ATTACKABLE & ~OF_OFFERABLE & ~OF_PLAYER);
+         iFlags = (iFlags & ~OF_ATTACKABLE & ~OF_OFFERABLE & ~OF_PLAYER & ~OF_DISPLAY_NAME);
       }
 
       % Get the flashing/flickering/phasing/bouncing flags.
@@ -10322,6 +10667,7 @@ messages:
       % must have a token if over the free stat reset cap
       if Send(self,@FindHolding,#class=&StatsResetToken) = $
          AND (piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
+         AND NOT Send(self,@HasReincarnationStatsReset)
       {
          return;
       }
@@ -10347,6 +10693,13 @@ messages:
       AddPacket(1,Nth(lSpellLevels,5));
       AddPacket(1,Nth(lSpellLevels,6));
       AddPacket(1,Nth(lSkillLevels,1));
+      AddPacket(1,Send(self,@GetMaxMight));
+      AddPacket(1,Send(self,@GetMaxIntellect));
+      AddPacket(1,Send(self,@GetMaxStamina));
+      AddPacket(1,Send(self,@GetMaxAgility));
+      AddPacket(1,Send(self,@GetMaxMysticism));
+      AddPacket(1,Send(self,@GetMaxAim));
+      AddPacket(1,Send(self,@GetTotalRawStatPoints));
       SendPacket(poSession);
       return;
    }
@@ -10369,6 +10722,7 @@ messages:
       
       if Send(self,@FindHolding,#class=&StatsResetToken) = $
          AND (piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
+         AND NOT Send(self,@HasReincarnationStatsReset)
       {
          return;
       }
@@ -10384,12 +10738,12 @@ messages:
       lSkillLevels_new = [weaponcraft_lvl];
    
       % Range Checks, no client hacking negative stats funny business!
-      if (might < 1 OR might > 50)
-         OR (intellect < 1 OR intellect > 50)
-         OR (stamina < 1 OR stamina > 50)
-         OR (agility < 1 OR agility > 50)
-         OR (mysticism < 1 OR mysticism > 50)
-         OR (aim < 1 OR aim > 50)
+      if (might < 1 OR might > Send(self,@GetMaxMight))
+         OR (intellect < 1 OR intellect > Send(self,@GetMaxIntellect))
+         OR (stamina < 1 OR stamina > Send(self,@GetMaxStamina))
+         OR (agility < 1 OR agility > Send(self,@GetMaxAgility))
+         OR (mysticism < 1 OR mysticism > Send(self,@GetMaxMysticism))
+         OR (aim < 1 OR aim > Send(self,@GetMaxAim))
       {
          Debug("Stat Range Check: Failed!");
          return FALSE;
@@ -10409,7 +10763,8 @@ messages:
       }
          
       % Quick check for too many points in stats
-      if ((might + intellect + stamina + agility + mysticism + aim) > 200 )
+      if ((might + intellect + stamina + agility + mysticism + aim)
+             > Send(self,@GetTotalRawStatPoints) )
       {
          Debug("Points Check: FAIL!");
          return FALSE;
@@ -10478,8 +10833,9 @@ messages:
       
       % everything looks good, start adjusting stats
       
-      % Consume token
+      % Consume token if it's not a free reincarnation reset
       if piBase_Max_Health > Send(SETTINGS_OBJECT,@GetFreeStatsResetCap)
+         AND NOT Send(self,@HasReincarnationStatsReset)
       {
          Send(Send(self,@FindHolding,#class=&StatsResetToken),@Delete);
       }
@@ -10529,7 +10885,7 @@ messages:
          if (iPrimaryStat = STAT_ID_STAMINA)
          {
             if (iSpellAbility > (stamina * 2)) AND (stamina < piStamina)
-               OR (iSpellAbility = 99 AND piStamina = 50 AND stamina < 50)
+               OR (iSpellAbility = 99 AND piStamina >= 50 AND stamina < 50)
             {
                Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
                      #amount=((piStamina - stamina)
@@ -10539,7 +10895,7 @@ messages:
          else if (iPrimaryStat = STAT_ID_INTELLECT)
          {
             if (iSpellAbility > (intellect * 2)) AND (intellect < piIntellect)
-               OR (iSpellAbility = 99 AND piIntellect = 50 AND intellect < 50)
+               OR (iSpellAbility = 99 AND piIntellect >= 50 AND intellect < 50)
             {
                Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
                      #amount=((piIntellect - intellect)
@@ -10549,7 +10905,7 @@ messages:
          else if (iPrimaryStat = STAT_ID_MYSTICISM)
          {
             if (iSpellAbility > (piMysticism * 2)) AND (mysticism < piMysticism)
-               OR (iSpellAbility = 99 AND piMysticism = 50 AND mysticism < 50)
+               OR (iSpellAbility = 99 AND piMysticism >= 50 AND mysticism < 50)
             {
                Send(self,@ChangeSpellAbility,#spell_num=iSpellNum,
                      #amount=((piMysticism - mysticism)
@@ -10569,7 +10925,7 @@ messages:
          if (iPrimaryStat = STAT_ID_AGILITY)
          {
             if (iSkillAbility > (agility * 2)) AND (agility < piAgility)
-               OR (iSkillAbility = 99 AND piAgility = 50 AND agility < 50)
+               OR (iSkillAbility = 99 AND piAgility >= 50 AND agility < 50)
             {
                Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
                      #amount=((piAgility - agility) * -2));
@@ -10578,7 +10934,7 @@ messages:
          else if (iPrimaryStat = STAT_ID_AIM)
          {
             if (iSkillAbility > (aim * 2)) AND (aim < piAim)
-               OR (iSkillAbility = 99 AND piAim = 50 AND aim < 50)
+               OR (iSkillAbility = 99 AND piAim >= 50 AND aim < 50)
             {
                Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
                      #amount=((piAim - aim) * -2));
@@ -10587,7 +10943,7 @@ messages:
          else if (iPrimaryStat = STAT_ID_MIGHT)
          {
             if (iSkillAbility > (might * 2)) AND (might < piMight)
-               OR (iSkillAbility = 99 AND piMight = 50 AND might < 50)
+               OR (iSkillAbility = 99 AND piMight >= 50 AND might < 50)
             {
                Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
                      #amount=((piMight - might) * -2));
@@ -10596,7 +10952,7 @@ messages:
          else if (iPrimaryStat = STAT_ID_STAMINA)
          {
             if (iSkillAbility > (stamina * 2)) AND (stamina < piStamina)
-               OR (iSkillAbility = 99 AND piStamina = 50 AND stamina < 50)
+               OR (iSkillAbility = 99 AND piStamina >= 50 AND stamina < 50)
             {
                Send(self,@ChangeSkillAbility,#skill_num=iSkillNum,
                      #amount=((piStamina - stamina) * -2));
@@ -10635,7 +10991,27 @@ messages:
       Send(self, @InvalidateData);
       Debug("Player Updated!");
 
+      if Send(self,@HasReincarnationStatsReset)
+      {
+         % Used up our reincarnation stat reset.
+         Send(self,@SetReincarnationStatsReset,#value=FALSE);
+      }
+
       return;
+   }
+
+   SpellCast(who = $, oSpell = $, lItems = $)
+   "Notification sent when a spell is cast in the room."
+   {
+      local oPerception;
+
+      if Send(self,@GetSkillAbility,#skill_num=SKID_PERCEPTION) > 0
+      {
+         oPerception = Send(SYS,@FindSkillByNum,#num=SKID_PERCEPTION);
+         Send(oPerception,@DoSkill,#who=self,#caster=who,#oSpell=oSpell,#lItems=lItems);
+      }
+
+      propagate;
    }
 
 end

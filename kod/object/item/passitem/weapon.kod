@@ -214,7 +214,17 @@ messages:
    "When someone attacks with this weapon, they send us their attack value "
    "and we change it based on quality of weapon"
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
+      local iBaseHit, oWeapAtt, i, iWeapHit, oOffenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            oOffenseMod = Send(SYS,@GetMagicMod,#class=&OffenseMod);
+            hit_roll = Send(oOffenseMod,@ModifyHitRoll,
+                        #hit_roll=hit_roll,#iState=Nth(i,2));
+         }
+      }
 
       iBaseHit = hit_roll;
 
@@ -266,7 +276,16 @@ messages:
 
    GetHitBonus()
    {
-      local iBaseHit, oWeapAtt, i, iWeapHit;
+      local iBaseHit, oWeapAtt, i, iWeapHit, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &OffenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
 
       iBaseHit = 0;
 
@@ -300,7 +319,7 @@ messages:
 
       iBaseHit = iBaseHit + piHitBonus;
 
-      return iBaseHit;
+      return iBaseHit + sum;
    }
 
    GetBaseDamage(who=$,target=$)
@@ -340,7 +359,7 @@ messages:
 
    GetMinDamage()
    {
-      local iDamage, oSkill;
+      local iDamage, oSkill, i, oWeaponDamageMod;
 
       % Weapon type
       if viWeaponType = WEAPON_TYPE_BLUDGEON
@@ -370,13 +389,23 @@ messages:
          iDamage = iDamage + WEAPON_NERUDITE_DAMAGE;
       }
 
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            iDamage = Send(oWeaponDamageMod,@ModifyDamage,
+                        #damage=iDamage,#iState=Nth(i,2));
+         }
+      }
+
       return iDamage + piDamageBonus;
    }
 
    GetMaxDamage()
    {
-      local iDamage, oSkill;
-      
+      local iDamage, oSkill, i, oWeaponDamageMod;
+
       % Weapon type
       if viWeaponType = WEAPON_TYPE_BLUDGEON
       {
@@ -403,6 +432,16 @@ messages:
       else if viWeaponQuality = WEAPON_NERUDITE
       {
          iDamage = iDamage + WEAPON_NERUDITE_DAMAGE;
+      }
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            iDamage = Send(oWeaponDamageMod,@ModifyDamage,
+                        #damage=iDamage,#iState=Nth(i,2));
+         }
       }
 
       return iDamage + piDamageBonus;
@@ -450,10 +489,20 @@ messages:
 
    GetDamage(target=$)
    {
-      local iDamage, i, oWeapAtt;
+      local iDamage, i, oWeapAtt, oWeaponDamageMod;
 
       % First, get base damage.
       iDamage = Send(self,@GetBaseDamage,#who=poOwner,#target=target);
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &WeaponDamageMod
+         {
+            oWeaponDamageMod = Send(SYS,@GetMagicMod,#class=&WeaponDamageMod);
+            iDamage = Send(oWeaponDamageMod,@ModifyDamage,
+                        #damage=iDamage,#iState=Nth(i,2));
+         }
+      }
 
       % Then check weapon attributes
       %  Weapon Attributes in general should only + or - damage - no multipliers!
@@ -1125,6 +1174,17 @@ messages:
       }
 
       return;
+   }
+
+   GetPrefixes()
+   {
+      return [[&OffenseMod,100],
+              [&WeaponDamageMod,100]];
+   }
+   
+   GetSuffixes()
+   {
+      return $;
    }
 
 end

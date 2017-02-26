@@ -38,6 +38,7 @@
 #define MAP_TEMPSAFE_COLOR      PALETTERGB(0,170,255)    // Cyan
 #define MAP_MINIBOSS_COLOR      PALETTERGB(160, 66, 194) // Purple
 #define MAP_BOSS_COLOR          PALETTERGB(127, 0, 0)    // Dark Red
+#define MAP_RARE_ITEM_COLOR     PALETTERGB(237, 255, 9)  // Orange
 
 #define MAP_OBJECT_RADIUS (FINENESS / 4)  // Radius of circle drawn for an object
 
@@ -49,10 +50,10 @@
 #define MAP_OBJECT_DISTANCE (7 * FINENESS) // Draw all object closer than this to player
 
 static HBRUSH hObjectBrush, hPlayerBrush, hNullBrush, hMinionBrush,
-               hMinionOtherBrush, hNpcBrush, hTempsafeBrush;
+              hMinionOtherBrush, hNpcBrush, hTempsafeBrush, hItemBrush;
 static HPEN hWallPen, hPlayerPen, hObjectPen, hMinionPen, hMinionOtherPen,
-            hMinibossPen, hBossPen;
-static HPEN hFriendPen, hEnemyPen, hGuildmatePen, hBuilderPen, hNpcPen, hTempsafePen;
+            hMinibossPen, hBossPen, hItemPen, hFriendPen, hEnemyPen,
+            hGuildmatePen, hBuilderPen, hNpcPen, hTempsafePen;
 
 static float zoom;              // Factor to zoom in on map
 
@@ -89,6 +90,8 @@ static void MapDrawMiniMapWalls(HDC hdc, int x, int y, room_type *room);
 static void MapDrawWall(HDC hdc, int x, int y, float scale, WallData *wall);
 static void MapDrawPlayer(HDC hdc, int x, int y, float scale, int minimapflags);
 static void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale);
+static inline void DrawMinimapDot(HDC hdc, HPEN pen, HBRUSH brush, float radius, float x, float y);
+static void DrawMinimapStar(HDC hdc, HPEN pen, HBRUSH brush, float size, float x, float y);
 static void MapDrawWalls(HDC hdc, int x, int y, float scale, room_type *room);
 static void MapDrawAnnotations( HDC hdc, MapAnnotation *annotations, int x, int y, float scaleToUse, Bool bMiniMap );
 
@@ -148,6 +151,7 @@ void MapInitialize(void)
    hTempsafePen = CreatePen(PS_SOLID, MAP_OBJECT_THICKNESS, MAP_TEMPSAFE_COLOR);
    hMinibossPen = CreatePen(PS_SOLID, MAP_BOSS_THICKNESS, MAP_MINIBOSS_COLOR);
    hBossPen = CreatePen(PS_SOLID, MAP_BOSS_THICKNESS, MAP_BOSS_COLOR);
+   hItemPen = CreatePen(PS_SOLID, MAP_OBJECT_THICKNESS, MAP_RARE_ITEM_COLOR);
 
    hNpcBrush = CreateSolidBrush(MAP_NPC_COLOR);
    hMinionOtherBrush = CreateSolidBrush(MAP_MINION_OTH_COLOR);
@@ -155,6 +159,7 @@ void MapInitialize(void)
    hObjectBrush = CreateSolidBrush(MAP_OBJECT_COLOR);
    hPlayerBrush = CreateSolidBrush(MAP_PLAYER_COLOR);
    hTempsafeBrush = CreateSolidBrush(MAP_TEMPSAFE_COLOR);
+   hItemBrush = CreateSolidBrush(MAP_RARE_ITEM_COLOR);
    hNullBrush = CreateBrushIndirect(&logBrush);
 
    zoom = (float) 1.0;
@@ -191,6 +196,7 @@ void MapClose(void)
    DeleteObject(hTempsafePen);
    DeleteObject(hMinibossPen);
    DeleteObject(hBossPen);
+   DeleteObject(hItemPen);
    DeleteObject(hMinionOtherBrush);
    DeleteObject(hMinionBrush);
    DeleteObject(hObjectBrush);
@@ -198,6 +204,7 @@ void MapClose(void)
    DeleteObject(hNullBrush);
    DeleteObject(hNpcBrush);
    DeleteObject(hTempsafeBrush);
+   DeleteObject(hItemBrush);
 
    if (pMapWalls)
       SafeFree(pMapWalls);
@@ -408,139 +415,88 @@ void MapDrawObjects(HDC hdc, list_type objects, int x, int y, float scale)
       // Draw NPC dots no matter where they are.
       dx = (r->motion.x - player.x) >> 4;
       dy = (r->motion.y - player.y) >> 4;
-      if (((dx * dx + dy * dy) > mapObjectDistanceShiftAndSquare) &&
-          (!r->visible && !config.showUnseenMonsters) &&
-          !(r->obj.flags & OF_PLAYER) && !(r->obj.minimapflags & MM_NPC) &&
-          !(r->obj.minimapflags & MM_MINIBOSS) && !(r->obj.minimapflags & MM_BOSS))
+      if (((dx * dx + dy * dy) > mapObjectDistanceShiftAndSquare)
+           && (!r->visible && !config.showUnseenMonsters)
+           && (r->obj.flags & MM_MONSTER))
           continue;
 
       new_x = x + (r->motion.x * scale);
       new_y = y + (r->motion.y * scale);
-      float ring_radius;
 
       // Draw rings around players
       if (r->obj.flags & OF_PLAYER)
       {
-         SelectObject(hdc, hPlayerBrush);
-
          // Builder group?
          if (r->obj.minimapflags & MM_BUILDER_GROUP)
-         {
-            ring_radius = 2.6f * radius;
-            SelectObject(hdc, hBuilderPen);
-            Ellipse(hdc, (int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         }
-
-         ring_radius = 1.6f * radius;
+            DrawMinimapDot(hdc, hBuilderPen, hPlayerBrush, 2.6f * radius, new_x, new_y);
          // Friend?
          if (r->obj.minimapflags & MM_FRIEND)
-         {
-            SelectObject(hdc, hFriendPen);
-            Ellipse(hdc, (int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         }
-
+            DrawMinimapDot(hdc, hFriendPen, hPlayerBrush, 1.6f * radius, new_x, new_y);
          // Enemy?
          if (r->obj.minimapflags & MM_ENEMY)
-         {
-            SelectObject(hdc, hEnemyPen);
-            Ellipse(hdc, (int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         }
-
+            DrawMinimapDot(hdc, hEnemyPen, hPlayerBrush, 1.6f * radius, new_x, new_y);
          // Guildmate?
          if (r->obj.minimapflags & MM_GUILDMATE)
-         {
-             SelectObject(hdc, hGuildmatePen);
-             Ellipse(hdc, (int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         }
+            DrawMinimapDot(hdc, hGuildmatePen, hPlayerBrush, 1.6f * radius, new_x, new_y);
       }
 
       /* Draw middle of player dot in a different color. If a monster
          is a minion or NPC then color it appropriately, otherwise it
          gets the standard red dot. */
       if (r->obj.minimapflags & MM_PLAYER)
-      {
-         SelectObject(hdc, hPlayerPen);
-         SelectObject(hdc, hPlayerBrush);
-      }
+         DrawMinimapDot(hdc, hPlayerPen, hPlayerBrush, radius, new_x, new_y);
       else if (r->obj.minimapflags & MM_TEMPSAFE)
-      {
-         SelectObject(hdc, hTempsafePen);
-         SelectObject(hdc, hTempsafeBrush);
-      }
+         DrawMinimapDot(hdc, hTempsafePen, hTempsafeBrush, radius, new_x, new_y);
       else if (r->obj.minimapflags & MM_MINION_SELF)
-      {
-         SelectObject(hdc, hMinionPen);
-         SelectObject(hdc, hMinionBrush);
-      }
+         DrawMinimapDot(hdc, hMinionPen, hMinionBrush, radius, new_x, new_y);
       else if (r->obj.minimapflags & MM_MINION_OTHER)
-      {
-         SelectObject(hdc, hMinionOtherPen);
-         SelectObject(hdc, hMinionOtherBrush);
-      }
+         DrawMinimapDot(hdc, hMinionOtherPen, hMinionOtherBrush, radius, new_x, new_y);
       else if (r->obj.minimapflags & MM_MONSTER)
-      {
-         SelectObject(hdc, hObjectPen);
-         SelectObject(hdc, hObjectBrush);
-      }
+         DrawMinimapDot(hdc, hObjectPen, hObjectBrush, radius, new_x, new_y);
       else if (r->obj.minimapflags & MM_NPC)
-      {
-         SelectObject(hdc, hNpcPen);
-         SelectObject(hdc, hNpcBrush);
-      }
+         DrawMinimapDot(hdc, hNpcPen, hNpcBrush, radius, new_x, new_y);
+      else if (r->obj.minimapflags & MM_RARE_ITEM)
+         DrawMinimapStar(hdc, hItemPen, hItemBrush, radius * 3.0f, new_x, new_y);
       else if (r->obj.minimapflags & MM_MINIBOSS)
       {
-         SelectObject(hdc, hObjectBrush);
-         SelectObject(hdc, hMinibossPen);
-         ring_radius = 2.1f * radius;
-         Ellipse(hdc,(int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         SelectObject(hdc, hObjectPen);
-         Ellipse(hdc,(int) (new_x - radius * 1.2f), (int) (new_y - radius * 1.2f),
-            (int) (new_x + radius * 1.2f), (int) (new_y + radius * 1.2f));
-
-         continue;
+         DrawMinimapDot(hdc, hMinibossPen, hObjectBrush, radius * 2.1f, new_x, new_y);
+         DrawMinimapDot(hdc, hObjectPen, hObjectBrush, radius * 1.2f, new_x, new_y);
       }
       else if (r->obj.minimapflags & MM_BOSS)
       {
-         SelectObject(hdc, hObjectBrush);
-         SelectObject(hdc, hBossPen);
-         ring_radius = 2.6f * radius;
-         Ellipse(hdc,(int) (new_x - ring_radius),
-                     (int) (new_y - ring_radius),
-                     (int) (new_x + ring_radius),
-                     (int) (new_y + ring_radius));
-         SelectObject(hdc, hObjectPen);
-         Ellipse(hdc,(int) (new_x - radius * 1.6f), (int) (new_y - radius * 1.6f),
-            (int) (new_x + radius * 1.6f), (int) (new_y + radius * 1.6f));
-
-         continue;
+         DrawMinimapDot(hdc, hBossPen, hObjectBrush, radius * 2.6f, new_x, new_y);
+         DrawMinimapDot(hdc, hObjectPen, hObjectBrush, radius * 1.6f, new_x, new_y);
       }
-      else
-      {
-         // No dots for anything else, yet.
-         continue;
-      }
-
-      // Draw a circle at the object's position
-      Ellipse(hdc, (int) (new_x - radius), (int) (new_y - radius),
-         (int) (new_x + radius), (int) (new_y + radius));
-
    }
 }
+
+static inline void DrawMinimapDot(HDC hdc, HPEN pen, HBRUSH brush, float radius, float x, float y)
+{
+   SelectObject(hdc, pen);
+   SelectObject(hdc, brush);
+   Ellipse(hdc, (int)(x - radius), (int)(y - radius), (int)(x + radius), (int)(y + radius));
+}
+
+static void DrawMinimapStar(HDC hdc, HPEN pen, HBRUSH brush, float size, float x, float y)
+{
+   float alpha = PITWICE / 10;
+   POINT p[11];
+
+   SelectObject(hdc, pen);
+   SelectObject(hdc, brush);
+
+   // Build points
+   for (int i = 0; i < 11; ++i)
+   {
+      float r = size * (i % 2 + 1) / 2.0f;
+      float omega = alpha * i;
+      p[i].x = (LONG)((r * sin(omega)) + x);
+      p[i].y = (LONG)((r * cos(omega)) + y);
+   }
+
+   Polygon(hdc, p, 11);
+}
+
 /*****************************************************************************/
 /*
  * MapDrawPlayer:  Draw a line on the map indicating the player's position.

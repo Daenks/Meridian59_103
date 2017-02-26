@@ -55,6 +55,7 @@ properties:
    % by invisibility and shadow form.
    piInvis_reduction = 100
    piShadForm_reduction = 60
+   piSneak_reduction = 100
 
 messages:
 
@@ -981,6 +982,11 @@ messages:
             {
                iHatred = (iHatred - piShadForm_reduction);
             }
+         }
+
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=what)
+         {
+            iHatred = iHatred - piSneak_reduction;
          }
       }
 

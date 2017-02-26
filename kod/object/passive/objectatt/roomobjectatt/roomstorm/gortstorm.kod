@@ -1,0 +1,62 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GortStorm is RoomStorm 
+
+% Test storm that applies Armor of Gort.
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   gort_storm_begin_msg = \
+      "Kraanan blesses the area with protective energies."
+   gort_storm_end_msg = \
+      "Kraanan's favor passes from the area."
+
+classvars:
+
+   viStormBeginMsg = gort_storm_begin_msg
+   viStormEndMsg = gort_storm_end_msg
+
+properties:
+
+   % What buff does the storm apply? What spellpower?
+   piSpellID = SID_ARMOR_OF_GORT
+   piSpellPower = 50
+   
+   % How long does the storm last? (ms)
+   % Send iDuration to constructor to change
+   % $ means indefinite
+   piStormTime = 3 * 60 * 1000
+   ptStormTimer = $
+
+   % How many magical bubbles do we have max at one time?
+   piBubblesMax = 15
+   % How long does each bubble last? (ms)
+   piBubblesDuration = 6000
+   % How big are the bubbles?
+   piBubblesRadiusFine = 5 * 64
+   % How often do we spawn bubbles?
+   piBubblesTime = 1000
+   ptBubblesTimer = $
+   
+   % What is the start and end brightness of our bubbles?
+   piIntensityMin = 0
+   piIntensityMax = 255
+   % What color are our bubbles?
+   piColor = LIGHT_BBLUE
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

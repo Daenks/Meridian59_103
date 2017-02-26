@@ -58,7 +58,11 @@ classvars:
 
    vbCanCastOnOthers = FALSE
 
+   vbCanBeReserved = FALSE
+
 properties:
+
+   viPurgeFactor = 5
 
 messages:
 

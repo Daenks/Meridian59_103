@@ -39,6 +39,12 @@ resources:
 
    spell_blank_template = "%q"
 
+   unreserved_pers_ench = \
+      "You cancel your %s personal enchantment reservation."
+   current_reservation_rsc = \
+      "\n\nYour current %s enchantment is reserving %i percent of your "
+      "maximum mana."
+
 classvars:
 
    vrName = PersonalEnchantment_name_rsc
@@ -64,16 +70,33 @@ classvars:
 
    viPersonal_ench = TRUE
 
+   % The effectiveness of purge on the target spell as a percentage.
+   % 100 will cause purge to remove its entire spellpower, 0 will
+   % prevent purge from removing this spell.
+   viPurgeFactor = 100
+
+   % Is this something players should be able to recast on themselves?
+   vbSelfRecastable = TRUE
+
    viDefensive = FALSE
    viOffensive = FALSE
    viResistanceType = 0
+
+   vbCanBeReserved = TRUE
+   viPercentManaReserved = 10
 
 properties:
 
 messages:
 
-   GetNumSpellTargets()
+   GetNumSpellTargets(who=$)
    {
+      if who <> $
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return 0;
+      }
+
       if vbCanCastonOthers
       {
          return 1;
@@ -130,9 +153,20 @@ messages:
       % Check for enchantment already applied
       if Send(oTarget,@IsEnchanted,#what=self)
       {
+         if Send(who,@HasReservedSpell,#oSpell=self)
+         {
+            if Send(who,@UnReserveSpell,#oSpell=self)
+            {
+               Send(who,@MsgSendUser,#message_rsc=unreserved_pers_ench,
+                                     #parm1=Send(self,@GetName));
+            }
+            return FALSE;
+         }
+
          % Can you override an existing enchantment on yourself?
-         if who = oTarget AND
-            Send(SETTINGS_OBJECT,@CanRecastSelfEnchantment)
+         if who = oTarget
+            AND Send(SETTINGS_OBJECT,@CanRecastSelfEnchantment)
+            AND vbSelfRecastable
          {
             propagate;
          }
@@ -161,10 +195,32 @@ messages:
       propagate;
    }
 
+   GetTargets(who=$,lTargets=$)
+   {
+      if who <> $
+         AND IsClass(who, &Player)
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         return [who];
+      }
+
+      return lTargets;
+   }
+
    CastSpell(who=$,iSpellPower=0,lTargets=$,bItemCast=FALSE)
    {
-
       local oTarget, lType;
+
+      if NOT bItemCast
+         AND vbCanBeReserved
+         AND who <> $
+         AND IsClass(who,&Player)
+         AND Send(who,@ReservesForThisLevel,#iLevel=viSpell_level)
+      {
+         Send(who,@UseReserveSkill,#oSpell=self,
+                                   #iSpellPower=iSpellPower);
+         propagate;
+      }
 
       lType = [self,viDefensive,viOffensive,viResistanceType];
 
@@ -191,7 +247,7 @@ messages:
       if Send(otarget,@IsEnchanted,#what=self) AND
          Send(SETTINGS_OBJECT, @CanRecastSelfEnchantment)
       {
-         Send(oTarget,@RemoveEnchantment,#what=self,#report=FALSE);
+         Send(oTarget,@RemoveEnchantment,#what=self,#report=FALSE,#remain=TRUE);
       }
 
       Send(oTarget,@MsgSendUser,#message_rsc=vrEnchantment_On);
@@ -237,6 +293,11 @@ messages:
    GetStateValue()
    {
       return $;
+   }
+
+   GetPurgeFactor()
+   {
+      return viPurgeFactor;
    }
 
    GetLastCall()
@@ -318,6 +379,17 @@ messages:
       return;
    }
 
+   SendReservationDesc(who=$)
+   {
+      if Send(who,@HasReservedSpell,#oSpell=self)
+      {
+         AddPacket(4,current_reservation_rsc, 4,Send(self,@GetName),
+                   4,Send(who,@GetPercentManaReserved,#oSpell=self));
+      }
+
+      return;
+   }
+
    SendStatsDesc(who=$)
    {
       if who <> $
@@ -330,6 +402,16 @@ messages:
       }
 
       propagate;
+   }
+
+   GetPercentManaReserved()
+   {
+      return viPercentManaReserved;
+   }
+
+   CanBeReserved()
+   {
+      return vbCanBeReserved;
    }
 
 end

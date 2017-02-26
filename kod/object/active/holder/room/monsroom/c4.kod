@@ -18,7 +18,7 @@ resources:
 
    include c4.lkod
 
-   room_OutdoorsC4 = C4.roo
+   room_OutdoorsC4 = c4.roo
    room_name_OutdoorsC4 ="Deep Woods of Ileria"
    OutdoorsC4_music = walk7.mp3
 
@@ -76,7 +76,7 @@ messages:
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
                #where=Send(SYS,@FindRoomByNum,#num=RID_MARION),
-               #new_row=30,#new_col = 66 , #fine_row = 0,
+               #new_row=4,#new_col = 85,#fine_row=58,#fine_col=23,
                #new_angle=Send(what,@GetAngle));
 
          return;
@@ -86,8 +86,8 @@ messages:
       {
          Send(SYS,@UtilGoNearSquare,#what=what,
                #where=Send(SYS,@FindRoomByNum,#num=RID_TEMPLE),
-               #new_row=9,#new_col = 31,
-               #new_angle=ANGLE_SOUTH_WEST);
+               #new_row=6,#new_col = 32,
+               #new_angle=Send(what,@GetAngle));
 
          return;
       }

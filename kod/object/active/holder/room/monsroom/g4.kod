@@ -14,12 +14,26 @@ constants:
 
    include blakston.khd
 
+   CLOCK_FACE = 90
+
+   VERY_DEEP_RIVER_AREAS = 30
+   DEEP_RIVER_AREAS = 31
+   SHALLOW_RIVER_AREAS = 32
+   BRIDGE_AREAS = 33
+   RIVER_AREAS = 34
+   WATERFALL_SIDES = 35
+   DRAINAGE_AREAS = 36
+
+   RIVER_WATER_TEXTURE = 08912
+   MUD_TEXTURE = 09082
+   BRACKISH_WATER_TEXTURE = 01807
+
 resources:
 
    include g4.lkod
 
    room_name_OutdoorsG4 ="Main gate to Cor Noth"
-   room_OutdoorsG4 = G4.roo
+   room_OutdoorsG4 = g4.roo
    OutdoorsG4_music = walk1.mp3
 
    waterfall_soundg4 = wfall2.wav
@@ -87,6 +101,168 @@ messages:
       propagate;
    }
 
+   RecalcLightAndWeather()
+   {
+      local iHour,iGroup;
+
+      iHour = Send(SYS,@GetHour);
+
+      iGroup = 1 + (iHour mod 12);
+
+      Send(self,@AnimateWall,#wall=CLOCK_FACE,#animation=ANIMATE_NONE,
+            #first_group=iGroup);
+      
+      propagate;
+   }
+
+   StartSnow(bOnGround=TRUE)
+   {
+      if NOT pbWeatherEffects
+      {
+         return;
+      }
+
+      if bOnGround
+      {
+         if pbSnowGroundTexture
+         {
+            Send(self,@RemoveLoopingSound,#sound_rsc=waterfall_soundg4);
+
+            % Add snow to bridge areas.
+            Send(self,@ChangeTexture,#id=BRIDGE_AREAS,#new_texture=61015,
+                  #flags=CTF_FLOOR);
+
+            % Turn special water to ice.
+            Send(self,@ChangeTexture,#id=VERY_DEEP_RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,#new_texture=61017,
+                  #flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=RIVER_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+            Send(self,@ChangeTexture,#id=DRAINAGE_AREAS,
+                  #new_texture=61017,#flags=CTF_FLOOR);
+
+            Send(self,@SetSectorFlags,#sector=VERY_DEEP_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=RIVER_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+            Send(self,@SetSectorFlags,#sector=DRAINAGE_AREAS,
+                  #depth=SF_DEPTH0,#scrollSpeed=SCROLL_NONE);
+
+            % Stop vertically scrolling water from animating.
+            Send(self,@AnimateWall,#wall=WATERFALL_SIDES,
+                  #animation=ANIMATE_NONE,#first_group=1,#second_group=1,
+                  #end_group=1);
+            Send(self,@ChangeTexture,#id=WATERFALL_SIDES,#new_texture=61017,
+                  #flags=CTF_BELOWWALL);
+         }
+      }
+
+      propagate;
+   }
+   
+   EndSnow(override=FALSE)
+   {
+      if pbSnowGroundTexture
+         OR override
+      {
+         plLooping_sounds = [[ waterfall_soundg4, 13, 49, 40, 100 ]];
+
+         % Remove snow/ice from special areas.
+         Send(self,@RemoveTextureChange,#id=BRIDGE_AREAS);
+         Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=VERY_DEEP_RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=RIVER_AREAS);
+         Send(self,@RemoveTextureChange,#id=DRAINAGE_AREAS);
+
+         Send(self,@RemoveSectorFlagChange,#id=VERY_DEEP_RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=RIVER_AREAS);
+         Send(self,@RemoveSectorFlagChange,#id=DRAINAGE_AREAS);
+
+         Send(self,@RemoveAnimateWallChange,#wall=WATERFALL_SIDES);
+         Send(self,@RemoveTextureChange,#id=WATERFALL_SIDES);
+      }
+
+      propagate;
+   }
+
+   StartDrought()
+   {
+      Send(self,@RemoveLoopingSound,#sound_rsc=waterfall_soundg4);
+
+      Send(self,@ChangeTexture,#id=SHALLOW_RIVER_AREAS,
+            #new_texture=MUD_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=DEEP_RIVER_AREAS,
+            #new_texture=MUD_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=DRAINAGE_AREAS,
+            #new_texture=MUD_TEXTURE,#flags=CTF_FLOOR);
+      Send(self,@ChangeTexture,#id=VERY_DEEP_RIVER_AREAS,
+            #new_texture=BRACKISH_WATER_TEXTURE,#flags=CTF_FLOOR);
+
+      Send(self,@ChangeTexture,#id=WATERFALL_SIDES,#new_texture=MUD_TEXTURE,
+           #flags=CTF_BELOWWALL);
+      Send(self,@AnimateWall,#wall=WATERFALL_SIDES,#animation=ANIMATE_NONE,
+            #first_group=1,#second_group=1,#end_group=1);
+
+      Send(self,@SetSector,#sector=VERY_DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=120,#speed=0);
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=125,#speed=0);
+
+      Send(self,@SetSectorFlags,#sector=DRAINAGE_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=SHALLOW_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=DEEP_RIVER_AREAS,#depth=SF_DEPTH0,
+            #scrollSpeed=SCROLL_NONE);
+      Send(self,@SetSectorFlags,#sector=VERY_DEEP_RIVER_AREAS,#depth=SF_DEPTH1,
+            #scrollSpeed=SCROLL_SLOW);
+      return;
+   }
+   
+   EndDrought()
+   {
+      plLooping_sounds = [[ waterfall_soundg4, 13, 49, 40, 100 ]];
+
+      Send(self,@RemoveTextureChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=DEEP_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=VERY_DEEP_RIVER_AREAS);
+      Send(self,@RemoveTextureChange,#id=DRAINAGE_AREAS);
+
+      Send(self,@RemoveTextureChange,#id=WATERFALL_SIDES);
+      Send(self,@RemoveAnimateWallChange,#wall=WATERFALL_SIDES);
+
+      Send(self,@SetSector,#sector=DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=134,#speed=0);
+      Send(self,@SetSector,#sector=VERY_DEEP_RIVER_AREAS,
+            #animation=ANIMATE_FLOOR_LIFT,#height=134,#speed=0);
+
+      Send(self,@RemoveSectorFlagChange,#id=SHALLOW_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=DEEP_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=VERY_DEEP_RIVER_AREAS);
+      Send(self,@RemoveSectorFlagChange,#id=DRAINAGE_AREAS);
+      return;
+   }
+
+   StartFlood()
+   {
+      % No configuration of flood changes looks good.
+      return;
+   }
+   
+   EndFlood()
+   {
+      return;
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

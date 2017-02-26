@@ -76,12 +76,12 @@ classvars:
    viAttack_type = ATCK_WEAP_BLUDGEON
 
    viAttributes = 0
-   viLevel = 140
+   viLevel = 150
    viDifficulty = 7
    viVisionDistance = 20
    % Attack range of 192, or 3 row/col.
    viAttackRange = 192
-   viKarma = 90
+   viKarma = 100
    viCashmin = 400
    viCashmax = 1500
    vrSound_miss = MolluskMonster_sound_miss

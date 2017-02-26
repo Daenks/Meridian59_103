@@ -1,0 +1,90 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChargedClutchStance is Stance
+
+constants:
+
+   include blakston.khd
+   include protocol.khd   
+
+resources:
+
+   ChargedClutchStance_name_rsc = "elemental channel"
+   ChargedClutchStance_icon_rsc = ienchant.bgf
+   ChargedClutchStance_desc_rsc = \
+      "An advanced stance that allows a mage with charged hands to imbue his "
+      "weapon strikes with elemental energies."
+   
+   ChargedClutchStance_begin = "You send mana coursing through your hands."
+   ChargedClutchStance_end = "You let the charge in your hands fade."
+   ChargedClutchStance_mantra = "Isipimdos Vuommis"
+
+classvars:
+
+   vrName = ChargedClutchStance_name_rsc
+   vrIcon = ChargedClutchStance_icon_rsc
+   vrDesc = ChargedClutchStance_desc_rsc
+   
+   stance_begin_msg = ChargedClutchStance_begin
+   stance_end_msg = ChargedClutchStance_end
+   
+   vsStanceMantra = ChargedClutchStance_mantra
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_CHARGED_CLUTCH_STANCE
+   viSchool = SS_FAREN
+   viSkill_Level = 4
+   viChance_to_Increase = 10
+   viMeditate_ratio = 50
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+   vbAutomatic = TRUE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   GetSpellType(who=$)
+   {
+      local oTouchSpell, iChargedClutchStanceAbility, iStat, chance;
+
+      iChargedClutchStanceAbility = Send(who,@GetSkillAbility,#skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      chance = iChargedClutchStanceAbility + (iStat/2);
+      chance = Bound(chance,10,100);
+      
+      if chance < Random(0,100)
+      {
+         return 0;
+      }
+
+      oTouchSpell = Send(who,@GetEnchantmentsByClass,#EnchClass=&TouchAttackSpell);
+      if oTouchSpell <> $
+      {
+         Send(self,@ImproveAbility,#who=who);  
+         return Send(Nth(first(oTouchSpell),2),@GetAttackSpell);
+      }
+
+      return 0;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

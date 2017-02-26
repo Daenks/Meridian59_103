@@ -110,7 +110,7 @@ BOOL Lagbox_Create()
 	pobjLagbox->normal_animate.group_low = 1;
 	pobjLagbox->normal_animate.group_high = 1;
 	pobjLagbox->drawingtype = DRAWFX_DITHERTRANS;
-	pobjLagbox->flags = OF_PLAYER;
+	pobjLagbox->flags = OF_PLAYER | OF_DISPLAY_NAME;
 	pobjLagbox->minimapflags = 0;
 	pobjLagbox->namecolor = NC_OUTLAW;
 	pobjLagbox->objecttype = OT_NONE;

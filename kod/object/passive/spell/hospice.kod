@@ -41,12 +41,10 @@ classvars:
 
    viSchool = SS_SHALILLE
    viSpell_num = SID_HOSPICE
-   viMana = 10
+   viMana = 15
    viSpell_level = 3
-   viChance_To_Increase = 15
-   viMeditate_ratio = 30
-
-   viCast_time = 600
+   viChance_To_Increase = 20
+   viMeditate_ratio = 40
 
    viFlash = FLASH_GOOD
 
@@ -59,7 +57,7 @@ messages:
       % separate message so can change, then set from admin mode
 
       plReagents = $;
-      plReagents = Cons([&Herbs,3],plReagents);
+      plReagents = Cons([&Herbs,2],plReagents);
 
       return;
    }

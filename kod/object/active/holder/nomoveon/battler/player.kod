@@ -17,6 +17,8 @@ constants:
    include blakston.khd
    include protocol.khd
 
+   TRAINING_POINT_CAP = 3000
+
    % Three minutes
    BOND_REPORT_INTERVAL = 1000 * 60 * 3
    
@@ -114,7 +116,7 @@ constants:
    MAX_DAMAGE_PER_HIT = 30
 
    % What's the maximum stat we can have after modification?
-   MAXIMUM_STAT = 70
+   MAXIMUM_STAT = 100
 
    % how long to wait before sending another pvp notify sound (seconds)
    PVP_NOTIFY_DECAY = 5 * 60
@@ -243,6 +245,16 @@ resources:
    player_experience_gained = "You have gained ~B%i~B experience points!"
    player_experience_lost = "You have lost ~B~r%i~B experience points!"
 
+   player_unbound_energy_wiped = "The volatile energy surrounding you "
+      "dissipates in the violently twisting aether."
+   player_unbound_energy_gained = "You gather ~B~t%i~v~B unbound energy "
+      "from your fallen enemy."
+   player_unbound_energy_lost = "You channel ~B~t%i~v~B unbound energy "
+      "to shape your spell."
+   player_unbound_energy_wasted = "Your mind is too preoccupied with your "
+      "recent encounter to make any use of the subtle energies dispersing "
+      "before your eyes."
+
    player_health_gain_maxed = "Your health cannot increase any further."
 
    player_cant_hit_newbie = \
@@ -316,12 +328,19 @@ resources:
       "Not a court vassal, yet affected by the Meridian Council."
    player_not_intriguing = "Not yet concerned with affairs at the Royal Court."
 
+   player_race_orc = "%s appears to be of half-orc ancestry.\n"
+   player_race_demon = "%s appears to be of half-demon ancestry.\n"
+   player_race_elf = "%s appears to be of half-elf ancestry.\n"
+
+   player_opt_out_pvp = \
+      "%s is a dedicated practitioner of Shal'ille's peaceful path.\n"
+
    player_nl = "\n"
    player_sp = " "
    player_dot = "."
 
    % Master fixed info resource.
-   player_fixed_info = "%r%r%s%r%s%q%r"
+   player_fixed_info = "%r%r%r%r%s%r%r%s%q%r"
 
    % Hometown strings.
    player_hometown_rsc = "%s%s%s%q%s\n"
@@ -802,7 +821,23 @@ resources:
    bad_line_of_sight = \
       "Your hindered line of sight makes a successful hit more difficult."
 
-      
+   reincarnated_once = \
+      "%s has reincarnated once.\n"
+   reincarnated_times = \
+      "%s has reincarnated %d times.\n"
+
+   reincarnation_need_hp = \
+      "At that affirmation of how much you've learned, you feel like the "
+      "last goal left for you is to test your own physical limits."
+   reincarnation_need_learn = \
+      "You've gone as far as you can physically. You realize that the "
+      "last goal left to you in this life is to learn as much as you can."
+   reincarnation_ready = \
+      "You feel as if you've learned all you can and tested yourself "
+      "to your physical limits. This life feels complete. Perhaps "
+      "you should explore the Hall of Genealogy in Cor Noth to gain "
+      "some perspective."
+
    pvp_notify_wav = gong.wav
 
 classvars:
@@ -819,8 +854,8 @@ classvars:
    viGauntlet_space = 1
 
    % Our actual max is this plus a bonus for might.
-   viBulk_hold_max = 1700
-   viWeight_hold_max = 1700
+   viBulk_hold_max = 2550
+   viWeight_hold_max = 2550
 
    viMax_vigor = 200
 
@@ -834,11 +869,16 @@ properties:
    % This is used to determine raises in hit points only.
    poKill_target = $
    piGain_chance = 0
+   piExperience = 0
 
    % This keeps track of training points that players accumulate when 
    % killing mobs.
    piTraining_points = 0
    piInform = TRUE
+
+   % This keeps track of unbound energy, which is used for free spell casts.
+   piUnbound_energy = 0
+   pbFree_cast = FALSE
 
    % This keeps track of when we've last received our daily training points.
    piReward_timestamp = 0
@@ -928,6 +968,9 @@ properties:
    % Percent stomach is full.
    piStomach = 0
 
+   % Different races have different hunger capacities.
+   piStomachMax = 100
+
    % Governs health and mana replacement rates
    piVigor = 100
    % Accumulates small vigor debits from attacks, etc.
@@ -943,6 +986,7 @@ properties:
    ptHealth = $
    ptAdvancement = $
    ptRest = $
+   ptUnboundEnergy = $
 
    % Poison info
    ptPoison = $
@@ -1089,11 +1133,40 @@ properties:
    % Players will naturally fall out of groups if they aren't getting kills
    ptLeaveBuilderGroupTimer = $
 
+   % Player's last corpse
+   poCorpse = $
+
    % Time remaining phased out
    ptPhaseTimer = $
    ptPhaseVisualEffectTimer = $
    piRemainingPhaseTime = 60000 * 8
    ptCanPhaseTimer = $
+
+   piPlayerRace = RACE_HUMAN
+   piRacialMightMod = 0
+   piRacialIntellectMod = 0
+   piRacialStaminaMod= 0
+   piRacialAgilityMod = 0
+   piRacialMysticismMod = 0
+   piRacialAimMod = 0
+   piRacialVigorMod = 0
+   
+   % Tracks the number of this character's reincarnations
+   piReincarnations = 0
+   % Do we have a free stat reset for reincarnation?
+   pbReincarnationStatsReset = FALSE
+   % Have we hit learn cap?
+   pbLearnCapped = FALSE
+
+   % Banditry stance object
+   poStance = $
+
+   % Spells reserved on mana. Format [spell, mana reserved, state, spellpower]
+   plReservedSpells = $
+   piBaseMax_mana = 0
+
+   % Has the player opted out of PvP?
+   pbOptOutPvP = FALSE
 
 messages:
 
@@ -1114,6 +1187,12 @@ messages:
       foreach i in Send(SYS,@GetGuilds)
       {
          Send(i,@RemoveFromFormerMemberList,#who=self);
+      }
+
+      if ptUnboundEnergy <> $
+      {
+         DeleteTimer(ptUnboundEnergy);
+         ptUnboundEnergy = $;
       }
 
       if ptHealth <> $
@@ -1188,6 +1267,8 @@ messages:
          ptBondedItemReport = $;
       }
 
+      poStance = $;
+
       Send(SYS,@SystemRemoveFromChampionLists,#oldchamp = self);
       Send(Send(SYS,@GetLibrary),@DeleteCompletedQuest,#who=self,#id=-1);
       Send(&QuestX,@CancelQuester,#quester=self);
@@ -1198,6 +1279,268 @@ messages:
       plSchools = $;
 
       propagate;
+   }
+   
+   SetLearncapped(value=FALSE)
+   {
+      pbLearnCapped = value;
+      
+      if value = TRUE
+      {
+         if piBase_Max_Health >= 100 + Send(self,@GetRawStamina)
+         {
+            Send(self,@MsgSendUser,#message_rsc=reincarnation_ready);
+         }
+         else
+         {
+            Send(self,@MsgSendUser,#message_rsc=reincarnation_need_hp);
+         }
+      }
+
+      return;
+   }
+   
+   GetLearnCapped()
+   {
+      return pbLearnCapped;
+   }
+
+   Reincarnate(race=0)
+   {
+      Send(SYS,@UserReincarnated,#what=self);
+      Send(self,@ReincarnateCharacter);
+      Send(self,@SetPlayerRace,#race=race);
+      
+      if piMight > Send(self,@GetMaxMight)
+      {
+         piMight = Send(self,@GetMaxMight);
+      }
+      
+      if piIntellect > Send(self,@GetMaxIntellect)
+      {
+         piIntellect = Send(self,@GetMaxIntellect);
+      }
+      
+      if piStamina > Send(self,@GetMaxStamina)
+      {
+         piStamina = Send(self,@GetMaxStamina);
+      }
+      
+      if piAgility > Send(self,@GetMaxAgility)
+      {
+         piAgility = Send(self,@GetMaxAgility);
+      }
+      
+      if piMysticism > Send(self,@GetMaxMysticism)
+      {
+         piMysticism = Send(self,@GetMaxMysticism);
+      }
+      
+      if piAim > Send(self,@GetMaxAim)
+      {
+         piAim = Send(self,@GetMaxAim);
+      }
+      
+      ++piReincarnations;
+
+      Send(self,@SetReincarnationStatsReset,#value=TRUE);
+      Post(self,@SendStatChange);
+
+      return;
+   }
+
+   CanReincarnate()
+   {
+      if ((Send(self,@GetBaseMaxHealth) = 100 + Send(self,@GetRawStamina)
+             AND Send(self,@GetLearnCapped))
+         OR piReincarnations = 0)
+         AND Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
+         AND piReincarnations < 10
+      {
+         % For now, first is free and after that must be max health
+         % and have hit learn cap.
+         % Angeled characters can never reincarnate.
+         %
+         % Reincarnations capped at ten for now.
+         return TRUE;
+      }
+
+      return;
+   }
+
+   HasReincarnationStatsReset()
+   {
+      return pbReincarnationStatsReset;
+   }
+   
+   SetReincarnationStatsReset(value=FALSE)
+   {
+      pbReincarnationStatsReset = value;
+      return;
+   }
+
+   GetNumReincarnations()
+   {
+      return piReincarnations;
+   }
+
+   GetRacialBaseResistances(race=$)
+   {
+      if race = $
+      {
+         % Use our own race.
+         race = piPlayerRace;
+      }
+      
+      if race = RACE_HALF_ORC
+      {
+         return [ [-ATCK_SPELL_UNHOLY, 20 ],
+                  [-ATCK_SPELL_HOLY, -30 ],
+                  [ATCK_WEAP_PIERCE, 10 ],
+                  [ATCK_WEAP_SLASH, 10 ] ];
+      }
+      
+      if race = RACE_HALF_DEMON
+      {
+         return [ [-ATCK_SPELL_FIRE, 20 ],
+                  [-ATCK_SPELL_COLD, -30 ],
+                  [-ATCK_SPELL_ACID, 10],
+                  [ATCK_WEAP_NERUDITE, 10 ]];
+      }
+      
+      if race = RACE_HALF_ELF
+      {
+         return [ [-ATCK_SPELL_UNHOLY, -30 ],
+                  [-ATCK_SPELL_HOLY, 20 ],
+                  [-ATCK_SPELL_ALL, 10 ],
+                  [ATCK_WEAP_MAGIC, 10 ] ];
+      }
+      
+      return $;
+   }
+
+   SetPlayerRace(race=0)
+   {
+      if race = RACE_HUMAN
+      {
+         Send(self,@SetSkinTranslation,#translation=1);
+         Send(self,@SetDefaultClothes,#shirt_color=1,#pants_color=1);
+         plResistances = Send(self,@GetRacialBaseResistances,#race=RACE_HUMAN);
+
+         piRacialMightMod = 0;
+         piRacialIntellectMod = 0;
+         piRacialStaminaMod = 0;
+         piRacialAgilityMod = 0;
+         piRacialMysticismMod = 0;
+         piRacialAimMod = 0;
+
+         piRacialVigorMod = 0;
+         piStomachMax = 100;
+         piVigor_rest_threshold = Send(self,@CalculateVigorThreshold);
+         piVigor = piVigor_rest_threshold;
+         Post(self,@NewVigor);
+
+         piPlayerRace = race;
+      }
+
+      if race = RACE_HALF_ORC
+      {
+         Send(self,@SetSkinTranslation,#translation=140);
+         Send(self,@SetDefaultClothes,#shirt_color=5,#pants_color=5);
+         plResistances = Send(self,@GetRacialBaseResistances,#race=RACE_HALF_ORC);
+
+         piRacialMightMod = 10;
+         piRacialIntellectMod = 0;
+         piRacialStaminaMod = 10;
+         piRacialAgilityMod = -20;
+         piRacialMysticismMod = 0;
+         piRacialAimMod = -20;
+
+         piRacialVigorMod = 40;
+         piStomachMax = 120;
+         piVigor_rest_threshold = Send(self,@CalculateVigorThreshold);
+         piVigor = piVigor_rest_threshold;
+         Post(self,@NewVigor);
+
+         piPlayerRace = race;
+      }
+
+      if race = RACE_HALF_DEMON
+      {
+         Send(self,@SetSkinTranslation,#translation=135);
+         Send(self,@SetDefaultClothes,#shirt_color=0,#pants_color=0);
+         plResistances = Send(self,@GetRacialBaseResistances,#race=RACE_HALF_DEMON);
+
+         piRacialMightMod = -20;
+         piRacialIntellectMod = 10;
+         piRacialStaminaMod = -20;
+         piRacialAgilityMod = 0;
+         piRacialMysticismMod = 10;
+         piRacialAimMod = 0;
+
+         piRacialVigorMod = -20;
+         piStomachMax = 60;
+         piVigor_rest_threshold = Send(self,@CalculateVigorThreshold);
+         piVigor = piVigor_rest_threshold;
+         Post(self,@NewVigor);
+
+         piPlayerRace = race;
+      }
+     
+      if race = RACE_HALF_ELF
+      {
+         Send(self,@SetSkinTranslation,#translation=145);
+         Send(self,@SetDefaultClothes,#shirt_color=10,#pants_color=10);
+         plResistances = Send(self,@GetRacialBaseResistances,#race=RACE_HALF_ELF);
+
+         piRacialMightMod = 0;
+         piRacialIntellectMod = -20;
+         piRacialStaminaMod = 0;
+         piRacialAgilityMod = 10;
+         piRacialMysticismMod = -20;
+         piRacialAimMod = 10;
+
+         piRacialVigorMod = 20;
+         piStomachMax = 80;
+         piVigor_rest_threshold = Send(self,@CalculateVigorThreshold);
+         piVigor = piVigor_rest_threshold;
+         Post(self,@NewVigor);
+
+         piPlayerRace = race;
+      }
+
+      Post(self,@DrawResistances);
+     
+      return;
+   }
+
+   GetPlayerRace()
+   {
+      return piPlayerRace;
+   }
+
+   GetTotalRawStatPoints()
+   {
+      % Players get one more stat point per reincarnation.
+      
+      % Humans get two per reincarnation.
+      if piPlayerRace = RACE_HUMAN
+      {
+         return 200 + piReincarnations*2;
+      }
+      
+      return 200 + piReincarnations;
+   }
+
+   GetBaseResistances()
+   {
+      return plResistances;
+   }
+   
+   CalculateVigorThreshold()
+   {
+      return 80 + piRacialVigorMod + ((Send(self,@GetSkillAbility,
+                           #Skill_num=SKID_SECOND_WIND) + 1) / 5);
    }
 
    %%% Player flags
@@ -1441,7 +1784,7 @@ messages:
       oWind = Send(SYS,@FindSkillByNum,#num=SKID_SECOND_WIND);
       iTime = Send(oWind,@GetWaitTime,#who=self);
       ptSecondWind = CreateTimer(self,@EndSecondWindTimer,iTime);
-      Send(self,@SetVigorRestThreshold,#amount=10);
+      Send(self,@SetVigorRestThreshold);
 
       return TRUE;
    }
@@ -1456,8 +1799,6 @@ messages:
 
    EndSecondWind()
    {
-      local iAmount;
-
       if ptSecondWind <> $
       {
          DeleteTimer(ptSecondWind);
@@ -1470,9 +1811,7 @@ messages:
          piVigor = SECONDWIND_THRESHOLD;
       }
 
-      iAmount = 80 + ((Send(self,@GetSkillAbility,
-                        #Skill_num=SKID_SECOND_WIND) + 1) / 5);
-      Send(self,@SetVigorRestThreshold,#amount=iAmount);
+      Send(self,@SetVigorRestThreshold);
       Send(self,@NewVigor);
       Send(self,@MsgSendUser,#message_rsc=second_wind_finished);
       Send(self,@ShowRemoveEnchantment,#what=Send(SYS,@FindSkillByNum,
@@ -1491,18 +1830,15 @@ messages:
       return piVigor_rest_threshold;
    }
 
-   SetVigorRestThreshold(amount = 0)
+   SetVigorRestThreshold()
    {
-      piVigor_rest_threshold = amount;
-
       % Don't go above rest threshold if we're still waiting for Second Wind.
       if ptSecondWind <> $
       {
          piVigor_rest_threshold = 10;
       }
 
-      piVigor_rest_threshold = Bound(piVigor_rest_threshold,10,80 +
-               ((Send(self,@GetSkillAbility,#skill_num=SKID_SECOND_WIND)+1)/5));
+      piVigor_rest_threshold = Send(self,@CalculateVigorThreshold);
 
       Send(self,@DrawVigor);
 
@@ -1604,7 +1940,7 @@ messages:
 
       now = GetTime();
       piStomach = piStomach-(now-piTimeLastStomachUpdate)*FOOD_USE_RATE/100;
-      piStomach = bound(piStomach,1,100);
+      piStomach = bound(piStomach,1,piStomachMax);
       piTimeLastStomachUpdate = now;
 
       return;
@@ -2041,6 +2377,46 @@ messages:
             AddPacket(4,system_blank_resource);
          }
       }
+      
+      %
+      % Add reincarnations.
+      %
+      i = Send(self,@GetNumReincarnations);
+      if i = 0
+      {
+         AddPacket(4,system_blank_resource);
+      }
+      else if i = 1
+      {
+         AddPacket(4,reincarnated_once,4,Send(self,@GetHeShe,#cap=TRUE));
+      }
+      else
+      {
+         AddPacket(4,reincarnated_times,4,Send(self,@GetHeShe,#cap=TRUE),
+                   4,piReincarnations);
+      }
+
+      %
+      % Add ancestry.
+      %
+
+      i = piPlayerRace;
+      if i = RACE_HALF_ORC
+      {
+         AddPacket(4,player_race_orc,4,Send(self,@GetHeShe,#cap=TRUE));
+      }
+      else if i = RACE_HALF_DEMON
+      {
+         AddPacket(4,player_race_demon,4,Send(self,@GetHeShe,#cap=TRUE));
+      }
+      else if i = RACE_HALF_ELF
+      {
+         AddPacket(4,player_race_elf,4,Send(self,@GetHeShe,#cap=TRUE));
+      }
+      else
+      {
+         AddPacket(4,system_blank_resource);
+      }
 
       %
       % Add guild affiliation.
@@ -2072,6 +2448,19 @@ messages:
       else if (i = FACTION_REBEL)
       {
          AddPacket(4,player_faction_rebel);
+      }
+      else
+      {
+         AddPacket(4,system_blank_resource);
+      }
+      
+      %
+      % Add opt-out info.
+      %
+      if pbOptOutPvP
+         AND Send(SETTINGS_OBJECT,@GetAllowOptOutPvP)
+      {
+         AddPacket(4,player_opt_out_pvp, 4,Send(self,@GetHeShe,#cap=TRUE));
       }
       else
       {
@@ -2335,7 +2724,7 @@ messages:
 
       if iTimespan > 16*60*60
       {
-         if piTraining_points >= 1000
+         if piTraining_points >= TRAINING_POINT_CAP
          {
             return;
          }
@@ -2378,6 +2767,8 @@ messages:
          plEvilTwins = $;
       }
 
+      Send(self,@ClearAllStatusEffects);
+
       % client assumes not resting upon login
       Send(self,@StopResting);
 
@@ -2386,7 +2777,13 @@ messages:
          Send(self,@FactionServiceTimer,#renew=FALSE);
       }
 
-      % Stop health and mana timers.
+      % Stop unbound energy, health and mana timers.
+      if ptUnboundEnergy <> $
+      {
+         DeleteTimer(ptUnboundEnergy);
+         ptUnboundEnergy = $;
+      }
+
       if ptHealth <> $
       {
          DeleteTimer(ptHealth);
@@ -2748,6 +3145,95 @@ messages:
       return;
    }
 
+   ReincarnateCharacter()
+   "Conditionally altered reset"
+   {
+      local i;
+
+      Send(self,@SetLearnCapped,#value=FALSE);
+      Send(self,@RemoveAllEnchantments,#report=FALSE);
+      Send(self,@ClearAllStatusEffects);
+
+      poStance = $;
+
+      foreach i in plActive
+      {
+         Send(i,@Delete);
+      }
+
+      foreach i in plPassive
+      {
+         Send(i,@Delete);
+      }
+
+      plSpells = $;
+      plSkills = $;
+
+      if Send(self,@CheckLog)
+      {
+         Debug("LOG: ",vrName," reincarnated!");
+      }
+
+      % Setup some stats
+      piBase_max_health = 20;
+      piHealth = 2000;
+      piMax_health = piBase_max_health;
+      piNodelist = 0;
+      piMax_mana = Send(self, @GetInitialMaxMana);
+      piMana = piMax_mana;
+
+      poKill_target = $;
+      piKarma = 0;
+
+      piVigor = 80;
+      piExertion = 0;
+      % percent stomach is full
+      piStomach = 0;
+      piTimeLastStomachUpdate = 0;
+
+      piKill_count = 0;
+      piKill_count_decay = 0;
+      piJustified_kill_count = 0;
+
+      Send(self,@ZeroMods);
+
+      Send(self,@PlayerIsIntriguing);
+
+      Send(self,@SetPlayerFlag,#flag=PFLAG_MURDERER,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_HAUNTED,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_INTRIGUING,#value=FALSE);
+      
+      if NOT pbOptOutPvP
+      {
+         Send(self,@SetPlayerFlag,#flag=PFLAG_TEMPSAFE,#value=FALSE);
+      }
+
+      Send(SYS,@SystemRemoveFromChampionLists,#oldchamp=self);
+
+      Send(Send(sys,@GetAssassinGame),@RemoveFromGame,#who=self);
+      % Remove the guy from the Assassin's game.
+
+      piLight = 5;
+
+      Send(Send(SYS,@GetLibrary),@DeleteCompletedQuest,#who=self,#id=-1);
+      Send(&QuestX,@CancelQuester,#quester=self);
+      Send(self,@ClearQuestHistory);
+      Send(Send(SYS,@GetLore),@PlayerSuicides,#who=self);
+
+      if Send(SYS,@GetLastMurderer) = self
+      {
+         Send(SYS,@ClearLastMurderer);
+      }
+
+      Send(Send(SYS,@FindRoomByNum,#num=RID_NEWB1),@Teleport,#what=self);
+
+      Send(self,@AddDefaultSpells);
+      Send(self,@AddDefaultSkills);
+
+      return;
+   }
+
    ResetCharacter()
    "Setup default stuff"
    {
@@ -2812,7 +3298,11 @@ messages:
       Send(self,@SetPlayerFlag,#flag=PFLAG_PKILL_ENABLE,#value=FALSE);
       Send(self,@SetPlayerFlag,#flag=PFLAG_PKILL_LOCK,#value=FALSE);
       Send(self,@SetPlayerFlag,#flag=PFLAG_INTRIGUING,#value=FALSE);
-      Send(self,@SetPlayerFlag,#flag=PFLAG_TEMPSAFE,#value=FALSE);
+
+      if NOT pbOptOutPvP
+      {
+         Send(self,@SetPlayerFlag,#flag=PFLAG_TEMPSAFE,#value=FALSE);
+      }
 
       Send(SYS,@SystemRemoveFromChampionLists,#oldchamp=self);
 
@@ -2825,6 +3315,7 @@ messages:
       % Remove the guy from the Assassin's game.
 
       Send(self,@RemoveAllEnchantments,#report=FALSE);
+
       piLight = 5;
 
       % Be sure they aren't declared a 'former member' by any existing guilds.
@@ -2862,6 +3353,7 @@ messages:
    AddDefaultSkills()
    "Add the skills that all players have."
    {
+      Send(self,@AddSkill,#num=SKID_AWARENESS,#initial=TRUE);
       return;
    }
 
@@ -3146,6 +3638,15 @@ messages:
       return;
    }
 
+   UnboundEnergyTimer()
+   {
+      ptUnboundEnergy = $;
+
+      Send(self,@LoseUnboundEnergy);
+
+      return;
+   }
+
    HealthTimer()
    {
       local iDifference;
@@ -3160,6 +3661,32 @@ messages:
       else
       {
          Send(self,@LoseHealth,#amount=-iDifference,#decay=TRUE,#precision=TRUE);
+      }
+
+      return;
+   }
+
+   FinishTranceEarly(oTrance=$)
+   {
+      local i;
+      
+      foreach i in plEnchantments
+      {
+         if Nth(i,2) = oTrance
+         {
+            Post(Nth(i,2),@EndEnchantment,#who=self,#state=Nth(i,3));
+
+            if Nth(i,1) <> $
+               AND IsTimer(Nth(i,1))
+            {
+               DeleteTimer(Nth(i,1));
+               SetNth(i,1,$);
+            }
+
+            Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
+                 #type=ENCHANTMENT_PLAYER);
+            plEnchantments = DelListElem(plEnchantments,i);
+         }
       }
 
       return;
@@ -3207,11 +3734,6 @@ messages:
             else
             {
                Send(self,@ResetPlayerFlagList,#who=self);
-            }
-
-            if poOwner <> $
-            {
-               Send(poOwner,@SomethingChanged,#what=self);
             }
 
             if poOwner <> $
@@ -3333,6 +3855,8 @@ messages:
          }
       }
 
+      Send(self,@UnReserveAllSpells);
+
       plPassiveImprovement = $;
 
       return;
@@ -3372,6 +3896,8 @@ messages:
             removedSomething = TRUE;
          }
       }
+
+      Send(self,@UnReserveAllSpells);
 
       % Just to be sure, reset the player's flag list.
       % this should remove any excess flags like invis or shadowform.
@@ -3524,6 +4050,14 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if Send(First(i),@IsIllusion)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+
       % Kludgy, but oh well.  Not like any other code from this era is
       % exactly well-engineered or even "good", really.
       foreach i in plActive
@@ -3551,10 +4085,18 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if Send(First(i),@GetSchool) = school
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+
       return;
    }
 
-   RemoveEnchantment(what = $, report=TRUE)
+   RemoveEnchantment(what = $, report=TRUE, remain=FALSE)
    "If have a current enchantment set by <what>, end it."
    {
       local i,state;
@@ -3585,7 +4127,7 @@ messages:
             }
 
             Send(Nth(i,2),@RemoveEnchantmentEffects,#who=self,
-                  #state=state,#report=report);
+                  #state=state,#report=report,#remain=remain);
 
             Send(self,@ShowRemoveEnchantment,#what=Nth(i,2),
                   #type=ENCHANTMENT_PLAYER);
@@ -3613,6 +4155,14 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         if First(i) = what
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
+         }
+      }
+
       return;
    }
 
@@ -3627,6 +4177,14 @@ messages:
          if IsClass(First(i),class)
          {
             plPassiveImprovement = DelListElem(plPassiveImprovement,i);
+         }
+      }
+
+      foreach i in plReservedSpells
+      {
+         if IsClass(First(i),class)
+         {
+            Send(self,@UnReserveSpell,#oSpell=First(i));
          }
       }
 
@@ -3657,6 +4215,12 @@ messages:
          }
       }
 
+      foreach i in plReservedSpells
+      {
+         Send(self,@ShowAddEnchantment,#what=Nth(i,1),
+                                       #type=ENCHANTMENT_PLAYER);
+      }
+
       if ptSecondWind <> $
       {
          Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,
@@ -3666,6 +4230,26 @@ messages:
       {
          Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSpellByNum,
             #num=SID_CRYSTALIZE_MANA),#type=ENCHANTMENT_PLAYER);
+      }
+
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@IsSneaking,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@IsHiding,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_HIDE),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      if Send(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@IsSpying,#who=self)
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(SYS,@FindSkillByNum,#num=SKID_SPY),#type=ENCHANTMENT_PLAYER);
+      }
+      
+      If Send(self,@GetStance) <> $
+      {
+         Send(self,@ShowAddEnchantment,#what=Send(self,@GetStance),#type=ENCHANTMENT_PLAYER);
       }
 
       return;
@@ -4272,6 +4856,7 @@ messages:
          oGuild = poGuild;
          if oVictimGuild <> $
             AND oGuild <> $
+            AND NOT IsClass(oGuild,&NecromancerGuild)
             AND (oGuild = oVictimGuild
                OR Send(oGuild,@IsAlly,#otherguild=oVictimGuild))
          {
@@ -4721,10 +5306,6 @@ messages:
 
             return FALSE;
          }
-
-         % Get booted.
-         Send(self,@MsgSendUser,#message_rsc=rMessage);
-         Send(self,@ResignFaction);
       }
 
       return TRUE;
@@ -4762,6 +5343,7 @@ messages:
 
       % Check attack time.
       if NOT Send(self,@IsOkayAttackTime)
+         AND NOT IsClass(stroke_obj,&Throw)
       {
          return FALSE;
       }
@@ -4893,7 +5475,9 @@ messages:
 
       % Special case:  Ranged weapons in windy room.
       %  Do this after paying the costs so that the arrow is used.
-      if use_weapon <> $ AND IsClass(use_weapon,&RangedWeapon)
+      if use_weapon <> $
+         AND (IsClass(use_weapon,&RangedWeapon)
+              OR IsClass(stroke_obj,&Throw))
       {
          lWindsState = Send(self,@GetMostPowerfulRadiusEnchantmentState,
                               #byClass=&Winds);
@@ -4980,6 +5564,14 @@ messages:
 
          if iDist > iSquareRange
          {
+            if NOT IsClass(stroke_obj,&Throw)
+               AND Send(self,@GetSkillAbility,#skill_num=SKID_THROW) > 0
+            {
+               Post(Send(SYS,@FindSkillByNum,#num=SKID_THROW),@TryThrow,
+                     #who=self,#what=oTarget,#use_weapon=use_weapon);
+               return FALSE;
+            }
+
             Send(self,@SendAttackOutOfRangeMessage,#what=oFinalTarget,
                  #use_weapon=use_weapon,#stroke_obj=stroke_obj);
 
@@ -5103,6 +5695,12 @@ messages:
          iOffense = iOffense / 2;
       }
 
+      if Send(self,@GetStance) <> $
+      {
+         iOffense = Send(Send(self,@GetStance),@LastPriorityModifyHitRoll,
+                          #who=self,#what=what,#hit_roll=iOffense);
+      }
+
       return Bound(iOffense,1,2000);
    }
 
@@ -5111,7 +5709,7 @@ messages:
    "Ranges from 1 to 2000."
    {
       local i, oWeapon, oShield, iParry, iDodge, iBlock, iAgility,
-            iDefense, iHealth, oMonster;
+            iDefense, iHealth, oMonster, iShocked;
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5161,7 +5759,22 @@ messages:
       iDefense = iDefense + Send(Send(SYS,@GetParliament),
                                  @GetFactionDefenseBonus,#who=self);
 
-      return Bound(iDefense,1,2000);
+      % Check for Shocked status effect, which lowers defense.
+      iShocked = Send(self,@GetStatusEffect,#type=STATUS_SHOCKED);
+      if iShocked > 0
+      {
+         iDefense = iDefense - (iShocked * Send(SETTINGS_OBJECT,
+                                                @GetElementalMultiple,
+                                                #type=STATUS_SHOCKED));
+      }
+
+      if Send(self,@GetStance) <> $
+      {
+         iDefense = Send(Send(self,@GetStance),@LastPriorityModifyDefensePower,
+                         #who=self,#what=what,#defense_power=iDefense);
+      }
+
+      return bound(iDefense,1,2000);
    }
 
    % The next three messages deal with the three defense skills.  These
@@ -5323,9 +5936,15 @@ messages:
    }
 
    % This is the type of damage done.
-   GetDamageType(what = $, use_weapon = $)
+   GetDamageType(what = $, use_weapon = $, stroke_obj = $)
    {
       local oWeapon, oMonster;
+
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetDamageType,#who=self);
+      }
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5353,9 +5972,15 @@ messages:
       return Send(oWeapon,@GetAttackType);
    }
 
-   GetSpellType(what = $, use_weapon = $)
+   GetSpellType(what = $, use_weapon = $, stroke_obj = $, damaging_now = FALSE)
    {
-      local oWeapon, oMonster;
+      local oWeapon, oMonster, oTouchSpell;
+      
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         return Send(stroke_obj,@GetSpellType,#who=self);
+      }
 
       % Morphed?
       oMonster = Send(self,@GetIllusionForm);
@@ -5374,10 +5999,37 @@ messages:
          oWeapon = use_weapon;
       }
 
+      if Send(self,@GetSkillAbility,#Skill_num=SKID_CHARGED_CLUTCH) > 0
+         AND oWeapon <> $
+         AND IsClass(oWeapon,&Weapon)
+         AND NOT IsClass(oWeapon,&TouchAttackSpell)
+         AND NOT IsClass(oWeapon,&RangedWeapon)
+         AND NOT IsClass(oWeapon,&NeruditeSword)
+      {
+         oTouchSpell = Send(self,@GetActiveTouchSpell);
+         
+         if oTouchSpell <> $
+         {
+            return Send(Send(SYS,@FindSkillByNum,#num=SKID_CHARGED_CLUTCH),
+                        @ModifyWeaponSpellType,
+                        #who=self,
+                        #oWeapon=oWeapon,
+                        #oTouchSpell=oTouchSpell,
+                        #damaging_now=damaging_now);
+         }
+      }
+
       if oWeapon = $
       {
          % No weapon means we are punching, no magical damage
          return 0;
+      }
+
+      if Send(self,@GetStance) <> $
+         AND IsClass(Send(self,@GetStance),&ChargedClutchStance)
+         AND NOT IsClass(oWeapon,&RangedWeapon)
+      {
+         return Send(Send(self,@GetStance),@GetSpellType,#who=self);
       }
 
       return Send(oWeapon,@GetAttackSpell);
@@ -5423,7 +6075,8 @@ messages:
    {
       local i, j, iResistance, oSoldierShield, gainchance, color_rsc,
             iDuration, oSpell, oGort,iLimit, origdamage, oWeapon, shrunken,
-            bAttackerEmpowered, bShielded;
+            bAttackerEmpowered, bShielded, iCorrode, iCorrodeMultiple,
+            iCorrodeReduction, iDamagePreArmor;
 
       if NOT precision
       {
@@ -5455,7 +6108,8 @@ messages:
                            #what=what,#damage=damage,
                            #atype=atype,#aspell=aspell);
          }
-         
+
+         iDamagePreArmor = damage;
          foreach i in plDefense_modifiers
          {
             damage = Send(i,@ModifyDefenseDamage,#who=self,#what=what,
@@ -5463,7 +6117,17 @@ messages:
                            #report_resistance=report_resistance);
             Send(i,@DefendingHit,#who=self,#what=what);
          }
-      
+
+         iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+         if iCorrode > 0
+         {
+            iCorrodeMultiple = Send(SETTINGS_OBJECT,
+                               @GetElementalMultiple,#type=STATUS_CORRODE);
+         
+            iCorrodeReduction = (iCorrode/iCorrodeMultiple);
+            damage = bound(damage + iCorrodeReduction*100,1,iDamagePreArmor);
+         }
+
          iResistance = Send(self,@ResistanceCheck,#atype=atype,#aspell=aspell);
 
          foreach i in plRadiusEnchantments
@@ -5485,10 +6149,55 @@ messages:
             }
          }
 
+         if IsClass(what,&Player)
+         {
+            if (aspell & ATCK_SPELL_HOLY
+               OR aspell & ATCK_SPELL_UNHOLY)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_DEVOTION) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_DEVOTION),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+            if (aspell & ATCK_SPELL_COLD
+               OR aspell & ATCK_SPELL_ACID)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENTROPY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENTROPY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+            if (aspell & ATCK_SPELL_FIRE
+               OR aspell & ATCK_SPELL_SHOCK)
+               AND Send(what,@GetSkillAbility,#Skill_num=SKID_ENERGY) > 0
+            {
+               bonus = Send(Send(SYS,@FindSkillByNum,#num=SKID_ENERGY),
+                                     @AddDamage,
+                                     #who=what,
+                                     #damage=bonus,
+                                     #aspell=aspell);
+            }
+         }
+
          % Add attmods AFTER resistance/suscep mods.
          damage = damage + bonus;
 
          damage = damage * scalefactor / 1000;
+      }
+
+      if IsClass(what,&Player)
+         AND Send(what,@GetStance) <> $
+      {
+         damage = Send(Send(what,@GetStance),@LastPriorityModifyDamage,#who=what,#what=self,#damage=damage);
+      }
+      
+      if Send(self,@GetStance) <> $
+      {
+         damage = Send(Send(self,@GetStance),@LastPriorityModifyDefenseDamage,#who=self,#what=what,#damage=damage);
       }
 
       % Make sure we don't deal negative damage.
@@ -5681,6 +6390,25 @@ messages:
       
       Send(self,@AddHurtMeRecently,#who=what,#amount=damage);
 
+      % Apply possible elemental status effects
+      if atype = 0
+      {
+         if aspell <> 0
+         {
+            Send(self,@ApplyElementalStatusEffects,#damage=damage/100,
+                      #aspell=aspell,#what=what);
+         }
+      }
+      else
+      {
+         % Apply only half the effects from partially magical attacks
+         if aspell <> 0
+         {
+            Send(self,@ApplyElementalStatusEffects,#damage=(damage/100/2),
+                      #aspell=aspell,#what=what);
+         }
+      }
+
       return damage;
    }
 
@@ -5738,13 +6466,7 @@ messages:
       if oWeapon = $
       {
          % This will return $ if there's no Touch Attacks enchanting player.
-         oWeapon = Send(self,@GetEnchantmentsByClass,
-               #EnchClass=&TouchAttackSpell);
-         if oWeapon <> $
-         {
-            % The spell object is the second element of the list. Get that.
-            oWeapon = Nth(first(oWeapon),2);
-         }
+         oWeapon = Send(self,@GetActiveTouchSpell);
       }
 
       return oWeapon;
@@ -5818,7 +6540,7 @@ messages:
    "Called when the player killed something."
    {
       local bReflection, i, oSoldierShield, monstkarma, iChance, oEnemyGuild,
-      shrunken, oVictimRoom;
+      shrunken, oVictimRoom, oObject;
 
       % If we killed someone or something, we did damage.
       Send(self,@SetPlayerFlag,#flag=PFLAG_DID_DAMAGE,#value=TRUE);
@@ -5874,6 +6596,13 @@ messages:
       if oSoldierShield <> $
       {
          Send(oSoldierShield,@KilledSomething,#what=what);
+      }
+
+      % Let JOF know we killed something.
+      oObject = Send(self,@FindUsing,#class=&JewelOfFroz);
+      if oObject <> $
+      {
+         Send(oObject,@KilledSomething,#what=what);
       }
 
       if IsClass(what,&User)
@@ -5997,7 +6726,7 @@ messages:
       }
 
       Send(what,@Killed,#what=self,#stroke_obj=stroke_obj);
-      Send(self,@DrawHPChance);
+      %Send(self,@DrawHPChance);
 
       % Report to shrunken head
       shrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
@@ -6402,7 +7131,7 @@ messages:
    "Have we waited long enough since the last attack/spell? Sets new "
    "valid attack time (time in msec, default 1 second)."
    {
-      local i;
+      local i, iChilled, iChilledMultiple, iChilledTotal;
 
       if ptAttackTimer <> $
       {
@@ -6420,6 +7149,22 @@ messages:
 
       if i > 0
       {
+         iChilled = Send(self,@GetStatusEffect,#type=STATUS_CHILLED);
+         if iChilled > 0
+         {
+            iChilledMultiple = Send(SETTINGS_OBJECT,
+                                @GetElementalMultiple,#type=STATUS_CHILLED);
+            iChilledTotal = iChilled * iChilledMultiple;
+            
+            if iChilledTotal > 100
+            {
+               while iChilledTotal > 100
+               {
+                  i = i + 100;
+                  iChilledTotal = iChilledTotal - 100;
+               }
+            }
+         }
          ptAttackTimer = CreateTimer(self,@AttackTimer,i);
       }
 
@@ -6717,7 +7462,14 @@ messages:
       iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                            #who=self,#hpregen=TRUE);
 
-      return bound(iTime,1000,60000);
+      iTime = bound(iTime,1000,60000);
+
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,#who=self,#iTime=iTime);
+      }
+
+      return iTime;
    }
 
    CalculateManaTime()
@@ -6725,7 +7477,7 @@ messages:
    {
       local iTime, oSpell, iSpellPower;
 
-      if piMana > piMax_mana
+      if piMana > piBaseMax_mana
       {
          iTime = BOOST_DECAY_TIME;
       }
@@ -6733,7 +7485,7 @@ messages:
       {
          iTime = BASE_REGEN_TIME + (25-Send(self,@GetMysticism))*1000;
          iTime = iTime * 200 / bound(piVigor,1,$);
-         iTime = iTime/ bound(piMax_Mana,1,$);
+         iTime = iTime/ bound(piBaseMax_mana,1,$);
 
          iTime = iTime - Send(Send(SYS,@GetParliament),@GetFactionRegenBonus,
                               #who=self,#hpregen=FALSE);
@@ -6752,6 +7504,11 @@ messages:
                            #time=iTime);
          }
       }
+                     
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRejuvenationTime,#who=self,#iTime=iTime);
+      }
 
       return iTime;
    }
@@ -6761,7 +7518,7 @@ messages:
       % This is the only place we need piStomach to be correct
       Send(self,@UpdateStomach);
 
-      if (piStomach + filling) > 100
+      if (piStomach + filling) > piStomachMax
       {
          if what = $ OR NOT Send(what,@IsBeverage)
          {
@@ -6786,6 +7543,22 @@ messages:
       return;
    }
 
+   LoseUnboundEnergy()
+   {
+      local iReduction;
+
+      if NOT Send(self,@IsInCannotInteractMode)
+      {
+         iReduction = Bound(piUnbound_energy * Send(SETTINGS_OBJECT,@GetUnboundDecay)
+                           / 1000,1,$);
+         piUnbound_energy = piUnbound_energy - iReduction;
+      }
+
+      Send(self,@NewUnboundEnergy);
+
+      return;
+   }
+
    LoseHealth(amount = $, decay = FALSE, precision = FALSE)
    "decay = TRUE if you lose a HP over time because you are boosted over max "
    "by some sort of vamp effect. If this is true, you shouldn't break a trance."
@@ -6800,7 +7573,7 @@ messages:
          return;
       }
 
-      if piFlags & PFLAG_TRANCE AND NOT decay
+      if NOT decay
       {
          Send(self,@BreakTrance,#event=EVENT_DAMAGE);
       }
@@ -6840,7 +7613,7 @@ messages:
    GainHealthNormal(amount = $, precision = FALSE)
    "Don't add beyond piMax_health"
    {
-      local iOldhealth;
+      local iOldhealth, iMantled, iMantledDivisor;
 
       if amount = $
       {
@@ -6857,9 +7630,17 @@ messages:
 
       iOldhealth = piHealth;
 
-      if amount < 0
+      iMantled = Send(self,@GetStatusEffect,#type=STATUS_MANTLED);
+      if iMantled > 0
       {
-         return;
+         iMantledDivisor = Send(SETTINGS_OBJECT,
+                            @GetElementalMultiple,#type=STATUS_MANTLED);
+         amount = amount - (iMantled/iMantledDivisor)*100;
+      }
+
+      if amount < 1
+      {
+         return 0;
       }
 
       if piHealth > piMax_health*100
@@ -6879,6 +7660,45 @@ messages:
       Send(self,@NewHealth);
 
       return (piHealth - iOldhealth);
+   }
+
+   NewUnboundEnergy(bDelay = FALSE)
+   {
+      if piUnbound_energy < 0
+      {
+         piUnbound_energy = 0;
+      }
+
+      if ptUnboundEnergy = $
+      {
+         if piUnbound_energy > 0
+         {
+            if bDelay
+            {
+               ptUnboundEnergy = CreateTimer(self,@UnboundEnergyTimer,
+                                       Send(SETTINGS_OBJECT,@GetUnboundDelay));
+            }
+            else
+            {
+               ptUnboundEnergy = CreateTimer(self,@UnboundEnergyTimer,1000);
+            }
+         }
+      }
+      else if piUnbound_energy = 0
+      {
+         DeleteTimer(ptUnboundEnergy);
+         ptUnboundEnergy = $;
+      }
+      else if bDelay
+      {
+         DeleteTimer(ptUnboundEnergy);
+         ptUnboundEnergy = CreateTimer(self,@UnboundEnergyTimer,
+                                 Send(SETTINGS_OBJECT,@GetUnboundDelay));
+      }
+
+      Send(self,@DrawUnboundEnergy);
+
+      return;
    }
 
    NewHealth()
@@ -6973,8 +7793,9 @@ messages:
 
       piBase_max_health = Bound(piBase_max_health + amount, 20,
                               (100 + iApparentStamina));
-      % Bound ourselves at the top end to 150.
-      piBase_max_health = Bound(piBase_max_health,$,150);
+      % Bound ourselves at the top end.
+      piBase_max_health =
+                     Bound(piBase_max_health,$,100+Send(self,@GetMaxStamina));
       amount = piBase_max_health - iPrev_max;
 
       % Give them the "further info" gmail if they've advanced to 25.
@@ -6988,6 +7809,18 @@ messages:
 
       Send(self,@PlayerIsIntriguing);
       Send(self,@GainMaxhealth,#amount=amount);
+
+      if piBase_max_health = 100 + Send(self,@GetMaxStamina)
+         AND amount > 0
+      {
+         if Send(self,@GetLearnCapped)
+         {
+            Send(self,@MsgSendUser,#message_rsc=reincarnation_ready);
+         }
+         else{
+            Send(self,@MsgSendUser,#message_rsc=reincarnation_need_learn);
+         }
+      }
 
       return;
    }
@@ -7184,7 +8017,8 @@ messages:
 
    ComputeMaxMana()
    {
-      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility;
+      local index, iNodeList, oNode, i, oCrystalizeMana, iCrystalizeManaAbility,
+            iSumPercentReduction;
 
       index = 1;
       iNodelist = piNodelist;
@@ -7235,6 +8069,17 @@ messages:
          piMax_mana = Send(self, @GetInitialMaxMana);
       }
 
+      piBaseMax_mana = piMax_mana;
+      
+      iSumPercentReduction = 0;
+      foreach i in plReservedSpells
+      {
+         iSumPercentReduction = iSumPercentReduction + Nth(i,2);
+      }
+      iSumPercentReduction = Bound(iSumPercentReduction,0,100);
+      
+      piMax_mana = piMax_mana - (piMax_mana * iSumPercentReduction)/100;
+
       Send(self,@NewMana);
 
       return;
@@ -7281,8 +8126,8 @@ messages:
 
       if plSchoolCasts = $
       {
-         % 11 elements for now
-         plSchoolCasts = [ 0,0,0,0,0,0,0,0,0,0,0 ];
+         % 15 elements for now
+         plSchoolCasts = [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ];
       }
 
       if school = $
@@ -7439,32 +8284,62 @@ messages:
 
    GetRawMight()
    {
-      return bound(piMight,1,50);
+      return bound(piMight,1,Send(self,@GetMaxMight));
    }
 
    GetRawIntellect()
    {
-      return bound(piIntellect,1,50);
+      return bound(piIntellect,1,Send(self,@GetMaxIntellect));
    }
 
    GetRawAgility()
    {
-      return bound(piAgility,1,50);
+      return bound(piAgility,1,Send(self,@GetMaxAgility));
    }
 
    GetRawAim()
    {
-      return bound(piAim,1,50);
+      return bound(piAim,1,Send(self,@GetMaxAim));
    }
 
    GetRawStamina()
    {
-      return bound(piStamina,1,50);
+      return bound(piStamina,1,Send(self,@GetMaxStamina));
    }
 
    GetRawMysticism()
    {
-      return bound(piMysticism,1,50);
+      return bound(piMysticism,1,Send(self,@GetMaxMysticism));
+   }
+
+   GetMaxMight()
+   {
+      return 50 + piRacialMightMod;
+   }
+   
+   GetMaxIntellect()
+   {
+      return 50 + piRacialIntellectMod;
+   }
+   
+   GetMaxStamina()
+   {
+      return 50 + piRacialStaminaMod;
+   }
+   
+   GetMaxAgility()
+   {
+      return 50 + piRacialAgilityMod;
+   }
+   
+   GetMaxMysticism()
+   {
+      return 50 + piRacialMysticismMod;
+   }
+   
+   GetMaxAim()
+   {
+      return 50 + piRacialAimMod;
    }
 
    GetKarma()
@@ -7893,8 +8768,8 @@ messages:
 
       lOldList = plSchools;
 
-      % 11 elements right now.
-      plSchools = [ 0,0,0,0,0,0,0,0,0,0,0 ];
+      % 15 elements right now.
+      plSchools = [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ];
 
       foreach i in plSpells
       {
@@ -7904,6 +8779,11 @@ messages:
          if IsClass(oAbility,&spell)
          {
             iSchool = Send(oAbility,@GetSchool);
+            if iSchool = $
+            {
+               debug(GetClass(oAbility));
+               continue;
+            }
             iValue = Nth(plSchools,iSchool);
             SetNth(plSchools,iSchool,(iValue+iAbility));
          }
@@ -8535,7 +9415,7 @@ messages:
    "Admin supported\n"
    "Removes a Skill by Skill ID from the user's castable list of Skills"
    {
-      local oSkill, i, iVigorChange;
+      local oSkill, i;
 
       oSkill = Send(SYS,@FindSkillbyNum,#num=num);
       if oSkill = $
@@ -8549,10 +9429,7 @@ messages:
       % resting vigor threshold.
       if num = SKID_SECOND_WIND
       {
-         iVigorChange = (Send(self,@GetSkillAbility,
-                              #Skill_num=SKID_SECOND_WIND) + 1) / 5;
-         Post(self,@SetVigorRestThreshold,
-               #amount=piVigor_rest_threshold - iVigorChange);
+         Post(self,@SetVigorRestThreshold);
       }
 
       foreach i in plSkills
@@ -8783,11 +9660,21 @@ messages:
    "stamina, all the way down to half for those with high staminas."
    {
       local i, dodgeskill, oSkill, monster_level, gain, gainmult, roll,
-            oWeapon, lBuilderGroup, bGainedHP;
+            oWeapon, lBuilderGroup, bGainedHP, iExperienceSystem, iUnbound,
+            iDist, iDifference, bAtMaxHp;
 
+      iExperienceSystem = Send(SETTINGS_OBJECT,@GetExperienceSystem);
       gain = 0;
       roll = FALSE;
       bGainedHP = FALSE;
+      if Send(self,@GetExperienceNeeded) = 0
+      {
+         bAtMaxHp = 1;
+      }
+      else
+      {
+         bAtMaxHp = 0;
+      }
 
       % Some things just never allow advancement.
       % Can advance in arena if realdeath is on in an arena.
@@ -8800,7 +9687,8 @@ messages:
 
       if IsClass(what,&User)
       {
-         monster_level = Send(what,@GetBaseMaxHealth);
+         % Set a reasonable upper bound to handle event characters.
+         monster_level = Bound(Send(what,@GetBaseMaxHealth),$,1000);
       }
       else
       {
@@ -8827,106 +9715,221 @@ messages:
 
          if monster_level > piBase_Max_health
          {
+            if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+               AND Send(SETTINGS_OBJECT,@GetCapModernExperience)
+            {
+               % Cap XP so player doesn't advance too quickly.
+               monster_level = Send(self,@GetBaseMaxHealth);
+            }
+
             if killing_blow
                AND ((piFlags & PFLAG_TOOK_DAMAGE)
                   OR (piFlags & PFLAG_DODGED))
             {
-               % Player took damage and landed killing blow
-               gain = 2;
-               roll = TRUE;
-            }
-            else
-            {
-               % Player either did not take damage, but did killing blow (mage),
-               %  or did take damage, did not land killing blow, or
-               %  it's a group member kill.
-               
-               gain = 1;
-
-               % We still roll for a tougher if we killed the monster but
-               % didn't take damage or dodge, if we helped kill the monster,
-               % or if it was a group member kill and the setting for group
-               % member toughers is set to TRUE.
-               if NOT group_member_kill
-                  OR Send(SETTINGS_OBJECT,@GetGroupTougherSetting)
+               if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
                {
+                  % Player took damage and landed killing blow
+                  gain = 2;
                   roll = TRUE;
                }
-               
-               % Inform the player that a group kill successfully garnered XP.
-               if group_member_kill
-                  AND group_member <> $
-                  AND gain = 1
+               else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
                {
-                  Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
-                        #parm1=Send(group_member,@GetName),
-                        #parm2=Send(what,@GetName));
+                  % We killed and fought a stronger monster.
+                  % Full XP.
+                  gain = monster_level;
                }
-               
-               % Give an informative message about non-group
-               % kills that are still shared
-               if NOT killing_blow
-                  AND NOT group_member_kill
-                  AND group_member <> $
+            }
+            else
+            {
+               if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
                {
-                  Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
-                        #parm1=Send(group_member,@GetName),
-                        #parm2=Send(what,@GetName));
+                  % Player either did not take damage, but did killing blow,
+                  %  or did take damage, did not land killing blow, or
+                  %  it's a group member kill.
+               
+                  gain = 1;
+
+                  % We still roll for a tougher if we killed the monster but
+                  % didn't take damage or dodge, if we helped kill the monster,
+                  % or if it was a group member kill and the setting for group
+                  % member toughers is set to TRUE.
+                  if NOT group_member_kill
+                     OR Send(SETTINGS_OBJECT,@GetGroupTougherSetting)
+                  {
+                     roll = TRUE;
+                  }
+               
+                  % Inform the player that a group kill successfully garnered XP.
+                  if group_member_kill
+                     AND group_member <> $
+                     AND gain = 1
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
+                           #parm1=Send(group_member,@GetName),
+                           #parm2=Send(what,@GetName));
+                  }
+               
+                  % Give an informative message about non-group
+                  % kills that are still shared
+                  if NOT killing_blow
+                     AND NOT group_member_kill
+                     AND group_member <> $
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
+                           #parm1=Send(group_member,@GetName),
+                           #parm2=Send(what,@GetName));
+                  }
+               }
+               else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+               {
+                  % Player either did not take damage, but did killing blow,
+                  %  or did take damage, did not land killing blow, or
+                  %  it's a group member kill.
+                  %
+                  % Half XP.
+                  gain = monster_level/2;
+               
+                  % Inform the player that a group kill successfully garnered XP.
+                  if group_member_kill
+                     AND group_member <> $
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
+                           #parm1=Send(group_member,@GetName),
+                           #parm2=Send(what,@GetName));
+                  }
+               
+                  % Give an informative message about non-group
+                  % kills that are still shared
+                  if NOT killing_blow
+                     AND NOT group_member_kill
+                     AND group_member <> $
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=group_experience_rsc,
+                           #parm1=Send(group_member,@GetName),
+                           #parm2=Send(what,@GetName));
+                  }
                }
             }
          }
          else
          {
-            % Monster was equal or close to player level.  Small bonus,
-            %  no roll chance.
-            if (monster_level + 5) > piBase_Max_health
-               AND IsClass(what,&monster) AND killing_blow 
-               AND ((piFlags & PFLAG_TOOK_DAMAGE)
-                  OR (piFlags & PFLAG_DODGED))
+            if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
             {
-               gain = 1;
-            }
-            else
-            {
-               % Monster was too easy for player to kill!
-               if random(1,100) < 30 AND killing_blow
+               % Monster was equal or close to player level.  Small bonus,
+               %  no roll chance.
+               if (monster_level + 5) > piBase_Max_health
+                  AND IsClass(what,&monster) AND killing_blow 
+                  AND ((piFlags & PFLAG_TOOK_DAMAGE)
+                     OR (piFlags & PFLAG_DODGED))
                {
-                  Send(self,@MsgSendUser,#message_rsc=player_spits);
+                  gain = 1;
+               }
+               else
+               {
+                  % Monster was too easy for player to kill!
+                  if random(1,100) < 30 AND killing_blow
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=player_spits);
+                  }
+               }
+            }
+            else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+            {
+               % Monster was equal or close to player level. Small bonus.
+               if (monster_level + 5) > piBase_Max_health
+                  AND IsClass(what,&monster) AND killing_blow 
+                  AND ((piFlags & PFLAG_TOOK_DAMAGE)
+                     OR (piFlags & PFLAG_DODGED))
+               {
+                  gain = monster_level/4;
+               }
+               else
+               {
+                  % Monster was too easy for player to kill!
+                  if random(1,100) < 30 AND killing_blow
+                  {
+                     Send(self,@MsgSendUser,#message_rsc=player_spits);
+                  }
                }
             }
          }
 
-         % Give newbies a little bonus.
-         if piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
+         if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
          {
-            gain = gain + 1;
-         }
-         else
-         {
-            % Give solo pkill-enabled builders a little bonus, for
-            % appropriate monsters. This will roughly equal building 
-            % with one other player in the room. Bonus requires that the 
-            % player is fighting normally (no firewalls / distance killing)
-            lBuilderGroup = Send(poOwner,@GetBuilderGroup);
-            if (lBuilderGroup = $
-                  OR Length(lBuilderGroup) = 1
-                  OR (FindListElem(lBuilderGroup,self) = 0
-                     AND (piPreferences & ~CF_GROUPING)))
-               AND NOT group_member_kill
-               AND killing_blow
-               AND (monster_level + 5) > piBase_Max_health
-               AND ((piFlags & PFLAG_TOOK_DAMAGE)
-                  OR (piFlags & PFLAG_DODGED))
+            % Give newbies a little bonus.
+            if piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
             {
                gain = gain + 1;
             }
+            else
+            {
+               % Give solo pkill-enabled builders a little bonus, for
+               % appropriate monsters. This will roughly equal building 
+               % with one other player in the room. Bonus requires that the 
+               % player is fighting normally (no firewalls / distance killing)
+               lBuilderGroup = Send(poOwner,@GetBuilderGroup);
+               if (lBuilderGroup = $
+                     OR Length(lBuilderGroup) = 1
+                     OR (FindListElem(lBuilderGroup,self) = 0
+                        AND (piPreferences & ~CF_GROUPING)))
+                  AND NOT group_member_kill
+                  AND killing_blow
+                  AND (monster_level + 5) > piBase_Max_health
+                  AND ((piFlags & PFLAG_TOOK_DAMAGE)
+                     OR (piFlags & PFLAG_DODGED))
+               {
+                  gain = gain + 1;
+               }
+            }
          }
-         
-         % Give a bonus for Survival Rooms
-         if Send(what,@GetBoostedLevel) > 0
+         else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
          {
-            gain = gain + (Send(what,@GetBoostedLevel)
-                 / Send(Send(SYS,@GetSurvivalRoomMaintenance),@GetSurvivalXP));
+            % Give newbies a little bonus.
+            if piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
+            {
+               gain = gain * 150 / 100;
+            }
+            else
+            {
+               % Give solo pkill-enabled builders a little bonus, for
+               % appropriate monsters. This will roughly equal building 
+               % with one other player in the room. Bonus requires that the 
+               % player is fighting normally (no firewalls / distance killing)
+               lBuilderGroup = Send(poOwner,@GetBuilderGroup);
+               if (lBuilderGroup = $
+                     OR Length(lBuilderGroup) = 1
+                     OR (FindListElem(lBuilderGroup,self) = 0
+                        AND (piPreferences & ~CF_GROUPING)))
+                  AND NOT group_member_kill
+                  AND killing_blow
+                  AND (monster_level + 5) > piBase_Max_health
+                  AND ((piFlags & PFLAG_TOOK_DAMAGE)
+                     OR (piFlags & PFLAG_DODGED))
+               {
+                  gain = gain * 150 / 100;
+               }
+            }
+         }
+
+         if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
+         {
+            % Give a bonus for Survival Rooms
+            if Send(what,@GetBoostedLevel) > 0
+            {
+               gain = gain + (Send(what,@GetBoostedLevel)
+                    / Send(Send(SYS,@GetSurvivalRoomMaintenance),
+                            @GetSurvivalXP));
+            }
+         }
+         else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+         {
+            % Give a bonus for Survival Rooms
+            if Send(what,@GetBoostedLevel) > 0
+            {
+               gain = gain + (Send(what,@GetBoostedLevel) * 10
+                    / Send(Send(SYS,@GetSurvivalRoomMaintenance),
+                            @GetSurvivalXP));
+            }
          }
 
          % If they're cheesing the situation by fighting wussy monsters
@@ -8938,20 +9941,74 @@ messages:
             roll = FALSE;
          }
 
-         gainmult = Bound(Send(SETTINGS_OBJECT,
-                     @GetHPGainMultiplier),1,500);
+         gain = gain * Send(what,@GetChampionRewardMultiplier);
+         gainmult = Bound(Send(SETTINGS_OBJECT,@GetHPGainMultiplier),1,500);
          gain = gain * gainmult;
 
-         piGain_chance = piGain_chance + gain;
+         if iExperienceSystem = EXPERIENCE_SYSTEM_CLASSIC
+         {
+            piGain_chance = piGain_chance + gain;
+         }
+         else if iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
+         {
+            bGainedHP = Send(self,@AddExperience,#iAmount=gain);
+         }
+
+         % Also grant unbound energy for your own kills.
+         % Unbound energy allows free spell casts.
+         if IsClass(what,&Monster) AND killing_blow
+         {
+            % Let's figure the amount, mostly based on monster level.
+            iUnbound = monster_level * Send(SETTINGS_OBJECT,@GetUnboundAbsorption)
+               * (Random(30,80) + (Send(self,@GetMysticism) * 2 / 5)) / 10000;
+
+            % Scale with distance to victim.
+            iDist = Bound(Send(self,@SquaredFineDistanceTo3D,#what=what),1,$);
+            % 36864 is 3 range in fine units, cf. SquaredFineDistanceTo3D.
+            iUnbound = Bound(iUnbound * 36864 / iDist,$,iUnbound);
+
+            % Scale with player level.
+            iDifference = piMax_health - monster_level;
+            if iDifference > 10
+            {
+               iUnbound = Bound(iUnbound * 100 / (iDifference * iDifference),$,iUnbound);
+            }
+
+            % Not awarding any unbound energy to players who have recently been involved
+            % in PvP.
+            if Send(self,@GetLastPlayerAttackTime)
+               + Send(SETTINGS_OBJECT,@UnboundEnergyAttackDelaySec)
+               > GetTime()
+            {
+               if iUnbound > 0
+               {
+                  Send(self,@MsgSendUser,#message_rsc=player_unbound_energy_wasted);
+               }
+            }
+            else
+            {
+            
+               % Grant only one fourth of the energy if the mob didn't attack the player.
+               if ((piFlags & PFLAG_TOOK_DAMAGE) OR (piFlags & PFLAG_DODGED))
+               {
+                  Send(self,@AddUnboundEnergy,#iAmount=iUnbound);
+               }
+               else
+               {
+                  Send(self,@AddUnboundEnergy,#iAmount=iUnbound / 4);
+               }
+            }
+         }
 
          % Here, we work out if the player deserves a training point.
          % They qualify if they got at least one gain point from the monster,
          % and also got the killing blow (no double points from single mobs).
+         % Triple training points if at Max HP.
          if gain > 0
             AND killing_blow
-            AND piTraining_points < 1000
+            AND piTraining_points < TRAINING_POINT_CAP
          {
-            piTraining_points = piTraining_points + 1
+            piTraining_points = piTraining_points + 1 + bAtMaxHp*2
                + (Send(what,@GetBoostedLevel)
                / Send(Send(SYS,@GetSurvivalRoomMaintenance),@GetSurvivalTP));
 
@@ -8959,17 +10016,17 @@ messages:
             {
                if monster_level <= 121
                {
-                  piTraining_points = piTraining_points + 1;
+                  piTraining_points = piTraining_points + ((1 + bAtMaxHp*2)*Send(what,@GetChampionRewardMultiplier));
                }
                else
                {
                   if monster_level <= 150
                   {
-                     piTraining_points = piTraining_points + 2;
+                     piTraining_points = piTraining_points + ((2 + bAtMaxHp*4)*Send(what,@GetChampionRewardMultiplier));
                   }
                   else
                   {
-                     piTraining_points = piTraining_points + 3;
+                     piTraining_points = piTraining_points + ((3 + bAtMaxHp*6)*Send(what,@GetChampionRewardMultiplier));
 
                   }
                }
@@ -8978,7 +10035,7 @@ messages:
 
          % Let the player know how many training points they have, if they
          % either reached the max, or a multiple of 100.
-         if piTraining_points > 999
+         if piTraining_points > TRAINING_POINT_CAP
          {
             if piInform
             {
@@ -9011,7 +10068,9 @@ messages:
 
       % Draw the tougher chance bar. Send this here because RollForTougher
       % will also draw it, no need to do so twice.
+      % The modern experience system also draws at AddExperience.
       if NOT roll
+         AND NOT iExperienceSystem = EXPERIENCE_SYSTEM_MODERN
       {
          Post(self,@DrawHPChance);
       }
@@ -9125,11 +10184,150 @@ messages:
       return piGain_chance;
    }
 
+   AddExperience(iAmount=$)
+   {
+      local oShrunken;
+
+      if iAmount <> $
+         AND iAmount <> 0
+      {
+         % Can't gain XP if at max health
+         if piBase_Max_health >= 100+Send(self,@GetStamina)
+         {
+            return FALSE;
+         }
+         
+         piExperience = piExperience + iAmount;
+
+         if pbLogged_on
+         {
+            if iAmount > 0
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_experience_gained,
+                  #parm1=iAmount);
+            }
+            else
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_experience_lost,
+                  #parm1=iAmount);
+            }
+
+            Post(self,@DrawHPChance);
+         }
+         
+         if piExperience >= Send(self,@GetExperienceNeeded)
+         {
+            % In case of overages, give them all deserved HP boosts.
+            % But don't do all the other stuff multiple times.
+            while piExperience >= Send(self,@GetExperienceNeeded)
+            {
+               piExperience = piExperience - Send(self,@GetExperienceNeeded);
+               Send(self,@GainBaseMaxHealth,#amount=1);
+               
+               % Just reached max health!
+               if Send(self,@GetExperienceNeeded) = 0
+               {
+                  piExperience = 0;
+                  break;
+               }                  
+            }
+            if Send(self,@CheckLog)
+            {
+               Debug("LOG:  ",vrName," gained a health point: ",
+                     piMax_health,pibase_max_health);
+            }
+
+            Send(self,@EvaluatePKStatus);
+
+            if pbLogged_on
+            {
+               Send(self,@MsgSendUser,#message_rsc=player_improve_maxhealth);
+               Send(self,@WaveSendUser,#what=self,
+                     #wave_rsc=player_tougher_wav_rsc);
+
+               % Boost the player to max health, and give them 200 vigor.
+               Send(self,@MsgSendUser,
+                     #message_rsc=player_improve_health_invigorate);
+               piHealth = piMax_Health * 100;
+               Send(self,@DrawHealth);
+               Send(self,@EatSomething,#nutrition=200);
+               Post(self,@DrawOffense);
+               Post(self,@DrawDefense);
+               Post(self,@DrawHPChance);
+
+               % Report to shrunken head, if they have one.
+               oShrunken = Send(self,@FindHolding,#class=&ShrunkenHead);
+               if oShrunken <> $
+               {
+                  Send(oShrunken,@Tougher,#hp=pibase_max_health);
+               }
+            }
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+   
+   GetExperience()
+   {
+      return piExperience;
+   }
+
+   GetExperienceNeeded()
+   {
+      local iExperienceNeeded;
+      
+      if piBase_Max_health >= 100+Send(self,@GetStamina)
+      {
+         return 0;
+      }
+
+%     Classic system says:
+%     "A player will need, on average, to kill a number of monsters equal to"
+%     "their maxhealth to gain a HP.  This number is reduced by the player's"
+%     "stamina, all the way down to half for those with high staminas."
+      
+      % +1 because it's for the next hit point.
+      % Your base max health squared because you will have to kill,
+      % for example, 150 150-hp monsters to get your 150th hit point.
+      % Monsters give experience equal to their level.
+      iExperienceNeeded = (piBase_Max_health+1) * (piBase_Max_health+1);
+      
+      % Reduce experience needed by up to half at 50 stamina.
+      % No bound so that Staminas up to 70 still help.
+      iExperienceNeeded = iExperienceNeeded * (100-Send(self,@GetStamina))/100;
+      
+      iExperienceNeeded = bound(iExperienceNeeded,1,$);
+      
+      return iExperienceNeeded;
+   }
+
+   ConvertGainChanceToXP(iAmount=0)
+   {
+      local iExperience;
+      
+      % Two gain chance points is equivalent to one full kill of an equal
+      % level monster.
+      
+      iExperience = Send(self,@GetBaseMaxHealth);
+      iExperience = iExperience * iAmount / 2;
+      
+      return iExperience;
+   }
+
    AddGainChance(iAmount=$)
    {
       if iAmount <> $
          AND iAmount <> 0
       {
+         if Send(SETTINGS_OBJECT,@GetExperienceSystem) = EXPERIENCE_SYSTEM_MODERN
+         {
+            iAmount = Send(self,@ConvertGainChanceToXP,#iAmount=iAmount);
+            Send(self,@AddExperience,#iAmount=iAmount);
+            return;
+         }
+
          piGain_chance = piGain_chance + iAmount;
 
          if pbLogged_on
@@ -9152,6 +10350,65 @@ messages:
       return;
    }
 
+   AddUnboundEnergy(iAmount=0,report=TRUE)
+   {
+      % Add to total. Check reasonable limits first. You can't lose
+      % more points than you have and you can't get more points than
+      % you need to reach the cap.
+      iAmount = Bound(iAmount,-piUnbound_energy,Send(SETTINGS_OBJECT,@GetUnboundMax) - piUnbound_energy);
+      piUnbound_energy = iAmount + piUnbound_energy;
+
+      if (pbLogged_on AND report)
+      {
+         if iAmount > 0
+         {
+            Send(self,@MsgSendUser,#message_rsc=player_unbound_energy_gained,
+                  #parm1=iAmount);
+         }
+         else if iAmount < 0
+         {
+            Send(self,@MsgSendUser,#message_rsc=player_unbound_energy_lost,
+                  #parm1=-iAmount);
+         }
+      }
+
+      % Only delay decay if we gain points.
+      if iAmount > 0
+      {
+         Send(self,@NewUnboundEnergy,#bDelay=TRUE);
+      }
+      else
+      {
+         Send(self,@NewUnboundEnergy,#bDelay=FALSE);
+      }
+
+      return;
+   }
+
+   WipeUnboundEnergy(report=TRUE)
+   {
+      if (pbLogged_on AND report AND piUnbound_energy > 0)
+      {
+         Send(self,@MsgSendUser,#message_rsc=player_unbound_energy_wiped);
+      }
+
+      % Remove all unbound energy, for example after a teleport.
+      send(self,@AddUnboundEnergy,#iAmount=-piUnbound_energy,#report=FALSE);
+
+      return;
+   }
+
+   GetUnboundEnergy()
+   {
+      return piUnbound_energy;
+   }
+
+   % Returns true if the last spell cast was a free cast.
+   GetFreeCast()
+   {
+      return pbFree_cast;
+   }
+
    GetTrainingPoints()
    {
       return piTraining_points;
@@ -9166,13 +10423,13 @@ messages:
 
       if bCap
       {
-         if piTraining_points <= 1000
+         if piTraining_points <= TRAINING_POINT_CAP
          {
-            points = bound(points,-piTraining_points,1000 - piTraining_points);
+            points = bound(points,-piTraining_points,TRAINING_POINT_CAP - piTraining_points);
          }
          else if points > 0
          {
-               % We're respecting the 1000 point cap, have more than 1000
+               % We're respecting the point cap, have more than
                % points and are trying to add more. Don't add the points,
                % return out.
                return;
@@ -9193,7 +10450,7 @@ messages:
 
       piTraining_points = piTraining_points + points;
 
-      if piTraining_points < 1000
+      if piTraining_points < TRAINING_POINT_CAP
          OR NOT bCap
       {
          piInform = TRUE;
@@ -9216,7 +10473,7 @@ messages:
 
       ptReward_timer = CreateTimer(self,@GetDailyTrainingReward,24*60*60*1000);
 
-      if piTraining_points >= 1000
+      if piTraining_points >= TRAINING_POINT_CAP
       {
          return;
       }
@@ -9250,6 +10507,8 @@ messages:
       local lItems,i, j, amount, oBody, oSoldierShield, bNo_drop_death, oItemAtt,
             oRoom, iRow, iCol, iFine_Row, iFine_Col, iAngle, oItem,
             iRoom, lInventoryContents, lReagentBagContents;
+
+      Send(self,@ClearAllStatusEffects);
 
       % If this player has created any evil twins, delete them.
       if plEvilTwins <> $
@@ -9373,7 +10632,7 @@ messages:
       % Don't drop anything or take any penalties.
       if Send(SYS,@GetChaosNight)
         OR (iRoom >= RID_NEWB_BASE AND iRoom <= RID_NEWB_MAX)
-        OR Send(self,@HasHonorString,#string=player_newbie_honor_string)
+        OR NOT Send(self,@CheckPlayerFlag,#flag=PFLAG_PKILL_ENABLE)
       {
          bNo_drop_death = TRUE;
          piDeathCost = FALSE;
@@ -9409,7 +10668,17 @@ messages:
       }
 
       % Create the corpse.
-      oBody = Send(self,@CreateCorpse);
+      if what <> $
+         AND IsClass(what,&User)
+      {
+         oBody = Send(self,@CreateCorpse,#oPlayerKiller=what);
+      }
+      else
+      {
+         oBody = Send(self,@CreateCorpse);
+      }
+      poCorpse = oBody;
+
       Send(oRoom,@NewHold,#what=oBody,#new_row=iRow,#new_col=iCol,
             #fine_row=iFine_Row,#fine_col=iFine_Col,#new_angle=iAngle);
 
@@ -9471,9 +10740,7 @@ messages:
                               #state1=self);
                      }
 
-                     Send(oRoom,@NewHold,#what=i,#merge=FALSE,
-                           #new_row=iRow,#new_col=iCol,
-                           #fine_row=iFine_row,#fine_col=iFine_col);
+                     Send(oBody,@NewHold,#what=i);
                   }
                }
             }
@@ -9669,6 +10936,7 @@ messages:
                AND (piPreferences & CF_TEMPSAFE)
                AND Send(self,@FindUsing,#class=&SoldierShield) = $
                AND ptTempSafe = $
+               AND NOT pbOptOutPvP
             {
                Post(self,@StartTempSafe);
             }
@@ -9766,7 +11034,7 @@ messages:
       return piDeathCost;
    }
 
-   CreateCorpse(Assassinated=FALSE)
+   CreateCorpse(Assassinated=FALSE, oPlayerKiller=$)
    {
       local inKocatan;
 
@@ -11501,6 +12769,11 @@ messages:
 
       iTime = 1000 + (30* (51-Send(self,@getStamina)));
 
+      if Send(self,@GetStance) <> $
+      {
+         iTime = Send(Send(self,@GetStance),@ModifyRegenerationTime,#who=self,#iTime=iTime);
+      }
+
       return iTime;
    }
 
@@ -11648,6 +12921,17 @@ messages:
    {
       local i, oEnch,state, bFound, oYellNum, oYellRoom;
 
+      if event = EVENT_RUN
+         OR event = EVENT_DAMAGE
+         OR event = EVENT_REST
+         OR event = EVENT_ATTACK
+         OR event = EVENT_CAST
+      {
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),@StopHiding,#who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),@StopSneaking,#who=self);
+         Post(Send(SYS,@FindSkillByNum,#num=SKID_SPY),@StopSpying,#who=self);
+      }
+
       bFound = FALSE;
       foreach i in plEnchantments
       {
@@ -11660,8 +12944,18 @@ messages:
                state = Nth(i,3);
             }
 
-            Send(oEnch,@BreakTrance,#who=self,#state=state,
-                  #event=event,#what=what);
+            if IsClass(oEnch,&Trance)
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                    #event=event,#what=what,
+                    #time_remaining=GetTimeRemaining(Nth(i,1)));
+            }
+            else
+            {
+               Send(oEnch,@BreakTrance,#who=self,#state=state,
+                     #event=event,#what=what);
+            }
+
             bFound = TRUE;
          }
       }
@@ -11781,7 +13075,7 @@ messages:
 
    RecalibratePlayer()
    {
-      local i, bSoldier, iAmount;
+      local i, bSoldier;
 
       bSoldier = FALSE;
       if Send(self,@FindUsing,#class=&SoldierShield) <> $
@@ -11803,9 +13097,7 @@ messages:
                #num=SKID_SECOND_WIND),#type=ENCHANTMENT_PLAYER);
       }
 
-      iAmount = 80 + ((Send(self,@GetSkillAbility,
-                           #Skill_num=SKID_SECOND_WIND) + 1) / 5);
-      Send(self,@SetVigorRestThreshold,#amount=iAmount);
+      Send(self,@SetVigorRestThreshold);
 
       Send(self,@EndCrystalizeManaSurge);
 
@@ -11844,6 +13136,8 @@ messages:
 
          plResistances = $;
       }
+
+      plResistances = Send(self,@GetRacialBaseResistances);
 
       piStomach = 50;
       piTimeLastStomachUpdate = GetTime();
@@ -11911,6 +13205,8 @@ messages:
          }
       }
 
+      poStance = $;
+
       % Reset death costs to 0.
       piDeathCost = 0;
 
@@ -11919,14 +13215,21 @@ messages:
       return Send(SYS,@GetSuccessRsc);
    }
 
+   RecalibrateBaseResistances()
+   {
+      % Clearing old resistance system values.
+      plResistances = Send(self,@GetRacialBaseResistances);
+      return;
+   }
+
    GetBulkMax()
    {
-      return viBulk_hold_max + (Send(self,@GetMight) * 20);
+      return viBulk_hold_max + (Send(self,@GetMight) * 30);
    }
 
    GetWeightMax()
    {
-      return viWeight_hold_max + (Send(self,@GetMight) * 20);
+      return viWeight_hold_max + (Send(self,@GetMight) * 30);
    }
 
    CountKnownAtLevel(school=$,level=$)
@@ -11963,6 +13266,8 @@ messages:
 
          if IsClass(nObj,&UtilitySpell)
             OR IsClass(nObj,&Blink)
+            OR (IsClass(nObj,&Skill)
+               AND Send(nObj,@IsUtilitySkill))
          {
             continue;
          }
@@ -12197,6 +13502,7 @@ messages:
 
          if NOT IsClass(nobj,&Blink)  % DON'T COUNT BLINK!
             AND NOT IsClass(nobj,&UtilitySpell) % Don't count utility spells
+            AND NOT (IsClass(nobj,&Skill) AND Send(nobj,@IsUtilitySkill))
          {
             if nSchool = SS_KRAANAN
                AND nLevel > iKraanan
@@ -12489,6 +13795,7 @@ messages:
 
             if iLevel > iWeapon
                AND iLevel < 50       % Catch DM only skills
+               AND NOT Send(oSpellObj,@IsUtilitySkill)
             {
                iWeapon = iLevel;
             }
@@ -12504,6 +13811,16 @@ messages:
                          + Send(SYS,@GetLevelLearnPoints,#level=iJala);
 
       return iTotalLearnPoints;
+   }
+
+   OptOutPvP()
+   {
+      Send(self,@SetPlayerFlag,#flag=PFLAG_TEMPSAFE,#value=TRUE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_MURDERER,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_OUTLAW,#value=FALSE);
+      Send(self,@SetPlayerFlag,#flag=PFLAG_HAUNTED,#value=FALSE);
+      pbOptOutPvP = TRUE;
+      return;
    }
 
    EvaluatePKStatus(dbug=FALSE)
@@ -12524,6 +13841,7 @@ messages:
             AND piBase_Max_health < Send(SETTINGS_OBJECT,@GetPKillEnableHP)
             AND NOT (piFlags & PFLAG_MURDERER)
             AND NOT (piFlags & PFLAG_OUTLAW)
+            AND piReincarnations = 0
          {
             ass_game = Send(SYS,@GetAssassinGame);
             if Send(ass_game,@IsCombatant,#who=self)
@@ -12642,14 +13960,19 @@ messages:
 
    EndTempSafe()
    {
+      ptTempSafe = $;
+
+      if pbOptOutPvP
+      {
+         return;
+      }
+
       piFlags = piFlags & ~PFLAG_TEMPSAFE;
       if poOwner <> $
       {
          Send(self,@MsgSendUser,#message_rsc=player_temp_safe_end);
          Send(poOwner,@SomethingChanged,#what=self);
       }
-
-      ptTempSafe = $;
 
       return;
    }
@@ -13501,26 +14824,53 @@ messages:
 
    % Designed this just like GetSpellSchoolLevels in case a skill school
    % is added later and this needs to be extended.
-   GetSkillSchoolLevels()
+   GetSkillSchoolLevels(include_cant_forget=FALSE)
    {
-      local i, lSchoolLevels, oSkill, iLevel, weaponcraft_level;
+      local i, lSchoolLevels, oSkill, iLevel, iWeaponCraftLevel, iCanForget, iSchool,
+            iBanditryLevel, iSorceryLevel;
 
-      weaponcraft_level = 0;
+      iWeaponCraftLevel = 0;
+      iBanditryLevel = 0;
+      iSorceryLevel = 0;
       iLevel = 0;
+      iCanForget = TRUE;
 
       foreach i in plSkills
       {
          oSkill = Send(SYS,@FindSkillByNum,#num=Send(self,@DecodeSkillNum,
                                                       #compound=i));
          iLevel = Send(oSkill,@GetLevel);
-
-         if iLevel > weaponcraft_level
+         iCanForget = Send(oSkill,@CanForget);
+         iSchool = Send(oSkill,@GetSchool);
+         
+         if iCanForget OR (NOT iCanForget AND include_cant_forget)
          {
-            weaponcraft_level = iLevel;
+            if iSchool = SKS_FENCING
+            {
+               if iLevel > iWeaponCraftLevel
+               {
+                  iWeaponCraftLevel = iLevel;
+               }
+            }
+            if iSchool = SKS_BANDITRY
+            {
+               if iLevel > iBanditryLevel
+               {
+                  iBanditryLevel = iLevel;
+               }
+            }
+            if iSchool = SKS_SORCERY
+            {
+               if iLevel > iSorceryLevel
+               {
+                  iSorceryLevel = iLevel;
+               }
+            }
          }
+
       }
 
-      lSchoolLevels = [weaponcraft_level];
+      lSchoolLevels = [iWeaponCraftLevel,iBanditryLevel,iSorceryLevel];
 
       return lSchoolLevels;
    }
@@ -14633,7 +15983,7 @@ messages:
 
    SumDamageReduction()
    {
-      local iArmor, d;
+      local iArmor, d, iCorrode, iCorrodeMultiple;
 
       iArmor = 0;
 
@@ -14647,6 +15997,18 @@ messages:
          if IsClass(d,&ArmorOfGort)
          {
             iArmor = iArmor + (Send(self,@GetEnchantedState,#what=d) / 25);
+         }
+      }
+
+      iCorrode = Send(self,@GetStatusEffect,#type=STATUS_CORRODE);
+      if iCorrode > 0
+      {
+         iCorrodeMultiple = Send(SETTINGS_OBJECT,
+                            @GetElementalMultiple,#type=STATUS_CORRODE);
+         
+         if iArmor > 0
+         {
+            iArmor = Bound(iArmor - (iCorrode/iCorrodeMultiple),0,$);
          }
       }
 
@@ -14915,6 +16277,334 @@ messages:
       }
 
       propagate;
+   }
+
+   SetCorpse(corpse=$)
+   {
+      poCorpse = corpse;
+      return;
+   }
+
+   GetCorpse()
+   {
+      return poCorpse;
+   }
+
+   ClearStance()
+   {
+      local oStance;
+      
+      oStance = Send(self,@GetStance);
+      
+      if oStance <> $
+      {
+         Send(oStance,@EndStance,#who=self);
+      }
+
+      poStance = $;
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+   
+   BeginStance(what=$)
+   {
+      poStance = what;
+      
+      Post(self,@DrawOffense);
+      Post(self,@DrawDefense);
+      
+      return;
+   }
+   
+   GetStance()
+   {
+      return poStance;
+   }
+
+   ReserveSpell(oSpell=$,iPercentManaReserved=0,iSpellPower=0)
+   {
+      local iState;
+      
+      iState=Send(oSpell,@GetStateValue,
+                        #iSpellpower=iSpellpower,
+                        #who=self,
+                        #target=self);
+
+      if oSpell <> $
+         AND NOT Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         plReservedSpells = 
+            Cons([oSpell,iPercentManaReserved,iState,iSpellPower],plReservedSpells);
+         Post(self,@ComputeMaxMana);
+         Send(self,@ShowAddEnchantment,#what=oSpell,#type=ENCHANTMENT_PLAYER);
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+   
+   UnReserveSpell(oSpell=$)
+   {
+      local i;
+
+      if oSpell <> $
+         AND Send(self,@HasReservedSpell,#oSpell=oSpell)
+      {
+         foreach i in plReservedSpells
+         {
+            if First(i) = oSpell
+            {
+               Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+               Post(self,@ComputeMaxMana);
+               plReservedSpells = DelListElem(plReservedSpells,i);
+               Send(self,@ShowRemoveEnchantment,#what=oSpell,
+                                                #type=ENCHANTMENT_PLAYER);
+               return TRUE;
+            }
+         }
+      }
+      return FALSE;
+   }
+   
+   UnReserveAllSpells()
+   {
+      local i, bRemoved;
+
+      bRemoved = FALSE;
+      foreach i in plReservedSpells
+      {
+         Send(First(i),@EndEnchantment,#who=self,#state=Nth(i,3));
+         Send(self,@ShowRemoveEnchantment,#what=Nth(i,1),
+                                          #type=ENCHANTMENT_PLAYER);
+         plReservedSpells = DelListElem(plReservedSpells,i);
+         bRemoved = TRUE;
+      }
+
+      if bRemoved
+      {
+         Post(self,@ComputeMaxMana);
+      }
+
+      return;
+   }
+   
+   GetPercentManaReserved(oSpell=$)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      return 0;
+   }
+   
+   GetMaxManaWithoutReservedPenalties()
+   {
+      return piBaseMax_mana;
+   }
+   
+   GetPercentReservedManaTotal()
+   {
+      local i, iPercentReservedTotal;
+      
+      iPercentReservedTotal = 0;
+      
+      foreach i in plReservedSpells
+      {
+         iPercentReservedTotal = iPercentReservedTotal + Nth(i,2);
+      }
+      
+      return iPercentReservedTotal;
+   }
+   
+   GetReservedSpells()
+   {
+      return plReservedSpells;
+   }
+   
+   HasReservedSpell(oSpell=$)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if First(i) = oSpell
+         {
+            return TRUE;
+         }
+      }
+
+      return FALSE;
+   }
+
+   GetCastPower(what=$)
+   {
+      local i;
+
+      % Check reserved spells before moving up to battler
+      foreach i in plReservedSpells
+      {
+         if First(i) = what
+         {
+            return Nth(i,4);
+         }
+      }
+
+      propagate;
+   }
+
+   ReservesForThisLevel(iLevel=0)
+   {
+      if iLevel = 1
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_ONE);
+      }
+      if iLevel = 2
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_TWO);
+      }
+      if iLevel = 3
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_THREE);
+      }
+      if iLevel = 4
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FOUR);
+      }
+      if iLevel = 5
+      {
+         return Send(self,@GetSkillAbility,#Skill_num=SKID_LINK_FIVE);
+      }
+      return FALSE;
+   }
+   
+   UseReserveSkill(oSpell=$,iSpellPower=0)
+   {
+      local iLevel;
+      
+      iLevel = Send(oSpell,@GetLevel);
+      
+      if iLevel = 1
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_ONE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 2
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_TWO),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 3
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_THREE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 4
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FOUR),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      if iLevel = 5
+      {
+         Send(Send(SYS,@FindSkillByNum,#num=SKID_LINK_FIVE),
+                  @DoSkill,#who=self,
+                           #oSpell=oSpell,
+                           #iSpellPower=iSpellPower);
+         return;
+      }
+      
+      return;
+   }
+   
+   IsEnchanted(what=$,byClass=&Spell)
+   {
+      local i;
+      
+      foreach i in plReservedSpells
+      {
+         if (what = $
+            AND IsClass(First(i),byClass))
+            OR First(i) = what
+         {
+            return TRUE;
+         }
+      }
+      
+      propagate;
+   }
+
+   GetEnchantedState(what=$)
+   {
+      local i;
+
+      foreach i in plReservedSpells
+      {
+         if Nth(i,1) = what
+         {
+            return Nth(i,3);
+         }
+      }
+
+      propagate;
+   }
+   
+   InflictWait(time=1000)
+   {
+      if ptAttackTimer <> $
+      {
+         DeleteTimer(ptAttackTimer);
+         ptAttackTimer = $;
+      }
+      
+      ptAttackTimer = CreateTimer(self,@AttackTimer,time);
+      
+      return;
+   }
+   
+   GetActiveTouchSpell()
+   {
+      local i;
+      
+      foreach i in plEnchantments
+      {
+         if IsClass(Nth(i,2),&TouchAttackSpell)
+         {
+            return Nth(i,2);
+         }
+      }
+      
+      foreach i in plReservedSpells
+      {
+         if IsClass(Nth(i,1),&TouchAttackSpell)
+         {
+            return Nth(i,1);
+         }
+      }
+      
+      return $;
    }
 
 end

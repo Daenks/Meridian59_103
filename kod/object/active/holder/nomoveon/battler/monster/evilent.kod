@@ -230,7 +230,7 @@ messages:
          }
       }
 
-      return;
+      propagate;
    }
 
    CreateDeadBody(killer=$)

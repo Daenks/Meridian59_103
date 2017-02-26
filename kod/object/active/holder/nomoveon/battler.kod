@@ -42,14 +42,14 @@ resources:
    % battler_defender_miss - Psychochild's attack is blocked by you.
    % battler_defender_fail - Psychochild's scimitar scrapes you, failing to cause any real harm.
 
-   battler_attacker_hit = "%sYour %s %s %s%s for ~k~B%i~B%s damage."
-   battler_attacker_slay = "%sYour %s %s %s%s."
-   battler_attacker_miss = "%sYour attack %s %s%s."
-   battler_attacker_fail = "%sYour %s %s %s%s, failing to cause any real harm."
-   battler_defender_hit = "%s%s%s's %s %s you for ~r~B%i~B%s damage."
-   battler_defender_slay = "%s%s%s's %s %s you."
-   battler_defender_miss = "%s%s%s's attack %s you."
-   battler_defender_fail = "%s%s%s's %s %s you, failing to cause any real harm."
+   battler_attacker_hit = "%sYour %s %s %s%s%s for ~k~B%i~B%s damage."
+   battler_attacker_slay = "%sYour %s %s %s%s%s."
+   battler_attacker_miss = "%sYour attack %s %s%s%s."
+   battler_attacker_fail = "%sYour %s %s %s%s%s, failing to cause any real harm."
+   battler_defender_hit = "%s%s%s%s's %s %s you for ~r~B%i~B%s damage."
+   battler_defender_slay = "%s%s%s%s's %s %s you."
+   battler_defender_miss = "%s%s%s%s's attack %s you."
+   battler_defender_fail = "%s%s%s%s's %s %s you, failing to cause any real harm."
 
    battler_punch = "punch"
    battler_attack = "attack"
@@ -154,6 +154,15 @@ resources:
    battler_pierce_damage = "lacerates"
    battler_pierce_slay = "fells"
 
+   battler_champion_none = ""
+
+   rTumbleSoundOne = Swoosh01.wav
+   rTumbleSoundTwo = Swoosh02.wav
+   rTumbleSoundThree = Swoosh03.wav
+   rTumbleSoundFour = Swoosh04.wav
+   
+   backstab_sound = Knife-Slice.wav
+
 classvars:
 
    viObject_flags = OF_ATTACKABLE
@@ -199,6 +208,11 @@ properties:
    plHurtMeRecently = $
    % 20 seconds default for players, 60 for monsters
    piHurtMeTime = 20000
+
+   % Elemental status effects. Each element is [value, type]
+   % Timer removes a portion of status effect every period
+   plStatusEffects = $
+   ptStatusEffectTimer = $
 
 messages:
 
@@ -273,6 +287,8 @@ messages:
          }
       }
 
+      Send(self,@ClearAllStatusEffects);
+
       propagate;
    }
 
@@ -305,7 +321,7 @@ messages:
    }
 
    GetBaseResistances()
-   "Many mobs have base resistances, but players do not. Monster.kod overwrites this."
+   "Monster.kod and player.kod overwrite this in custom ways."
    {
       return $;
    }
@@ -313,7 +329,8 @@ messages:
    GetCurrentResistances()
    "Spells and items can change resistances temporarily."
    {
-      local oObjectAttribute, lCurResist, oEquipment, oEnchantment;
+      local oObjectAttribute, lCurResist, oEquipment, oEnchantment,
+            iHumbled, iHumbledDivisor, i;
 
       lCurResist = ListCopy(Send(self,@GetBaseResistances));
 
@@ -343,6 +360,21 @@ messages:
                               #resistance_list=lCurResist);
          }
       }
+
+      iHumbled = Send(self,@GetStatusEffect,#type=STATUS_HUMBLED);
+      if iHumbled > 0
+      {
+         iHumbledDivisor = Send(SETTINGS_OBJECT,@GetElementalMultiple,
+                           #type=STATUS_HUMBLED);
+         
+         foreach i in lCurResist
+         {
+            if Nth(i,2) > 0
+            {
+               SetNth(i,2,bound(Nth(i,2) - (iHumbled/iHumbledDivisor),0,$));
+            }
+         }
+      } 
 
       return lCurResist;
    }
@@ -738,7 +770,8 @@ messages:
    % NOTE: For a monster, the stroke_obj is the monster itself for now.
    TryAttack(what = $,stroke_obj=$)
    {
-      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon;
+      local iOffense, iDefense, iChanceToHit, iDamage, iScalefactor, oWeapon,
+            iBackstabDamage, bDoingBackstab;
 
       oWeapon = Send(self,@GetWeapon);
 
@@ -749,7 +782,26 @@ messages:
       iChanceToHit = iOffense * Send(SETTINGS_OBJECT,@GetEqualChanceToHit) / iDefense;
       iChanceToHit = bound(iChanceToHit,125,2000);
       if iChanceToHit >= random(1,1000)
+         OR (IsClass(self,&Player)
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),
+                       @IsSneaking,#who=self)
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),
+                       @IsHiding,#who=self)
+             AND Send(self,@GetSkillAbility,#skill_num=SKID_BACKSTAB) > 0
+             AND Send(Send(SYS,@FindSkillByNum,#num=SKID_BACKSTAB),
+                       @TryAutomaticHit,#who=self,#what=what))
       {
+         if Send(Send(SYS,@FindSkillByNum,#num=SKID_TUMBLE),
+                  @AttemptTumble,#who=what,#what=self)
+         {
+            if IsClass(self,&Player)
+            {
+               Send(poOwner,@SomethingWaveRoom,#what=what,
+                     #wave_rsc=Send(self,@GetTumbleSound));
+            }
+            return FALSE;
+         }
+
          % We hit!
          iDamage = Send(self,@GetDamage,#what=what,#stroke_obj=stroke_obj);
          iScalefactor = 1000;
@@ -760,9 +812,36 @@ messages:
             iScalefactor = iChanceToHit;
          }
 
+         bDoingBackstab = FALSE;
+         if IsClass(self,&Player)
+            AND Send(self,@GetSkillAbility,#skill_num=SKID_BACKSTAB) > 0
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_SNEAK),
+                      @IsSneaking,#who=self)
+            AND Send(Send(SYS,@FindSkillByNum,#num=SKID_HIDE),
+                      @IsHiding,#who=self)
+         {
+            iBackstabDamage = Send(Send(SYS,@FindSkillByNum,
+                                    #num=SKID_BACKSTAB),
+                                    @LastPriorityModifyDamage,#who=self,
+                                    #what=what,#damage=iDamage);
+            if iBackstabDamage > iDamage
+            {
+               iDamage = iBackstabDamage;
+               bDoingBackstab = TRUE;
+               
+               if IsClass(self,&Player)
+               {
+                  Send(poOwner,@SomethingWaveRoom,#what=what,
+                        #wave_rsc=backstab_sound);
+               }
+            }
+         }
+
          iDamage = Send(what,@AssessDamage,#what=self,#damage=iDamage,
-            #atype=Send(self,@GetDamageType),#aspell=Send(self,@GetSpellType),
-            #scalefactor=iScalefactor,#precision=TRUE);
+            #atype=Send(self,@GetDamageType,#stroke_obj=stroke_obj),
+            #aspell=Send(self,@GetSpellType,#stroke_obj=stroke_obj),
+            #scalefactor=iScalefactor,#precision=TRUE,
+            #absolute=bDoingBackstab,#damaging_now=TRUE);
 
          Send(self,@AssessHit,#what=what,#stroke_obj=stroke_obj,#damage=iDamage);
 
@@ -1342,16 +1421,22 @@ messages:
          %  weapon, or the attack name for a monster.
          rWeaponName = Send(oWeapon,@GetAttackName);
       }
+      
+      if stroke_obj <> $
+         AND IsClass(stroke_obj,&Throw)
+      {
+         rWeaponName = Send(stroke_obj,@GetAttackName);
+      }
 
       % Spell types are usually represented by negative values, to
       %  differentiate between physical and spell damage.
-      iType = Send(self,@GetSpellType,#use_weapon=use_weapon);
+      iType = Send(self,@GetSpellType,#use_weapon=use_weapon,#stroke_obj=stroke_obj);
 
       % We only want to use a unique word if the spell damage is NOT generic
       %  or Hunter sword damage.  Otherwise, use the physical damage type.
       if (iType & (~ATCK_SPELL_HUNTERSWORD | ~ATCK_SPELL_ALL)) = 0
       {
-         iType = Send(self,@GetDamageType,#use_weapon=use_weapon);
+         iType = Send(self,@GetDamageType,#use_weapon=use_weapon,#stroke_obj=stroke_obj);
       }
       else
       {
@@ -1402,21 +1487,27 @@ messages:
             if damage = $
             {
                Send(self,@MsgSendUser,#message_rsc=battler_attacker_slay,
-                     #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
-            }
-            else if damage > 99
-            {
-               Send(self,@MsgSendUser,#message_rsc=battler_attacker_hit,
-                     #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName),
-                     #parm6=damage/100,#parm7=rColor);
+               #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
+               #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+               #parm6=Send(what,@GetName));
             }
             else
             {
-               Send(self,@MsgSendUser,#message_rsc=battler_attacker_fail,
-                     #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
-                     #parm4=Send(what,@GetDef),#parm5=Send(what,@GetName));
+               if damage > 99
+               {
+                  Send(self,@MsgSendUser,#message_rsc=battler_attacker_hit,
+                  #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
+                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+                  #parm6=Send(what,@GetName),
+                  #parm7=damage/100,#parm8=rColor);
+               }
+               else
+               {
+                  Send(self,@MsgSendUser,#message_rsc=battler_attacker_fail,
+                  #parm1=rColor,#parm2=rWeaponName,#parm3=rDamageDesc,
+                  #parm4=Send(what,@GetDef),#parm5=Send(what,@GetChampString),
+                  #parm6=Send(what,@GetName));
+               }
             }
          }
       }
@@ -1436,23 +1527,29 @@ messages:
          if damage = $
          {
             Send(what,@MsgSendUser,#message_rsc=battler_defender_slay,
-                  #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc);
-         }
-         else if damage > 99
-         {
-            Send(what,@MsgSendUser,#message_rsc=battler_defender_hit,
-                  #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc,#parm6=damage/100,#parm7=rColor);
+              #parm1=rColor,#parm2=Send(self,@GetCapDef),
+              #parm3=Send(self,@GetChampString),
+              #parm4=Send(self,@GetName),#parm5=rWeaponName,
+              #parm6=rDamageDesc);
          }
          else
          {
-            Send(what,@MsgSendUser,#message_rsc=battler_defender_fail,
-                  #parm1=rColor,#parm2=Send(self,@GetCapDef),
-                  #parm3=Send(self,@GetName),#parm4=rWeaponName,
-                  #parm5=rDamageDesc);
+            if damage > 99
+            {
+               Send(what,@MsgSendUser,#message_rsc=battler_defender_hit,
+                 #parm1=rColor,#parm2=Send(self,@GetCapDef),
+                 #parm3=Send(self,@GetChampString),
+                 #parm4=Send(self,@GetName),#parm5=rWeaponName,
+                 #parm6=rDamageDesc,#parm7=damage/100,#parm8=rColor);
+            }
+            else
+            {
+               Send(what,@MsgSendUser,#message_rsc=battler_defender_fail,
+                 #parm1=rColor,#parm2=Send(self,@GetCapDef),
+                 #parm3=Send(self,@GetChampString),
+                 #parm4=Send(self,@GetName),#parm5=rWeaponName,
+                 #parm6=rDamageDesc);
+            }
          }
       }
 
@@ -1481,7 +1578,8 @@ messages:
               #parm1=rColor,
               #parm2=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj),
               #parm3=Send(what,@GetDef),
-              #parm4=Send(what,@GetName));
+              #parm4=Send(what,@GetChampString),
+              #parm5=Send(what,@GetName));
          Send(stroke_obj,@SendMissMessageToAttacker,#who=self,#victim=what,
               #color_rsc=rColor,#weapon_used=Send(self,@LookupPlayerWeapon),
               #bText=FALSE);
@@ -1500,9 +1598,11 @@ messages:
          }
       
          Send(what,@MsgSendUser,#message_rsc=battler_defender_miss,
-               #parm1=rColor,#parm2=Send(self,@GetCapDef),
-               #parm3=Send(self,@GetName),
-               #parm4=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj));
+              #parm1=rColor,
+              #parm2=Send(self,@GetCapDef),
+              #parm3=Send(self,@GetChampString),
+              #parm4=Send(self,@GetName),
+              #parm5=Send(what,@GetDefenseDesc,#stroke_obj=stroke_obj));
          % Flag them as "dodging", so they can potentially improve.
          Send(what,@SetPlayerFlag,#flag=PFLAG_DODGED,#value=TRUE);
       }
@@ -1760,9 +1860,260 @@ messages:
       return;
    }
 
+   GetTumbleSound()
+   {
+      local iRandom;
+      
+      iRandom = Random(1,4);
+      
+      if iRandom = 1
+      {
+         return rTumbleSoundOne;
+      }
+      
+      if iRandom = 2
+      {
+         return rTumbleSoundTwo;
+      }
+      
+      if iRandom = 3
+      {
+         return rTumbleSoundThree;
+      }
+      
+      return rTumbleSoundFour;
+   }
+
+   ApplyElementalStatusEffects(damage=1,aspell=0,what=$)
+   {
+      if what <> $
+         AND IsClass(what,&Player)
+         AND Send(SETTINGS_OBJECT,@GetSorcerySchoolExpansion)
+         AND Send(what,@GetSkillAbility,#skill_num=SKID_EMPOWERMENT) > 0
+      {
+         % Is a master Sorcerer applying these effects? Boost them.
+         damage = (damage * Send(Send(SYS,@FindSkillByNum,
+                                  #num=SKID_EMPOWERMENT),
+                                  @GetEmpowermentMultiplier,#who=what))/100;
+      }
+
+      if aspell & ATCK_SPELL_SHOCK
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_SHOCKED);
+      }
+      if aspell & ATCK_SPELL_COLD
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_CHILLED);
+      }
+      if aspell & ATCK_SPELL_FIRE
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_BURNING);
+      }
+      if aspell & ATCK_SPELL_ACID
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_CORRODE);
+      }
+      if aspell & ATCK_SPELL_HOLY
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_HUMBLED);
+      }
+      if aspell & ATCK_SPELL_UNHOLY
+      {
+         Send(self,@AddStatusEffect,#value=damage,#type=STATUS_MANTLED);
+      }
+      return;
+   }
+
+   AddStatusEffect(value=10,type=STATUS_SHOCKED)
+   {
+      local i;
+      
+      if NOT Send(SETTINGS_OBJECT,@GetEnableElementalStatusEffects)
+      {
+         % This server doesn't use elemental status effects.
+         return;
+      }
+      
+      if ptStatusEffectTimer = $
+      {
+         ptStatusEffectTimer = CreateTimer(self,@StatusEffectTimer,
+                                           Send(SETTINGS_OBJECT,
+                                           @GetStatusEffectReductionTime));
+      }
+      
+      if type=STATUS_SHOCKED
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawDefense);
+      }
+      
+      if type=STATUS_CORRODE
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawArmor);
+      }
+      
+      if type=STATUS_HUMBLED
+         AND IsClass(self,&Player)
+      {
+         Post(self,@DrawResistances);
+      }
+      
+      foreach i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            SetNth(i,1,Nth(i,1)+value);
+            return;
+         }
+      }
+
+      plStatusEffects = Cons([value,type],plStatusEffects);
+      return;
+   }
+   
+   GetStatusEffect(type=STATUS_SHOCKED)
+   {
+      local i;
+
+      foreach i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            return Nth(i,1);
+         }
+      }
+      return 0;
+   }
+   
+   ClearStatusEffect(type=STATUS_SHOCKED)
+   {
+      local i;
+      
+      foreach i in plStatusEffects
+      {
+         if Nth(i,2) = type
+         {
+            SetNth(i,1,0);
+            plStatusEffects = DelListElem(plStatusEffects,i);
+         }
+      }
+      
+      if plStatusEffects = $
+      {
+         if ptStatusEffectTimer <> $
+         {
+            DeleteTimer(ptStatusEffectTimer);
+            ptStatusEffectTimer = $;
+         }
+      }
+      
+      return;
+   }
+   
+   ClearAllStatusEffects()
+   {
+      plStatusEffects = $;
+      if ptStatusEffectTimer <> $
+      {
+         DeleteTimer(ptStatusEffectTimer);
+         ptStatusEffectTimer = $;
+      }
+      return;
+   }
+   
+   StatusEffectTimer(timer=$)
+   {
+      local i, iBurningDamage, oOpponent;
+      
+      ptStatusEffectTimer = $;
+      
+      foreach i in plStatusEffects
+      {
+         if Nth(i,2) = STATUS_SHOCKED
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawDefense);
+         }
+         if Nth(i,2) = STATUS_CORRODE
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawArmor);
+         }
+         if Nth(i,2) = STATUS_HUMBLED
+            AND IsClass(self,&Player)
+         {
+            Post(self,@DrawResistances);
+         }
+
+         if Nth(i,2) = STATUS_BURNING
+         {
+            iBurningDamage = (Nth(i,1) / Send(SETTINGS_OBJECT,
+                              @GetElementalMultiple,#type=STATUS_BURNING));
+            SetNth(i,1,0);
+            if iBurningDamage >= 1
+               AND Send(self,@GetOwner) <> $
+               AND NOT Send(poOwner,@CheckRoomFlag,#flag=ROOM_NO_COMBAT)
+               AND NOT (IsClass(self,&Player) AND NOT Send(self,@IsLoggedOn))
+               AND NOT (IsClass(self,&Player) AND Send(self,@IsInCannotInteractMode))
+            {
+               if Send(self,@AssessDamage,#what=self,
+                              #damage=iBurningDamage,
+                              #aspell=ATCK_SPELL_FIRE,
+                              #report=FALSE) = $
+               {
+                  oOpponent = Send(self,@GetHighestHurtMeRecentlyBattler);
+                  if oOpponent <> $
+                  {
+                     Post(oOpponent,@KilledSomething,#what=self);
+                  }
+                  else
+                  {
+                     Post(self,@KilledSomething,#what=self);
+                  }
+               }
+            }
+         }
+         else
+         {
+            SetNth(i,1,Nth(i,1) - Send(SETTINGS_OBJECT,
+                                  @GetStatusEffectReductionAmount));
+         }
+
+         if Nth(i,1) <= 0
+         {
+            plStatusEffects = DelListElem(plStatusEffects,i);
+         }
+      }
+      
+      if plStatusEffects <> $
+      {
+         ptStatusEffectTimer = CreateTimer(self,@StatusEffectTimer,
+                                           Send(SETTINGS_OBJECT,
+                                           @GetStatusEffectReductionTime));
+      }
+      
+      return;
+   }
+
    GetBoostedLevel()
    {
       return 0;
+   }
+
+   GetChampString()
+   {
+      return battler_champion_none;
+   }
+
+   GetChampStatus()
+   {
+      return 0;
+   }
+
+   GetChampionRewardMultiplier()
+   {
+      return 1;
    }
 
    CreateReputationHash()
@@ -1795,6 +2146,24 @@ messages:
       }
 
       return;
+   }
+
+   GetHighestHurtMeRecentlyBattler()
+   {
+      local i, iHighestAmount, iHighestBattler;
+
+      iHighestAmount = 0;
+      iHighestBattler = $;
+      foreach i in plHurtMeRecently
+      {
+         if Nth(i,2) > iHighestAmount
+         {
+            iHighestAmount = Nth(i,2);
+            iHighestBattler = Nth(i,1);
+         }
+      }
+
+      return iHighestBattler;
    }
 
    GetHurtMeRecentlyAmount(who=$)

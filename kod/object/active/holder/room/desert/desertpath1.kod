@@ -39,8 +39,66 @@ properties:
    piRoom_num = RID_DESERTPATH1
 
 messages:
+   
+   GetPhaseThreats()
+   {
+      switch(Send(SYS,@GetDayPhase))
+      {
+         case DAY_PHASE_DAWN:
+            return [&ShockStorm,&DesertPath1Storm];
+         case DAY_PHASE_DAY:
+            if Send(Send(SYS,@FindRoomByNum,#num=RID_DESERTRIVER2),
+                     @GetPrismOfFireDefeated)
+            {
+               return [&HeatStorm,&DesertPath1Storm];
+            }
+            return [&HeatThreat,&DesertPath1Storm];
+         case DAY_PHASE_DUSK:
+            return [&AcidThreat,&DesertPath1Storm];
+         case DAY_PHASE_NIGHT:
+            return [&ColdThreat,&DesertPath1Storm];
+      }
+      return [&ShockStorm,&DesertPath1Storm];
+   }
 
- 
+   GetDangerPoints()
+   {
+      return [[11,66,40,59],
+              [11,65,54,24],
+              [11,64,56,32],
+              [11,63,39,33],
+              [11,62,44,13],
+              [12,59,18,20],
+              [12,58,24,49],
+              [11,58,27,46],
+              [10,57,40,34],
+              [12,56,25,46],
+              [12,55,10,15],
+              [10,54,45,45],
+              [9,53,48,34],
+              [8,52,60,11],
+              [9,50,23,8],
+              [8,48,43,3],
+              [9,46,33,8],
+              [8,43,23,56],
+              [9,41,61,9],
+              [11,39,28,10],
+              [14,36,10,59],
+              [17,33,1,40],
+              [19,30,4,63],   % outside small cleft
+              [20,27,18,54],
+              [20,23,20,62],
+              [19,20,4,6],
+              [16,17,43,28],
+              [14,15,34,6],
+              [11,15,39,11],
+              [9,12,33,62],
+              [9,10,57,44],
+              [12,7,2,15],
+              [12,3,27,60]              
+             ];
+   }
+   
    CreateStandardExits()
    {
       plEdge_Exits = $;

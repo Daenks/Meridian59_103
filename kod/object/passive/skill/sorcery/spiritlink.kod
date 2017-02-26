@@ -1,0 +1,104 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SpiritLink is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+      
+   not_enough_mana = \
+      "You don't have enough mana to reserve this spell."
+   reserved_spell = \
+      "You weave permanent layers of %s around yourself "
+      "using %i percent of your mana."
+   unreserved_spell = \
+      "You cancel your %s reservation."
+
+classvars:
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LINK_ONE
+   viSchool = SKS_SORCERY
+   viSkill_Level = 1
+   viChance_to_Increase = 60
+   viMeditate_ratio = 20
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viReserveLevel = 1
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   DoSkill(who=$,oSpell=$,iSpellPower=0)
+   {
+      local iAbility, iStat, iCoefficient, iPercentManaReserved,
+            iSpellAbility;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iSpellAbility = Send(who,@GetSpellAbility,
+                               #spell_num=Send(oSpell,@GetSpellNum));
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      if NOT IsClass(oSpell,&PersonalEnchantment)
+         OR Send(oSpell,@GetLevel) <> viReserveLevel
+      {
+         return;
+      }
+
+      if Send(who,@HasReservedSpell,#oSpell=oSpell)
+      {
+         if Send(who,@UnReserveSpell,#oSpell=oSpell)
+         {
+            Send(who,@MsgSendUser,#message_rsc=unreserved_spell,
+                                  #parm1=Send(oSpell,@GetName));
+         }
+         return;
+      }
+      
+      iPercentManaReserved = Send(oSpell,@GetPercentManaReserved);
+      iCoefficient = Bound(298 - iAbility - iSpellAbility,100,300);
+      
+      iPercentManaReserved = (iPercentManaReserved * iCoefficient)/100;      
+
+      if iPercentManaReserved + Send(who,@GetPercentReservedManaTotal) > 100
+      {
+         Send(who,@MsgSendUser,#message_rsc=not_enough_mana);
+         return;
+      }
+      else
+      {
+         if Send(who,@ReserveSpell,#oSpell=oSpell,
+                                   #iPercentManaReserved=iPercentManaReserved,
+                                   #iSpellPower=iSpellPower)
+         {
+            Send(who,@MsgSendUser,#message_rsc=reserved_spell,
+                                  #parm1=Send(oSpell,@GetName),
+                                  #parm2=iPercentManaReserved);
+         }
+      }
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -61,6 +61,8 @@ resources:
    system_user_killed_shield = "~B~U~k[###]~n ~B~v%q was bested by faction rival %s%q."
    system_user_killed_guild = \
       "~B~U~k[###]~n ~B~v%q of %s%q has been slaughtered by %s%q of %s%q in guild combat."
+   system_user_reincarnated = \
+      "~B~U~k[###]~n ~B~v%q has reincarnated!"
       
    guildwar_kill_title1 = " has slaughtered "
    guildwar_kill_body1 = "Let it be known that "
@@ -500,6 +502,18 @@ properties:
    % Keeps track of the last save before a frenzy.
    psSaveGame = $
 
+   % The list of magical modifier objects.
+   plMagicMods = $
+   piMinorShards = 0
+   piMajorShards = 0
+   piAugmentShards = 0
+   piDrainShards = 0
+   piEmpowermentShards = 0
+
+   % Keeps track of the mantras needed for stance skills.
+   % [mantra, skid]
+   plStanceMantras = $
+
 messages:
 
    GetName()
@@ -547,6 +561,7 @@ messages:
       Send(self,@recreateMonsterTemplates);
       Send(self,@recreateItemTemplates);
       Send(self,@RecreateMoneyTemplates);
+      Send(self,@RecreateMagicMods);
 
       Send(self,@RecreateLore);
       Send(self,@RecreateArtArchive);
@@ -765,6 +780,7 @@ messages:
       Send(self,@RecreateMonsterTemplates);
       Send(self,@RecreateItemTemplates);
       Send(self,@RecreateMoneyTemplates);
+      Send(self,@RecreateMagicMods);
       Send(self,@RecreateChests);
       Send(self,@RecreateLore);
       Send(self,@UpdateHallOfHeroes);
@@ -1910,7 +1926,8 @@ messages:
                %  mysterious murder message!
                if rMessage = $
                   AND Send(killer,@CheckPlayerFlag,#flag=PFLAG_MURDERER)
-                  AND NOT Send(Send(what,@GetOwner),@SafePlayerAttack)
+                  AND (Send(what,@GetOwner) = $
+                       OR NOT Send(Send(what,@GetOwner),@SafePlayerAttack))
                {
                   rMessage = system_user_killed_by_pker;
                   poLastMurderer = killer;
@@ -2235,6 +2252,7 @@ messages:
       foreach i in plSkills
       {
          if Send(i,@GetLevel) <= 2
+            AND Send(i,@OfferToNewCharacters)
          {
             count = count + 1;
          }
@@ -2246,6 +2264,7 @@ messages:
       foreach i in plSkills
       {
          if Send(i,@GetLevel) > 2
+            OR NOT Send(i,@OfferToNewCharacters)
          {
             continue;
          }
@@ -2607,6 +2626,7 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_BRAX_ARENA,#class=&NecArena);
       Send(self,@CreateOneRoomIfNew,#num=RID_KA0,#class=&OutdoorsKA0);
 
+      Send(self,@CreateOneRoomIfNew,#num=RID_MAR_STORAGE,#class=&MarionStorage);
       Send(self,@CreateOneRoomIfNew,#num=RID_MAR_CRYPT1,#class=&MarionCrypt1);
       Send(self,@CreateOneRoomIfNew,#num=RID_MAR_CRYPT2,#class=&MarionCrypt2);
       Send(self,@CreateOneRoomIfNew,#num=RID_MAR_CRYPT3A,#class=&MarionCrypt3a);
@@ -2629,7 +2649,19 @@ messages:
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER1,#class=&DesertRiver1);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTRIVER2,#class=&DesertRiver2);
       Send(self,@CreateOneRoomIfNew,#num=RID_DESERTBRIDGE,#class=&DesertBridge);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTCAVERAFT,#class=&DesertCaveRaft);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON1,#class=&ElementalDungeon1);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON2,#class=&ElementalDungeon2);
+      Send(self,@CreateOneRoomIfNew,#num=RID_ELEMENTAL_DUNGEON3,#class=&ElementalDungeon3);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTSANDBAR,#class=&DesertSandbar);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES,#class=&DesertAfterlifeDunes);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES2E,#class=&DesertAfterlifeDunes2East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES3E,#class=&DesertAfterlifeDunes3East);
+      Send(self,@CreateOneRoomIfNew,#num=RID_DESERTALDUNES4E,#class=&DesertAfterlifeDunes4East);
 
+      Send(self,@CreateOneRoomIfNew,#num=RID_PRISMLIFEFRAG,#class=&PrismOfLifeFragment);
+
+      Send(self,@CreateOneRoomIfNew,#num=RID_BATTLE_ARENA,#class=&BattleArena);
 
       if poRentableRoomMaintenance <> $  % After a clean build, for example.
       {
@@ -3398,7 +3430,15 @@ messages:
       Send(self,@CreateOneSpellIfNew,#num=SID_SET,#class=&Set);
       Send(self,@CreateOneSpellIfNew,#num=SID_LOADOUT,#class=&Loadout);
       Send(self,@CreateOneSpellIfNew,#num=SID_CONVEYANCE,#class=&Conveyance);
+      Send(self,@CreateOneSpellIfNew,#num=SID_GUILD_CONVEYANCE,#class=&GuildConveyance);
       Send(self,@CreateOneSpellIfNew,#num=SID_PHASE,#class=&Phase);
+
+      Send(self,@CreateOneSpellIfNew,#num=SID_ACID_STORM_BUFF,#class=&AcidStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_SHOCK_STORM_BUFF,#class=&ShockStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_HEAT_STORM_BUFF,#class=&HeatStormBuff);
+      Send(self,@CreateOneSpellIfNew,#num=SID_COLD_STORM_BUFF,#class=&ColdStormBuff);
+
+      Send(self,@CreateOneSpellIfNew,#num=SID_BATTLE_CONTROL,#class=&BattleControl);
 
       % Trance may be searched for frequently, leave at end of list
       Send(self,@CreateOneSpellIfNew,#num=SID_TRANCE,#class=&Trance);
@@ -3623,6 +3663,44 @@ messages:
        Send(self,@CreateOneSKillIfNew,#num=SKID_SECOND_WIND,#class=&SecondWind);
        Send(self,@CreateOneSKillIfNew,#num=SKID_DISARM,#class=&Disarm);
 
+       Send(self,@CreateOneSKillIfNew,#num=SKID_AWARENESS,#class=&Awareness);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LIGHT_FEET,#class=&LightFeet);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_STAB,#class=&Stab);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_DAGGER,#class=&DaggerProficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PERCEPTION,#class=&Perception);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_THROW,#class=&Throw);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TUMBLE,#class=&Tumble);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_PROFICIENCY_THROW,#class=&ThrowingProficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SNEAK,#class=&Sneak);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_HIDE,#class=&Hide);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SWIFT_HANDS,#class=&SwiftHands);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_HEAVY_ARMS,#class=&HeavyArms);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_RECKLESS_HEART,#class=&RecklessHeart);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_FOCUSED_MIND,#class=&FocusedMind);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SPY,#class=&Spy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BACKSTAB,#class=&Backstab);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TIGHT_GRIP,#class=&TightGrip);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_POISED_SOUL,#class=&PoisedSoul);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_TRACK,#class=&Track);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_CHARGED_CLUTCH_STANCE,#class=&ChargedClutchStance);
+
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_ONE,#class=&LinkOne);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_TWO,#class=&LinkTwo);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_THREE,#class=&LinkThree);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FOUR,#class=&LinkFour);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_LINK_FIVE,#class=&LinkFive);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_BLOOD_MAGIC,#class=&BloodMagic);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_FORCE_SPIKE,#class=&ForceSpike);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_WILL_SURGE,#class=&WillSurge);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_VOLATILE_FOCUS,#class=&VolatileFocus);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_CHARGED_CLUTCH,#class=&ChargedClutch);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_SOMANCY,#class=&Somancy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_DEVOTION,#class=&Devotion);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENTROPY,#class=&Entropy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_ENERGY,#class=&Energy);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EFFICIENCY,#class=&Efficiency);
+       Send(self,@CreateOneSKillIfNew,#num=SKID_EMPOWERMENT,#class=&Empowerment);
+
        return;
    }
 
@@ -3631,6 +3709,8 @@ messages:
    "Deletes all skills and then calls CreateAllSkillsIfNew."
    {
       local i;
+
+      plStanceMantras = $;
 
       foreach i in plSkills
       {
@@ -3655,6 +3735,15 @@ messages:
       if figure_totals
       {
          Send(self,@RefigureAllAbilityTotals);
+      }
+
+      foreach i in plSkills
+      {
+         if IsClass(i,&Stance)
+         {
+            plStanceMantras = Cons([Send(i,@GetStanceMantraStr),
+                                    Send(i,@GetSkillNum)],plStanceMantras);
+         }
       }
 
       return True;
@@ -5322,6 +5411,7 @@ messages:
       plMonsterTemplates = cons(create(&Wolf),plMonsterTemplates);
       plMonsterTemplates = cons(create(&Chupacabra),plMonsterTemplates);
       plMonsterTemplates = cons(create(&Minotaur),plMonsterTemplates);
+      plMonsterTemplates = cons(create(&Mimic),plMonsterTemplates);
 
       plMonsterTemplates = cons(create(&Lich,#template=TRUE),plMonsterTemplates);
       plMonsterTemplates = cons(create(&BatteredSkeleton),plMonsterTemplates);
@@ -5741,8 +5831,79 @@ messages:
       plItemTemplates = cons(create(&BreakRodHold),plItemTemplates);
       plItemTemplates = cons(create(&BreakRodBlind),plItemTemplates);
       plItemTemplates = cons(create(&BreakRodPurge),plItemTemplates);
+      plItemTemplates = cons(create(&Dagger),plItemTemplates);
+      plItemTemplates = cons(create(&ThrowingDagger),plItemTemplates);
+
+      % Shards
+      plItemTemplates = cons(create(&ShardImbueMinor),plItemTemplates);
+      plItemTemplates = cons(create(&ShardImbueMajor),plItemTemplates);
+      plItemTemplates = cons(create(&ShardRemove),plItemTemplates);
+      plItemTemplates = cons(create(&ShardEmpowerment),plItemTemplates);
+      plItemTemplates = cons(create(&ShardAugment),plItemTemplates);
 
       return;
+   }
+
+   ShardCreated(type=&ShardImbueMinor)
+   {
+      % Keeps track of dropped shards.
+      if type = &ShardImbueMinor
+      {
+         piMinorShards++;
+      }
+
+      if type = &ShardImbueMajor
+      {
+         piMajorShards++;
+      }
+      
+      if type = &ShardAugment
+      {
+         piAugmentShards++;
+      }
+      
+      if type = &ShardRemove
+      {
+         piDrainShards++;
+      }
+      
+      if type = &ShardEmpowerment
+      {
+         piEmpowermentShards++;
+      }
+
+      return;
+   }
+
+   GetShardsDropped(type=&ShardImbueMinor)
+   {
+      % Reports dropped shards.
+      if type = &ShardImbueMinor
+      {
+         return piMinorShards;
+      }
+
+      if type = &ShardImbueMajor
+      {
+         return piMajorShards;
+      }
+      
+      if type = &ShardAugment
+      {
+         return piAugmentShards;
+      }
+      
+      if type = &ShardRemove
+      {
+         return piDrainShards;
+      }
+      
+      if type = &ShardEmpowerment
+      {
+         return piEmpowermentShards;
+      }
+
+      return 0;
    }
 
    GetItemTemplates()
@@ -5782,6 +5943,88 @@ messages:
       plMoneyTemplates = cons(create(&Money),plMoneyTemplates);
 
       return;
+   }
+
+   RecreateMagicMods()
+   {
+      local i;
+
+      foreach i in plMagicMods
+      {
+         Send(i,@Delete);
+      }
+      plMagicMods = $;
+      piMinorShards = 0;
+      piMajorShards = 0;
+      piAugmentShards = 0;
+      piDrainShards = 0;
+      piEmpowermentShards = 0;
+      
+      plMagicMods = Cons(Create(&FireResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&AcidResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&ShockResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&ColdResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&HolyResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&UnholyResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&QuakeResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&PierceResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&SlashResistanceMod),plMagicMods);
+      plMagicMods = Cons(Create(&BludgeonResistanceMod),plMagicMods);
+      
+      plMagicMods = Cons(Create(&ArmorMod),plMagicMods);
+      plMagicMods = Cons(Create(&DefenseMod),plMagicMods);
+      
+      plMagicMods = Cons(Create(&OffenseMod),plMagicMods);
+      plMagicMods = Cons(Create(&WeaponDamageMod),plMagicMods);
+
+      return;
+   }
+
+   GetMagicMod(class=$)
+   {
+      local i;
+
+      if class <> $
+      {
+         foreach i in plMagicMods
+         {
+            if IsClass(i,class)
+            {
+               return i;
+            }
+         }
+      }
+   
+      return $;
+   }
+
+   GetGroupOfClassMod(class=$)
+   {
+      % Here we store mod classifications for quick lookup.
+      % This lets us avoid needlessly searching objects in rapid succession.
+      % Cases like resistance lists would search far too many times.
+
+      if class = &BludgeonResistanceMod
+         OR class = &PierceResistanceMod
+         OR class = &SlashResistanceMod
+         OR class = &QuakeResistanceMod
+         OR class = &AcidResistanceMod
+         OR class = &ShockResistanceMod
+         OR class = &FireResistanceMod
+         OR class = &ColdResistanceMod
+         OR class = &UnholyResistanceMod
+         OR class = &HolyResistanceMod
+      {
+         return GROUP_RESISTANCE;
+      }
+
+      if class = &ArmorMod
+         OR class = &DefenseMod
+      {
+         return GROUP_ARMOR;
+      }
+
+      return $;
    }
 
    UnMeldAllPlayers(node_num=0)
@@ -7986,6 +8229,24 @@ messages:
       }
       
       return $;
+   }
+
+   UserReincarnated(what = $)
+   {
+      local i;
+
+      foreach i in plUsers_logged_on
+      {
+         Send(i,@MsgSendUser,#message_rsc=system_user_reincarnated,
+              #parm1=Send(what,@GetTrueName),#type1=STRING_RESOURCE);
+         Send(i,@WaveSendUser,#wave_rsc=system_message_sound,#what=self);
+      }
+      return;
+   }
+
+   GetStanceMantras()
+   {
+      return plStanceMantras;
    }
 
 end

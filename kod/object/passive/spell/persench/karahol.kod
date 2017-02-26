@@ -71,9 +71,16 @@ classvars:
    % Cannot enchant others because of drawback.
    vbCanCastOnOthers = FALSE
 
+   % Recasting on yourself would hold you if not for remain=TRUE.
+   vbSelfRecastable = TRUE
+
    viOffensive = TRUE
 
+   vbCanBeReserved = FALSE
+
 properties:
+
+   viPurgeFactor = 20
 
 messages:
 
@@ -101,11 +108,17 @@ messages:
       return iDuration;
    }
 
-   EndEnchantment(who=$,report=TRUE,state=0)
+   EndEnchantment(who=$,report=TRUE,state=0,remain=FALSE)
    {
       local oHoldSpell, iDuration;
 
       Send(who,@RemoveAttackModifier,#what=self);
+
+      if remain
+      {
+         % We're remaining after being purged. Skip the hold!
+         propagate;
+      }
 
       % Now, for the side effect.  Hold 'em!
       oHoldSpell = Send(SYS,@FindSpellByNum,#num=SID_HOLD);

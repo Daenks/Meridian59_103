@@ -99,13 +99,37 @@ messages:
 
    ModifyDefensePower(who = $,what = $,defense_power = 0)
    {
+      local i, oDefenseMod;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            oDefenseMod = Send(SYS,@GetMagicMod,#class=&DefenseMod);
+            defense_power = Send(oDefenseMod,@ModifyDefensePower,
+                        #defense_power=defense_power,#iState=Nth(i,2));
+         }
+      }
+
       return defense_power + piDefense_bonus;
    }
 
    ModifyDefenseDamage(who = $,what = $,damage = $,atype = 0,aspell = 0)
    "Increase or decrease damage done to defender."
    {
-      local iDamageReduce, oAttribute;
+      local iDamageReduce, oAttribute, i, sum, oArmorMod;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            oArmorMod = Send(SYS,@GetMagicMod,#class=&ArmorMod);
+            damage = Send(oArmorMod,@ModifyDefenseDamage,#who=who,#what=what,
+                        #damage=damage,#atype=atype,#aspell=aspell,
+                        #iState=Nth(i,2));
+         }
+      }
 
       foreach oAttribute in plObject_attributes
       {
@@ -180,17 +204,55 @@ messages:
    {
       return viLayer;
    }
-   
+
    GetDamageReduction()
    {
-      return piDamage_reduce;
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &ArmorMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+
+      return piDamage_reduce + sum;
    }
-  
+
    GetDefenseBonus()
    {
-      return piDefense_bonus;
+      local i, sum;
+      sum = 0;
+
+      foreach i in plEnchantmentMods
+      {
+         if Nth(i,1) = &DefenseMod
+         {
+            sum = sum + Nth(i,2);
+         }
+      }
+      
+      return piDefense_bonus + sum;
    }
-   
+
+   GetPrefixes()
+   {
+      return [[&ArmorMod,100],
+              [&DefenseMod,100]];
+   }
+
+   GetSuffixes()
+   {
+      return [[&FireResistanceMod,100],
+              [&ColdResistanceMod,100],
+              [&ShockResistanceMod,100],
+              [&AcidResistanceMod,100],
+              [&PierceResistanceMod,100],
+              [&SlashResistanceMod,100],
+              [&BludgeonResistanceMod,100]];
+   }
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

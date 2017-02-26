@@ -37,6 +37,9 @@ resources:
       "Qor's most trusted lieutenant.\n\n%s"
 
    i9_portal_icon_rsc = teleport.bgf
+   shatterlocked_portal = "The mountain winds howl madly as a spacial bridge forms to somewhere cold and dark..."
+   shatterlock_fail = \
+      "The shatterlock spell completes and fires, but the position of the prism is not correct and the spell fails."
 
 classvars:
 
@@ -447,6 +450,44 @@ messages:
          }
       }
 
+      return;
+   }
+
+   CanShatterlockHere()
+   {
+      return TRUE;
+   }
+   
+   Shatterlocked(oPrism=$,lCasters=$)
+   {
+      local i, each_obj, bPositioned;
+
+      bPositioned=FALSE;
+      if oPrism <> $
+      {
+         if Send(self,@IsInStonehenge,#what=oPrism)
+         {
+            bPositioned = TRUE;
+            Send(self,@OpenPortalToTemple);
+         }
+      }
+     
+      foreach i in plActive
+      {
+         each_obj = Send(self,@HolderExtractObject,#data=i);
+         if IsClass(each_obj,&User)
+         {
+            if bPositioned
+            {
+               Post(each_obj,@MsgSendUser,#message_rsc=shatterlocked_portal);
+            }
+            else
+            {
+               Post(each_obj,@MsgSendUser,#message_rsc=shatterlock_fail);
+            }
+         }
+      }
+      
       return;
    }
 

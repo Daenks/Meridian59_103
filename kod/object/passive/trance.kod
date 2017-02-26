@@ -95,7 +95,7 @@ messages:
       return;
    }
 
-   BreakTrance(who = $, state = $, event = 1)
+   BreakTrance(who = $, state = $, event = 1,time_remaining=0)
    {
       local oSpell, oCaster;
 
@@ -111,6 +111,20 @@ messages:
       
       if event <> EVENT_STEER
       {
+         if Send(oCaster,@GetSkillAbility,#Skill_num=SKID_VOLATILE_FOCUS) > 0
+         {
+            if Send(Send(SYS,@FindSkillByNum,#num=SKID_VOLATILE_FOCUS),
+                        @AttemptTimeSacrifice,
+                        #who=oCaster,
+                        #oSpell=oSpell,
+                        #iSpellPower=Send(oSpell,@GetSpellPower,#who=oCaster),
+                        #time_remaining=time_remaining)
+            {
+               Send(oCaster,@FinishTranceEarly,#oTrance=self);
+               return;
+            }
+         }
+
          Send(oSpell,@TranceBroken,#oCaster=oCaster,#state=state);
       }
       

@@ -118,6 +118,12 @@ messages:
       return;
    }
 
+   GetMinimapDotFlags()
+   {
+      % Special item, add minimap dot.
+      return MM_RARE_ITEM;
+   }
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

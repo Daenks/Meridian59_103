@@ -110,7 +110,7 @@ messages:
       % Add a little delay in sometimes.
       if random(1,2) = 1
       {
-         iDelay = iDelay + random(5000, 10000);
+         iDelay = iDelay + random(2000, 6000);
       }
 
       Send(who,@StartRescueTimer,#time=iDelay);

@@ -54,12 +54,16 @@ classvars:
    viMana = 10
    viSpellExertion = 1
 
-   viCast_time = 2000
+   viCast_time = 0
    viChance_To_Increase = 15
    viMeditate_ratio = 20
    vrSucceed_wav = resistpoison_sound
 
+   viPercentManaReserved = 5
+
 properties:
+
+   viPurgeFactor = 80
 
 messages:
 

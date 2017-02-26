@@ -1,0 +1,93 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShardAugment is Shard
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   augment_shard_name_rsc = "augmenting shard"
+   augment_shard_name_plural = "augmenting shards"
+   augment_shard_icon_rsc = diamondshard.bgf
+   augment_shard_desc = \
+      "This mysterious shard of some unknown crystal will add a second "
+      "magical modification to a piece of equipment that only has one."
+
+   augment_shard_req = \
+      "This shard can only add modifications to the weakest of magic items."
+
+   augment_shard_applied = \
+      "The %s takes on a slightly stronger aura of magic."
+
+classvars:
+
+   vrName = augment_shard_name_rsc
+   vrIcon = augment_shard_icon_rsc
+   vrDesc = augment_shard_desc
+   
+   vrName_plural = augment_shard_name_plural
+
+   vrApplied = augment_shard_applied
+
+properties:
+
+messages:
+
+   ReqNewApply(what = $,apply_on = $)
+   {
+      local i;
+      
+      if what = $
+         OR NOT IsClass(what,&Player)
+      {
+         return;
+      }
+
+      foreach i in Send(what,@GetPlayerUsing)
+      {
+         if i = apply_on
+         {
+            Send(what,@MsgSendUser,#message_rsc=vrMust_unequip);
+            return FALSE;
+         }
+      }
+
+      if apply_on <> $
+         AND (IsClass(apply_on,&Weapon)
+            OR IsClass(apply_on,&DefenseModifier)
+            OR IsClass(apply_on,&Ring)
+            OR IsClass(apply_on,&Gauntlet))
+      {
+         % This shard only applies to gear with one mod
+         if Send(apply_on,@GetMagicModsNumber) = 1
+         {
+            return TRUE;
+         }
+         else
+         {
+            Send(what,@MsgSendUser,#message_rsc=augment_shard_req);
+         }
+      }
+
+      return FALSE;
+   }
+
+   NewApplied(what = $,apply_on = $)
+   {
+      Send(apply_on,@AddMagicMods,#min_num_mods=1,#max_num_mods=1);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

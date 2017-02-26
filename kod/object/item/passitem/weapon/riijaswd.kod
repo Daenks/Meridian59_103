@@ -69,6 +69,8 @@ messages:
          poQuester = quester;
       }
 
+      piItemLevel = 200;
+
       propagate;
    }
 
@@ -193,6 +195,23 @@ messages:
       }
 
       return -10;
+   }
+
+   GetPrefixes()
+   {
+      return [[&OffenseMod,100],
+              [&WeaponDamageMod,100]];
+   }
+
+   GetSuffixes()
+   {
+      return [[&FireResistanceMod,100],
+              [&ColdResistanceMod,100],
+              [&ShockResistanceMod,100],
+              [&AcidResistanceMod,100],
+              [&PierceResistanceMod,25],
+              [&SlashResistanceMod,25],
+              [&BludgeonResistanceMod,25]];
    }
 
 end

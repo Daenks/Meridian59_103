@@ -31,9 +31,6 @@ resources:
    Dazzle_off = "Your vision begins to clear."
 
    Dazzle_sound = sDazzle.wav
-   
-   dazzle_break_rod_active = \
-      "Darkening energies dissipate your spell before you even begin!"
 
 classvars:
 
@@ -59,17 +56,17 @@ classvars:
 
 properties:
 
-   piSpellPowerMultiplier = 70 % Recommended value 40.
-   piKarmaPowerMultiplier = 50 % Recommended value 10.
-   piBaseDuration = 1000 % Recommended value 3000.
-   piDeviation = 0 % Recommended value 10%.
+   piSpellPowerMultiplier = 40
+   piKarmaPowerMultiplier = 10
+   piBaseDuration = 3000
+   piDeviation = 10
 
    % Min and max values for Dazzle duration.
    piMinDazzle = 3000
-   piMaxDazzle = 15000
+   piMaxDazzle = 10000
 
    % Duration of the red pain effect after spell wears off.
-   piPainDuration = 8000 % Recommended value 1000
+   piPainDuration = 1000
 
 messages:
 
@@ -80,51 +77,6 @@ messages:
       plReagents = Cons([&PurpleMushroom,1],plReagents);
 
       return;
-   }
-
-   CanPayCosts(who=$,lTargets=$,bItemCast=FALSE)
-   {
-      local target, i;
-
-      if Length(lTargets) <> 1
-      {
-         return FALSE;
-      }
-
-      target = First(lTargets);
-
-      % TODO: this is not an ideal implementation of blind/hold resistance.
-      % These should be enchantments themselves, rather than requiring
-      % multiple checks of every item in the target's inventory.
-      if IsClass(target,&Player)
-      {
-         foreach i in Send(target,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodBlind)
-               AND Send(i,@IsActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=dazzle_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-      
-      if IsClass(who,&Player)
-      {
-         foreach i in Send(who,@GetHolderPassive)
-         {
-            if IsClass(i,&BreakRodBlind)
-               AND Send(i,@IsSecondaryActive)
-            {
-               Send(who,@MsgSendUser,#message_rsc=dazzle_break_rod_active);
-
-               return FALSE;
-            }
-         }
-      }
-
-      propagate;
    }
 
    CastSpell(who=$,lTargets=$,iSpellPower=0)
@@ -154,6 +106,12 @@ messages:
             % Resisted completely.
             return;
          }
+      }
+
+      if IsClass(oTarget,&Monster)
+         AND Send(oTarget,@GetBlindResistance) <> 0
+      {
+         iDuration = (iDuration * (100-Send(oTarget,@GetBlindResistance)))/100;
       }
 
       % Re-check the bound on duration.

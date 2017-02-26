@@ -10,6 +10,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 RadiusEnchantmentTotem is ActiveObject
 
+
+% This is a class that should be used carefully - it hosts effects.
+% It doesn't work with the modern RE system.
+
 constants:
 
    include blakston.khd
@@ -48,9 +52,13 @@ messages:
       poSpell = totem_spell;
       poCaster = totem_caster;
       piSpellpower = totem_power;
-      
-      oRoom = Send(poCaster,@GetOwner);
-      
+
+      oRoom = $;
+      if IsClass(poCaster,&Player)
+      {
+         oRoom = Send(poCaster,@GetOwner);
+      }
+
       If oRoom = $
          OR poCaster = $
          OR poSpell = $

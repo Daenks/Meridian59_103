@@ -1,0 +1,85 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShardImbueMajor is Shard
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   major_shard_name_rsc = "major shard"
+   major_shard_name_plural = "major shards"
+   major_shard_icon_rsc = greygemshard.bgf
+   major_shard_desc = \
+      "This mysterious shard of some unknown crystal hums with energy. "
+      "Using it on a piece of equipment will grant the item three to "
+      "six magical modifications."
+
+   major_shard_applied = \
+      "The %s takes on a strong aura of magic."
+
+classvars:
+
+   vrName = major_shard_name_rsc
+   vrIcon = major_shard_icon_rsc
+   vrDesc = major_shard_desc
+   
+   vrName_plural = major_shard_name_plural
+
+   vrApplied = major_shard_applied
+
+properties:
+
+messages:
+
+   ReqNewApply(what = $,apply_on = $)
+   {
+      local i;
+      
+      if what = $
+         OR NOT IsClass(what,&Player)
+      {
+         return;
+      }
+
+      foreach i in Send(what,@GetPlayerUsing)
+      {
+         if i = apply_on
+         {
+            Send(what,@MsgSendUser,#message_rsc=vrMust_unequip);
+            return FALSE;
+         }
+      }
+
+      if apply_on <> $
+         AND (IsClass(apply_on,&Weapon)
+            OR IsClass(apply_on,&DefenseModifier)
+            OR IsClass(apply_on,&Ring)
+            OR IsClass(apply_on,&Gauntlet))
+         AND Send(apply_on,@GetMagicModsNumber) = 0
+      {
+         % This shard only applies to non-enchanted gear
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   NewApplied(what = $,apply_on = $)
+   {
+      Send(apply_on,@AddMagicMods,#min_num_mods=3,#max_num_mods=6);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

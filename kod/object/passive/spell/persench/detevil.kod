@@ -61,7 +61,11 @@ classvars:
 
    vrSucceed_wav = DetectEvil_sound
 
+   viPercentManaReserved = 5
+
 properties:
+
+   viPurgeFactor = 90
 
 messages:
 

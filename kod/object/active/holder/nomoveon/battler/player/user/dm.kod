@@ -1162,41 +1162,6 @@ messages:
 
             return;
          }
-
-         if StringEqual(string,dm_blank_command)
-            OR StringEqual(string,"blank")
-         {
-            % Make everyone think we left the room.
-            lObjects = Send(poOwner,@GetHolderActive);
-
-            foreach i in lObjects
-            {
-               oObject = Send(poOwner,@HolderExtractObject,#data=i);
-
-               if IsClass(oObject,&User)
-                  AND oObject <> self
-               {
-                  Send(oObject,@SomethingLeft,#what=self);
-               }
-            }
-
-            vrIcon = admin_icon_blank;
-            pbMorph = TRUE;
-            piMove_start = 1;
-            piMove_end = 1;
-            piMove_delay = 500;
-            piAttack_start = 1;
-            piAttack_end = 1;
-            piAttack_delay = 500;
-
-            Send(self,@MsgSendUser,#message_rsc=dm_blank);
-            Send(self,@SetPlayerFlag,#flag=PFLAG_INVISIBLE,#value=TRUE);
-            Send(self,@SetPlayerFlag,#flag=PFLAG_ANONYMOUS,#value=TRUE);
-            piDMFlags = piDMFlags | DMFLAG_INVISIBLE;
-            Send(self,@ResetPlayerFlagList); 
-
-            return;
-         }
          
          if StringContain(string,dm_disguise_command)
             OR StringContain(string,"disguise")
@@ -1666,6 +1631,7 @@ messages:
             {
                % Don't give any spells that aren't player spells (diseases, etc).
                if IsClass(i,&Spell)
+                  AND Send(i,@DirectDMAccess)
                {
                   iNum=Send(i,@GetSpellNum);
                   Send(self,@AddSpell,#num=iNum,#iability=99,#bDM=TRUE,#dontSend=TRUE);
@@ -2782,6 +2748,24 @@ messages:
       Send(self,@AddSpell,#num=SID_SQUELCH,#iability=99);
 
       return Send(SYS,@GetSuccessRsc);
+   }
+
+   StopBeingModerator()
+   {
+      if Send(self,@IsModerator)
+      {
+         prRank = $;
+         Send(self,@RemoveAllSpells);
+         Send(self,@RemoveAllSkills);
+         pbActor = FALSE;
+         pbImmortal = FALSE;
+         pbSay_commands = FALSE;
+         pbAdvancement = FALSE;
+         Send(self,@PKillEnable);
+         Send(self,@PkillUnlock);
+      }
+      
+      return;
    }
 
    %

@@ -3962,7 +3962,7 @@ void D3DRenderNamesDraw3D(d3d_render_cache_system *pCacheSystem, d3d_render_pool
 		if (pRNode->obj.id == player.id)
 			continue;
 
-		if (!(pRNode->obj.flags & OF_PLAYER) || (pRNode->obj.drawingtype == DRAWFX_INVISIBLE))
+		if (!(pRNode->obj.flags & OF_DISPLAY_NAME) || (pRNode->obj.drawingtype == DRAWFX_INVISIBLE))
 			continue;
 
 		vector.x = pRNode->motion.x - player.x;

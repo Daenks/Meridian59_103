@@ -55,6 +55,8 @@ classvars:
    viMyCol = 15
    viMyAngle = ANGLE_NORTH
 
+   viCanSpawnAsChampion = FALSE
+
 properties:
 
    piStateBump=1

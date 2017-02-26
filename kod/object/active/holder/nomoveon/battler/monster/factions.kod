@@ -14,6 +14,14 @@ constants:
 
    include blakston.khd
 
+resources:
+
+   resign_command = \
+      "resign"
+   
+   resign_response = \
+      "You have resigned from your faction."
+
 classvars:
    
    viDefinite = ARTICLE_NONE
@@ -31,6 +39,8 @@ classvars:
    viMyAngle = ANGLE_NORTH
    viMyFR = 32
    viMyFC = 32
+   
+   viCanSpawnAsChampion = FALSE
 
 messages:
 
@@ -111,6 +121,25 @@ messages:
       % We no longer set a move timer for NPCs.
 
       return;
+   }
+
+   SomeoneSaid(what=$,type=$,string=$)
+   {
+      if type = SAY_YELL OR NOT IsClass(what,&User)
+      {
+          propagate;
+      }
+
+      if StringContain(string,resign_command)
+         AND what <> $
+         AND IsClass(what,&User)
+         AND Send(what,@GetFaction) <> FACTION_NEUTRAL
+      {
+         Send(what,@ResignFaction);
+         Send(what,@MsgSendUser,#message_rsc=resign_response);
+      }
+
+      propagate;
    }
 
 end

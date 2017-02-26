@@ -216,58 +216,6 @@ messages:
       return;
    }
 
-   CanAddSpell(who=$,num=$,report=TRUE)
-   {
-      local bWorthy, i, iAbility;
-
-      bWorthy = FALSE;
-
-      foreach i in Send(who,@GetPlayerUsing)
-      {
-         if IsClass(i,&RiijaSword) AND Send(i,@GetQuester) = who
-         {
-            bWorthy = TRUE;
-         }
-      }
-
-      if report
-         AND ptWorthyTimer = $
-      {
-         if not bWorthy
-         {
-            Post(who,@SomeoneSaid,#what=self,#string=riijamonk_notworthy,
-                  #type=SAY_RESOURCE);
-         }
-         else
-         {
-            Post(who,@SomeoneSaid,#what=self,#string=riijamonk_worthy,
-                  #type=SAY_RESOURCE);
-         }
-
-         % This is to stop the monk being so spammy.
-         ptWorthyTimer = CreateTimer(self,@EndWorthyTimer,piSpeechDelay);
-      }
-
-      if NOT bWorthy
-      {
-         return FALSE;
-      }
-
-      if num = SID_SEDUCE
-      {
-         iAbility = Send(who,@GetSpellAbility,#spell_num=SID_BAIT);
-         if iAbility < 89
-         {
-            Post(who,@SomeoneSaid,#what=self,#string=riijamonk_nobait,
-                  #type=SAY_RESOURCE);
-
-            return FALSE;
-         }
-      }
-
-      propagate;
-   }
-
    EndWorthyTimer(timer=$)
    {
       if ptWorthyTimer <> $

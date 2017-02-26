@@ -1,0 +1,122 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RadiusEnchantmentTotemPassive is ActiveObject
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   re_totem_name_rsc = "foci"
+   re_totem_icon_rsc = totem.bgf
+   re_totem_desc_rsc = \
+      "This mystical object centers a radius enchantment."
+
+classvars:
+
+   vrName = re_totem_name_rsc
+   vrIcon = re_totem_icon_rsc
+   vrDesc = re_totem_desc_rsc
+   viUse_type = ITEM_USE_HAND
+   viUse_amount = 1
+
+   viBulk = 100
+   viWeight = 100
+
+properties:
+
+   viObject_flags = OF_NOEXAMINE
+
+   piLightFlags = LIGHT_FLAG_ON
+
+messages:
+
+   SendLightingInformation()
+   {
+      local iLightIntensity, iLightColor;
+
+      iLightIntensity = 0;
+      iLightColor = LIGHT_GREEN;
+      
+      if poOwner <> $
+         AND IsClass(poOwner,&BattleArena)
+      {
+         iLightIntensity = Send(poOwner,@GetTotemLightIntensity,#what=self);
+         iLightColor = Send(poOwner,@GetTotemLightColor,#what=self);
+      }
+
+      AddPacket(2,piLightFlags);
+      AddPacket(1,iLightIntensity);
+      AddPacket(2,iLightColor);
+
+      return;
+   }
+
+   IsInSameRoom(what = $)
+   {
+      if Send(self,@GetOwner) <> $
+         AND IsClass(Send(self,@GetOwner),&Room)
+         AND Send(what,@GetOwner) <> $
+         AND IsClass(Send(what,@GetOwner),&Room)
+         AND Send(self,@GetOwner) = Send(what,@GetOwner)
+      {
+         return 1;
+      }
+         
+      return 0;
+   }
+
+   SquaredDistanceTo(what = $)
+   "Computes squared distance to <what>. Returns $ for any object that is not within a room."
+   {
+      local iRow, iCol;
+      
+      If NOT Send(self,@IsInSameRoom,#what=what)
+      {
+         return $;
+      }
+
+      iRow = Send(what,@GetRow);
+      iCol = Send(what,@GetCol);
+
+      % Sanity checking
+      if iRow = $ OR iCol = $ OR Send(self,@GetRow) = $ OR Send(self,@GetCol) = $
+      {
+         return $;
+      }
+
+      return send(self,@SquaredDistanceToLocation,#row=iRow,#col=iCol);
+   }
+
+   SquaredDistanceToLocation(row = $, col = $)
+   "Computes squared distance to (row,col)"
+   {
+      local iRow_diff, iCol_diff;
+
+      iRow_diff = Send(self,@GetRow) - row;
+      iCol_diff = Send(self,@GetCol) - col;
+
+      return  (iRow_diff * iRow_diff + iCol_diff * iCol_diff);
+   }
+
+   DestroyDisposable()
+   {
+      return FALSE;
+   }
+
+   CanSweep()
+   {
+      return FALSE;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

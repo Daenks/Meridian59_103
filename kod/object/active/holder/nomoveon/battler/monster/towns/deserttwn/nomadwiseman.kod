@@ -1,0 +1,31 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NomadWiseMan is DesertTown
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   nomadwiseman_name_rsc = "Korath"
+   nomadwiseman_icon_rsc = mrelder.bgf
+   nomadwiseman_desc_rsc = \
+      "This wise man has seen many years in the desert."
+
+classvars:
+
+   vrName = nomadwiseman_name_rsc
+   vrIcon = nomadwiseman_icon_rsc
+   vrDesc = nomadwiseman_desc_rsc
+   viOccupation = MOB_ROLE_ELDER
+
+   viAttributes = \
+      MOB_NOFIGHT | MOB_RANDOM | MOB_LISTEN | MOB_NOMOVE \
+      | MOB_SELLER | MOB_NOQUEST | MOB_RECEIVE
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

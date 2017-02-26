@@ -537,7 +537,7 @@ messages:
    DestroyDisposable()
    {
       % Don't destroy prisms.
-      return;
+      return FALSE;
    }
 
 end

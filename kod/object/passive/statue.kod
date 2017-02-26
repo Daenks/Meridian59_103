@@ -627,17 +627,17 @@ messages:
 
       if piColor = COLOR_GREEN
       {
-         iFlags = iFlags | OF_PLAYER;
+         iFlags = iFlags | OF_DISPLAY_NAME;
       }
 
       if piColor = COLOR_BLUE
       {
-         iFlags = iFlags | OF_PLAYER;
+         iFlags = iFlags | OF_DISPLAY_NAME;
       }
 
       if piColor = COLOR_YELLOW
       {
-         iFlags = iFlags | OF_PLAYER;
+         iFlags = iFlags | OF_DISPLAY_NAME;
       }
 
       return iFlags;

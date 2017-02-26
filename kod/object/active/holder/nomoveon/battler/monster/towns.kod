@@ -28,6 +28,8 @@ classvars:
    viDefault_behavior = AI_NPC | AI_NOMOVE
 
    viSpeed = SPEED_AVERAGE
+   
+   viCanSpawnAsChampion = FALSE
 
 properties:
 

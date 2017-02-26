@@ -181,7 +181,7 @@ messages:
          }
       }
 
-      return;
+      propagate;
    }
 
    IsAlly(target=$)

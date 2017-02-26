@@ -901,13 +901,6 @@ messages:
 
    LichKilled()
    {
-      if poOwner <> $
-         AND IsClass(poOwner,&User)
-      {
-         Send(poOwner,@AssessDamage,#what=self,
-               #damage=(Send(poOwner,@GetHealth)*2/3),#report=FALSE);
-      }
-
       Send(self,@Delete);
 
       return;
@@ -991,6 +984,13 @@ messages:
 
       return TRUE;
    }
+
+   GetMinimapDotFlags()
+   {
+      % Special item, add minimap dot.
+      return MM_RARE_ITEM;
+   }
+
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,50 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LinkThree is SpiritLink
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   link_three_name_rsc = "spirit link"
+   link_three_icon_rsc = imanafoc.bgf
+   link_three_desc_rsc = \
+      "Spirit link allows a spellcaster to reserve a portion of his "
+      "spirit to permanently maintain many useful personal enchantments."
+
+classvars:
+
+   vrName = link_three_name_rsc
+   vrIcon = link_three_icon_rsc
+   vrDesc = link_three_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_LINK_THREE
+   viSchool = SKS_SORCERY
+   viSkill_Level = 3
+   viChance_to_Increase = 25
+   viMeditate_ratio = 50
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+   
+   viReserveLevel = 3
+
+properties:
+
+messages:
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -306,6 +306,11 @@ messages:
    {
       local oSplit;
 
+      if number = $
+      {
+         return $;
+      }
+
       if number >= 1 and number <= piNumber
       {
          oSplit = Create(GetClass(self),#number=number);

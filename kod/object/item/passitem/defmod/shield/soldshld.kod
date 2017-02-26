@@ -88,7 +88,7 @@ classvars:
 
 properties:
 
-   piFactionRank = 4
+   piFactionRank = 10
 
    % Number of M59 days left until we lose a rank.
    piDaysUntilRankLoss = 0
@@ -115,6 +115,7 @@ messages:
                              #color2=viColor));
 
       Send(self,@ResetRankLossCount);
+      Post(self,@UpdateRankPowers);
 
       propagate;
    }
@@ -264,14 +265,6 @@ messages:
    NewDay()
    "Called every new M59 day."
    {
-      piDaysUntilRankLoss = piDaysUntilRankLoss - 1;
-
-      if piDaysUntilRankLoss <= 0
-      {
-         Send(self,@ModifyFactionRank,#amount=-1);
-         Send(self,@ResetRankLossCount);
-      }
-
       return;
    }
 
@@ -309,9 +302,6 @@ messages:
 
             return;
          }
-
-         % Otherwise, lose 4 ranks for dying to a faction enemy
-         Send(self,@ModifyFactionRank,#amount=-4);
 
          % Give the last person to attack us a bonus for forcing owner off if
          %  logged

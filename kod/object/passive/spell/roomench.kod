@@ -43,6 +43,8 @@ classvars:
    viAttack_type = 0
    viAttack_spell = ATCK_SPELL_ALL
 
+   viDiscordable = TRUE
+
 properties:
 
 messages:
@@ -200,6 +202,11 @@ messages:
    GetAttackType()
    {
       return viAttack_type;
+   }
+
+   GetDiscordable()
+   {
+      return viDiscordable;
    }
 
 end

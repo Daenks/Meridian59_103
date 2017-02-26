@@ -1,0 +1,93 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShardRemove is Shard
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   remove_shard_name_rsc = "draining shard"
+   remove_shard_name_plural = "draining shards"
+   remove_shard_icon_rsc = chaosgemshard.bgf
+   remove_shard_desc = \
+      "This mysterious shard of an unknown crystal will drain away all "
+      "magical modifications on an item."
+
+   remove_shard_req = \
+      "This shard has no effect on mundane items."
+
+   remove_shard_applied = \
+      "The %s appears more mundane than before."
+
+classvars:
+
+   vrName = remove_shard_name_rsc
+   vrIcon = remove_shard_icon_rsc
+   vrDesc = remove_shard_desc
+
+   vrName_plural = remove_shard_name_plural
+
+   vrApplied = remove_shard_applied
+
+properties:
+
+messages:
+
+   ReqNewApply(what = $,apply_on = $)
+   {
+      local i;
+      
+      if what = $
+         OR NOT IsClass(what,&Player)
+      {
+         return;
+      }
+
+      foreach i in Send(what,@GetPlayerUsing)
+      {
+         if i = apply_on
+         {
+            Send(what,@MsgSendUser,#message_rsc=vrMust_unequip);
+            return FALSE;
+         }
+      }
+
+      if apply_on <> $
+         AND (IsClass(apply_on,&Weapon)
+            OR IsClass(apply_on,&DefenseModifier)
+            OR IsClass(apply_on,&Ring)
+            OR IsClass(apply_on,&Gauntlet))
+      {
+         % This shard only applies to enchanted gear
+         if Send(apply_on,@GetMagicModsNumber) <> 0
+         {
+            return TRUE;
+         }
+         else
+         {
+            Send(what,@MsgSendUser,#message_rsc=remove_shard_req);
+         }
+      }
+
+      return FALSE;
+   }
+
+   NewApplied(what = $,apply_on = $)
+   {
+      Send(apply_on,@ClearMagicMods);
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -103,6 +103,7 @@ messages:
          if Send(what,@FindHolding,#class=&StatsResetToken) <> $
             OR (Send(what,@GetBaseMaxHealth)
                <= Send(SETTINGS_OBJECT,@GetFreeStatsResetCap))
+            OR Send(what,@HasReincarnationStatsReset)
          {
             Send(what,@SendStatChange);
          }

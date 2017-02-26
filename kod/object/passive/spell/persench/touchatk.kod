@@ -99,10 +99,14 @@ classvars:
    % The amount of light added to player's screen.
    viEnchantmentLight = 0
 
+   viPercentManaReserved = 5
+
 properties:
 
    plPrerequisites = $
    plReagents = $
+
+   viPurgeFactor = 15
 
 messages:
 

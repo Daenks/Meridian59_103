@@ -1,0 +1,96 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ElementalDungeon1 is MonsterRoom
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   room_name_elementaldungeon1 = "Prism of Fire"
+   room_elementaldungeon1 = elementaldungeon1.roo
+   elementaldungeon1_music = cave.mp3
+   
+   fire_prism_phase_out = \
+      "You phase out of the elemental plane of fire, and are drawn along "
+      "the natural curvature of the region's mana flows. Singed, but alive, "
+      "you find yourself at a familiar oasis."
+
+classvars:
+
+   vrName = room_name_elementaldungeon1
+
+   viTeleport_row = 2
+   viTeleport_col = 2
+
+
+properties:
+
+   prRoom = room_elementaldungeon1
+   piRoom_num = RID_ELEMENTAL_DUNGEON1
+
+   piBaseLight = LIGHT_MIN
+   piOutside_factor = 0
+
+   prMusic = elementaldungeon1_music
+
+   piGen_time = 30000
+   piGen_percent = 80
+
+   piInit_count_min = 4
+   piInit_count_max = 6
+
+   piMonster_count_max = 25
+
+messages:
+
+   Constructed()
+   {
+      plMonsters = [ [&XeoFire, 100] ];
+
+      plGenerators = [ [22, 24], [61, 20], [47, 68], [15, 37], [12,61],
+                       [31, 52], [64, 46], [33, 34], [35, 18] ];
+      propagate;
+   }
+   
+   FirstUserEntered()
+   {
+      propagate;
+   }
+   
+   LastUserLeft()
+   {
+      propagate;
+   }
+
+   ReqSpellCast(who = $, oSpell = $)
+   {
+      local iQflags, iRflags, iHeightF, iHeightFWD, iHeightC, iServerID;
+
+      if IsClass(oSpell,&Phase)
+      {
+         if NOT IsClass(who,&Player)
+         {
+            propagate;
+         }
+
+         Post(who,@MsgSendUser,#message_rsc=fire_prism_phase_out);
+         Post(Send(SYS,@FindRoomByNum,#num=RID_WAYLAYOASIS),
+               @Teleport,#what=who);
+         return FALSE;
+      }
+
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

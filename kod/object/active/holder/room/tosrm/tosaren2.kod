@@ -29,6 +29,26 @@ resources:
    wind1_sound_tosarena2 = rs_wind.wav
 
    TosArena2_locked = "The Arena of Kraanan is at capacity - the doors have been locked by Guardian command."
+
+   ba_sign_name = "The Underground Battle Arena"
+   ba_sign_desc = \
+      "Welcome to the underground Battle Arena of Kraanan. Here, warriors "
+      "may stage tremendous territory control struggles. \n\n"
+      "Say 'begin countdown' to initiate a battle. All warriors present "
+      "when the countdown ends will be randomly assigned to teams. \n\n"
+      "Say 'begin now' to initiate a battle immediately. \n\n"
+      "If four or more warriors are not present when the countdown ends, "
+      "the battle will be canceled. \n\n"
+      "Teams accrue points during the battle by controlling territory "
+      "and slaying opponents. Stand in any of the three circles to begin "
+      "capturing that area. Capture is not possible while enemies are "
+      "with you. The team with the most points at the end wins. \n\n"
+      "Drop shillings anywhere to add them to the arena jackpot. Only "
+      "increments over 10,000 are accepted. Say 'jackpot' to see "
+      "current totals. \n\n"
+      "The jackpot is split between all participants at the end of the "
+      "battle, but winning team members get far more."
+
 classvars:
 
    vrName = name_TosArena2
@@ -90,13 +110,28 @@ messages:
 
       plExits = Cons([ 16, 36, RID_EAST_TOS, 14, 36, ROTATE_NONE ],plExits);
       plExits = Cons([ 16, 37, RID_EAST_TOS, 14, 37, ROTATE_NONE ],plExits);
+      
+      % Back exit.
+      plExits = Cons([ 26, 48, RID_EAST_TOS, 26, 48, ROTATE_NONE ],plExits);
+      plExits = Cons([ 27, 48, RID_EAST_TOS, 27, 48, ROTATE_NONE ],plExits);
 
+      % Battle arena entrances.
+      plExits = Cons([ 24, 38, RID_BATTLE_ARENA, 19, 28, ROTATE_NONE ],plExits);
+      plExits = Cons([ 24, 39, RID_BATTLE_ARENA, 19, 28, ROTATE_NONE ],plExits);
+      plExits = Cons([ 27, 38, RID_BATTLE_ARENA, 35, 28, ROTATE_NONE ],plExits);
+      plExits = Cons([ 27, 39, RID_BATTLE_ARENA, 35, 28, ROTATE_NONE ],plExits);
 
-   propagate;
-	}
+      propagate;
+   }
 
   CreateStandardObjects()
   {
+     local oSign;
+
+     oSign=Create(&sign,#desc=ba_sign_desc,#newbie=TRUE,#name=ba_sign_name);
+     Send(self,@NewHold,#what=oSign,#new_row=26,#new_col=38,#fine_row=24,
+           #fine_col=26);
+
 	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_ONE_ON_ONE),
             #new_row=25,#new_col=33,#fine_row=24,#fine_col=16);
 	 Send(self,@NewHold,#what=Create(&ArenaSign2,#style=STYLE_LAST_MAN_STANDING),

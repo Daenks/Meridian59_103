@@ -1,0 +1,87 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+VolatileFocus is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   volatile_focus_name_rsc = "volatile focus"
+   volatile_focus_icon_rsc = lightnin.bgf
+   volatile_focus_desc_rsc = \
+      "The proper temper can allow a mage to cast a spell the instant "
+      "focus is disrupted. Such an explosive act of magic renders the mage "
+      "unable to fight for some time afterward."
+
+   volatile_focus_activated = \
+      "Your spell explosively erupts from you before it is ready! It will be "
+      "roughly %i seconds before you think you can fight again."
+
+classvars:
+
+   vrName = volatile_focus_name_rsc
+   vrIcon = volatile_focus_icon_rsc
+   vrDesc = volatile_focus_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_VOLATILE_FOCUS
+   viSchool = SKS_SORCERY
+   viSkill_Level = 5
+   viChance_to_Increase = 20
+   viMeditate_ratio = 90
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetIntellect);
+   }
+   
+   AttemptTimeSacrifice(who=$,oSpell=$,iSpellPower=0,time_remaining=0)
+   {
+      local iAbility, iStat, iSpellAbility, iSacrifice, iCoefficient,
+            iInitialCost;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iSpellAbility = Send(who,@GetSpellAbility,
+                               #spell_num=Send(oSpell,@GetSpellNum));
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+      
+      iInitialCost = time_remaining;
+      iCoefficient = Bound(298 - iAbility - iSpellAbility,100,300);
+      
+      iSacrifice = (iInitialCost * iCoefficient)/100;
+
+      Send(self,@DoSkill,#who=who,#iSacrifice=iSacrifice);
+      
+      return TRUE;
+   }
+
+   DoSkill(who=$,iSacrifice=0)
+   {
+      Post(who,@InflictWait,#time=iSacrifice);
+      Send(who,@MsgSendUser,#message_rsc=volatile_focus_activated,
+                            #parm1=iSacrifice/1000);
+      
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

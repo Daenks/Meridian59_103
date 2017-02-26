@@ -54,7 +54,7 @@ classvars:
    viSpeed = SPEED_SLOW
    viAttack_type = ATCK_WEAP_PIERCE
    viAttributes = 0
-   viLevel = 120
+   viLevel = 130
    viDifficulty = 7
    viVisionDistance = 20
    % Attack range of 192, or 3 row/col.
@@ -167,7 +167,7 @@ messages:
          Send(what,@AddExertion,#amount=(Random(EXERTION_DAMAGE_MIN,EXERTION_DAMAGE_MAX)*10000));
       }
 
-      return;
+      propagate;
    }
 
 end

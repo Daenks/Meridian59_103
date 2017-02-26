@@ -1,0 +1,118 @@
+% Meridian 59, Copyright 1994-2012 Andrew Kirmse and Chris Kirmse.
+% All rights reserved.
+%
+% This software is distributed under a license that is described in
+% the LICENSE file that accompanies it.
+%
+% Meridian is a registered trademark.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Empowerment is SorcerySkill
+
+constants:
+
+   include blakston.khd
+
+resources:
+
+   empowerment_name_rsc = "empowerment"
+   empowerment_icon_rsc = lightnin.bgf
+   empowerment_desc_rsc = \
+      "True devotion to the forces of energy and entropy empowers a "
+      "master sorcerer with the ability to deliver devastating "
+      "magical afflictions. All elemental status effects inflicted "
+      "on a victim will be greatly increased in magnitude, and "
+      "the sorcerer's spells become difficult to deflect."
+
+   empowerment_resist_reflect_victim = \
+      "The spell cast by %s%s ignores your barrier!"
+   empowerment_resist_reflect_caster = \
+      "Your spell penetrates the barrier surrounding %s%s!"
+
+classvars:
+
+   vrName = empowerment_name_rsc
+   vrIcon = empowerment_icon_rsc
+   vrDesc = empowerment_desc_rsc
+
+   viIndefinite = ARTICLE_NONE
+   viDefinite = ARTICLE_NONE
+
+   viSkill_num = SKID_EMPOWERMENT
+   viSchool = SKS_SORCERY
+   viSkill_Level = 6
+   viChance_to_Increase = 5
+   viMeditate_ratio = 1000
+
+   viSkillExertion = 0
+   vbCheck_exertion = FALSE
+
+properties:
+
+   piEmpowerPercentage = 50
+
+messages:
+
+   GetRequisiteStat(who=$)
+   {
+      return Send(who,@GetMysticism);
+   }
+
+   EmpowermentTryPenetrateDeflect(caster=$, victim=$, oSpell=$)
+   {
+      local iAbility, iStat, iSpellAbility;
+
+      iAbility = Send(caster,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=caster);
+      iSpellAbility = Send(caster,@GetSpellAbility,
+                            #spell_num=Send(oSpell,@GetSpellNum));
+
+      % Max effectiveness at 99/99 and 70 stat is 90%
+      % More realistically, at 50 stat, max is 83%
+      % Characters with terrible Myst can have max values as low as 67%
+      if (1 + iAbility) + (1 + iSpellAbility) + iStat > Random(1,300)
+      {
+         Send(self,@DoSkill,#who=caster);
+         if IsClass(caster,&User)
+         {
+            Send(caster,@MsgSendUser,
+                  #message_rsc=empowerment_resist_reflect_caster,
+                  #parm1=Send(victim,@GetIndef),
+                  #parm2=Send(victim,@GetName));
+         }
+         if IsClass(victim,&User)
+         {
+            Send(victim,@MsgSendUser,
+                  #message_rsc=empowerment_resist_reflect_victim,
+                  #parm1=Send(caster,@GetIndef),
+                  #parm2=Send(caster,@GetName));
+         }
+         return TRUE;
+      }
+
+      return FALSE;
+   }
+
+   GetEmpowermentMultiplier(who=$)
+   {
+      local iAbility, iStat;
+
+      iAbility = Send(who,@GetSkillAbility,#Skill_num=viSkill_num);
+      iStat = Send(self,@GetRequisiteStat,#who=who);
+
+      Send(self,@DoSkill,#who=who);
+
+      % At default percentage of 50/100,
+      % Increase status effects up to 85% at 70 myst
+      % More realistically, +50% to +75%
+      return 100 + (((1 + iAbility) + iStat)*piEmpowerPercentage/100);
+   }
+
+   DoSkill(who=$)
+   {
+      propagate;
+   }
+
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

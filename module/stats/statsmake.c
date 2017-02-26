@@ -36,13 +36,13 @@ static int  CALLBACK MakeStatsSheetInit(HWND hDlg, UINT uMsg, LPARAM lParam);
 /*
  * MakeStats:  Bring up stat change dialog.
  */
-void MakeStats(int *stats_in, int *levels_in)
+void MakeStats(int *stats_in, int *levels_in, int *maxstats_in)
 {
    int i;
    PROPSHEETHEADER psh;
    PROPSHEETPAGE psp[NUM_TAB_PAGES];
 
-   initStatsFromServer(stats_in, levels_in);
+   initStatsFromServer(stats_in, levels_in, maxstats_in);
 
    // Prepare property sheet header
    psh.dwSize = sizeof(PROPSHEETHEADER);
